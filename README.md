@@ -15,7 +15,7 @@ Compose Multiplatform port of [airbnb/lottie-compose](https://github.com/airbnb/
 
 
 dependencies {
-    implementation("com.github.alexzhirkevich:compottie:<version>")    
+    implementation("io.github.alexzhirkevich:compottie:<version>")    
 }
 ```
 
