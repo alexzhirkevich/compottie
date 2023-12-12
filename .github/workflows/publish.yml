@@ -1,0 +1,35 @@
+name: Publish
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Setup JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 17
+
+      - uses: gradle/gradle-build-action@v2.4.2
+        with:
+          gradle-home-cache-cleanup: true
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+      - name: Publish
+        if: startsWith(github.ref, 'refs/tags/')
+        run: ./gradlew publish
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          GPG_KEY: ${{ secrets.GPG_KEY }}
+          GPG_KEY_PWD: ${{ secrets.GPG_KEY_PWD }}
+          
