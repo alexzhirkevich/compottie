@@ -21,6 +21,9 @@ actual val LottieComposition.fps: Float
 actual val LottieComposition.durationMillis: Float
     get() = animation.duration * 1000
 
+internal val LottieComposition.endFrame : Float
+    get() = animation.fPS * animation.duration
+
 
 @Composable
 actual fun rememberLottieComposition(data : String) : State<LottieComposition?> {

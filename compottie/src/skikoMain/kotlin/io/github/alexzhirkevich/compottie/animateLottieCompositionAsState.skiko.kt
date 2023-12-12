@@ -43,6 +43,7 @@ actual fun animateLottieCompositionAsState(
     isPlaying: Boolean,
     restartOnPlay: Boolean,
     reverseOnRepeat: Boolean,
+    clipSpec: LottieClipSpec?,
     speed: Float,
     iterations: Int,
     cancellationBehavior: LottieCancellationBehavior,
@@ -61,7 +62,7 @@ actual fun animateLottieCompositionAsState(
     LaunchedEffect(
         composition,
         isPlaying,
-//        clipSpec,
+        clipSpec,
         actualSpeed,
         iterations,
     ) {
@@ -76,7 +77,7 @@ actual fun animateLottieCompositionAsState(
             iterations = iterations,
             reverseOnRepeat = reverseOnRepeat,
             speed = actualSpeed,
-//            clipSpec = clipSpec,
+            clipSpec = clipSpec,
             initialProgress = animatable.progress,
             continueFromPreviousAnimate = false,
             cancellationBehavior = cancellationBehavior,

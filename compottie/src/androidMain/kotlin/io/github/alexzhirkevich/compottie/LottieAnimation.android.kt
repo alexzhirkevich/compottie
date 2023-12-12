@@ -5,9 +5,26 @@ import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
 import com.airbnb.lottie.compose.LottieCancellationBehavior
 import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
+
+actual typealias LottieClipSpec = com.airbnb.lottie.compose.LottieClipSpec
+
+actual object LottieClipSpecs {
+    actual fun Progress(
+        min: Float,
+        max: Float
+    ): LottieClipSpec =
+        com.airbnb.lottie.compose.LottieClipSpec.Progress(min, max)
+
+
+    actual fun Frame(
+        min: Int?,
+        max: Int?,
+        maxInclusive: Boolean
+    ): LottieClipSpec =
+        com.airbnb.lottie.compose.LottieClipSpec.Frame(min, max, maxInclusive)
+}
 
 actual typealias LottieConstants = com.airbnb.lottie.compose.LottieConstants
 
@@ -48,6 +65,7 @@ actual fun animateLottieCompositionAsState(
     isPlaying: Boolean,
     restartOnPlay: Boolean,
     reverseOnRepeat: Boolean,
+    clipSpec: LottieClipSpec?,
     speed: Float,
     iterations: Int,
     cancellationBehavior: LottieCancellationBehavior,
@@ -58,6 +76,7 @@ actual fun animateLottieCompositionAsState(
     isPlaying = isPlaying,
     restartOnPlay = restartOnPlay,
     reverseOnRepeat = reverseOnRepeat,
+    clipSpec = clipSpec,
     speed = speed,
     iterations = iterations,
     cancellationBehavior = cancellationBehavior,

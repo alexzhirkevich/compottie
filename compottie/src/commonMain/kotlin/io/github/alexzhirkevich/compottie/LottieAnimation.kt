@@ -20,6 +20,8 @@ import androidx.compose.ui.Modifier
  * @param reverseOnRepeat Defines what this animation should do when it reaches the end. This setting
  *                        is applied only when [iterations] is either greater than 0 or [LottieConstants.IterateForever].
  *                        Defaults to `false`.
+ * @param clipSpec A [LottieClipSpec] that specifies the bound the animation playback
+ *                 should be clipped to.
  * @param speed The speed the animation should play at. Numbers larger than one will speed it up.
  *              Numbers between 0 and 1 will slow it down. Numbers less than 0 will play it backwards.
  * @param iterations The number of times the animation should repeat before stopping. It must be
@@ -38,6 +40,7 @@ expect fun animateLottieCompositionAsState(
     isPlaying: Boolean = true,
     restartOnPlay: Boolean = true,
     reverseOnRepeat: Boolean = false,
+    clipSpec: LottieClipSpec? = null,
     speed: Float = 1f,
     iterations: Int = 1,
     cancellationBehavior: LottieCancellationBehavior = LottieCancellationBehavior.Immediately,
@@ -81,6 +84,7 @@ fun LottieAnimation(
     modifier: Modifier = Modifier,
     isPlaying: Boolean = true,
     restartOnPlay: Boolean = true,
+    clipSpec: LottieClipSpec? = null,
     speed: Float = 1f,
     iterations: Int = 1,
     reverseOnRepeat: Boolean = false,
@@ -89,6 +93,7 @@ fun LottieAnimation(
         composition = composition,
         isPlaying = isPlaying,
         restartOnPlay = restartOnPlay,
+        clipSpec = clipSpec,
         reverseOnRepeat = reverseOnRepeat,
         speed = speed,
         iterations = iterations,
