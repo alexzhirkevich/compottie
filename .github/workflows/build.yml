@@ -24,6 +24,8 @@ jobs:
           gradle-home-cache-cleanup: true
       - name: Make gradlew executable
         run: chmod +x ./gradlew
+      - name: Assemble
+        run: ./gradlew assemble --stacktrace
       - name: Publish
         if: startsWith(github.ref, 'refs/tags/')
         run: ./gradlew publish
