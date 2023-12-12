@@ -21,5 +21,5 @@ dependencies {
 
 # Usage
 
-Basically the same as described in [airbnb docs](https://github.com/airbnb/lottie/blob/master/android-compose.md](https://github.com/airbnb/lottie/blob/master/android-compose.md#basic-usage)https://github.com/airbnb/lottie/blob/master/android-compose.md#basic-usage)
+Basically the same as described in [airbnb docs](https://github.com/airbnb/lottie/blob/master/android-compose.md#basic-usage)
 
