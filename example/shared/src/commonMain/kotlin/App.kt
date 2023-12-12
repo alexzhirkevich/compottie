@@ -31,26 +31,17 @@ fun App() {
 
         val composition = rememberLottieComposition(lottieData)
 
-        var isPlaying by remember {
-            mutableStateOf(true)
-        }
+//        val progress = animateLottieCompositionAsState(
+//            cancellationBehavior = LottieCancellationBehavior.OnIterationFinish,
+//            composition = composition,
+//            repeatMode = RepeatMode.Restart,
+//            iterations = Int.MAX_VALUE
+//        )
 
-        LaunchedEffect(0){
-            delay(300)
-            isPlaying = false
-        }
-
-        val progress = animateLottieCompositionAsState(
-            isPlaying = isPlaying,
-            cancellationBehavior = LottieCancellationBehavior.OnIterationFinish,
-            composition = composition,
-            repeatMode = RepeatMode.Restart,
-            iterations = Int.MAX_VALUE
-        )
 
         LottieAnimation(
             composition = composition,
-            progress = { progress.value },
+//            progress = { progress.value },
             modifier = Modifier.size(300.dp)
         )
     }

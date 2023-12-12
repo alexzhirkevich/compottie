@@ -7,14 +7,13 @@ import androidx.compose.ui.Modifier
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
-import kotlin.math.roundToInt
 
 actual typealias LottieCancellationBehavior = com.airbnb.lottie.compose.LottieCancellationBehavior
 
 actual typealias LottieComposition = com.airbnb.lottie.LottieComposition
 
-actual val LottieComposition.durationMillis : Int
-    get() = duration.roundToInt()
+//actual val LottieComposition.duration : Float
+//    get() = duration / 1000f
 
 @Composable
 actual fun rememberLottieComposition(data : String) : LottieComposition? {

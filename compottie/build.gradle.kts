@@ -1,6 +1,6 @@
 @file:Suppress("DSL_SCOPE_VIOLATION")
 
-import java.util.Properties
+import java.util.Base64
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -81,93 +81,72 @@ android {
     }
 }
 
-//ext["signing.keyId"] = null
-//ext["signing.password"] = null
-//ext["signing.secretKeyRingFile"] = null
-//ext["ossrhUsername"] = null
-//ext["ossrhPassword"] = null
+val javadocJar by tasks.registering(Jar::class) {
+    archiveClassifier.set("javadoc")
+}
+// https://github.com/gradle/gradle/issues/26091
+val signingTasks = tasks.withType<Sign>()
+tasks.withType<AbstractPublishToMaven>().configureEach {
+    dependsOn(signingTasks)
+}
 
-//extra.apply {
-//    val publishPropFile = rootProject.file("local.properties")
-//    if (publishPropFile.exists()) {
-//        Properties().apply {
-//            load(publishPropFile.inputStream())
-//        }.forEach { name, value ->
-//            if (name == "signing.secretKeyRingFile") {
-//                set(name.toString(), rootProject.file(value.toString()).absolutePath)
-//            } else {
-//                set(name.toString(), value)
-//            }
-//        }
-//    } else {
-//        ext["signing.keyId"] = System.getenv("SIGNING_KEY_ID")
-//        ext["signing.password"] = System.getenv("SIGNING_PASSWORD")
-//        ext["signing.secretKeyRingFile"] = System.getenv("SIGNING_SECRET_KEY_RING_FILE")
-//        ext["ossrhUsername"] = System.getenv("OSSRH_USERNAME")
-//        ext["ossrhPassword"]= System.getenv("OSSRH_PASSWORD")
-//    }
-//}
-//
-//val javadocJar by tasks.registering(Jar::class) {
-//    archiveClassifier.set("javadoc")
-//}
-//// https://github.com/gradle/gradle/issues/26091
-//val signingTasks = tasks.withType<Sign>()
-//tasks.withType<AbstractPublishToMaven>().configureEach {
-//    dependsOn(signingTasks)
-//}
+publishing {
+    if (System.getenv("OSSRH_PASSWORD")!=null) {
 
-//publishing {
-//    if (rootProject.ext("local.properties").exists()) {
-//
-//        repositories {
-//            maven {
-//                val releasesRepoUrl =
-//                    "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-//                val snapshotsRepoUrl =
-//                    "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-//                url = if (version.toString().endsWith("SNAPSHOT")) {
-//                    uri(snapshotsRepoUrl)
-//                } else {
-//                    uri(releasesRepoUrl)
-//                }
-//                credentials {
-//                    username = project.ext.get("ossrhUsername").toString()
-//                    password = project.ext.get("ossrhPassword").toString()
-//                }
-//            }
-//        }
-//    }
-//
-//    publications.withType<MavenPublication> {
-//        artifact(javadocJar)
-//        pom {
-//            name.set("QRose")
-//            description.set("Styled QR code generation library for Compose Multiplatform")
-//            url.set("https://github.com/alexzhirkevich/qrose")
-//
-//            licenses {
-//                license {
-//                    name.set("MIT")
-//                    url.set("https://opensource.org/licenses/MIT")
-//                }
-//            }
-//            developers {
-//                developer {
-//                    id.set("alexzhirkevich")
-//                    name.set("Alexander Zhirkevich")
-//                    email.set("sasha.zhirkevich@gmail.com")
-//                }
-//            }
-//            scm {
-//                url.set("https://github.com/alexzhirkevich/qrose")
-//                connection.set("scm:git:git://github.com/alexzhirkevich/qrose.git")
-//                developerConnection.set("scm:git:git://github.com/alexzhirkevich/qrose.git")
-//            }
-//        }
-//    }
-//}
-//
-//signing {
-//    sign(publishing.publications)
-//}
+        repositories {
+            maven {
+                val releasesRepoUrl =
+                    "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                val snapshotsRepoUrl =
+                    "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                url = if (version.toString().contains("dev")) {
+                    uri(snapshotsRepoUrl)
+                } else {
+                    uri(releasesRepoUrl)
+                }
+                credentials {
+                    username = System.getenv("OSSRH_USERNAME")
+                    password = System.getenv("OSSRH_PASSWORD")
+                }
+            }
+        }
+    }
+
+    publications.withType<MavenPublication> {
+        artifact(javadocJar)
+        pom {
+            name.set("Compottie")
+            description.set("Compose Multiplatform lottie animation")
+            url.set("https://github.com/alexzhirkevich/compottie")
+
+            licenses {
+                license {
+                    name.set("MIT")
+                    url.set("https://opensource.org/licenses/MIT")
+                }
+            }
+            developers {
+                developer {
+                    id.set("alexzhirkevich")
+                    name.set("Alexander Zhirkevich")
+                    email.set("sasha.zhirkevich@gmail.com")
+                }
+            }
+            scm {
+                url.set("https://github.com/alexzhirkevich/compottie")
+                connection.set("scm:git:git://github.com/alexzhirkevich/compottie.git")
+                developerConnection.set("scm:git:git://github.com/alexzhirkevich/compottie.git")
+            }
+        }
+    }
+}
+
+if (System.getenv("GPG_KEY") != null) {
+    signing {
+        useInMemoryPgpKeys(
+            Base64.getDecoder().decode(System.getenv("GPG_KEY")).decodeToString(),
+            System.getenv("GPG_KEY_PWD"),
+        )
+        sign(publishing.publications)
+    }
+}

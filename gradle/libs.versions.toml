@@ -1,5 +1,5 @@
 [versions]
-compottie = "1.0.0-beta02"
+compottie = "1.0.0"
 kotlin="1.9.21"
 dokka="1.9.0"
 compose="1.5.11"
@@ -8,7 +8,6 @@ lottie-android="6.1.0"
 
 [libraries]
 lottie-android = { module ="com.airbnb.android:lottie-compose", version.ref = "lottie-android" }
-
 
 [plugins]
 compose = { id = "org.jetbrains.compose", version.ref = "compose" }

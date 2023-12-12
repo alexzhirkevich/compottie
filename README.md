@@ -28,11 +28,8 @@ val lottieData : String = // ... your lottie JSON
 
 val composition = rememberLottieComposition(lottieData)
 
-val progress = animateLottieCompositionAsState(composition = composition)
-
 LottieAnimation(
     composition = composition,
-    progress = { progress.value },
     modifier = Modifier.size(300.dp)
 )
 ```

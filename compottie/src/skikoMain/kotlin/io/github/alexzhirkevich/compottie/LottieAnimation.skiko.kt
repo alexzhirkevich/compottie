@@ -46,8 +46,8 @@ actual enum class LottieCancellationBehavior {
 
 actual typealias LottieComposition = Animation
 
-actual val LottieComposition.durationMillis : Int
-    get() = (duration * 1000).roundToInt()
+//actual val LottieComposition.duration : Float
+//    get() = duration
 
 @Composable
 actual fun rememberLottieComposition(data : String) : LottieComposition? {
@@ -67,7 +67,7 @@ actual fun LottieAnimation(
 
     Canvas(modifier) {
         drawIntoCanvas {
-            animation.seekFrameTime(progress(), invalidationController)
+            animation.seek(progress(), invalidationController)
 
             animation.render(
                 canvas = it.nativeCanvas,
@@ -86,7 +86,8 @@ actual fun animateLottieCompositionAsState(
     iterations : Int,
 ) : State<Float> {
 
-    val animationSpec = tween<Float>(composition?.durationMillis ?: 0, easing = LinearEasing)
+    val duration = composition?.duration?.times(1000)?.roundToInt() ?: 0
+    val animationSpec = tween<Float>(duration, easing = LinearEasing)
 
     val progress = remember {
         mutableFloatStateOf(0f)
@@ -129,7 +130,7 @@ actual fun animateLottieCompositionAsState(
 
             val p = infiniteTransition.animateFloat(
                 initialValue = 0f,
-                targetValue = composition?.duration ?: 0f,
+                targetValue = 1f,
                 animationSpec = infiniteRepeatable(
                     animation = animationSpec,
                     repeatMode = repeatMode
@@ -148,7 +149,7 @@ actual fun animateLottieCompositionAsState(
             var v by remember { mutableFloatStateOf(0f) }
 
             LaunchedEffect(v) {
-                v = composition?.duration ?: 0f
+                v = 1f
             }
 
             LaunchedEffect(progress) {
