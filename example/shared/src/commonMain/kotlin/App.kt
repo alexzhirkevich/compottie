@@ -1,11 +1,17 @@
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.compottie.LottieAnimation
+import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 
 private const val lottieData = """
@@ -20,21 +26,21 @@ fun App() {
         contentAlignment = Alignment.Center
     ) {
 
-        val composition = rememberLottieComposition(lottieData)
+        val composition by rememberLottieComposition(lottieData)
 
-//        val progress = animateLottieCompositionAsState(
-//            cancellationBehavior = LottieCancellationBehavior.OnIterationFinish,
-//            composition = composition,
-//            repeatMode = RepeatMode.Restart,
-//            iterations = Int.MAX_VALUE
-//        )
+        val progress = animateLottieCompositionAsState(composition)
 
+        println("LOTTIE DATA ${composition?.size}")
 
-        LottieAnimation(
-            composition = composition,
-//            progress = { progress.value },
-            modifier = Modifier.size(300.dp)
-        )
+        Row {
+            repeat(3) {
+                LottieAnimation(
+                    composition = composition,
+                    progress = { progress.value },
+                    modifier = Modifier.border(1.dp, Color.Blue)
+                )
+            }
+        }
     }
 }
 

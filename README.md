@@ -30,24 +30,22 @@ Basic usage:
 
 val lottieData : String = // ... your lottie JSON 
 
-val composition = rememberLottieComposition(lottieData)
+val composition by rememberLottieComposition(lottieData)
 
 LottieAnimation(
     composition = composition,
-    modifier = Modifier.size(300.dp)
 )
 ```
 
 With manual progress control:
 ```kotlin
-val composition = rememberLottieComposition(lottieData)
+val composition by rememberLottieComposition(lottieData)
 
-val progress = animateLottieCompositionAsState(composition)
+val progress by animateLottieCompositionAsState(composition)
 
 LottieAnimation(
     composition = composition,
-    progress = { progress.value },
-    modifier = Modifier.size(300.dp)
+    progress = { progress },
 )
 ```
 
