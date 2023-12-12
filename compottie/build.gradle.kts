@@ -55,7 +55,7 @@ kotlin {
         val desktopMain by getting
 
         androidMain.dependencies {
-            implementation(libs.lottie.android)
+            api(libs.lottie.android)
         }
 
         val skikoMain by creating {

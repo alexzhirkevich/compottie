@@ -1,0 +1,35 @@
+package io.github.alexzhirkevich.compottie
+
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
+
+/**
+ * [LottieAnimationState] is a value holder that contains information about the current Lottie animation.
+ *
+ * The primary values are [LottieAnimationState.progress] and [LottieAnimationState.composition]. These
+ * value should be passed into the main [LottieAnimation] composable.
+ *
+ * @see progress
+ * @see composition
+ * @see animateLottieCompositionAsState
+ */
+@Stable
+expect interface LottieAnimationState : State<Float> {
+    val isPlaying: Boolean
+
+    val progress: Float
+
+    val iteration: Int
+
+    val iterations: Int
+
+    val reverseOnRepeat: Boolean
+
+    val speed: Float
+
+    val useCompositionFrameRate: Boolean
+
+    val composition: LottieComposition?
+
+    val isAtEnd: Boolean
+}
