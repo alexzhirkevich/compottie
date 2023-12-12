@@ -1,7 +1,14 @@
-name: Publish
+name: Build
 
 on:
-  workflow_call:
+  release:
+    types: [published]
+  push:
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - '**.md'
 
 jobs:
   build:
