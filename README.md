@@ -10,10 +10,10 @@ Compose Multiplatform lottie animations. Library have similar APIs to [airbnb/lo
 including play/stop, delayed finish, repeat mode, iterations
 
 # Installation
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.alexzhirkevich/compottie/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.alexzhirkevich/compottie)
 
 ```kotlin
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.alexzhirkevich/compottie/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.alexzhirkevich/compottie)
 
 dependencies {
     implementation("com.github.alexzhirkevich:compottie:<version>")    
