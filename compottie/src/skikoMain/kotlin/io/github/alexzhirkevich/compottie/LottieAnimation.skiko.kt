@@ -30,33 +30,19 @@ import org.jetbrains.skia.skottie.Animation
 import org.jetbrains.skia.sksg.InvalidationController
 import kotlin.math.roundToInt
 
-actual enum class LottieCancellationBehavior {
-    /**
-     * Stop animation immediately and return early.
-     */
-    Immediately,
-
-    /**
-     * Delay cancellations until the current iteration has fully completed.
-     * This can be useful in state based transitions where you want one animation to finish its
-     * animation before continuing to the next.
-     */
-    OnIterationFinish,
-}
-
 actual typealias LottieComposition = Animation
 
 //actual val LottieComposition.duration : Float
 //    get() = duration
 
 @Composable
-actual fun rememberLottieComposition(data : String) : LottieComposition? {
-    return Animation.makeFromString(data)
+actual fun rememberLottieComposition(data : String) : LottieComposition {
+    return remember(data) { Animation.makeFromString(data) }
 }
 
 @Composable
 actual fun LottieAnimation(
-    composition : LottieComposition?,
+    composition : LottieComposition,
     progress : () -> Float,
     modifier: Modifier
 ) {
@@ -79,14 +65,14 @@ actual fun LottieAnimation(
 
 @Composable
 actual fun animateLottieCompositionAsState(
-    composition: LottieComposition?,
+    composition: LottieComposition,
     repeatMode: RepeatMode,
-    cancellationBehavior: LottieCancellationBehavior,
+    cancellationBehavior: CancellationBehavior,
     isPlaying : Boolean,
     iterations : Int,
 ) : State<Float> {
 
-    val duration = composition?.duration?.times(1000)?.roundToInt() ?: 0
+    val duration = composition.duration.times(1000).roundToInt()
     val animationSpec = tween<Float>(duration, easing = LinearEasing)
 
     val progress = remember {
@@ -98,15 +84,12 @@ actual fun animateLottieCompositionAsState(
 
     val isAnimationStopped by remember {
         derivedStateOf {
-            if (composition == null)
-                return@derivedStateOf true
-
-            !isPlayingUpdated && cancellationBehavior == LottieCancellationBehavior.Immediately
+            !isPlayingUpdated && cancellationBehavior == CancellationBehavior.Immediately
         }
     }
 
     val shouldTakeProgress = { new: Float ->
-        if (composition == null || (!isPlayingUpdated && cancellationBehaviorUpdated == LottieCancellationBehavior.Immediately))
+        if (!isPlayingUpdated && cancellationBehaviorUpdated == CancellationBehavior.Immediately)
             false
         else {
             if (isPlayingUpdated)

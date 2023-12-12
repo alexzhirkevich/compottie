@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
 
-expect enum class LottieCancellationBehavior {
+enum class CancellationBehavior {
     /**
      * Stop animation immediately and return early.
      */
@@ -35,7 +35,7 @@ expect class LottieComposition
  * @param data Lottie JSON string
  * */
 @Composable
-expect fun rememberLottieComposition(data : String) : LottieComposition?
+expect fun rememberLottieComposition(data : String) : LottieComposition
 
 /**
  * State of the lottie animation progress
@@ -51,9 +51,9 @@ expect fun rememberLottieComposition(data : String) : LottieComposition?
  * */
 @Composable
 expect fun animateLottieCompositionAsState(
-    composition: LottieComposition?,
+    composition: LottieComposition,
     repeatMode: RepeatMode = RepeatMode.Restart,
-    cancellationBehavior: LottieCancellationBehavior = LottieCancellationBehavior.Immediately,
+    cancellationBehavior: CancellationBehavior = CancellationBehavior.Immediately,
     isPlaying : Boolean = true,
     iterations : Int = Int.MAX_VALUE,
 ) : State<Float>
@@ -69,7 +69,7 @@ expect fun animateLottieCompositionAsState(
  * */
 @Composable
 expect fun LottieAnimation(
-    composition : LottieComposition?,
+    composition : LottieComposition,
     progress : () -> Float,
     modifier: Modifier = Modifier
 )
@@ -88,10 +88,10 @@ expect fun LottieAnimation(
  * */
 @Composable
 fun LottieAnimation(
-    composition: LottieComposition?,
+    composition: LottieComposition,
     modifier: Modifier = Modifier,
     repeatMode: RepeatMode = RepeatMode.Restart,
-    cancellationBehavior: LottieCancellationBehavior = LottieCancellationBehavior.Immediately,
+    cancellationBehavior: CancellationBehavior = CancellationBehavior.Immediately,
     isPlaying : Boolean = true,
     iterations : Int = Int.MAX_VALUE,
 ) {

@@ -49,10 +49,6 @@ kotlin {
             @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
             implementation(compose.components.resources)
         }
-
-        androidMain.dependencies {
-            implementation(libs.lottie.android)
-        }
     }
 }
 
