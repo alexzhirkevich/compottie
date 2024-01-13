@@ -15,11 +15,11 @@ Compose Multiplatform port of [airbnb/lottie-compose](https://github.com/airbnb/
 
 
 dependencies {
-    implementation("com.github.alexzhirkevich:compottie:<version>")    
+    implementation("io.github.alexzhirkevich:compottie:<version>")    
 }
 ```
 
 # Usage
 
-Basically the same as described in [airbnb docs](https://github.com/airbnb/lottie/blob/master/android-compose.md)
+Basically the same as described in [airbnb docs](https://github.com/airbnb/lottie/blob/master/android-compose.md#basic-usage)
 
