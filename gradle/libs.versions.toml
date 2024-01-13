@@ -1,5 +1,5 @@
 [versions]
-compottie = "1.0.0"
+compottie = "1.1.0"
 kotlin="1.9.21"
 dokka="1.9.0"
 compose="1.5.11"
