@@ -18,6 +18,7 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
+import kotlin.js.JsName
 
 /**
  * Use this to create a [LottieAnimatable] in a composable.
@@ -25,15 +26,16 @@ import kotlin.coroutines.coroutineContext
  * @see LottieAnimatable
  */
 @Composable
-fun rememberLottieAnimatable(): LottieAnimatable = remember { LottieAnimatableImpl() }
+fun rememberLottieAnimatable(): LottieAnimatable = remember { LottieAnimatable() }
 
-///**
-// * Use this to create a [LottieAnimatable] outside of a composable such as a hoisted state class.
-// *
-// * @see rememberLottieAnimatable
-// * @see LottieAnimatable
-// */
-//fun LottieAnimatable(): LottieAnimatable = LottieAnimatableImpl()
+/**
+ * Use this to create a [LottieAnimatable] outside of a composable such as a hoisted state class.
+ *
+ * @see rememberLottieAnimatable
+ * @see LottieAnimatable
+ */
+@JsName("NewLottieAnimatable")
+fun LottieAnimatable(): LottieAnimatable = LottieAnimatableImpl()
 
 /**
  * Reset the animation back to the minimum progress and first iteration.
@@ -125,7 +127,7 @@ interface LottieAnimatable : LottieAnimationState {
      * @param cancellationBehavior The behavior that this animation should have when cancelled. In most cases,
      *                             you will want it to cancel immediately. However, if you have a state based
      *                             transition and you want an animation to finish playing before moving on to
-     *                             the next one then you may want to set this to [CancellationBehavior.OnIterationFinish].
+     *                             the next one then you may want to set this to [LottieCancellationBehavior.OnIterationFinish].
      * @param ignoreSystemAnimationsDisabled When set to true, the animation will animate even if animations
      *                                       are disabled at the OS level.
      *                                       Defaults to false.
@@ -284,7 +286,7 @@ private class LottieAnimatableImpl : LottieAnimatable {
     }
 
     private suspend fun doFrame(iterations: Int): Boolean {
-        return if (iterations == Int.MAX_VALUE) {
+        return if (iterations == LottieConstants.IterateForever) {
             // We use withInfiniteAnimationFrameNanos because it allows tests to add a CoroutineContext
             // element that will cancel infinite transitions instead of preventing composition from ever going idle.
             withInfiniteAnimationFrameNanos { frameNanos ->

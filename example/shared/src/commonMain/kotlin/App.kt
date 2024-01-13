@@ -12,7 +12,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import io.github.alexzhirkevich.compottie.JsonString
 import io.github.alexzhirkevich.compottie.LottieAnimation
+import io.github.alexzhirkevich.compottie.LottieComposition
+import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.LottieConstants
 import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
@@ -30,16 +33,10 @@ fun App() {
         contentAlignment = Alignment.Center
     ) {
 
-        val composition by rememberLottieComposition(lottieData)
-
-
-        val isRunning by remember {
-            mutableStateOf(true)
-        }
+        val composition by rememberLottieComposition(LottieCompositionSpec.JsonString(lottieData))
 
         val progress = animateLottieCompositionAsState(
             composition = composition,
-            isPlaying = isRunning,
             iterations = LottieConstants.IterateForever,
             restartOnPlay = false
         )
@@ -47,7 +44,6 @@ fun App() {
         LottieAnimation(
             composition = composition,
             progress = { progress.value },
-            modifier = Modifier.border(1.dp, Color.Blue)
         )
     }
 }

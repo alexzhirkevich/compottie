@@ -1,5 +1,7 @@
 package io.github.alexzhirkevich.compottie
-
-expect object LottieConstants {
-    val IterateForever : Int
+object LottieConstants {
+    /**
+     * Use this with [animateLottieCompositionAsState]'s iterations parameter to repeat forever.
+     */
+    const val IterateForever = Int.MAX_VALUE
 }

@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie
 
+import androidx.compose.animation.core.AnimationConstants
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 
@@ -14,7 +15,7 @@ import androidx.compose.runtime.State
  * @see animateLottieCompositionAsState
  */
 @Stable
-expect interface LottieAnimationState : State<Float> {
+interface LottieAnimationState : State<Float> {
     val isPlaying: Boolean
 
     val progress: Float
@@ -25,11 +26,15 @@ expect interface LottieAnimationState : State<Float> {
 
     val reverseOnRepeat: Boolean
 
+    val clipSpec: LottieClipSpec?
+
     val speed: Float
 
     val useCompositionFrameRate: Boolean
 
     val composition: LottieComposition?
+
+    val lastFrameNanos: Long get() = AnimationConstants.UnspecifiedTime
 
     val isAtEnd: Boolean
 }

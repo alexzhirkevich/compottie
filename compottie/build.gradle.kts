@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.compose)
     alias(libs.plugins.dokka)
+    alias(libs.plugins.serialization)
     id("maven-publish")
     id("signing")
 }
@@ -64,6 +65,9 @@ kotlin {
             iosMain.get().dependsOn(this)
             macosMain.get().dependsOn(this)
             jsMain.get().dependsOn(this)
+            dependencies {
+                implementation(libs.serialization)
+            }
         }
     }
 }

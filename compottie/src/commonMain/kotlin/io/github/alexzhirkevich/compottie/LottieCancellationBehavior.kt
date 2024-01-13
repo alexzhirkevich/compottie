@@ -1,6 +1,11 @@
 package io.github.alexzhirkevich.compottie
 
-expect enum class LottieCancellationBehavior {
+/**
+ * Determines how the animation should behave if the calling CoroutineScope is cancelled.
+ *
+ * @see rememberLottieAnimatable
+ */
+enum class LottieCancellationBehavior {
     /**
      * Stop animation immediately and return early.
      */
