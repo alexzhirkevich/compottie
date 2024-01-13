@@ -81,4 +81,4 @@ actual fun LottieAnimation(
     }
 }
 
-private fun Size.round() = IntSize(width.roundToInt(), height.roundToInt())
+internal fun Size.round() = IntSize(width.roundToInt(), height.roundToInt())

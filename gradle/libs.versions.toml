@@ -4,7 +4,7 @@ kotlin="1.9.21"
 dokka="1.9.0"
 compose="1.5.11"
 androidGradlePlugin = "8.1.1"
-lottie-android="6.1.0"
+lottie-android="6.3.0"
 serialization="1.6.2"
 
 [libraries]
