@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,7 +39,8 @@ import androidx.compose.runtime.setValue
  *                                  Set this to false if you want to ignore the system animator scale and always default to normal speed.
  */
 @Composable
-fun animateLottieCompositionAsState(
+@Stable
+expect fun animateLottieCompositionAsState(
     composition: LottieComposition?,
     isPlaying: Boolean = true,
     restartOnPlay: Boolean = true,
@@ -49,44 +51,4 @@ fun animateLottieCompositionAsState(
     cancellationBehavior: LottieCancellationBehavior = LottieCancellationBehavior.Immediately,
     ignoreSystemAnimatorScale: Boolean = false,
     useCompositionFrameRate: Boolean = false,
-): LottieAnimationState {
-    require(iterations > 0) { "Iterations must be a positive number ($iterations)." }
-    require(speed.isFinite()) { "Speed must be a finite number. It is $speed." }
-
-    val animatable = rememberLottieAnimatable()
-    var wasPlaying by remember { mutableStateOf(isPlaying) }
-
-    // Dividing by 0 correctly yields Float.POSITIVE_INFINITY here.
-    val actualSpeed = if (ignoreSystemAnimatorScale) speed else (speed / systemAnimationScale())
-
-    LaunchedEffect(
-        composition,
-        isPlaying,
-        clipSpec,
-        actualSpeed,
-        iterations,
-    ) {
-        if (isPlaying && !wasPlaying && restartOnPlay) {
-            animatable.resetToBeginning()
-        }
-        wasPlaying = isPlaying
-        if (!isPlaying) return@LaunchedEffect
-
-        animatable.animate(
-            composition,
-            iterations = iterations,
-            reverseOnRepeat = reverseOnRepeat,
-            speed = actualSpeed,
-            clipSpec = clipSpec,
-            initialProgress = animatable.progress,
-            continueFromPreviousAnimate = false,
-            cancellationBehavior = cancellationBehavior,
-            useCompositionFrameRate = useCompositionFrameRate,
-        )
-    }
-
-    return animatable
-}
-
-@Composable
-internal expect fun systemAnimationScale() : Float
+): LottieAnimationState

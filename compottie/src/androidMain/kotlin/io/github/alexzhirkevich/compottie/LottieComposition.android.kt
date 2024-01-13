@@ -21,8 +21,8 @@ internal actual fun LottieComposition.marker(markerName : String) : Marker? =
 
 @Composable
 actual fun rememberLottieComposition(spec: LottieCompositionSpec) : LottieCompositionResult =
-    rememberLottieComposition(
-        spec = spec,
+    com.airbnb.lottie.compose.rememberLottieComposition(
+        spec = spec.delegate,
         imageAssetsFolder = null
     )
 

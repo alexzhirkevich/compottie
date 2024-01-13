@@ -1,10 +1,12 @@
 package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 
 /**
  * Holds animation data
  * */
+@Stable
 expect class LottieComposition
 
 internal expect val LottieComposition.fps : Float
@@ -37,4 +39,5 @@ internal expect fun LottieComposition.marker(markerName : String) : Marker?
  * @param spec The [LottieCompositionSpec] that defines which LottieComposition should be loaded.
  */
 @Composable
+@Stable
 expect fun rememberLottieComposition(spec : LottieCompositionSpec) : LottieCompositionResult

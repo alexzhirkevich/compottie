@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -13,6 +14,7 @@ import org.jetbrains.skia.skottie.Animation
 import org.jetbrains.skia.sksg.InvalidationController
 
 
+@Stable
 actual class LottieComposition internal constructor(
     internal val animation: Animation,
     internal val invalidationController: InvalidationController = InvalidationController(),
@@ -34,22 +36,13 @@ internal actual fun LottieComposition.marker(markerName : String) : Marker? =
 
 
 @Composable
+@Stable
 actual fun rememberLottieComposition(spec : LottieCompositionSpec) : LottieCompositionResult {
 
-    val result by remember(spec) {
-        mutableStateOf(LottieCompositionResultImpl())
+    val result = remember(spec) {
+        LottieCompositionResultImpl()
     }
 
-    DisposableEffect(result.value) {
-        val old = result.value
-
-        onDispose {
-            kotlin.runCatching {
-                old?.animation?.close()
-                old?.invalidationController?.close()
-            }
-        }
-    }
 
     LaunchedEffect(spec){
         when (spec){
@@ -65,6 +58,7 @@ actual fun rememberLottieComposition(spec : LottieCompositionSpec) : LottieCompo
                     }
                 }
             }
+            else -> error("Invalid LottieCompositionSpec: $spec")
         }
     }
 

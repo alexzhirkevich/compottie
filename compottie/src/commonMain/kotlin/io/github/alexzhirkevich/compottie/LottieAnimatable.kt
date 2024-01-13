@@ -265,6 +265,7 @@ private class LottieAnimatableImpl : LottieAnimatable {
                 val context = when (cancellationBehavior) {
                     LottieCancellationBehavior.OnIterationFinish -> NonCancellable
                     LottieCancellationBehavior.Immediately -> EmptyCoroutineContext
+                    else -> error("Invalid LottieCancellationBehavior: $cancellationBehavior")
                 }
                 val parentJob = coroutineContext.job
                 withContext(context) {

@@ -1,16 +1,26 @@
 package io.github.alexzhirkevich.compottie
 
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
+
 
 /**
- * Specification for a [com.airbnb.lottie.LottieComposition]. Each subclass represents a different source.
- * A [com.airbnb.lottie.LottieComposition] is the stateless parsed version of a Lottie json file and is
+ * Specification for a [LottieComposition]. Each subclass represents a different source.
+ * A [LottieComposition] is the stateless parsed version of a Lottie json file and is
  * passed into [rememberLottieComposition] or [LottieAnimation].
  */
-expect sealed interface LottieCompositionSpec {
+@Immutable
+expect sealed class LottieCompositionSpec {
+
+    /**
+     * Load an animation from its json string.
+     */
+    @Immutable
+    class JsonString(jsonString: String) : LottieCompositionSpec
+
     companion object
 }
 
-/**
- * Load an animation from its json string.
- */
-expect fun LottieCompositionSpec.Companion.JsonString(jsonString: String) : LottieCompositionSpec
+//internal expect fun LottieCompositionSpec.JsonString()
+
+

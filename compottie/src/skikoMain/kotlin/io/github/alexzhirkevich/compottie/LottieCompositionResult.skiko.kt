@@ -28,37 +28,37 @@ import kotlinx.coroutines.sync.withLock
  * @see LottieAnimation
  */
 @Stable
-expect interface LottieCompositionResult : State<LottieComposition?> {
+actual interface LottieCompositionResult : State<LottieComposition?> {
     /**
      * The composition or null if it hasn't yet loaded or failed to load.
      */
-    override val value: LottieComposition?
+    actual override val value: LottieComposition?
 
     /**
      * The exception that was thrown while trying to load and parse the composition.
      */
-    val error: Throwable?
+    actual val error: Throwable?
 
     /**
      * Whether or not the composition is still being loaded and parsed.
      */
-    val isLoading: Boolean
+    actual val isLoading: Boolean
 
     /**
      * Whether or not the composition is in the process of being loaded or parsed.
      */
-    val isComplete: Boolean
+    actual val isComplete: Boolean
 
     /**
      * Whether or not the composition failed to load. This is terminal. It only occurs after
      * returning false from [rememberLottieComposition]'s onRetry lambda.
      */
-    val isFailure: Boolean
+    actual val isFailure: Boolean
 
     /**
      * Whether or not the composition has succeeded yet.
      */
-    val isSuccess: Boolean
+    actual val isSuccess: Boolean
 
     /**
      * Suspend until the composition has finished parsing.
@@ -74,18 +74,49 @@ expect interface LottieCompositionResult : State<LottieComposition?> {
      * * [LottieCompositionSpec.Url]
      * * [LottieCompositionSpec.File]
      */
-    suspend fun await(): LottieComposition
+    actual suspend fun await(): LottieComposition
 }
 
-/**
- * Like [LottieCompositionResult.await] but returns null instead of throwing an exception if the animation fails
- * to load.
- */
-suspend fun LottieCompositionResult.awaitOrNull(): LottieComposition? {
-    return try {
-        await()
-    } catch (e: Throwable) {
-        null
+
+@Stable
+internal class LottieCompositionResultImpl : LottieCompositionResult {
+    private val compositionDeferred = CompletableDeferred<LottieComposition>()
+
+    override var value: LottieComposition? by mutableStateOf(null)
+        private set
+
+    override var error by mutableStateOf<Throwable?>(null)
+        private set
+
+    override val isLoading by derivedStateOf { value == null && error == null }
+
+    override val isComplete by derivedStateOf { value != null || error != null }
+
+    override val isFailure by derivedStateOf { error != null }
+
+    override val isSuccess by derivedStateOf { value != null }
+
+    override suspend fun await(): LottieComposition {
+        return compositionDeferred.await()
+    }
+
+    private val mutex = Mutex()
+
+    internal suspend fun complete(composition: LottieComposition) {
+        mutex.withLock {
+            if (isComplete) return
+
+            this.value = composition
+            compositionDeferred.complete(composition)
+        }
+    }
+
+    internal suspend fun completeExceptionally(error: Throwable) {
+        mutex.withLock {
+            if (isComplete) return
+
+            this.error = error
+            compositionDeferred.completeExceptionally(error)
+        }
     }
 }
-

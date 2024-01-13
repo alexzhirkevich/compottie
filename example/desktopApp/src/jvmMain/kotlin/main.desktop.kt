@@ -3,6 +3,7 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 
 fun main() {
+
     application {
         val windowState = rememberWindowState()
 

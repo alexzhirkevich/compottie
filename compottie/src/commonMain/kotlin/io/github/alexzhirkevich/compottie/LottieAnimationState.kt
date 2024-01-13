@@ -1,6 +1,5 @@
 package io.github.alexzhirkevich.compottie
 
-import androidx.compose.animation.core.AnimationConstants
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 
@@ -34,7 +33,7 @@ interface LottieAnimationState : State<Float> {
 
     val composition: LottieComposition?
 
-    val lastFrameNanos: Long get() = AnimationConstants.UnspecifiedTime
+    val lastFrameNanos: Long
 
     val isAtEnd: Boolean
 }
