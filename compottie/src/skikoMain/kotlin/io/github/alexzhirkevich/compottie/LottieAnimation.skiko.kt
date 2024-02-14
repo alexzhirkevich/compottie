@@ -18,7 +18,6 @@ import org.jetbrains.skia.Rect
 import org.jetbrains.skia.skottie.RenderFlag
 import kotlin.math.roundToInt
 
-
 @Composable
 actual fun LottieAnimation(
     composition : LottieComposition?,
