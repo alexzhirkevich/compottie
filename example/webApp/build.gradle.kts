@@ -9,12 +9,15 @@ kotlin {
         binaries.executable()
     }
 
+    wasmJs(){
+        browser()
+        binaries.executable()
+    }
     sourceSets {
-        val jsMain by getting {
-            dependencies {
-                implementation(compose.ui)
-                implementation(project(":example:shared"))
-            }
+
+        commonMain.dependencies {
+            implementation(compose.ui)
+            implementation(project(":example:shared"))
         }
     }
 }

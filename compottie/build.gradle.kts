@@ -58,10 +58,12 @@ kotlin {
         }
 
         val desktopMain by getting
+        val wasmJsMain by getting
 
         androidMain.dependencies {
             api(libs.lottie.android)
         }
+
 
         val skikoMain by creating {
             dependsOn(commonMain.get())
@@ -69,6 +71,7 @@ kotlin {
             iosMain.get().dependsOn(this)
             macosMain.get().dependsOn(this)
             jsMain.get().dependsOn(this)
+            wasmJsMain.dependsOn(this)
             dependencies {
                 implementation(libs.serialization)
             }
