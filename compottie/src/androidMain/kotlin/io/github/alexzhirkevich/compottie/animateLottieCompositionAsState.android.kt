@@ -7,6 +7,7 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.LottieAnimationState as PlatformLottieAnimationState
 
 @Composable
+@Stable
 actual fun animateLottieCompositionAsState(
     composition: LottieComposition?,
     isPlaying: Boolean,
