@@ -20,6 +20,6 @@ dependencyResolutionManagement {
 rootProject.name = "compottie"
 include(":compottie")
 include(":example:desktopApp")
-include(":example:webJsApp")
+include(":example:webApp")
 include(":example:androidapp")
 include(":example:shared")

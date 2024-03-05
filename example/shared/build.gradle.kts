@@ -28,6 +28,9 @@ kotlin {
     js(IR) {
         browser()
     }
+    wasmJs(){
+        browser()
+    }
 
     listOf(
         iosX64(),

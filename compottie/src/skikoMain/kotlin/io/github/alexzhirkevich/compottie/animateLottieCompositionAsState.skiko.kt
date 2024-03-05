@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,6 +39,7 @@ import androidx.compose.runtime.setValue
  *                                  Set this to false if you want to ignore the system animator scale and always default to normal speed.
  */
 @Composable
+@Stable
 actual fun animateLottieCompositionAsState(
     composition: LottieComposition?,
     isPlaying: Boolean,

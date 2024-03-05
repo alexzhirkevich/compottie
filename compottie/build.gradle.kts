@@ -32,6 +32,10 @@ kotlin {
     iosArm64()
     iosX64()
     iosSimulatorArm64()
+
+    wasmJs(){
+        browser()
+    }
     js(IR){
         browser()
     }
@@ -53,10 +57,12 @@ kotlin {
         }
 
         val desktopMain by getting
+        val wasmJsMain by getting
 
         androidMain.dependencies {
             api(libs.lottie.android)
         }
+
 
         val skikoMain by creating {
             dependsOn(commonMain.get())
@@ -74,6 +80,7 @@ kotlin {
             }
             macosMain.get().dependsOn(this)
             jsMain.get().dependsOn(this)
+            wasmJsMain.dependsOn(this)
             dependencies {
                 implementation(libs.serialization)
                 implementation(libs.ktor.client.core)
