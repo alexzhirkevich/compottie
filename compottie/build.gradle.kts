@@ -21,7 +21,7 @@ kotlin {
 
     applyDefaultHierarchyTemplate()
 
-    androidTarget{
+    androidTarget {
         publishLibraryVariants("release")
         compilations.all {
             kotlinOptions {
@@ -33,13 +33,13 @@ kotlin {
     iosX64()
     iosSimulatorArm64()
 
-    wasmJs(){
+    wasmJs() {
         browser()
     }
-    js(IR){
+    js(IR) {
         browser()
     }
-    jvm("desktop"){
+    jvm("desktop") {
         compilations.all {
             kotlinOptions {
                 jvmTarget = _jvmTarget
@@ -80,7 +80,14 @@ kotlin {
             }
             macosMain.get().dependsOn(this)
             jsMain.get().dependsOn(this)
-            wasmJsMain.dependsOn(this)
+            wasmJsMain.apply {
+                dependsOn(this@creating)
+                dependencies {
+                    implementation(libs.ktor.client.core.wasm)
+                    implementation(libs.ktor.serialization.kotlinx.json.wasm)
+                    implementation(libs.ktor.client.content.negotiation.wasm)
+                }
+            }
             dependencies {
                 implementation(libs.serialization)
                 implementation(libs.ktor.client.core)
@@ -116,7 +123,7 @@ tasks.withType<AbstractPublishToMaven>().configureEach {
 }
 
 publishing {
-    if (System.getenv("OSSRH_PASSWORD")!=null) {
+    if (System.getenv("OSSRH_PASSWORD") != null) {
 
         repositories {
             maven {
