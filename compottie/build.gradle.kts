@@ -54,6 +54,7 @@ kotlin {
         commonMain.dependencies {
             implementation(compose.foundation)
             implementation(compose.animation)
+            implementation(libs.kotlinx.coroutines.core)
         }
 
         val desktopMain by getting
@@ -84,16 +85,12 @@ kotlin {
                 dependsOn(this@creating)
                 dependencies {
                     implementation(libs.ktor.client.core.wasm)
-                    implementation(libs.ktor.serialization.kotlinx.json.wasm)
-                    implementation(libs.ktor.client.content.negotiation.wasm)
                     implementation(libs.ktor.client.js.wasm)
                 }
             }
             dependencies {
                 implementation(libs.serialization)
                 implementation(libs.ktor.client.core)
-                implementation(libs.ktor.client.content.negotiation)
-                implementation(libs.ktor.serialization.kotlinx.json)
             }
         }
     }
@@ -119,6 +116,9 @@ val javadocJar by tasks.registering(Jar::class) {
 }
 // https://github.com/gradle/gradle/issues/26091
 val signingTasks = tasks.withType<Sign>()
+dependencies {
+    implementation("org.testng:testng:6.9.6")
+}
 tasks.withType<AbstractPublishToMaven>().configureEach {
     dependsOn(signingTasks)
 }
