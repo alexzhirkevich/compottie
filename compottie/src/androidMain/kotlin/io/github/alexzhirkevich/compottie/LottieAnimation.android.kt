@@ -219,7 +219,7 @@ fun LottieAnimation(
     fontMap: Map<String, Typeface>? = null,
     asyncUpdates: AsyncUpdates = AsyncUpdates.AUTOMATIC,
 ) {
-    val progress by io.github.alexzhirkevich.compottie.animateLottieCompositionAsState(
+    val progress by animateLottieCompositionAsState(
         composition,
         isPlaying,
         restartOnPlay,

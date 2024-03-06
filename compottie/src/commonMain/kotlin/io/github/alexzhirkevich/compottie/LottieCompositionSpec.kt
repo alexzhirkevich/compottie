@@ -18,6 +18,9 @@ expect sealed class LottieCompositionSpec {
     @Immutable
     class JsonString(jsonString: String) : LottieCompositionSpec
 
+    @Immutable
+    class Url(url: String) : LottieCompositionSpec
+
     companion object
 }
 

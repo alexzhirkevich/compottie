@@ -1,3 +1,5 @@
+@file:Suppress("ACTUAL_ANNOTATIONS_NOT_MATCH_EXPECT")
+
 package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Composable

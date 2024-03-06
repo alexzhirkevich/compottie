@@ -15,6 +15,10 @@ actual sealed class LottieCompositionSpec(
         PlatformLottieCompositionSpec.JsonString(jsonString)
     )
 
+    actual class Url actual constructor(url: String) : LottieCompositionSpec(
+        PlatformLottieCompositionSpec.Url(url)
+    )
+
     actual companion object {}
 }
 
