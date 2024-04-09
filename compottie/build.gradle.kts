@@ -21,7 +21,7 @@ kotlin {
 
     applyDefaultHierarchyTemplate()
 
-    androidTarget{
+    androidTarget {
         publishLibraryVariants("release")
         compilations.all {
             kotlinOptions {
@@ -33,13 +33,13 @@ kotlin {
     iosX64()
     iosSimulatorArm64()
 
-    wasmJs(){
+    wasmJs() {
         browser()
     }
-    js(IR){
+    js(IR) {
         browser()
     }
-    jvm("desktop"){
+    jvm("desktop") {
         compilations.all {
             kotlinOptions {
                 jvmTarget = _jvmTarget
@@ -50,11 +50,11 @@ kotlin {
     macosArm64()
     macosX64()
 
-
     sourceSets {
         commonMain.dependencies {
             implementation(compose.foundation)
             implementation(compose.animation)
+            implementation(libs.kotlinx.coroutines.core)
         }
 
         val desktopMain by getting
@@ -71,9 +71,16 @@ kotlin {
             iosMain.get().dependsOn(this)
             macosMain.get().dependsOn(this)
             jsMain.get().dependsOn(this)
-            wasmJsMain.dependsOn(this)
+            wasmJsMain.apply {
+                dependsOn(this@creating)
+                dependencies {
+                    implementation(libs.ktor.client.core.wasm)
+                    implementation(libs.ktor.client.js.wasm)
+                }
+            }
             dependencies {
                 implementation(libs.serialization)
+                implementation(libs.ktor.client.core)
             }
         }
     }
@@ -86,6 +93,8 @@ android {
         minSdk = 21
     }
 
+    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+
     compileOptions {
         sourceCompatibility = JavaVersion.toVersion(_jvmTarget)
         targetCompatibility = JavaVersion.toVersion(_jvmTarget)
@@ -97,12 +106,15 @@ val javadocJar by tasks.registering(Jar::class) {
 }
 // https://github.com/gradle/gradle/issues/26091
 val signingTasks = tasks.withType<Sign>()
+dependencies {
+    implementation("org.testng:testng:6.9.6")
+}
 tasks.withType<AbstractPublishToMaven>().configureEach {
     dependsOn(signingTasks)
 }
 
 publishing {
-    if (System.getenv("OSSRH_PASSWORD")!=null) {
+    if (System.getenv("OSSRH_PASSWORD") != null) {
 
         repositories {
             maven {
