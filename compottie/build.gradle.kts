@@ -50,6 +50,7 @@ kotlin {
     macosArm64()
     macosX64()
 
+
     sourceSets {
         commonMain.dependencies {
             implementation(compose.foundation)
@@ -97,8 +98,6 @@ android {
     defaultConfig {
         minSdk = 21
     }
-
-    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
 
     compileOptions {
         sourceCompatibility = JavaVersion.toVersion(_jvmTarget)

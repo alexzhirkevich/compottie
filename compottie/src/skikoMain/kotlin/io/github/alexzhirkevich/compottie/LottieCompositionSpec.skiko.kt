@@ -12,8 +12,12 @@ actual sealed class LottieCompositionSpec {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
+
             other as JsonString
-            return jsonString == other.jsonString
+
+            if (jsonString != other.jsonString) return false
+
+            return true
         }
 
         override fun hashCode(): Int {
@@ -33,8 +37,12 @@ actual sealed class LottieCompositionSpec {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
+
             other as Url
-            return url == other.url
+
+            if (url != other.url) return false
+
+            return true
         }
 
         override fun hashCode(): Int {
@@ -44,7 +52,9 @@ actual sealed class LottieCompositionSpec {
         override fun toString(): String {
             return "Url(url='$url')"
         }
+
     }
 
     actual companion object
 }
+
