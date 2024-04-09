@@ -67,8 +67,18 @@ kotlin {
 
         val skikoMain by creating {
             dependsOn(commonMain.get())
-            desktopMain.dependsOn(this)
-            iosMain.get().dependsOn(this)
+            desktopMain.apply {
+                dependsOn(this@creating)
+                dependencies {
+                    implementation(libs.ktor.client.cio)
+                }
+            }
+            iosMain.apply {
+                dependsOn(this@creating)
+                dependencies {
+                    implementation(libs.ktor.client.darwin)
+                }
+            }
             macosMain.get().dependsOn(this)
             jsMain.get().dependsOn(this)
             wasmJsMain.apply {
@@ -76,7 +86,6 @@ kotlin {
                 dependencies {
                     implementation(libs.ktor.client.core.wasm)
                     implementation(libs.ktor.serialization.kotlinx.json.wasm)
-//                    implementation(libs.ktor.client.content.negotiation.wasm)
                 }
             }
             dependencies {
