@@ -71,9 +71,17 @@ kotlin {
             iosMain.get().dependsOn(this)
             macosMain.get().dependsOn(this)
             jsMain.get().dependsOn(this)
-            wasmJsMain.dependsOn(this)
+            wasmJsMain.apply {
+                dependsOn(this@creating)
+                dependencies {
+                    implementation(libs.ktor.client.core.wasm)
+                    implementation(libs.ktor.serialization.kotlinx.json.wasm)
+//                    implementation(libs.ktor.client.content.negotiation.wasm)
+                }
+            }
             dependencies {
                 implementation(libs.serialization)
+                implementation(libs.ktor.client.core)
             }
         }
     }

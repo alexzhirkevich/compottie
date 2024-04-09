@@ -4,11 +4,28 @@ kotlin="1.9.23"
 dokka="1.9.0"
 compose="1.6.1"
 androidGradlePlugin = "8.1.1"
+ktor = "2.3.9"
+ktor-wasm = "3.0.0-wasm2"
 lottie-android="6.4.0"
-serialization="1.6.2"
+serialization="1.6.3"
 
 [libraries]
+# Ktor
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-core-wasm = { module = "io.ktor:ktor-client-core", version.ref = "ktor-wasm" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-content-negotiation-wasm = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor-wasm" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-serialization-kotlinx-json-wasm = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor-wasm" }
+
+# Lottie
 lottie-android = { module ="com.airbnb.android:lottie-compose", version.ref = "lottie-android" }
+
+# Serialization
 serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 
 [plugins]

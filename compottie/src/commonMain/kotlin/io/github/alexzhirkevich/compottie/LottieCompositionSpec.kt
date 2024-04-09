@@ -18,9 +18,11 @@ expect sealed class LottieCompositionSpec {
     @Immutable
     class JsonString(jsonString: String) : LottieCompositionSpec
 
+    /**
+     * Load an animation from a url.
+     */
+    @Immutable
+    class Url(url: String) : LottieCompositionSpec
+
     companion object
 }
-
-//internal expect fun LottieCompositionSpec.JsonString()
-
-
