@@ -7,8 +7,6 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import io.github.alexzhirkevich.network.LottieRepository
-import io.github.alexzhirkevich.network.NetworkResult
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -53,23 +51,6 @@ actual fun rememberLottieComposition(spec : LottieCompositionSpec) : LottieCompo
                     try {
                         val composition = parseFromJsonString(spec.jsonString)
                         result.complete(composition)
-                    } catch (c: CancellationException) {
-                        throw c
-                    } catch (t: Throwable) {
-                        result.completeExceptionally(t)
-                    }
-                }
-            }
-            is LottieCompositionSpec.Url -> {
-                withContext(Dispatchers.Default) {
-                    try {
-                        val callResult = LottieRepository.getLottieData(spec.url)
-                        if (callResult is NetworkResult.Success<*>) {
-                            val composition = parseFromJsonString(callResult.data as String)
-                            result.complete(composition)
-                        } else {
-                            result.completeExceptionally((callResult as NetworkResult.Error).exception)
-                        }
                     } catch (c: CancellationException) {
                         throw c
                     } catch (t: Throwable) {
