@@ -1,10 +1,10 @@
 [versions]
-compottie = "1.1.1"
-kotlin="1.9.22"
+compottie = "1.1.2"
+kotlin="1.9.23"
 dokka="1.9.0"
-compose="1.6.0"
+compose="1.6.1"
 androidGradlePlugin = "8.1.1"
-lottie-android="6.3.0"
+lottie-android="6.4.0"
 serialization="1.6.2"
 
 [libraries]
