@@ -5,10 +5,9 @@ import io.ktor.client.statement.bodyAsText
 
 object LottieRepository {
 
-    private val client = provideHttpClient()
+    private val httpClient = HttpClientProvider().provideHttpClient()
 
     suspend fun getLottieData(url: String): String {
-        val response = client.get(url)
-        return response.bodyAsText()
+        return httpClient.get(url).bodyAsText()
     }
 }

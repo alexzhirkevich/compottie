@@ -6,6 +6,7 @@ compose="1.6.1"
 compose-plugin = "1.6.0"
 androidGradlePlugin = "8.1.1"
 junit = "4.13.2"
+android-junit = "1.1.5"
 ktor = "2.3.9"
 ktor-wasm = "3.0.0-wasm2"
 lottie-android="6.4.0"
@@ -26,6 +27,7 @@ ktor-serialization-kotlinx-json-wasm = { module = "io.ktor:ktor-serialization-ko
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+android-junit = { module = "androidx.test.ext:junit", version.ref = "android-junit" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
 

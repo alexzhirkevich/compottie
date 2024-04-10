@@ -12,3 +12,4 @@ xcuserdata
 *.pgp
 *.psd
 kotlins-js-store
+/iosApp/iosApp.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
