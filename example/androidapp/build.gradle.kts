@@ -35,8 +35,7 @@ android {
 }
 
 dependencies {
-
     implementation(project(":example:shared"))
     implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.activity:activity-compose:1.8.0")
+    implementation("androidx.activity:activity-compose:1.8.2")
 }

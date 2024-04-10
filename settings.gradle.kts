@@ -4,7 +4,6 @@ pluginManagement {
         gradlePluginPortal()
         mavenCentral()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
-
     }
 }
 
@@ -23,3 +22,4 @@ include(":example:desktopApp")
 include(":example:webApp")
 include(":example:androidapp")
 include(":example:shared")
+include(":example:composeApp")

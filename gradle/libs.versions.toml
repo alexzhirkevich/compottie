@@ -3,7 +3,9 @@ compottie = "1.1.2"
 kotlin="1.9.23"
 dokka="1.9.0"
 compose="1.6.1"
+compose-plugin = "1.6.0"
 androidGradlePlugin = "8.1.1"
+junit = "4.13.2"
 ktor = "2.3.9"
 ktor-wasm = "3.0.0-wasm2"
 lottie-android="6.4.0"
@@ -21,6 +23,11 @@ ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negoti
 ktor-client-content-negotiation-wasm = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor-wasm" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 ktor-serialization-kotlinx-json-wasm = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor-wasm" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
+compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
 
 # Lottie
 lottie-android = { module ="com.airbnb.android:lottie-compose", version.ref = "lottie-android" }

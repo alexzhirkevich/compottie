@@ -59,6 +59,9 @@ kotlin {
 
         val desktopMain by getting
         val wasmJsMain by getting
+        val iosX64Main by getting
+        val iosArm64Main by getting
+        val iosSimulatorArm64Main by getting
 
         androidMain.dependencies {
             api(libs.lottie.android)
@@ -73,13 +76,19 @@ kotlin {
                     implementation(libs.ktor.client.cio)
                 }
             }
+
+            iosX64Main.dependsOn(this)
+            iosArm64Main.dependsOn(this)
+            iosSimulatorArm64Main.dependsOn(this)
             iosMain.apply {
                 dependsOn(this@creating)
                 dependencies {
                     implementation(libs.ktor.client.darwin)
                 }
             }
+
             macosMain.get().dependsOn(this)
+
             jsMain.get().dependsOn(this)
             wasmJsMain.apply {
                 dependsOn(this@creating)
@@ -88,6 +97,7 @@ kotlin {
                     implementation(libs.ktor.serialization.kotlinx.json.wasm)
                 }
             }
+
             dependencies {
                 implementation(libs.serialization)
                 implementation(libs.ktor.client.core)
