@@ -18,10 +18,9 @@ version = libs.versions.compottie.get()
 val _jvmTarget = findProperty("jvmTarget") as String
 
 kotlin {
-
     applyDefaultHierarchyTemplate()
 
-    androidTarget{
+    androidTarget {
         publishLibraryVariants("release")
         compilations.all {
             kotlinOptions {
@@ -29,17 +28,21 @@ kotlin {
             }
         }
     }
+
     iosArm64()
     iosX64()
     iosSimulatorArm64()
 
-    wasmJs(){
+    @Suppress("OPT_IN_USAGE")
+    wasmJs {
         browser()
     }
-    js(IR){
+
+    js(IR) {
         browser()
     }
-    jvm("desktop"){
+
+    jvm("desktop") {
         compilations.all {
             kotlinOptions {
                 jvmTarget = _jvmTarget
@@ -50,11 +53,14 @@ kotlin {
     macosArm64()
     macosX64()
 
-
     sourceSets {
         commonMain.dependencies {
             implementation(compose.foundation)
             implementation(compose.animation)
+        }
+
+        androidMain.dependencies {
+            api(libs.lottie.android)
         }
 
         val desktopMain by getting
@@ -62,11 +68,6 @@ kotlin {
         val iosX64Main by getting
         val iosArm64Main by getting
         val iosSimulatorArm64Main by getting
-
-        androidMain.dependencies {
-            api(libs.lottie.android)
-        }
-
 
         val skikoMain by creating {
             dependsOn(commonMain.get())
@@ -129,7 +130,7 @@ tasks.withType<AbstractPublishToMaven>().configureEach {
 }
 
 publishing {
-    if (System.getenv("OSSRH_PASSWORD")!=null) {
+    if (System.getenv("OSSRH_PASSWORD") != null) {
 
         repositories {
             maven {

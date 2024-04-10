@@ -4,17 +4,18 @@ plugins {
 }
 
 kotlin {
-    js(IR){
+    js(IR) {
         browser()
         binaries.executable()
     }
 
-    wasmJs(){
+    @Suppress("OPT_IN_USAGE")
+    wasmJs {
         browser()
         binaries.executable()
     }
+
     sourceSets {
-
         commonMain.dependencies {
             implementation(compose.ui)
             implementation(project(":example:shared"))

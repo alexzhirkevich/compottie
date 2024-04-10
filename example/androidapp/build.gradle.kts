@@ -40,5 +40,4 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.8.2")
     implementation(libs.junit)
     implementation(libs.android.junit)
-    implementation(libs.compose.ui.tooling.preview)
 }
