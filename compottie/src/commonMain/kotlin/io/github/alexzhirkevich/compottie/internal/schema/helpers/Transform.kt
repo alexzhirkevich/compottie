@@ -1,7 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.schema.helpers
 
-import io.github.alexzhirkevich.compottie.internal.schema.properties.Vector
-import io.github.alexzhirkevich.compottie.internal.schema.properties.Value
+import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -9,25 +9,25 @@ import kotlinx.serialization.Serializable
 internal class Transform(
 
     @SerialName("a")
-    override val anchorPoint : Vector = Vector.Default(value = floatArrayOf(0f, 0f, 0f)),
+    override val anchorPoint : AnimatedVector2 = AnimatedVector2.Default(value = floatArrayOf(0f, 0f, 0f)),
 
     @SerialName("p")
-    override val position : Vector? = null,
+    override val position : AnimatedVector2? = null,
 
     @SerialName("s")
-    override val scale : Vector? = null,
+    override val scale : AnimatedVector2? = null,
 
     @SerialName("r")
-    override val rotation : Value? = null,
+    override val rotation : AnimatedValue? = null,
 
     @SerialName("o")
-    override val opacity : Value = Value.Default(value = 100f),
+    override val opacity : AnimatedValue? = null,
 
     @SerialName("sk")
-    override val skew: Value = Value.Default(value = 0f),
+    override val skew: AnimatedValue = AnimatedValue.Default(value = 0f),
 
     @SerialName("sa")
-    override val skewAxis: Value = Value.Default(value = 0f),
+    override val skewAxis: AnimatedValue = AnimatedValue.Default(value = 0f),
 ) : LottieTransform()
 
 

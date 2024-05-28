@@ -1,49 +1,100 @@
-//package io.github.alexzhirkevich.compottie.standalone.schema.layers
-//
-//import androidx.compose.ui.geometry.Rect
-//import androidx.compose.ui.graphics.Matrix
-//import androidx.compose.ui.util.fastForEachReversed
-//import io.github.alexzhirkevich.compottie.standalone.schema.DrawableContent
-//
-//abstract class BaseLayer : VisualLayer, DrawableContent {
-//
-//    private val boundsMatrix = Matrix()
-//
-//    private var parentLayers: List<BaseLayer> = emptyList()
-//
-//    private var parentLayer: BaseLayer? = null
-//
-//    override fun getBounds(outBounds: Rect, parentMatrix: Matrix, applyParents: Boolean) {
-//        val rect = Rect(0f, 0f, 0f, 0f)
-//
-//        buildParentLayerListIfNeeded()
-//
-//        boundsMatrix.setFrom(parentMatrix)
-//
-//        if (applyParents) {
-//            if (parentLayers.isNotEmpty()) {
-//                parentLayers.fastForEachReversed {
-//                    boundsMatrix *= it.transform.getMatrix()
-//                }
-//                for (i in parentLayers.indices.reversed()) {
-//                    boundsMatrix.preConcat(parentLayers[i].transform.getMatrix())
-//                }
-//            } else if (parentLayer != null) {
-//                boundsMatrix.preConcat(parentLayer.transform.getMatrix())
-//            }
-//        }
-//
-//        boundsMatrix.preConcat(transform.getMatrix())
-//    }
-//
-//    private fun buildParentLayerListIfNeeded() {
-//        val list = mutableListOf<BaseLayer>()
-//
-//        parentLayers = mutableListOf()
-//        val layer = parentLayer
-//        while (layer != null) {
-//            list.add(layer)
-//            parentLayers = list
-//        }
-//    }
-//}
+package io.github.alexzhirkevich.compottie.internal.schema.layers
+
+import androidx.compose.ui.geometry.MutableRect
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.util.fastForEachReversed
+import io.github.alexzhirkevich.compottie.internal.content.Content
+import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
+import io.github.alexzhirkevich.compottie.internal.schema.helpers.Transform
+import io.github.alexzhirkevich.compottie.internal.utils.preConcat
+
+internal abstract class BaseLayer() : DrawingContent {
+
+    abstract val transform: Transform
+
+    private val matrix = Matrix()
+    private val boundsMatrix = Matrix()
+
+    private val rect = MutableRect(0f,0f,0f,0f)
+
+    private var parentLayers : MutableList<BaseLayer>? = null
+
+    private var parentLayer: BaseLayer? = null
+
+    abstract fun drawLayer(
+        canvas: Canvas,
+        parentMatrix: Matrix,
+        parentAlpha: Float,
+        frame: Int,
+    )
+
+    override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha : Float, frame: Int) {
+
+        buildParentLayerListIfNeeded()
+        matrix.reset()
+
+        matrix.setFrom(parentMatrix)
+        parentLayers?.fastForEachReversed {
+            matrix *= it.transform.matrix(frame)
+        }
+
+        var alpha = parentAlpha
+
+        transform.opacity?.interpolated(frame)?.let {
+            alpha *= it / 100f
+        }
+
+        matrix *= transform.matrix(frame)
+        drawLayer(canvas, parentMatrix, alpha, frame)
+    }
+
+
+    override fun getBounds(
+        outBounds: MutableRect,
+        parentMatrix: Matrix,
+        applyParents: Boolean,
+        frame: Int,
+    ) {
+        rect.set(0f, 0f, 0f, 0f)
+        buildParentLayerListIfNeeded()
+        boundsMatrix.setFrom(parentMatrix)
+
+        if (applyParents) {
+            parentLayers?.fastForEachReversed {
+                boundsMatrix.preConcat(it.transform.matrix(frame))
+            } ?: run {
+                parentLayer?.transform?.matrix(frame)?.let {
+                    boundsMatrix.preConcat(it)
+                }
+            }
+        }
+
+        boundsMatrix.preConcat(transform.matrix(frame))
+    }
+
+    override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
+        //do nothing
+    }
+
+    fun setParentLayer(layer: BaseLayer){
+        this.parentLayer = layer
+    }
+
+    private fun buildParentLayerListIfNeeded() {
+        if (parentLayers != null) {
+            return
+        }
+        if (parentLayer == null) {
+            parentLayers = mutableListOf()
+            return
+        }
+
+        parentLayers = mutableListOf()
+        var layer: BaseLayer? = parentLayer
+        while (layer != null) {
+            parentLayers?.add(layer)
+            layer = layer.parentLayer
+        }
+    }
+}

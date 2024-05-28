@@ -6,8 +6,8 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.RadialGradientShader
 import io.github.alexzhirkevich.compottie.internal.schema.properties.GradientColors
-import io.github.alexzhirkevich.compottie.internal.schema.properties.Vector
-import io.github.alexzhirkevich.compottie.internal.schema.properties.Value
+import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.schema.util.toOffset
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -27,13 +27,13 @@ internal class GradientFill(
     override val hidden : Boolean = false,
 
     @SerialName("o")
-    val opacity : Value,
+    val opacity : AnimatedValue,
 
     @SerialName("s")
-    val startPoint : Vector,
+    val startPoint : AnimatedVector2,
 
     @SerialName("e")
-    val endPoint : Vector,
+    val endPoint : AnimatedVector2,
 
     @SerialName("t")
     val type : GradientType,
@@ -42,13 +42,13 @@ internal class GradientFill(
      * Gradient Highlight Length. Only if type is Radial
      * */
     @SerialName("h")
-    val highlightLength : Value? = null,
+    val highlightLength : AnimatedValue? = null,
 
     /**
      * Highlight Angle. Only if type is Radial
      * */
     @SerialName("a")
-    val highlightAngle : Value? = null,
+    val highlightAngle : AnimatedValue? = null,
 
     @SerialName("g")
     val colors : GradientColors,

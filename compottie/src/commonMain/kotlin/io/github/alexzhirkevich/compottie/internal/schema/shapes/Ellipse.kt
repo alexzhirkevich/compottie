@@ -2,10 +2,10 @@ package io.github.alexzhirkevich.compottie.internal.schema.shapes
 
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Path
-import io.github.alexzhirkevich.compottie.internal.schema.Content
-import io.github.alexzhirkevich.compottie.internal.schema.PathContent
+import io.github.alexzhirkevich.compottie.internal.content.Content
+import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.schema.properties.TrimPathType
-import io.github.alexzhirkevich.compottie.internal.schema.properties.Vector
+import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.schema.shapes.util.CompoundTrimPath
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -28,10 +28,10 @@ internal class Ellipse(
     val direction : Int = 1,
 
     @SerialName("p")
-    val position : Vector,
+    val position : AnimatedVector2,
 
     @SerialName("s")
-    val size : Vector,
+    val size : AnimatedVector2,
 ) : Shape, PathContent {
 
     @Transient

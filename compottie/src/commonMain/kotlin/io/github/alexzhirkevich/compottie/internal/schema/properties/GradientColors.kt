@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 internal class GradientColors(
 
     @SerialName("k")
-    val colors : Vector,
+    val colors : AnimatedVector2,
 
     @SerialName("p")
     val numberOfColors : Int = 0

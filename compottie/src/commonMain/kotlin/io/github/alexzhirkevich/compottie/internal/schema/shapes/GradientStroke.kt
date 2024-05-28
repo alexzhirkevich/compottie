@@ -1,12 +1,16 @@
 package io.github.alexzhirkevich.compottie.internal.schema.shapes
 
+import androidx.compose.ui.geometry.MutableRect
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Shader
 import io.github.alexzhirkevich.compottie.internal.schema.properties.GradientColors
-import io.github.alexzhirkevich.compottie.internal.schema.properties.Vector
-import io.github.alexzhirkevich.compottie.internal.schema.properties.Value
+import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 @SerialName("gs")
@@ -22,37 +26,37 @@ internal class GradientStroke(
     override val hidden : Boolean = false,
 
     @SerialName("lc")
-    val lineCap : LineCap,
+    override val lineCap : LineCap,
 
     @SerialName("lj")
-    val lineJoin : LineJoin,
+    override val lineJoin : LineJoin,
 
     @SerialName("ml")
     val miterLimit : Float? = null,
 
     @SerialName("o")
-    val opacity : Value,
+    override val opacity : AnimatedValue,
 
     @SerialName("w")
-    val width : Value,
+    val width : AnimatedValue,
 
     @SerialName("s")
-    val startPoint : Vector,
+    val startPoint : AnimatedVector2,
 
     @SerialName("e")
-    val endPoint : Vector,
+    val endPoint : AnimatedVector2,
 
     /**
      * Gradient Highlight Length. Only if type is Radial
      * */
     @SerialName("h")
-    val highlightLength : Value? = null,
+    val highlightLength : AnimatedValue? = null,
 
     /**
      * Highlight Angle. Only if type is Radial
      * */
     @SerialName("a")
-    val highlightAngle : Value? = null,
+    val highlightAngle : AnimatedValue? = null,
 
     @SerialName("g")
     val colors : GradientColors,
@@ -61,24 +65,57 @@ internal class GradientStroke(
     val type : GradientType,
 )  : BaseStroke(), Shape {
 
-    override fun setupPaint(paint: Paint, time: Int) {
-        super.setupPaint(paint, time)
+    @Transient
+    private val boundsRect = MutableRect(0f,0f,0f,0f)
+
+    override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Int) {
+
+        if (hidden) {
+            return
+        }
+        getBounds(boundsRect, parentMatrix, false, frame)
+
+        val shader = if (type == GradientType.LINEAR) {
+            linearGradient
+        } else {
+            radialGradient
+        }
+        shader.setLocalMatrix(parentMatrix)
+        paint.setShader(shader)
+
+        super.draw(canvas, parentMatrix, parentAlpha)
+
+        super.draw(canvas, parentMatrix, parentAlpha, frame)
+    }
+
+    override fun setupPaint(paint: Paint, frame: Int) {
+        super.setupPaint(paint, frame)
 
         paint.shader = when (type){
-            GradientType.Linear -> getLinearGradient(time)
-            GradientType.Radial -> getRadialGradient(time)
+            GradientType.Linear -> getLinearGradient(frame)
+            GradientType.Radial -> getRadialGradient(frame)
             else -> error("Unknown gradient type: $type")
         }
     }
 
     private fun getLinearGradient(time: Int) : Shader {
-        val startPoint = startPoint.interpolated(time)
-        val endPoint = endPoint.interpolated(time)
-        val color = colors.
+
+
     }
 
     private fun getRadialGradient(time: Int) : Shader {
-        TODO()
+        val startPoint = startPoint.interpolated(time)
+        val endPoint = endPoint.interpolated(time)
+        val gradientColor = colors
+        val colors = applyDynamicColorsIfNeeded(gradientColor!!.colors)
+        val positions = gradientColor.positions
+        val x0 = startPoint!!.x
+        val y0 = startPoint.y
+        val x1 = endPoint!!.x
+        val y1 = endPoint.y
+        gradient = LinearGradient(x0, y0, x1, y1, colors, positions, Shader.TileMode.CLAMP)
+        linearGradientCache.put(gradientHash.toLong(), gradient)
+        return gradient
     }
 }
 

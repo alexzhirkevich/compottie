@@ -3,8 +3,8 @@ package io.github.alexzhirkevich.compottie.internal.schema.shapes
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import io.github.alexzhirkevich.compottie.internal.schema.helpers.LottieTransform
-import io.github.alexzhirkevich.compottie.internal.schema.properties.Vector
-import io.github.alexzhirkevich.compottie.internal.schema.properties.Value
+import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -22,25 +22,25 @@ internal class TransformShape(
     override val hidden : Boolean = false,
 
     @SerialName("a")
-    override val anchorPoint : Vector = Vector.Default(value = floatArrayOf(0f, 0f, 0f)),
+    override val anchorPoint : AnimatedVector2 = AnimatedVector2.Default(value = floatArrayOf(0f, 0f, 0f)),
 
     @SerialName("p")
-    override val position : Vector? = null,
+    override val position : AnimatedVector2? = null,
 
     @SerialName("s")
-    override val scale : Vector? = null,
+    override val scale : AnimatedVector2? = null,
 
     @SerialName("r")
-    override val rotation : Value ? = null,
+    override val rotation : AnimatedValue ? = null,
 
     @SerialName("o")
-    override val opacity : Value = Value.Default(value = 100f),
+    override val opacity : AnimatedValue = AnimatedValue.Default(value = 100f),
 
     @SerialName("sk")
-    override val skew: Value? = null,
+    override val skew: AnimatedValue? = null,
 
     @SerialName("sa")
-    override val skewAxis: Value? = null,
+    override val skewAxis: AnimatedValue? = null,
 ) : LottieTransform(), ModifierShape {
 
     override fun applyTo(path: Path, paint: Paint, time: Int) {

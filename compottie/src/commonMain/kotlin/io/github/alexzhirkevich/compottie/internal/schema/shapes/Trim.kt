@@ -1,6 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.schema.shapes
 
-import io.github.alexzhirkevich.compottie.internal.schema.properties.Value
+import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -21,11 +21,11 @@ internal class Trim(
     val direction : Int = 1,
 
     @SerialName("s")
-    val start : Value,
+    val start : AnimatedValue,
 
     @SerialName("e")
-    val end : Value,
+    val end : AnimatedValue,
 
     @SerialName("o")
-    val offset : Value,
+    val offset : AnimatedValue,
 ) : Shape

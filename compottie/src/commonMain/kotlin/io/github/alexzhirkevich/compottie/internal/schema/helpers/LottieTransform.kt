@@ -1,59 +1,107 @@
 package io.github.alexzhirkevich.compottie.internal.schema.helpers
 
 import androidx.compose.ui.graphics.Matrix
-import io.github.alexzhirkevich.compottie.internal.schema.properties.Vector
-import io.github.alexzhirkevich.compottie.internal.schema.properties.Value
+import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.schema.properties.x
+import io.github.alexzhirkevich.compottie.internal.schema.properties.y
+import io.github.alexzhirkevich.compottie.internal.utils.Math
+import io.github.alexzhirkevich.compottie.internal.utils.preConcat
+import io.github.alexzhirkevich.compottie.internal.utils.preRotate
+import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
+import io.github.alexzhirkevich.compottie.internal.utils.setValues
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.tan
 
 internal abstract class LottieTransform {
 
-    abstract val anchorPoint : Vector
-    abstract val position : Vector?
-    abstract val scale : Vector?
-    abstract val rotation : Value?
-    abstract val opacity : Value
-    abstract val skew: Value?
-    abstract val skewAxis: Value?
+    abstract val anchorPoint: AnimatedVector2?
+    abstract val position: AnimatedVector2?
+    abstract val scale: AnimatedVector2?
+    abstract val rotation: AnimatedValue?
+    abstract val opacity: AnimatedValue?
+    abstract val skew: AnimatedValue?
+    abstract val skewAxis: AnimatedValue?
 
-    private val matrix : Matrix = Matrix()
+    private val matrix: Matrix = Matrix()
 
-    private var lastFrame : Int = -1
+    private val skewMatrix1: Matrix by lazy {
+        Matrix()
+    }
 
-    fun matrix(time : Int) : Matrix {
-        if (lastFrame == time) {
-            return matrix
-        }
-        lastFrame = time
+    private val skewMatrix2: Matrix by lazy {
+        Matrix()
+    }
 
+    private val skewMatrix3: Matrix by lazy {
+        Matrix()
+    }
+
+    private val skewValues: FloatArray by lazy {
+        FloatArray(9)
+    }
+
+    fun matrix(frame: Int): Matrix {
         matrix.reset()
 
-        val (anchorX, anchorY) = anchorPoint.interpolated(time)
-
-        val position = position?.interpolated(time)
-
-        if (position != null && (position[0] != 0f || position[1] != 0f)) {
-            matrix.translate(
-                position[0] - anchorX,
-                position[1] - anchorY,
-            )
+        position?.interpolated(frame)?.let {
+            if (it.x != 0f || it.y != 0f) {
+                matrix.preTranslate(it.x, it.y,)
+            }
         }
 
-        if (scale != null || rotation != null) {
-            val (scaleX, scaleY) = scale?.interpolated(time) ?: defaultScale
-            val rotation= rotation?.interpolated(time) ?: 0f
+        rotation?.interpolated(frame)?.takeIf { it != 0f }?.let(matrix::preRotate)
 
-            matrix.translate(anchorX, anchorY)
+        skew?.interpolated(frame)?.let { sk ->
+            val skewAngle = skewAxis?.interpolated(frame)
 
-            matrix.scale(
-                x = scaleX / 100f,
-                y = scaleY / 100f,
-            )
+            val mCos = if (skewAngle == null) 0f else cos(Math.toRadians(-skewAngle + 90))
 
-            matrix.rotateZ(rotation)
+            val mSin = if (skewAngle == null) 1f else sin(Math.toRadians(-skewAngle + 90))
 
-            matrix.translate(-anchorX, -anchorY)
+            val aTan = tan(Math.toRadians(sk))
+            clearSkewValues()
+            skewValues[0] = mCos
+            skewValues[1] = mSin
+            skewValues[3] = -mSin
+            skewValues[4] = mCos
+            skewValues[8] = 1f
+            skewMatrix1.setValues(skewValues)
+            clearSkewValues()
+            skewValues[0] = 1f
+            skewValues[3] = aTan
+            skewValues[4] = 1f
+            skewValues[8] = 1f
+            skewMatrix2.setValues(skewValues)
+            clearSkewValues()
+            skewValues[0] = mCos
+            skewValues[1] = -mSin
+            skewValues[3] = mSin
+            skewValues[4] = mCos
+            skewValues[8] = 1f
+            skewMatrix3.setValues(skewValues)
+            skewMatrix2.preConcat(skewMatrix1)
+            skewMatrix3.preConcat(skewMatrix2)
+            matrix.preConcat(skewMatrix3)
         }
+
+        scale?.interpolated(frame)?.takeIf { it.x != 0f || it.y != 0f }?.let {
+            matrix
+        }
+
+        anchorPoint?.interpolated(frame)?.let {
+            if (it.x != 0f || it.y != 0f) {
+                matrix.preTranslate(-it.x, -it.y)
+            }
+        }
+
         return matrix
     }
-}
 
-private val defaultScale = floatArrayOf(100f,100f)
+    private fun clearSkewValues() {
+        for (i in 0..8) {
+            skewValues[i] = 0f
+        }
+    }
+}

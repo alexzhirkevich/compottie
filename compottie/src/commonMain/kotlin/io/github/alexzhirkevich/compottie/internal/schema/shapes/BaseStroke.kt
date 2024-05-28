@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.schema.shapes
 
+import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
@@ -7,74 +8,63 @@ import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
+import io.github.alexzhirkevich.compottie.internal.content.Content
+import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
+import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.platform.ExtendedPathMeasure
+import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.platform.set
-import io.github.alexzhirkevich.compottie.internal.schema.Content
-import io.github.alexzhirkevich.compottie.internal.schema.DrawableContent
-import io.github.alexzhirkevich.compottie.internal.schema.PathContent
+import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.schema.properties.TrimPathType
-import io.github.alexzhirkevich.compottie.internal.schema.properties.Value
-import io.github.alexzhirkevich.compottie.internal.schema.shapes.util.Utils
+import io.github.alexzhirkevich.compottie.internal.utils.Utils
+import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlin.math.min
 
-internal abstract class BaseStroke() : DrawableContent {
+internal abstract class BaseStroke() : DrawingContent {
+
+    abstract val opacity: AnimatedValue
+    abstract val strokeWidth: AnimatedValue
+    abstract val lineCap : LineCap
+    abstract val lineJoin : LineJoin
+    abstract val strokeMiter : Float
 
     private val pathGroups = mutableListOf<PathGroup>()
 
     private val trimPathPath = Path()
     private val path = Path()
-    private val paint = Paint()
+    private val rect = MutableRect(0f,0f,0f,0f)
+    private val paint = Paint().apply {
+        strokeMiterLimit = strokeMiter
+        strokeCap = lineCap.asStrokeCap()
+        strokeJoin = lineJoin.asStrokeJoin()
+    }
     private val pm = ExtendedPathMeasure()
 
-    abstract val opacity: Value
-    abstract val strokeWidth: Value
 
-    open fun setupPaint(paint: Paint, time: Int){
+
+    open fun setupPaint(paint: Paint, frame: Int){
         paint.style = PaintingStyle.Stroke
-        paint.alpha = opacity.interpolated(time)
-        paint.strokeWidth = strokeWidth.interpolated(time)
+        paint.alpha = opacity.interpolated(frame)
+        paint.strokeWidth = strokeWidth.interpolated(frame)
+
     }
 
-    final override fun drawIntoCanvas(canvas: Canvas, parentMatrix: Matrix, time: Int) {
+    override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha : Float, frame: Int) {
 
-        //TODO:
-//        if (com.airbnb.lottie.utils.Utils.hasZeroScaleAxis(parentMatrix)) {
-//            return
-//        }
-
-        setupPaint(paint, time)
+        setupPaint(paint, frame)
 
         if (paint.strokeWidth <= 0) {
             return
         }
-//        applyDashPatternIfNeeded(parentMatrix)
-
-//        if (colorFilterAnimation != null) {
-//            paint.setColorFilter(colorFilterAnimation.getValue())
-//        }
-//
-//        if (blurAnimation != null) {
-//            val blurRadius: Float = blurAnimation.getValue()
-//            if (blurRadius == 0f) {
-//                paint.setMaskFilter(null)
-//            } else if (blurRadius != blurMaskFilterRadius) {
-//                val blur: BlurMaskFilter = layer.getBlurMaskFilter(blurRadius)
-//                paint.setMaskFilter(blur)
-//            }
-//            blurMaskFilterRadius = blurRadius
-//        }
-//        if (dropShadowAnimation != null) {
-//            dropShadowAnimation.applyTo(paint)
-//        }
 
         pathGroups.fastForEach { pathGroup ->
 
             if (pathGroup.trimPath != null) {
-                applyTrimPath(canvas, time, pathGroup, parentMatrix)
+                applyTrimPath(canvas, frame, pathGroup, parentMatrix)
             } else {
                 path.reset()
                 pathGroup.paths.fastForEachReversed {
-                    path.addPath(it.getPath(time).apply { transform(parentMatrix) })
+                    path.addPath(it.getPath(frame), parentMatrix)
                 }
                 canvas.drawPath(path, paint)
             }
@@ -121,11 +111,43 @@ internal abstract class BaseStroke() : DrawableContent {
         currentPathGroup?.let(pathGroups::add)
     }
 
+    override fun getBounds(
+        outBounds: MutableRect,
+        parentMatrix: Matrix,
+        applyParents: Boolean,
+        frame: Int,
+    ) {
+        path.reset()
+        for (i in pathGroups.indices) {
+            val pathGroup = pathGroups[i]
+            for (j in pathGroup.paths.indices) {
+                path.addPath(pathGroup.paths[j].getPath(frame), parentMatrix)
+            }
+        }
+        rect.set(path.getBounds())
+
+        val width =  strokeWidth.interpolated(frame)
+
+        rect.set(
+            rect.left - width / 2f, rect.top - width / 2f,
+            rect.right + width / 2f, rect.bottom + width / 2f
+        )
+        outBounds.set(rect)
+
+        // Add padding to account for rounding errors.
+        outBounds.set(
+            outBounds.left - 1,
+            outBounds.top - 1,
+            outBounds.right + 1,
+            outBounds.bottom + 1
+        )
+    }
+
     private fun applyTrimPath(
         canvas: Canvas,
         time: Int,
         pathGroup: PathGroup,
-        parentMatrix: Matrix
+        parentMatrix: Matrix,
     ) {
         if (pathGroup.trimPath == null) {
             return
@@ -213,7 +235,7 @@ internal abstract class BaseStroke() : DrawableContent {
 }
 
 private class PathGroup(
-    val trimPath: TrimPath?
+    val trimPath: TrimPath?,
 ) {
 
     val paths: MutableList<PathContent> = mutableListOf()

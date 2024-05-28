@@ -2,7 +2,7 @@ package io.github.alexzhirkevich.compottie.internal.schema.shapes
 
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PathEffect
-import io.github.alexzhirkevich.compottie.internal.schema.properties.Value
+import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -20,7 +20,7 @@ internal class Round(
     override val hidden : Boolean = false,
 
     @SerialName("r")
-    val radius : Value,
+    val radius : AnimatedValue,
 ) : DrawShape {
 
     override fun applyTo(paint: Paint, time: Int) {

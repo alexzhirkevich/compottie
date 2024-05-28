@@ -4,8 +4,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.layout.ScaleFactor
-import io.github.alexzhirkevich.compottie.internal.schema.properties.Vector
-import io.github.alexzhirkevich.compottie.internal.schema.properties.Value
+import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -28,36 +28,36 @@ internal class Star(
     override val hidden : Boolean = false,
 
     @SerialName("p")
-    val position : Vector,
+    val position : AnimatedVector2,
 
     @SerialName("d")
     val direction : Int = 1,
 
     @SerialName("is")
-    val innerRoundness : Value,
+    val innerRoundness : AnimatedValue,
 
     @SerialName("ir")
-    val innerRadius : Value,
+    val innerRadius : AnimatedValue,
 
     @SerialName("or")
-    val outerRadius : Value,
+    val outerRadius : AnimatedValue,
 
     @SerialName("os")
-    val outerRoundness : Value,
+    val outerRoundness : AnimatedValue,
 
     @SerialName("r")
-    val rotation : Value,
+    val rotation : AnimatedValue,
 
     @SerialName("pt")
-    val points : Value,
+    val points : AnimatedValue,
 
     @SerialName("s")
-    val size : Vector,
+    val size : AnimatedVector2,
 
     @SerialName("sy")
     val starType : StarType,
 
-) : LayoutShape {
+    ) : LayoutShape {
 
     @Transient
     private val path = Path()

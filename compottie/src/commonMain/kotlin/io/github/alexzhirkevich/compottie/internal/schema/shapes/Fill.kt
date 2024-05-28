@@ -1,10 +1,9 @@
 package io.github.alexzhirkevich.compottie.internal.schema.shapes
 
 import androidx.compose.ui.graphics.PaintingStyle
-import io.github.alexzhirkevich.compottie.internal.schema.Content
 import io.github.alexzhirkevich.compottie.internal.schema.properties.BooleanInt
-import io.github.alexzhirkevich.compottie.internal.schema.properties.Value
-import io.github.alexzhirkevich.compottie.internal.schema.properties.Vector
+import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -28,10 +27,10 @@ internal class Fill(
     val direction : Int = 1,
 
     @SerialName("o")
-    override val opacity : Value,
+    override val opacity : AnimatedValue,
 
     @SerialName("c")
-    override val color : Vector,
+    override val color : AnimatedVector2,
 ) : SolidDrawShape() {
 
     override val paintingStyle: PaintingStyle

@@ -11,7 +11,7 @@ import kotlinx.serialization.json.JsonClassDiscriminator
 @JsonClassDiscriminator("ty")
 internal sealed interface VisualLayer : Layer {
 
-    val transform : Transform
+    val transform : Transform?
 
     val autoOrient : BooleanInt
 
