@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.library)
     alias(libs.plugins.compose)
+    alias(libs.plugins.composeCompiler)
     alias(libs.plugins.dokka)
     alias(libs.plugins.serialization)
     id("maven-publish")
@@ -55,14 +56,12 @@ kotlin {
         commonMain.dependencies {
             implementation(compose.foundation)
             implementation(compose.animation)
+            implementation(libs.serialization)
         }
 
         val desktopMain by getting
         val wasmJsMain by getting
 
-        androidMain.dependencies {
-            api(libs.lottie.android)
-        }
 
 
         val skikoMain by creating {
@@ -72,9 +71,6 @@ kotlin {
             macosMain.get().dependsOn(this)
             jsMain.get().dependsOn(this)
             wasmJsMain.dependsOn(this)
-            dependencies {
-                implementation(libs.serialization)
-            }
         }
     }
 }

@@ -1,6 +1,8 @@
 plugins {
     id("org.jetbrains.compose")
     kotlin("multiplatform")
+    alias(libs.plugins.composeCompiler)
+
 }
 
 kotlin {
@@ -22,4 +24,3 @@ kotlin {
     }
 }
 
-compose.experimental.web.application{}

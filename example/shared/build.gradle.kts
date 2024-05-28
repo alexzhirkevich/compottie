@@ -2,6 +2,8 @@ plugins {
     kotlin("multiplatform")
     id("com.android.library")
     id("org.jetbrains.compose")
+    alias(libs.plugins.composeCompiler)
+
 }
 
 val _jvmTarget = findProperty("jvmTarget") as String

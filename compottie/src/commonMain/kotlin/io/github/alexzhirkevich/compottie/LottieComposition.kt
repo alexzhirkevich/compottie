@@ -1,43 +1,56 @@
 package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.remember
+import io.github.alexzhirkevich.compottie.internal.schema.LottieData
+import io.github.alexzhirkevich.compottie.internal.schema.LottieJson
+import io.github.alexzhirkevich.compottie.internal.schema.durationMillis
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-/**
- * Holds animation data
- * */
+
 @Stable
-expect class LottieComposition
+class LottieComposition internal constructor(
+    internal val lottieData: LottieData,
+) {
+    val duration: Int get() = lottieData.durationMillis
 
-internal expect val LottieComposition.fps : Float
+    val frameRate : Int get() = lottieData.frameRate
+}
 
-
-internal expect val LottieComposition.durationMillis : Float
-
-
-internal expect val LottieComposition.lastFrame : Float
-
-internal expect fun LottieComposition.marker(markerName : String) : Marker?
-
-/**
- * Takes a [LottieCompositionSpec], attempts to load and parse the animation, and returns a [LottieCompositionResult].
- *
- * [LottieCompositionResult] allows you to explicitly check for loading, failures, call
- * [LottieCompositionResult.await], or invoke it like a function to get the nullable composition.
- *
- * [LottieCompositionResult] implements State<LottieComposition?> so if you don't need the full result class,
- * you can use this function like:
- * ```
- * val compositionResult: LottieCompositionResult = lottieComposition(spec)
- * // or...
- * val composition: State<LottieComposition?> by lottieComposition(spec)
- * ```
- *
- * The loaded composition will automatically load and set images that are embedded in the json as a base64 string
- * or will load them from assets if an imageAssetsFolder is supplied.
- *
- * @param spec The [LottieCompositionSpec] that defines which LottieComposition should be loaded.
- */
 @Composable
 @Stable
-expect fun rememberLottieComposition(spec : LottieCompositionSpec) : LottieCompositionResult
+fun rememberLottieComposition(spec : LottieCompositionSpec) : LottieCompositionResult {
+
+    val result = remember(spec) {
+        LottieCompositionResultImpl()
+    }
+
+    LaunchedEffect(spec){
+        when (spec){
+            is LottieCompositionSpec.JsonString -> {
+                withContext(Dispatchers.Default) {
+                    try {
+                        val composition = parseFromJsonString(spec.jsonString)
+                        result.complete(composition)
+                    } catch (c: CancellationException) {
+                        throw c
+                    } catch (t: Throwable) {
+                        result.completeExceptionally(t)
+                    }
+                }
+            }
+        }
+    }
+
+    return result
+}
+
+private fun parseFromJsonString(jsonString: String) : LottieComposition {
+    return LottieComposition(
+        LottieJson.decodeFromString(jsonString),
+    )
+}
