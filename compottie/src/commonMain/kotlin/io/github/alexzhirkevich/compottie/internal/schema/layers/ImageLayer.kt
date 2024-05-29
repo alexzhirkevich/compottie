@@ -3,22 +3,22 @@ package io.github.alexzhirkevich.compottie.internal.schema.layers
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
-import io.github.alexzhirkevich.compottie.internal.content.Content
-import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
-import io.github.alexzhirkevich.compottie.internal.schema.effects.Effect
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.unit.IntSize
 import io.github.alexzhirkevich.compottie.internal.schema.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.schema.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.schema.properties.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.schema.properties.MatteMode
-import io.github.alexzhirkevich.compottie.internal.schema.shapes.Shape
+import io.github.alexzhirkevich.compottie.internal.schema.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.services.LottieImageService
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlin.math.roundToInt
 
 @Serializable
-@SerialName("4")
-internal class ShapeLayer(
-
+@SerialName("2")
+internal class ImageLayer(
     @SerialName("ks")
     override val transform: Transform = Transform(),
 
@@ -52,17 +52,11 @@ internal class ShapeLayer(
     @SerialName("nm")
     override val name: String? = null,
 
-    @SerialName("ef")
-    val effect: List<Effect> = emptyList(),
-
     @SerialName("sr")
     override val stretch: Float = 1f,
 
     @SerialName("parent")
     override val parent: Int? = null,
-
-    @SerialName("shapes")
-    val shapes: List<Shape> = emptyList(),
 
     @SerialName("tt")
     override val matteMode: MatteMode? = null,
@@ -78,32 +72,69 @@ internal class ShapeLayer(
 
     @SerialName("ct")
     override val collapseTransform: BooleanInt = BooleanInt.No,
-) : BaseLayer(), VisualLayer  {
+
+    @SerialName("refId")
+    val refId : String
+) : BaseLayer(), VisualLayer {
 
     @Transient
-    private val boundMatrix = Matrix()
+    private val src = MutableRect(0f,0f,0f,0f)
 
     @Transient
-    private val contentGroup = ContentGroup(
-        name = name,
-        hidden = hidden,
-        contents = shapes,
-        transform = transform
-    ).apply {
-        setContents(emptyList(), emptyList())
+    private val dst = MutableRect(0f,0f,0f,0f)
+
+    @Transient
+    private val paint = Paint()
+
+    private val service by lazy {
+        serviceLocator?.get<LottieImageService>()
     }
 
-    override fun drawLayer(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame : Int) {
-       contentGroup.draw(canvas, parentMatrix, parentAlpha, frame)
+    private val asset : LottieAsset.ImageAsset? by lazy {
+        service?.asset(refId) as? LottieAsset.ImageAsset
+    }
+
+    override fun drawLayer(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Int) {
+        val mAsset = asset ?: return
+        val bitmap = mAsset.bitmap ?: return
+
+        val maintainOriginalImageBounds = service?.maintainOriginalImageBounds ?: false
+
+        paint.alpha = parentAlpha
+
+        canvas.save()
+        canvas.concat(parentMatrix)
+        src.set(0f, 0f, bitmap.width.toFloat(), bitmap.height.toFloat())
+
+        val dstSize = if (maintainOriginalImageBounds){
+            IntSize((mAsset.width * density).roundToInt(), (mAsset.height * density).roundToInt())
+        } else {
+            IntSize((bitmap.width * density).roundToInt(), (bitmap.height * density).roundToInt())
+        }
+
+        val srcSize = IntSize((bitmap.width * density).toInt(), (bitmap.height * density).toInt())
+
+        canvas.drawImageRect(
+            bitmap,
+            srcSize = srcSize,
+            dstSize = dstSize,
+            paint = paint
+        )
+        canvas.restore()
     }
 
     override fun getBounds(
         outBounds: MutableRect,
         parentMatrix: Matrix,
         applyParents: Boolean,
-        frame: Int,
+        frame: Int
     ) {
         super.getBounds(outBounds, parentMatrix, applyParents, frame)
-        contentGroup.getBounds(outBounds, boundMatrix, applyParents, frame)
+
+        asset?.let {
+            outBounds.set(0f, 0f, it.width * density, it.height * density)
+            boundsMatrix.map(outBounds)
+        }
     }
 }
+

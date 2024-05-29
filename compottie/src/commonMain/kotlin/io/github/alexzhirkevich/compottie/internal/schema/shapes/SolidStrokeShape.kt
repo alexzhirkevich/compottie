@@ -2,19 +2,15 @@ package io.github.alexzhirkevich.compottie.internal.schema.shapes
 
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
 import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedColor
 import io.github.alexzhirkevich.compottie.internal.schema.properties.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlin.jvm.JvmInline
 
 @Serializable
 @SerialName("st")
-internal class SolidStroke(
+internal class SolidStrokeShape(
 
     @SerialName("mn")
     override val matchName : String? = null,
@@ -45,49 +41,11 @@ internal class SolidStroke(
 
     @SerialName("c")
     val color : AnimatedColor,
-) : BaseStroke(), Shape {
+) : BaseStrokeShape(), Shape {
 
     override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Int) {
         paint.color = color.interpolated(frame)
 
         super.draw(canvas, parentMatrix, parentAlpha, frame)
-    }
-}
-
-@Serializable
-@JvmInline
-internal value class LineCap(val type : Byte) {
-    companion object {
-        val Butt = LineCap(1)
-        val Round = LineCap(2)
-        val Square = LineCap(3)
-    }
-}
-
-@Serializable
-@JvmInline
-internal value class LineJoin(val type : Byte) {
-    companion object {
-        val Miter = LineJoin(1)
-        val Round = LineJoin(2)
-        val Bevel = LineJoin(3)
-    }
-}
-
-internal fun LineJoin.asStrokeJoin() : StrokeJoin {
-    return when(this){
-        LineJoin.Miter -> StrokeJoin.Miter
-        LineJoin.Round -> StrokeJoin.Round
-        LineJoin.Bevel -> StrokeJoin.Bevel
-        else ->StrokeJoin.Round// error("Unknown line join: $this")
-    }
-}
-
-internal fun LineCap.asStrokeCap() : StrokeCap {
-    return when(this){
-        LineCap.Butt -> StrokeCap.Butt
-        LineCap.Round -> StrokeCap.Round
-        LineCap.Square -> StrokeCap.Square
-        else -> StrokeCap.Round //error("Unknown line cap: $this")
     }
 }

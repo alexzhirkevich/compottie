@@ -3,11 +3,9 @@ package io.github.alexzhirkevich.compottie.internal.schema.shapes
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Canvas
-import androidx.compose.ui.graphics.LinearGradientShader
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.RadialGradientShader
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.util.fastForEach
@@ -128,8 +126,8 @@ internal fun GradientShader(
 
     val c = colors.colors.interpolated(frame)
 
-    return if (type == GradientType.Linear){
-         MakeLinearGradient(
+    return if (type == GradientType.Linear) {
+        MakeLinearGradient(
             from = Offset(start.x, start.y),
             to = Offset(end.x, end.y),
             colors = c.colors,

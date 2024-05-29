@@ -42,7 +42,7 @@ internal sealed interface AnimatedGradient : Animated<ColorsWithStops> {
         private val colors by lazy {
             ColorsWithStops(
                 colorStops = (0 until numberOfColors).map {
-                    colorsVector[it * 3]
+                    colorsVector[it * 4]
                 },
                 colors = (0 until numberOfColors).map {
 
@@ -51,12 +51,11 @@ internal sealed interface AnimatedGradient : Animated<ColorsWithStops> {
                     } else 1f
 
                     Color(
-                        red = colorsVector[it * 3 + 1],
-                        green = colorsVector[it * 3 + 2],
-                        blue = colorsVector[it * 3 + 3],
+                        red = colorsVector[it * 4 + 1],
+                        green = colorsVector[it * 4 + 2],
+                        blue = colorsVector[it * 4 + 3],
                         alpha = alpha
-                    ).also { println(it) }
-
+                    )
                 }
             )
         }

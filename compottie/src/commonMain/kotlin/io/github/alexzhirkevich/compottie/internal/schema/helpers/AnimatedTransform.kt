@@ -1,5 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.schema.helpers
 
+import androidx.compose.ui.geometry.MutableRect
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Matrix
 import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
@@ -92,6 +94,7 @@ internal abstract class AnimatedTransform {
         scale?.interpolated(frame)?.takeIf { it.x != 0f || it.y != 0f }?.let {
             matrix.preScale(it.x/100f, it.y/100f)
         }
+
 
         anchorPoint?.interpolated(frame)?.let {
             if (it.x != 0f || it.y != 0f) {

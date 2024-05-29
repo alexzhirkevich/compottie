@@ -2,21 +2,27 @@ package io.github.alexzhirkevich.compottie.internal.schema.properties
 
 import androidx.compose.animation.core.AnimationVector
 import androidx.compose.animation.core.AnimationVector2D
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonClassDiscriminator
+import kotlinx.serialization.json.JsonContentPolymorphicSerializer
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalSerializationApi::class)
-@Serializable
+@Serializable()
 @JsonClassDiscriminator("a")
 internal sealed interface AnimatedVector2 : Animated<AnimationVector2D>, Indexable {
 
     @Serializable
     @SerialName("0")
-    class Default(
+    data class Default(
         @SerialName("k")
         val value: FloatArray,
 
@@ -67,6 +73,16 @@ internal sealed interface AnimatedVector2 : Animated<AnimationVector2D>, Indexab
 val AnimationVector2D.x : Float get() = v1
 val AnimationVector2D.y : Float get() = v2
 
-
+//internal class AnimatedVectorSerializer : JsonContentPolymorphicSerializer<AnimatedVector2>(
+//    AnimatedVector2::class
+//) {
+//    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedVector2> {
+//        return when(element.jsonObject["a"]?.jsonPrimitive?.int){
+//            1 -> AnimatedVector2.Keyframed.serializer()
+//            else -> AnimatedVector2.Default.serializer()
+//        }
+//    }
+//}
+//
 
 

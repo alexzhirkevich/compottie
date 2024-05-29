@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.schema
 
+import io.github.alexzhirkevich.compottie.internal.schema.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.schema.layers.Layer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -28,7 +29,9 @@ internal class LottieData(
     @SerialName("nm")
     val name : String,
 
-    val layers: List<Layer>
+    val layers: List<Layer> = emptyList(),
+
+    val assets : List<LottieAsset> = emptyList()
 )
 
 internal val LottieData.durationMillis

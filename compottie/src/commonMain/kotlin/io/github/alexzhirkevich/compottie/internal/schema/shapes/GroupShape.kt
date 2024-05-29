@@ -29,5 +29,5 @@ internal class GroupShape(
     name = name,
     hidden = hidden,
     contents = items,
-    transform = items.firstOrNull { it is TransformShape } as? TransformShape?
+    transform = items.lastOrNull { it is TransformShape } as? TransformShape?
 )

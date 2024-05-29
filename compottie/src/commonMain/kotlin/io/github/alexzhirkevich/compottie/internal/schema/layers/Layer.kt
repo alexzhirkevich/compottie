@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.schema.layers
 
+import io.github.alexzhirkevich.compottie.internal.services.LottieServiceLocator
 import io.github.alexzhirkevich.compottie.internal.schema.properties.BooleanInt
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonClassDiscriminator
@@ -25,6 +26,10 @@ internal sealed interface Layer {
     val startTime : Int?
 
     val name : String?
+
+    var serviceLocator : LottieServiceLocator?
+
+    var density : Float
 }
 
 

@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.schema.shapes
 
+import androidx.compose.runtime.traceEventEnd
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.schema.ModifierContent
 import io.github.alexzhirkevich.compottie.internal.schema.helpers.AnimatedTransform
@@ -22,7 +23,7 @@ internal class TransformShape(
     override val hidden : Boolean = false,
 
     @SerialName("a")
-    override val anchorPoint : AnimatedVector2 = AnimatedVector2.Default(value = floatArrayOf(0f, 0f, 0f)),
+    override val anchorPoint : AnimatedVector2? = null,
 
     @SerialName("p")
     override val position : AnimatedVector2? = null,

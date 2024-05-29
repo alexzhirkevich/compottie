@@ -6,9 +6,11 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.schema.helpers.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.schema.helpers.Transform
+import io.github.alexzhirkevich.compottie.internal.schema.shapes.TransformShape
 import io.github.alexzhirkevich.compottie.internal.utils.Utils
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.union
@@ -27,6 +29,7 @@ internal class ContentGroup(
     private val path = Path()
     private var pathContents: MutableList<PathContent>? = null
 
+    private val boundsRect = MutableRect(0f,0f,0f,0f)
 
     override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Int) {
         if (hidden) {
@@ -40,7 +43,7 @@ internal class ContentGroup(
         if (transform != null) {
             matrix.preConcat(transform.matrix(frame))
             transform.opacity?.interpolated(frame)?.let {
-                layerAlpha = (layerAlpha * it/100f).coerceIn(0f,1f)
+                layerAlpha = (layerAlpha * it / 100f).coerceIn(0f, 1f)
             }
         }
 
@@ -78,12 +81,12 @@ internal class ContentGroup(
         if (hidden) {
             return path
         }
-        for (i in contents.indices.reversed()) {
-            val content = contents[i]
-            if (content is PathContent) {
-                path.addPath(content.getPath(frame), matrix)
+        contents.fastForEachReversed {
+            if (it is PathContent) {
+                path.addPath(it.getPath(frame), matrix)
             }
         }
+
         return path
     }
 
@@ -110,11 +113,11 @@ internal class ContentGroup(
             matrix.preConcat(transform.matrix(frame))
         }
 
-        rect.set(0f,0f,0f,0f)
-        for (i in contents.indices.reversed()) {
-            val content = contents[i]
-            if (content is DrawingContent) {
-                content.getBounds(rect, matrix, applyParents, frame)
+        rect.set(0f, 0f, 0f, 0f)
+
+        contents.fastForEachReversed {
+            if (it is DrawingContent) {
+                it.getBounds(rect, matrix, applyParents, frame)
                 outBounds.union(rect)
             }
         }

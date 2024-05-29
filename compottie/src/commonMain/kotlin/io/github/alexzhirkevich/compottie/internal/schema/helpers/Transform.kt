@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 internal class Transform(
 
     @SerialName("a")
-    override val anchorPoint : AnimatedVector2? = null,
+    override val anchorPoint : AnimatedVector2? = null ,
 
     @SerialName("p")
     override val position : AnimatedVector2? = null,

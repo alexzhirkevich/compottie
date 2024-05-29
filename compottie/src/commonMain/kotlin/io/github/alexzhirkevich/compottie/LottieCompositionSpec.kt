@@ -6,7 +6,7 @@ import androidx.compose.runtime.Immutable
 sealed class LottieCompositionSpec {
 
     @Immutable
-    class JsonString constructor(
+    class JsonString(
         internal val jsonString: String
     ) : LottieCompositionSpec()  {
         override fun equals(other: Any?): Boolean {

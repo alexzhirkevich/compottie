@@ -6,6 +6,8 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.internal.content.Content
@@ -18,9 +20,50 @@ import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVal
 import io.github.alexzhirkevich.compottie.internal.schema.properties.TrimPathType
 import io.github.alexzhirkevich.compottie.internal.utils.Utils
 import io.github.alexzhirkevich.compottie.internal.utils.set
+import kotlinx.serialization.Serializable
+import kotlin.jvm.JvmInline
 import kotlin.math.min
 
-internal abstract class BaseStroke() : DrawingContent {
+
+@Serializable
+@JvmInline
+internal value class LineCap(val type : Byte) {
+    companion object {
+        val Butt = LineCap(1)
+        val Round = LineCap(2)
+        val Square = LineCap(3)
+    }
+}
+
+@Serializable
+@JvmInline
+internal value class LineJoin(val type : Byte) {
+    companion object {
+        val Miter = LineJoin(1)
+        val Round = LineJoin(2)
+        val Bevel = LineJoin(3)
+    }
+}
+
+internal fun LineJoin.asStrokeJoin() : StrokeJoin {
+    return when(this){
+        LineJoin.Miter -> StrokeJoin.Miter
+        LineJoin.Round -> StrokeJoin.Round
+        LineJoin.Bevel -> StrokeJoin.Bevel
+        else -> StrokeJoin.Round// error("Unknown line join: $this")
+    }
+}
+
+internal fun LineCap.asStrokeCap() : StrokeCap {
+    return when(this){
+        LineCap.Butt -> StrokeCap.Butt
+        LineCap.Round -> StrokeCap.Round
+        LineCap.Square -> StrokeCap.Square
+        else -> StrokeCap.Round //error("Unknown line cap: $this")
+    }
+}
+
+internal abstract class BaseStrokeShape() : DrawingContent {
 
     abstract val opacity: AnimatedValue
     abstract val strokeWidth: AnimatedValue

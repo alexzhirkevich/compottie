@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Matrix
 import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.schema.properties.GradientColors
+import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -61,9 +62,15 @@ internal class GradientStroke(
 
     @SerialName("t")
     val type : GradientType,
-)  : BaseStroke(), Shape {
+)  : BaseStrokeShape(), Shape {
+
+    @Transient
+    private val boundsRect = MutableRect(0f,0f,0f,0f)
 
     override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Int) {
+
+        getBounds(boundsRect, parentMatrix, false, frame)
+
         paint.shader = GradientShader(
             type = type,
             startPoint = startPoint,

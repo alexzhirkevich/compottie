@@ -1,11 +1,15 @@
 package io.github.alexzhirkevich.compottie.internal.schema.layers
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
+import io.github.alexzhirkevich.compottie.internal.services.LottieServiceLocator
 import io.github.alexzhirkevich.compottie.internal.schema.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 
@@ -14,13 +18,18 @@ internal abstract class BaseLayer() : DrawingContent {
     abstract val transform: Transform
 
     private val matrix = Matrix()
-    private val boundsMatrix = Matrix()
+
+    protected val boundsMatrix = Matrix()
 
     private val rect = MutableRect(0f,0f,0f,0f)
 
     private var parentLayers : MutableList<BaseLayer>? = null
 
     private var parentLayer: BaseLayer? = null
+
+    var serviceLocator : LottieServiceLocator? = null
+
+    var density by mutableStateOf(1f)
 
     abstract fun drawLayer(
         canvas: Canvas,
@@ -30,7 +39,6 @@ internal abstract class BaseLayer() : DrawingContent {
     )
 
     override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha : Float, frame: Int) {
-
         buildParentLayerListIfNeeded()
         matrix.reset()
 
@@ -42,7 +50,7 @@ internal abstract class BaseLayer() : DrawingContent {
         var alpha = parentAlpha
 
         transform.opacity?.interpolated(frame)?.let {
-            alpha = (alpha * (it / 100f)).coerceIn(0f,1f)
+            alpha = (alpha * (it / 100f)).coerceIn(0f, 1f)
         }
 
         matrix.preConcat(transform.matrix(frame))
