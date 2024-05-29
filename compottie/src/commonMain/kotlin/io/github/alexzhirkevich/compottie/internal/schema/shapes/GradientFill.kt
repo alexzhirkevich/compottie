@@ -1,17 +1,32 @@
 package io.github.alexzhirkevich.compottie.internal.schema.shapes
 
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.MutableRect
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.LinearGradientShader
+import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.PaintingStyle
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.RadialGradientShader
-import io.github.alexzhirkevich.compottie.internal.schema.properties.GradientColors
+import androidx.compose.ui.graphics.Shader
+import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.util.fastForEach
+import io.github.alexzhirkevich.compottie.internal.content.Content
+import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
+import io.github.alexzhirkevich.compottie.internal.content.PathContent
+import io.github.alexzhirkevich.compottie.internal.platform.MakeLinearGradient
+import io.github.alexzhirkevich.compottie.internal.platform.MakeRadialGradient
+import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
-import io.github.alexzhirkevich.compottie.internal.schema.util.toOffset
+import io.github.alexzhirkevich.compottie.internal.schema.properties.GradientColors
+import io.github.alexzhirkevich.compottie.internal.schema.properties.x
+import io.github.alexzhirkevich.compottie.internal.schema.properties.y
+import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
+import kotlin.math.hypot
 
 @Serializable
 @SerialName("gf")
@@ -27,7 +42,7 @@ internal class GradientFill(
     override val hidden : Boolean = false,
 
     @SerialName("o")
-    val opacity : AnimatedValue,
+    val opacity : AnimatedValue? = null,
 
     @SerialName("s")
     val startPoint : AnimatedVector2,
@@ -52,43 +67,87 @@ internal class GradientFill(
 
     @SerialName("g")
     val colors : GradientColors,
-) : DrawShape {
+) : Shape, DrawingContent {
 
-    override fun applyTo(paint: Paint, time: Int) {
-        paint.style = PaintingStyle.Fill
-        paint.alpha = opacity.interpolated(time)
+    private val path = Path()
 
-        val interpolatedColors = colors.colors.interpolated(time)
+    private var paths: List<PathContent> = emptyList()
 
-        val colorStops = List(colors.numberOfColors) {
-            interpolatedColors[it * 4]
+    private val paint = Paint()
+
+
+    override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Int) {
+
+        paint.alpha = if (opacity != null) {
+            (parentAlpha * opacity.interpolated(frame) / 100f).coerceIn(0f, 1f)
+        }
+        else {
+            parentAlpha
         }
 
-        val colors = List(colors.numberOfColors) {
-            Color(
-                interpolatedColors[it * 4 + 1],
-                interpolatedColors[it * 4 + 2],
-                interpolatedColors[it * 4 + 3]
-            )
+        paint.shader = GradientShader(type, startPoint, endPoint, colors, frame,parentMatrix)
+    }
+
+    override fun getBounds(
+        outBounds: MutableRect,
+        parentMatrix: Matrix,
+        applyParents: Boolean,
+        frame: Int
+    ) {
+        path.reset()
+        paths.fastForEach {
+            path.addPath(it.getPath(frame), parentMatrix)
         }
+        outBounds.set(path.getBounds())
+        // Add padding to account for rounding errors.
+        outBounds.set(
+            outBounds.left - 1,
+            outBounds.top - 1,
+            outBounds.right + 1,
+            outBounds.bottom + 1
+        )
+    }
 
-        paint.shader = when (type) {
+    override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
+        paths = contentsAfter.filterIsInstance<PathContent>()
+    }
+}
 
-            GradientType.Linear -> LinearGradientShader(
-                from = startPoint.interpolated(time).toOffset(),
-                to = endPoint.interpolated(time).toOffset(),
-                colorStops = colorStops,
-                colors = colors
-            )
+internal fun GradientShader(
+    type: GradientType,
+    startPoint: AnimatedVector2,
+    endPoint: AnimatedVector2,
+    colors: GradientColors,
+    frame : Int,
+    matrix: Matrix
+) : Shader {
+    val start = startPoint.interpolated(frame)
+    val end = endPoint.interpolated(frame)
 
-            GradientType.Radial -> RadialGradientShader(
-                colorStops = colorStops,
-                colors = colors,
-                center = startPoint.interpolated(time).toOffset(),
-                radius = highlightLength?.interpolated(time) ?: 0f,
-            )
-            else -> error("Unknown gradient type: $type")
-        }
+    colors.colors.numberOfColors = colors.numberOfColors
+
+    val c = colors.colors.interpolated(frame)
+
+    return if (type == GradientType.Linear){
+         MakeLinearGradient(
+            from = Offset(start.x, start.y),
+            to = Offset(end.x, end.y),
+            colors = c.colors,
+            colorStops = c.colorStops,
+            tileMode = TileMode.Clamp,
+            matrix = matrix,
+        )
+    } else {
+        val r = hypot((end.x - start.x), (end.y - start.y))
+
+        MakeRadialGradient(
+            radius = r,
+            center = Offset(start.x, start.y),
+            colors = c.colors,
+            colorStops = c.colorStops,
+            tileMode = TileMode.Clamp,
+            matrix = matrix
+        )
     }
 }
 

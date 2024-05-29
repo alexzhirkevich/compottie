@@ -1,7 +1,10 @@
+
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.compose")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.compose)
+    alias(libs.plugins.composeCompiler)
 }
 
 val _jvmTarget = findProperty("jvmTarget") as String
@@ -32,6 +35,7 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+    buildFeatures { compose = true }
 }
 
 dependencies {

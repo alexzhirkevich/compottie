@@ -29,13 +29,14 @@ internal sealed interface AnimatedColor : Animated<Color>, Indexable {
     ) : AnimatedColor {
 
         @Transient
-        private val color : Color = if (value.size == 4){
-            Color(red = value[0], green = value[1], blue = value[2], alpha = value[3])
-        } else {
-            Color(red = value[0], green = value[1], blue = value[2])
-        }
+        private val color: Color = Color(
+            red = value[0],
+            green = value[1],
+            blue = value[2],
+            alpha = value.getOrNull(3) ?: 1f
+        )
 
-        override fun interpolated(frame: Int)  = color
+        override fun interpolated(frame: Int) = color
     }
 
     @Serializable
@@ -59,12 +60,14 @@ internal sealed interface AnimatedColor : Animated<Color>, Indexable {
     ) : AnimatedColor {
 
         @Transient
-        private val animation = value.to2DAnimation()
+        private val animation = value.toColorAnimation()
 
-        override fun interpolated(time: Int): AnimationVector2D {
+        override fun interpolated(time: Int): Color {
             return animation.getValueFromNanos(
                 playTimeNanos = time.milliseconds.inWholeNanoseconds,
-            )
+            ).let {
+                Color(it.v1,it.v2,it.v3,it.v4)
+            }
         }
     }
 }

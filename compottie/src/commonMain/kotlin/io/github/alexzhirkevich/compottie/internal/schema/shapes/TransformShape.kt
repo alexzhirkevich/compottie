@@ -1,8 +1,8 @@
 package io.github.alexzhirkevich.compottie.internal.schema.shapes
 
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.Path
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.LottieTransform
+import io.github.alexzhirkevich.compottie.internal.content.Content
+import io.github.alexzhirkevich.compottie.internal.schema.ModifierContent
+import io.github.alexzhirkevich.compottie.internal.schema.helpers.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
 import kotlinx.serialization.SerialName
@@ -41,10 +41,8 @@ internal class TransformShape(
 
     @SerialName("sa")
     override val skewAxis: AnimatedValue? = null,
-) : LottieTransform(), ModifierShape {
+) : AnimatedTransform(), Shape, ModifierContent {
+    override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
 
-    override fun applyTo(path: Path, paint: Paint, time: Int) {
-        path.transform(matrix(time))
-        paint.alpha *= opacity.interpolated(time) / 100f
     }
 }

@@ -4,5 +4,4 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 
 interface ModifierContent {
-    fun applyTo(path: Path, paint: Paint, time: Int)
 }

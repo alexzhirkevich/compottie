@@ -8,18 +8,20 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.fastForEachReversed
-import io.github.alexzhirkevich.compottie.LottieComposition
-import io.github.alexzhirkevich.compottie.LottieCompositionResult
-import io.github.alexzhirkevich.compottie.internal.graphics.draw
-import io.github.alexzhirkevich.compottie.internal.schema.layers.ShapeLayer
+import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
+import io.github.alexzhirkevich.compottie.internal.utils.preScale
+import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
 import kotlin.math.roundToInt
 
 
@@ -61,38 +63,61 @@ private object EmptyPainter : ProgressPainter() {
 }
 private class LottiePainter(
     private val composition: LottieComposition,
+    private val clipToCompositionBounds : Boolean = true
 ) : ProgressPainter() {
 
-    override val intrinsicSize: Size =
-        Size(composition.lottieData.width.toFloat(), composition.lottieData.height.toFloat())
+    override val intrinsicSize: Size = Size(
+        composition.lottieData.width.toFloat(),
+        composition.lottieData.height.toFloat()
+    )
 
     override var progress: Float by mutableStateOf(0f)
 
+    private val matrix = Matrix()
+
+    private var alpha by mutableStateOf(1f)
+
+    override fun applyAlpha(alpha: Float): Boolean {
+        this.alpha = alpha
+        return true
+    }
+
+
     override fun DrawScope.onDraw() {
 
-        val dat = composition.lottieData
+        drawIntoCanvas { canvas ->
 
-        val frame = (dat.outPoint * progress.coerceIn(0f, 1f) - dat.inPoint)
-            .coerceAtLeast(0f).roundToInt()
+            matrix.reset()
 
-        val scale = ContentScale.Fit.computeScaleFactor(intrinsicSize, size)
-        val offset = Alignment.Center.align(
-            IntSize(
-                (intrinsicSize.width).roundToInt(),
-                (intrinsicSize.height).roundToInt()
-            ),
-            IntSize(
-                size.width.roundToInt(),
-                size.height.roundToInt()
-            ),
-            layoutDirection
-        )
+            val scale = ContentScale.Fit.computeScaleFactor(intrinsicSize, size)
 
-        scale(scale.scaleX, scale.scaleY) {
-            translate(offset.x.toFloat(), offset.y.toFloat()) {
-                dat.layers.fastForEachReversed {
-                    when (it) {
-                        is ShapeLayer -> it.draw(this, frame)
+            val offset = Alignment.Center.align(
+                IntSize(
+                    (intrinsicSize.width).roundToInt(),
+                    (intrinsicSize.height).roundToInt()
+                ),
+                IntSize(
+                    size.width.roundToInt(),
+                    size.height.roundToInt()
+                ),
+                layoutDirection
+            )
+
+
+//            matrix.preScale(scale.scaleX, scale.scaleY)
+//            matrix.preTranslate(offset.x.toFloat(), offset.y.toFloat())
+
+            val dat = composition.lottieData
+
+            val frame = (dat.outPoint * progress.coerceIn(0f, 1f) - dat.inPoint)
+                .coerceAtLeast(0f).roundToInt()
+
+            scale(scale.scaleX, scale.scaleY) {
+                translate(offset.x.toFloat(), offset.y.toFloat()) {
+                    dat.layers.fastForEachReversed {
+                        if (it is DrawingContent) {
+                            it.draw(canvas, matrix, alpha, frame)
+                        }
                     }
                 }
             }

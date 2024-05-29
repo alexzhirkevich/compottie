@@ -4,13 +4,15 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.util.trace
 import io.github.alexzhirkevich.compottie.internal.platform.ExtendedPathMeasure
 import io.github.alexzhirkevich.compottie.internal.platform.set
+import io.github.alexzhirkevich.compottie.internal.schema.shapes.TrimPath
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-object Utils {
+internal object Utils {
 
     private val pathMeasure = ExtendedPathMeasure()
     private val tempPath = Path()
@@ -22,6 +24,21 @@ object Utils {
         paint: Paint,
     ) {
        canvas.saveLayer(rect, paint)
+    }
+
+    fun applyTrimPathIfNeeded(path: Path, trimPath: TrimPath, frame : Int) {
+        if (trimPath.hidden) {
+            return
+        }
+        val start: Float = trimPath.start.interpolated(frame)
+        val end: Float = trimPath.end.interpolated(frame)
+        val offset: Float = trimPath.offset.interpolated(frame)
+        applyTrimPathIfNeeded(
+            path = path,
+            startValue = start / 100f,
+            endValue = end / 100f,
+            offsetValue = offset / 360f
+        )
     }
 
     fun applyTrimPathIfNeeded(

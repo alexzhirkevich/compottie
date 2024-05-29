@@ -105,8 +105,4 @@ internal class ShapeLayer(
         super.getBounds(outBounds, parentMatrix, applyParents, frame)
         contentGroup.getBounds(outBounds, boundMatrix, applyParents, frame)
     }
-    override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
-        super.setContents(contentsBefore, contentsAfter)
-    }
-
 }

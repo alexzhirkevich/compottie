@@ -1,9 +1,20 @@
 package io.github.alexzhirkevich.compottie.internal.schema.shapes
 
-import androidx.compose.ui.graphics.PaintingStyle
-import io.github.alexzhirkevich.compottie.internal.schema.properties.BooleanInt
+import androidx.compose.ui.geometry.MutableRect
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.util.fastForEach
+import io.github.alexzhirkevich.compottie.internal.content.Content
+import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
+import io.github.alexzhirkevich.compottie.internal.content.PathContent
+import io.github.alexzhirkevich.compottie.internal.platform.addPath
+import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedColor
 import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.schema.properties.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -21,18 +32,69 @@ internal class Fill(
     override val hidden : Boolean = false,
 
     @SerialName("a")
-    override val withAlpha : BooleanInt = BooleanInt.No,
+    val withAlpha : BooleanInt = BooleanInt.No,
 
     @SerialName("d")
     val direction : Int = 1,
 
     @SerialName("o")
-    override val opacity : AnimatedValue,
+    val opacity : AnimatedValue?,
 
     @SerialName("c")
-    override val color : AnimatedVector2,
-) : SolidDrawShape() {
+    val color : AnimatedColor,
+) : Shape, DrawingContent {
 
-    override val paintingStyle: PaintingStyle
-        get() = PaintingStyle.Fill
+    private val path = Path()
+
+    private var paths: List<PathContent> = emptyList()
+
+    private val paint = Paint()
+
+    override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Int) {
+        if (hidden) {
+            return
+        }
+
+        paint.alpha = if (opacity != null) {
+            (parentAlpha * opacity.interpolated(frame) / 100f).coerceIn(0f, 1f)
+        }
+        else {
+            parentAlpha
+        }
+
+        paint.color = color.interpolated(frame)
+
+        path.reset()
+
+        for (i in paths.indices) {
+            path.addPath(paths[i].getPath(frame), parentMatrix)
+        }
+
+        canvas.drawPath(path, paint)
+    }
+    override fun getBounds(
+        outBounds: MutableRect,
+        parentMatrix: Matrix,
+        applyParents: Boolean,
+        frame: Int
+    ) {
+
+        path.reset()
+        paths.fastForEach {
+            this.path.addPath(it.getPath(frame), parentMatrix)
+        }
+
+        outBounds.set(path.getBounds())
+        // Add padding to account for rounding errors.
+        outBounds.set(
+            outBounds.left - 1,
+            outBounds.top - 1,
+            outBounds.right + 1,
+            outBounds.bottom + 1
+        )
+    }
+
+    override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
+        paths = contentsAfter.filterIsInstance<PathContent>()
+    }
 }

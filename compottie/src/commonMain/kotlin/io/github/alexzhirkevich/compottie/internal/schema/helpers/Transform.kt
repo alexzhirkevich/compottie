@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 internal class Transform(
 
     @SerialName("a")
-    override val anchorPoint : AnimatedVector2 = AnimatedVector2.Default(value = floatArrayOf(0f, 0f, 0f)),
+    override val anchorPoint : AnimatedVector2? = null,
 
     @SerialName("p")
     override val position : AnimatedVector2? = null,
@@ -24,10 +24,10 @@ internal class Transform(
     override val opacity : AnimatedValue? = null,
 
     @SerialName("sk")
-    override val skew: AnimatedValue = AnimatedValue.Default(value = 0f),
+    override val skew: AnimatedValue? = null,
 
     @SerialName("sa")
-    override val skewAxis: AnimatedValue = AnimatedValue.Default(value = 0f),
-) : LottieTransform()
+    override val skewAxis: AnimatedValue? = null,
+) : AnimatedTransform()
 
 

@@ -14,6 +14,7 @@ serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", v
 [plugins]
 compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 kotlin-multiplatform = { id ="org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-android = { id ="org.jetbrains.kotlin.android", version.ref = "kotlin" }
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

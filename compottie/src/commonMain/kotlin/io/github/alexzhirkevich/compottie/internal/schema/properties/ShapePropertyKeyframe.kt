@@ -10,12 +10,15 @@ internal class ShapePropertyKeyframe(
     @SerialName("s")
     val start : List<ShapeProperty>,
 
+    @SerialName("e")
+    val end : List<ShapeProperty>,
+
     @SerialName("t")
-    override val time: Int,
+    val time: Int,
 
     @SerialName("i")
     val inValue : BezierCurveInterpolation,
 
     @SerialName("o")
     val outValue : BezierCurveInterpolation,
-) : Keyframe
+)

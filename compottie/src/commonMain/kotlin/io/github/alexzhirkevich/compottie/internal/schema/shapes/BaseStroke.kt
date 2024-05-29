@@ -33,25 +33,18 @@ internal abstract class BaseStroke() : DrawingContent {
     private val trimPathPath = Path()
     private val path = Path()
     private val rect = MutableRect(0f,0f,0f,0f)
-    private val paint = Paint().apply {
+    protected val paint = Paint().apply {
         strokeMiterLimit = strokeMiter
         strokeCap = lineCap.asStrokeCap()
         strokeJoin = lineJoin.asStrokeJoin()
     }
     private val pm = ExtendedPathMeasure()
 
-
-
-    open fun setupPaint(paint: Paint, frame: Int){
-        paint.style = PaintingStyle.Stroke
-        paint.alpha = opacity.interpolated(frame)
-        paint.strokeWidth = strokeWidth.interpolated(frame)
-
-    }
-
     override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha : Float, frame: Int) {
 
-        setupPaint(paint, frame)
+        paint.style = PaintingStyle.Stroke
+        paint.alpha = parentAlpha * (opacity.interpolated(frame) / 100f).coerceIn(0f,1f)
+        paint.strokeWidth = strokeWidth.interpolated(frame)
 
         if (paint.strokeWidth <= 0) {
             return

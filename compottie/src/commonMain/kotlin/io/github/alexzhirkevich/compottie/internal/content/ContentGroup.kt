@@ -7,16 +7,18 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
+import io.github.alexzhirkevich.compottie.internal.schema.helpers.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.schema.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.utils.Utils
+import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.union
 
 internal class ContentGroup(
     override val name: String?,
     val hidden: Boolean,
     val contents: List<Content>,
-    val transform: Transform?,
-) : DrawingContent, PathContent {
+    val transform: AnimatedTransform?,
+) : PathAndDrawingContext {
 
     private val rect = MutableRect(0f,0f,0f,0f)
     private val offscreenRect = MutableRect(0f,0f,0f,0f)
@@ -35,15 +37,14 @@ internal class ContentGroup(
 
         matrix.setFrom(parentMatrix)
 
-
         if (transform != null) {
-            matrix *= transform.matrix(frame)
+            matrix.preConcat(transform.matrix(frame))
             transform.opacity?.interpolated(frame)?.let {
-                layerAlpha *= it
+                layerAlpha = (layerAlpha * it/100f).coerceIn(0f,1f)
             }
         }
 
-        val isRenderingWithOffScreen = hasTwoOrMoreDrawableContent()
+        val isRenderingWithOffScreen = false//hasTwoOrMoreDrawableContent()
 
         if (isRenderingWithOffScreen) {
             offscreenRect.set(0f, 0f, 0f, 0f)
@@ -66,13 +67,12 @@ internal class ContentGroup(
         }
     }
 
-    override fun getPath(time: Int): Path {
+    override fun getPath(frame: Int): Path {
 
-        // TODO: cache this somehow.
         matrix.reset()
 
         if (transform != null) {
-            matrix.setFrom(transform.matrix(time))
+            matrix.setFrom(transform.matrix(frame))
         }
         path.reset()
         if (hidden) {
@@ -81,7 +81,7 @@ internal class ContentGroup(
         for (i in contents.indices.reversed()) {
             val content = contents[i]
             if (content is PathContent) {
-                path.addPath(content.getPath(time), matrix)
+                path.addPath(content.getPath(frame), matrix)
             }
         }
         return path
@@ -107,7 +107,7 @@ internal class ContentGroup(
     ) {
         matrix.setFrom(parentMatrix)
         if (transform != null) {
-            matrix *= transform.matrix(frame)
+            matrix.preConcat(transform.matrix(frame))
         }
 
         rect.set(0f,0f,0f,0f)

@@ -4,8 +4,10 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Path
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
-import io.github.alexzhirkevich.compottie.internal.schema.properties.TrimPathType
 import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.schema.properties.TrimPathType
+import io.github.alexzhirkevich.compottie.internal.schema.properties.x
+import io.github.alexzhirkevich.compottie.internal.schema.properties.y
 import io.github.alexzhirkevich.compottie.internal.schema.shapes.util.CompoundTrimPath
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -40,50 +42,34 @@ internal class Ellipse(
     @Transient
     private val trimPaths = CompoundTrimPath()
 
-    private var lastPosition : FloatArray? = null
-    private var lastSize : FloatArray? = null
-
-    override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
-        contentsBefore.forEach {
-            if (it is TrimPath && it.type == TrimPathType.Simultaneously){
-                trimPaths.addTrimPath((it))
-            }
-        }
-    }
-
-    override fun getPath(time: Int): Path {
-
+    override fun getPath(frame: Int): Path {
         if (hidden) {
-            path.rewind()
             return path
         }
 
-        val position = position.interpolated(time)
-        val size = size.interpolated(time)
+        val pos = position.interpolated(frame)
+        val size = size.interpolated(frame)
 
-        if (lastPosition.contentEquals(position) && lastSize.contentEquals(size)){
-            return path
-        }
-
-        lastPosition = position
-        lastSize = size
-
-        path.rewind()
-
-        val top = (position[0] - size[0] / 2)
-        val left = (position[1] - size[1] / 2)
+        path.reset()
 
         path.addOval(
             Rect(
-                top = top,
-                left = left,
-                bottom = top + size[0],
-                right = left + size[1],
+                left = pos.x - size.x/2,
+                top = pos.y - size.y/2,
+                right = pos.x + size.y/2,
+                bottom = pos.y + size.y/2
             )
         )
 
-        trimPaths.apply(path, time)
-
         return path
+    }
+
+    override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
+        for (i in contentsBefore.indices) {
+            val content = contentsBefore[i]
+            if (content is TrimPath && content.type == TrimPathType.Simultaneously) {
+                trimPaths.addTrimPath(content)
+            }
+        }
     }
 }

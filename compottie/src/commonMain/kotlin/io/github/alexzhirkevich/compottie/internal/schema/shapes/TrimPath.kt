@@ -1,12 +1,13 @@
 package io.github.alexzhirkevich.compottie.internal.schema.shapes
 
+import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.schema.properties.TrimPathType
 import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-@SerialName("tr")
+@SerialName("tm")
 internal class TrimPath(
 
     @SerialName("n")
@@ -30,4 +31,7 @@ internal class TrimPath(
     @SerialName("m")
     val type : TrimPathType = TrimPathType.Simultaneously
 ) : Shape {
+    override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
+
+    }
 }

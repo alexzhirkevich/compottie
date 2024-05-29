@@ -1,13 +1,20 @@
 package io.github.alexzhirkevich.compottie.internal.utils
 
 import androidx.compose.ui.graphics.Matrix
+import org.jetbrains.skia.Matrix44
 
 fun Matrix.preTranslate(x : Float, y : Float) {
-    return translate(x, y)
+    preConcat(Matrix().apply {  translate(x,y) })
+//    return translate(x, y)
 }
 
+
+private val tempMatrix = Matrix()
+
 fun Matrix.preConcat(other : Matrix) {
-    return timesAssign(other)
+    tempMatrix.setFrom(other)
+    tempMatrix.timesAssign(this)
+    this.setFrom(tempMatrix)
 }
 
 fun Matrix.setValues(values : FloatArray){
@@ -15,9 +22,18 @@ fun Matrix.setValues(values : FloatArray){
 }
 
 fun Matrix.preRotate(degree : Float) {
-    return rotateZ(degree)
+    preConcat(tempMatrix.apply {
+        reset()
+        rotateZ(degree)
+    })
+
+//    return rotateZ(degree)
 }
 
 fun Matrix.preScale(x : Float, y : Float) {
-    return scale(x,y)
+    preConcat(tempMatrix.apply {
+        reset()
+        scale(x, y)
+    })
+//    return scale(x,y)
 }

@@ -8,6 +8,8 @@ import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.schema.properties.TrimPathType
 import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.schema.properties.x
+import io.github.alexzhirkevich.compottie.internal.schema.properties.y
 import io.github.alexzhirkevich.compottie.internal.schema.shapes.util.CompoundTrimPath
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -51,58 +53,26 @@ internal class Rect(
                 trimPaths.addTrimPath(it)
             }
         }
-//       if (content is com.airbnb.lottie.animation.content.RoundedCornersContent) {
-//                roundedCornersAnimation =
-//                    (content as com.airbnb.lottie.animation.content.RoundedCornersContent).getRoundedCorners()
-//            }
-//        }
     }
 
-    @Transient
-    private var lastPosition: FloatArray? = null
-
-    @Transient
-    private var lastSize: FloatArray? = null
-
-    @Transient
-    private var lastCorners: Float? = null
-
-
-    override fun getPath(time: Int): Path {
+    override fun getPath(frame: Int): Path {
 
         if (hidden) {
             path.rewind()
             return path
         }
 
-        val position = position.interpolated(time)
-        val size = size.interpolated(time)
-        val radius = roundedCorners?.interpolated(time)
-
-        if (lastPosition.contentEquals(position) &&
-            lastSize.contentEquals(size) &&
-            lastCorners == radius
-        ) {
-            return path
-        }
-
-        lastPosition = position
-        lastSize = size
-        lastCorners = radius
+        val position = position.interpolated(frame)
+        val size = size.interpolated(frame)
+        val radius = roundedCorners?.interpolated(frame)
 
         path.rewind()
 
-        val left = (position[0] - size[0] / 2)
-        val top = (position[1] - size[1] / 2)
-        val bottom = top + size[1]
-        val right = left + size[0]
-
-
         val rect = Rect(
-            top = top,
-            left = left,
-            bottom = bottom,
-            right = right,
+            top = position.x - size.x/2,
+            left = position.y - size.y/2,
+            bottom = position.x + size.x/2,
+            right = position.y + size.y/2,
         )
 
         if (radius != null) {
@@ -117,7 +87,7 @@ internal class Rect(
             path.addRect(rect)
         }
 
-        trimPaths.apply(path, time)
+        trimPaths.apply(path, frame)
 
         return path
     }

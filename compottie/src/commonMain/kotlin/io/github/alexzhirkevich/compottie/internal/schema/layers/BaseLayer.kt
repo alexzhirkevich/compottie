@@ -36,17 +36,17 @@ internal abstract class BaseLayer() : DrawingContent {
 
         matrix.setFrom(parentMatrix)
         parentLayers?.fastForEachReversed {
-            matrix *= it.transform.matrix(frame)
+            matrix.preConcat(it.transform.matrix(frame))
         }
 
         var alpha = parentAlpha
 
         transform.opacity?.interpolated(frame)?.let {
-            alpha *= it / 100f
+            alpha = (alpha * (it / 100f)).coerceIn(0f,1f)
         }
 
-        matrix *= transform.matrix(frame)
-        drawLayer(canvas, parentMatrix, alpha, frame)
+        matrix.preConcat(transform.matrix(frame))
+        drawLayer(canvas, matrix, alpha, frame)
     }
 
 

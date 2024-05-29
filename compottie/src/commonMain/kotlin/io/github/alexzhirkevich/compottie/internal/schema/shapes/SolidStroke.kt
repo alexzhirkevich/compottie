@@ -1,5 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.schema.shapes
 
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -27,10 +29,10 @@ internal class SolidStroke(
     val withAlpha : BooleanInt = BooleanInt.No,
 
     @SerialName("lc")
-    override val lineCap : LineCap,
+    override val lineCap : LineCap = LineCap.Round,
 
     @SerialName("lj")
-    override val lineJoin : LineJoin,
+    override val lineJoin : LineJoin = LineJoin.Round,
 
     @SerialName("ml")
     override val strokeMiter : Float = 0f,
@@ -45,9 +47,10 @@ internal class SolidStroke(
     val color : AnimatedColor,
 ) : BaseStroke(), Shape {
 
-    override fun setupPaint(paint: Paint, frame: Int) {
-        super.setupPaint(paint,  frame)
+    override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Int) {
         paint.color = color.interpolated(frame)
+
+        super.draw(canvas, parentMatrix, parentAlpha, frame)
     }
 }
 
@@ -76,7 +79,7 @@ internal fun LineJoin.asStrokeJoin() : StrokeJoin {
         LineJoin.Miter -> StrokeJoin.Miter
         LineJoin.Round -> StrokeJoin.Round
         LineJoin.Bevel -> StrokeJoin.Bevel
-        else -> error("Unknown line join: $this")
+        else ->StrokeJoin.Round// error("Unknown line join: $this")
     }
 }
 
@@ -85,6 +88,6 @@ internal fun LineCap.asStrokeCap() : StrokeCap {
         LineCap.Butt -> StrokeCap.Butt
         LineCap.Round -> StrokeCap.Round
         LineCap.Square -> StrokeCap.Square
-        else -> error("Unknown line cap: $this")
+        else -> StrokeCap.Round //error("Unknown line cap: $this")
     }
 }
