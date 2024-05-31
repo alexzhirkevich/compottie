@@ -37,17 +37,26 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
         @Transient
         override var shapeModifiers: List<ShapeModifierContent> = emptyList()
 
-        private val path by lazy {
+        private val unmodifiedPath by lazy {
             Path().also {
-                bezier.modifiedBy(shapeModifiers).toShapeData().mapPath(it)
+                bezier.toShapeData().mapPath(it)
             }
+        }
+
+        private val shapeData by lazy {
+            bezier.toShapeData()
         }
 
         @Transient
         private val tmpPath = Path()
         override fun interpolated(frame: Int): Path {
+            if (shapeModifiers.isEmpty()) {
+                tmpPath.set(unmodifiedPath)
+                return unmodifiedPath
+            }
+
             tmpPath.reset()
-            tmpPath.set(path)
+            shapeData.modifiedBy(shapeModifiers, frame).mapPath(tmpPath)
             return tmpPath
         }
     }
@@ -67,10 +76,6 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
 
         @Transient
         override var shapeModifiers: List<ShapeModifierContent> = emptyList()
-            set(value) {
-                field = value
-                delegate = createDelegate()
-            }
 
         @Transient
         private val tmpPath = Path()
@@ -79,21 +84,20 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
         private val tmpShapeData = ShapeData()
 
         @Transient
-        private var delegate = createDelegate()
+        private var delegate =  BaseKeyframeAnimation(
+            keyframes = keyframes.map { it.toShapeKeyframe() },
+            emptyValue = tmpPath,
+            map = { s, e, p, frame ->
+                tmpShapeData.interpolateBetween(s, e, easingX.transform(p))
+                val modified = tmpShapeData.modifiedBy(shapeModifiers, frame)
+                modified.mapPath(tmpPath)
+                tmpPath
+            }
+        )
 
         override fun interpolated(frame: Int): Path {
             return delegate.interpolated(frame)
         }
-
-        private fun createDelegate() = BaseKeyframeAnimation(
-            keyframes = keyframes.map { it.toShapeKeyframe(shapeModifiers) },
-            emptyValue = tmpPath,
-            map = { s, e, p ->
-                tmpShapeData.interpolateBetween(s, e, p)
-                tmpShapeData.mapPath(tmpPath)
-                tmpPath
-            }
-        )
     }
 }
 

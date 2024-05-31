@@ -54,7 +54,7 @@ internal actual fun MakeRadialGradient(
 )
 
 
-private fun Matrix.asSkia33() : Matrix33 {
+internal fun Matrix.asSkia33() : Matrix33 {
     return Matrix33(
         values[Matrix.ScaleX],
         values[Matrix.SkewX],

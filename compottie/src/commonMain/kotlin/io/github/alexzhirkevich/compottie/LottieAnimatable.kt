@@ -18,6 +18,7 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
+import kotlin.time.Duration.Companion.nanoseconds
 
 /**
  * Use this to create a [LottieAnimatable] in a composable.
@@ -292,21 +293,17 @@ private class LottieAnimatableImpl : LottieAnimatable {
 
     private fun onFrame(iterations: Int, frameNanos: Long): Boolean {
         val composition = composition ?: return true
-        val dNanos = if (lastFrameNanos == AnimationConstants.UnspecifiedTime)
-            0L else (frameNanos - lastFrameNanos)
-
+        val dNanos = if (lastFrameNanos == AnimationConstants.UnspecifiedTime) 0L else (frameNanos - lastFrameNanos)
         lastFrameNanos = frameNanos
 
         val minProgress = clipSpec?.getMinProgress(composition) ?: 0f
         val maxProgress = clipSpec?.getMaxProgress(composition) ?: 1f
 
-        val dProgress = dNanos.toFloat() / 1_000_000 / composition.duration * frameSpeed
-
+        val dProgress = dNanos / 1_000_000f / composition.duration * frameSpeed
         val progressPastEndOfIteration = when {
             frameSpeed < 0 -> minProgress - (progressRaw + dProgress)
             else -> progressRaw + dProgress - maxProgress
         }
-
         if (progressPastEndOfIteration < 0f) {
             updateProgress(progressRaw.coerceIn(minProgress, maxProgress) + dProgress)
         } else {
@@ -320,7 +317,6 @@ private class LottieAnimatableImpl : LottieAnimatable {
             }
             iteration += dIterations
             val progressPastEndRem = progressPastEndOfIteration - (dIterations - 1) * durationProgress
-
             updateProgress(
                 when {
                     frameSpeed < 0 -> maxProgress - progressPastEndRem
@@ -341,9 +337,7 @@ private class LottieAnimatableImpl : LottieAnimatable {
 
     private fun updateProgress(progress: Float) {
         this.progressRaw = progress
-        this.progress = if (useCompositionFrameRate)
-            progress.roundToCompositionFrameRate(composition)
-        else progress
+        this.progress = if (useCompositionFrameRate) progress.roundToCompositionFrameRate(composition) else progress
     }
 }
 

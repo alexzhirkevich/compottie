@@ -54,8 +54,8 @@ internal sealed interface AnimatedColor : KeyframeAnimation<Color>, Indexable {
     ) : AnimatedColor, KeyframeAnimation<Color> by BaseKeyframeAnimation(
         keyframes = value,
         emptyValue = Color.Transparent,
-        map = { s, e, p ->
-            lerp(s.asColor(), e.asColor(), p)
+        map = { s, e, p, _ ->
+            lerp(s.asColor(), e.asColor(), easingX.transform(p))
         }
     )
 }

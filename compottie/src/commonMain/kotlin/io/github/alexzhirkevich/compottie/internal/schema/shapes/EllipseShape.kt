@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie.internal.schema.shapes
 
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedVector2
@@ -44,29 +45,46 @@ internal class EllipseShape(
             return path
         }
 
-        val pos = position.interpolated(frame)
         val size = size.interpolated(frame)
+        val halfWidth = size.x / 2f
+        val halfHeight = size.y / 2f
+
+        // TODO: handle bounds
+        val cpW = halfWidth * ELLIPSE_CONTROL_POINT_PERCENTAGE
+        val cpH = halfHeight * ELLIPSE_CONTROL_POINT_PERCENTAGE
 
         path.reset()
+//        if (circleShape.isReversed) {
+//            path.moveTo(0f, -halfHeight)
+//            path.cubicTo(0 - cpW, -halfHeight, -halfWidth, 0 - cpH, -halfWidth, 0f)
+//            path.cubicTo(-halfWidth, 0 + cpH, 0 - cpW, halfHeight, 0f, halfHeight)
+//            path.cubicTo(0 + cpW, halfHeight, halfWidth, 0 + cpH, halfWidth, 0f)
+//            path.cubicTo(halfWidth, 0 - cpH, 0 + cpW, -halfHeight, 0f, -halfHeight)
+//        } else {
+            path.moveTo(0f, -halfHeight)
+            path.cubicTo(0 + cpW, -halfHeight, halfWidth, 0 - cpH, halfWidth, 0f)
+            path.cubicTo(halfWidth, 0 + cpH, 0 + cpW, halfHeight, 0f, halfHeight)
+            path.cubicTo(0 - cpW, halfHeight, -halfWidth, 0 + cpH, -halfWidth, 0f)
+            path.cubicTo(-halfWidth, 0 - cpH, 0 - cpW, -halfHeight, 0f, -halfHeight)
+//        }
 
-        path.addOval(
-            Rect(
-                left = pos.x - size.x/2,
-                top = pos.y - size.y/2,
-                right = pos.x + size.y/2,
-                bottom = pos.y + size.y/2
-            )
-        )
+        val position = position.interpolated(frame)
+
+        path.translate(position)
+
+        path.close()
+
+        trimPaths.apply(path, frame)
 
         return path
     }
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
-        for (i in contentsBefore.indices) {
-            val content = contentsBefore[i]
-            if (content.isSimultaneousTrimPath()) {
-                trimPaths.addTrimPath(content)
+        contentsBefore.fastForEach {
+            if (it.isSimultaneousTrimPath()) {
+                trimPaths.addTrimPath(it)
             }
         }
     }
 }
+private const val ELLIPSE_CONTROL_POINT_PERCENTAGE = 0.55228f

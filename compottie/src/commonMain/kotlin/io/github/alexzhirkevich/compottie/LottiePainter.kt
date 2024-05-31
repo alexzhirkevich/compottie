@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsFetcher
 import io.github.alexzhirkevich.compottie.assets.NoOpAssetsFetcher
@@ -37,6 +38,7 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
+import kotlin.time.measureTime
 
 
 @Composable
@@ -139,7 +141,7 @@ private class LottiePainter(
     )
 
     init {
-        composition.lottieData.layers.forEach {
+        composition.lottieData.layers.fastForEach {
             it.serviceLocator = serviceLocator
         }
     }
@@ -153,28 +155,26 @@ private class LottiePainter(
     }
 
     override fun DrawScope.onDraw() {
+        matrix.reset()
 
-        drawIntoCanvas { canvas ->
+        val scale = ContentScale.Fit.computeScaleFactor(intrinsicSize, size)
 
-            matrix.reset()
+        val offset = Alignment.Center.align(
+            IntSize(
+                (intrinsicSize.width).roundToInt(),
+                (intrinsicSize.height).roundToInt()
+            ),
+            IntSize(
+                size.width.roundToInt(),
+                size.height.roundToInt()
+            ),
+            layoutDirection
+        )
 
-            val scale = ContentScale.Fit.computeScaleFactor(intrinsicSize, size)
+        scale(scale.scaleX, scale.scaleY) {
+            translate(offset.x.toFloat(), offset.y.toFloat()) {
 
-            val offset = Alignment.Center.align(
-                IntSize(
-                    (intrinsicSize.width).roundToInt(),
-                    (intrinsicSize.height).roundToInt()
-                ),
-                IntSize(
-                    size.width.roundToInt(),
-                    size.height.roundToInt()
-                ),
-                layoutDirection
-            )
-
-            scale(scale.scaleX, scale.scaleY) {
-                translate(offset.x.toFloat(), offset.y.toFloat()) {
-
+                drawIntoCanvas { canvas ->
                     composition.lottieData.layers.fastForEachReversed {
                         if (it is DrawingContent) {
                             it.density = density

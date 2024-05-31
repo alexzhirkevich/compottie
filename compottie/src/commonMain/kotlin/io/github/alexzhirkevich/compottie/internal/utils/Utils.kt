@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathMeasure
 import io.github.alexzhirkevich.compottie.internal.platform.ExtendedPathMeasure
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import io.github.alexzhirkevich.compottie.internal.schema.shapes.TrimPathShape
@@ -32,6 +33,7 @@ internal object Utils {
         val start: Float = trimPath.start.interpolated(frame)
         val end: Float = trimPath.end.interpolated(frame)
         val offset: Float = trimPath.offset.interpolated(frame)
+
         applyTrimPathIfNeeded(
             path = path,
             startValue = start / 100f,
@@ -43,20 +45,19 @@ internal object Utils {
     fun applyTrimPathIfNeeded(
         path: Path, startValue: Float, endValue: Float, offsetValue: Float,
     ) {
-
         pathMeasure.setPath(path, false)
 
         val length: Float = pathMeasure.length
         if (startValue == 1f && endValue == 0f) {
             return
         }
-        if (length < 1f || abs((endValue - startValue - 1).toDouble()) < .01) {
+        if (length < 1f || abs((endValue - startValue - 1)) < .01f) {
             return
         }
         val start = length * startValue
         val end = length * endValue
-        var newStart = min(start.toDouble(), end.toDouble()).toFloat()
-        var newEnd = max(start.toDouble(), end.toDouble()).toFloat()
+        var newStart = min(start, end)
+        var newEnd = max(start, end)
 
         val offset = offsetValue * length
         newStart += offset
@@ -85,33 +86,35 @@ internal object Utils {
             newStart -= length
         }
 
+
         tempPath.reset()
         pathMeasure.getSegment(
-            newStart,
-            newEnd,
-            tempPath,
-            true
+            startDistance = newStart,
+            stopDistance = newEnd,
+            destination = tempPath,
+            startWithMoveTo = true
         )
 
         if (newEnd > length) {
             tempPath2.reset()
             pathMeasure.getSegment(
-                0f,
-                newEnd % length,
-                tempPath2,
-                true
+                startDistance = 0f,
+                stopDistance = newEnd % length,
+                destination = tempPath2,
+                startWithMoveTo = true
             )
             tempPath.addPath(tempPath2)
         } else if (newStart < 0) {
             tempPath2.reset()
             pathMeasure.getSegment(
-                length + newStart,
-                length,
-                tempPath2,
-                true
+                startDistance = length + newStart,
+                stopDistance = length,
+                destination = tempPath2,
+                startWithMoveTo = true
             )
             tempPath.addPath(tempPath2)
         }
+
         path.set(tempPath)
     }
 }

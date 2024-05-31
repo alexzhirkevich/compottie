@@ -11,18 +11,20 @@ sealed interface LottieCompositionSpec {
     companion object
 }
 
+
 @Stable
 fun LottieCompositionSpec.Companion.JsonString(
     jsonString: String
 ): LottieCompositionSpec = JsonStringImpl(jsonString)
 
+
 @Immutable
 private class JsonStringImpl(
-    internal val jsonString: String
+    private val jsonString: String
 ) : LottieCompositionSpec  {
 
     override suspend fun load(): LottieComposition {
-        return LottieComposition(LottieJson.decodeFromString(jsonString))
+        return LottieComposition.parse(jsonString)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -44,5 +46,4 @@ private class JsonStringImpl(
         return "JsonString(jsonString='$jsonString')"
     }
 }
-
 

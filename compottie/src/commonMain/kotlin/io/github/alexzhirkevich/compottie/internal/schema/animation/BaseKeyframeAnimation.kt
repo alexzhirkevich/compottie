@@ -1,10 +1,12 @@
 package io.github.alexzhirkevich.compottie.internal.schema.animation
 
+import kotlin.math.roundToInt
+
 
 internal class BaseKeyframeAnimation<T,K>(
     keyframes: List<Keyframe<K>>,
     private val emptyValue : T,
-    private val map : (K, K, Float) -> T
+    private val map : Keyframe<K>.(K, K, Float, Int) -> T
 ) : KeyframeAnimation<T> {
 
     private val sortedKeyframes = keyframes.sortedBy { it.time }
@@ -18,35 +20,41 @@ internal class BaseKeyframeAnimation<T,K>(
     }
 
     private val initialValue by lazy {
-        map(
-            requireNotNull(
-                sortedKeyframes[0].start,
-                InvalidKeyframeError
-            ),
-            requireNotNull(
-                sortedKeyframes[0].end ?: sortedKeyframes.getOrNull(1)?.start,
-                InvalidKeyframeError
-            ),
-            0f
-        )
+        keyframes.first().run {
+            map(
+                requireNotNull(
+                    sortedKeyframes[0].start,
+                    InvalidKeyframeError
+                ),
+                requireNotNull(
+                    sortedKeyframes[0].end ?: sortedKeyframes.getOrNull(1)?.start,
+                    InvalidKeyframeError
+                ),
+                0f,
+                firstFrame.roundToInt()
+            )
+        }
     }
 
     private val targetValue by lazy {
-        map(
-            requireNotNull(
-                sortedKeyframes.getOrNull(sortedKeyframes.lastIndex - 1)?.start,
-                InvalidKeyframeError
-            ),
-            requireNotNull(
-                sortedKeyframes.getOrNull(sortedKeyframes.lastIndex - 1)?.end
-                    ?: sortedKeyframes.last().start,
-                InvalidKeyframeError
-            ),
-            1f
-        )
+        keyframes.last().run {
+            map(
+                requireNotNull(
+                    sortedKeyframes.getOrNull(sortedKeyframes.lastIndex - 1)?.start,
+                    InvalidKeyframeError
+                ),
+                requireNotNull(
+                    sortedKeyframes.getOrNull(sortedKeyframes.lastIndex - 1)?.end
+                        ?: sortedKeyframes.last().start,
+                    InvalidKeyframeError
+                ),
+                1f,
+                lastFrame.roundToInt()
+            )
+        }
     }
 
-    final override fun interpolated(frame: Int): T {
+    override fun interpolated(frame: Int): T {
         return when {
             sortedKeyframes.isEmpty() -> emptyValue
             frame >= lastFrame -> targetValue
@@ -65,17 +73,21 @@ internal class BaseKeyframeAnimation<T,K>(
                     }
                 }
 
-                map(
-                    requireNotNull(
-                        sortedKeyframes[kfIdx].start,
-                        InvalidKeyframeError
-                    ),
-                    requireNotNull(
-                        sortedKeyframes[kfIdx].end ?: sortedKeyframes.getOrNull(kfIdx + 1)?.start,
-                        InvalidKeyframeError
-                    ),
-                    sortedKeyframes[kfIdx].easing.transform(progress)
-                )
+                sortedKeyframes[kfIdx].run {
+                    map(
+                        requireNotNull(
+                            sortedKeyframes[kfIdx].start,
+                            InvalidKeyframeError
+                        ),
+                        requireNotNull(
+                            sortedKeyframes[kfIdx].end
+                                ?: sortedKeyframes.getOrNull(kfIdx + 1)?.start,
+                            InvalidKeyframeError
+                        ),
+                        progress,
+                        frame
+                    )
+                }
             }
         }
     }

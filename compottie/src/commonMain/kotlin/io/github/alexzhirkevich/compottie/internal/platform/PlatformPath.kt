@@ -1,18 +1,22 @@
 package io.github.alexzhirkevich.compottie.internal.platform
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.graphics.PathOperation
 
-expect fun ExtendedPathMeasure() : ExtendedPathMeasure
+internal expect fun ExtendedPathMeasure() : ExtendedPathMeasure
 
-interface ExtendedPathMeasure : PathMeasure {
+internal interface ExtendedPathMeasure : PathMeasure {
     fun nextContour() : Boolean
 }
 
-fun Path.set(other : Path){
-    op(this, other, PathOperation.Union)
+internal fun Path.set(other : Path){
+    reset()
+    addPath(other)
 }
 
-fun Path.addPath(path: Path, matrix: Matrix) = addPath(path.apply { transform(matrix) })
+//internal expect fun Path.set(other : Path)
+
+internal expect fun Path.addPath(path: Path, matrix: Matrix) : Path

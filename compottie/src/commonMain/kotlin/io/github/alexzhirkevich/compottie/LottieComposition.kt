@@ -16,9 +16,13 @@ import kotlinx.coroutines.withContext
 class LottieComposition internal constructor(
     internal val lottieData: LottieData,
 ) {
-    val duration: Int get() = lottieData.durationMillis
+    val duration: Float get() = lottieData.durationMillis
 
-    val frameRate : Int get() = lottieData.frameRate
+    val frameRate: Float get() = lottieData.frameRate
+
+    companion object {
+        fun parse(json: String) = LottieComposition(LottieJson.decodeFromString(json))
+    }
 }
 
 @Composable

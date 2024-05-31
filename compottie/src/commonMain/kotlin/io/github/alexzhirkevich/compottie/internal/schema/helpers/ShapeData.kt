@@ -70,7 +70,7 @@ internal fun ShapeData.mapPath(outPath : Path) {
     outPath.reset()
     outPath.moveTo(initialPoint.x, initialPoint.y)
 
-    var  pathFromDataCurrentPoint = initialPoint
+    var pathFromDataCurrentPoint = initialPoint
     for (i in curves.indices) {
         val curveData = curves[i]
         val cp1 = curveData.controlPoint1

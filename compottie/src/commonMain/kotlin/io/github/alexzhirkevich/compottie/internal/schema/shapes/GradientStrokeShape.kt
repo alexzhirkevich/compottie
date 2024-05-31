@@ -15,7 +15,7 @@ import kotlinx.serialization.Transient
 
 @Serializable
 @SerialName("gs")
-internal class GradientStroke(
+internal class GradientStrokeShape(
 
     @SerialName("mn")
     override val matchName : String? = null,

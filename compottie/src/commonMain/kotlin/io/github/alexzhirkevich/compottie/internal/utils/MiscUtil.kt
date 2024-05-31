@@ -4,7 +4,7 @@ fun floorMod(x: Float, y: Float): Int {
     return floorMod(x.toInt(), y.toInt())
 }
 
-private fun floorMod(x: Int, y: Int): Int {
+fun floorMod(x: Int, y: Int): Int {
     return x - y * floorDiv(x, y)
 }
 

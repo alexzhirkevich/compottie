@@ -54,5 +54,5 @@ internal fun Content.isIndividualTrimPath() : Boolean {
         returns(true) implies (this@isIndividualTrimPath is TrimPathShape)
     }
 
-    return this is TrimPathShape && type == TrimPathType.Simultaneously
+    return this is TrimPathShape && type == TrimPathType.Individually
 }

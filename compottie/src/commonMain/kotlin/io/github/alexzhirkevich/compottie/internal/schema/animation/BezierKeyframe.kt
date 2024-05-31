@@ -29,10 +29,10 @@ internal class BezierKeyframe(
 
 
 internal fun BezierKeyframe.toShapeKeyframe(
-    modifiers : List<ShapeModifierContent>
+    modifiers : List<ShapeModifierContent> = emptyList(), frame : Int = 0
 ) = ShapeKeyframe(
-    start = start?.let { it.modifiedBy(modifiers).toShapeData() },
-    end = end?.let { it.modifiedBy(modifiers).toShapeData() },
+    start = start?.toShapeData()?.modifiedBy(modifiers, frame),
+    end = end?.toShapeData()?.modifiedBy(modifiers, frame),
     time = time,
     inValue = inValue,
     outValue = outValue

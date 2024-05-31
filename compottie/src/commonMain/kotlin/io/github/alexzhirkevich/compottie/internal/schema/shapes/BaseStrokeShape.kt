@@ -115,19 +115,7 @@ internal abstract class BaseStrokeShape() : DrawingContent {
 
         contentsAfter.fastForEachReversed { content ->
             if (content.isIndividualTrimPath()) {
-                currentPathGroup?.let(pathGroups::add)
 
-                currentPathGroup = PathGroup(content)
-            } else if (content is PathContent) {
-                if (currentPathGroup == null) {
-                    currentPathGroup = PathGroup(trimPathContentBefore)
-                }
-                currentPathGroup?.paths?.add(content)
-            }
-        }
-
-        contentsAfter.fastForEachReversed { content ->
-            if (content.isIndividualTrimPath()) {
                 currentPathGroup?.let(pathGroups::add)
 
                 currentPathGroup = PathGroup(content)
@@ -142,6 +130,35 @@ internal abstract class BaseStrokeShape() : DrawingContent {
 
         currentPathGroup?.let(pathGroups::add)
     }
+
+//    override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
+//        var trimPathContentBefore: TrimPathShape? = null
+//        for (i in contentsBefore.indices.reversed()) {
+//            val content = contentsBefore[i]
+//            if (content.isIndividualTrimPath()) {
+//                trimPathContentBefore = content
+//            }
+//        }
+//
+//        var currentPathGroup: PathGroup? = null
+//        for (i in contentsAfter.indices.reversed()) {
+//            val content = contentsAfter[i]
+//            if (content.isIndividualTrimPath()) {
+//                if (currentPathGroup != null) {
+//                    pathGroups.add(currentPathGroup)
+//                }
+//                currentPathGroup = PathGroup(content)
+//            } else if (content is PathContent) {
+//                if (currentPathGroup == null) {
+//                    currentPathGroup = PathGroup(trimPathContentBefore)
+//                }
+//                currentPathGroup.paths.add(content)
+//            }
+//        }
+//        if (currentPathGroup != null) {
+//            pathGroups.add(currentPathGroup)
+//        }
+//    }
 
     override fun getBounds(
         outBounds: MutableRect,

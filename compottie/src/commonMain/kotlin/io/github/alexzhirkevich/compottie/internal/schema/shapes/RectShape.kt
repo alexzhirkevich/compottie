@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie.internal.schema.shapes
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedValue
@@ -45,7 +46,7 @@ internal class RectShape(
     private val trimPaths = CompoundTrimPath()
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
-        contentsBefore.forEach {
+        contentsBefore.fastForEach {
             if (it.isSimultaneousTrimPath()) {
                 trimPaths.addTrimPath(it)
             }

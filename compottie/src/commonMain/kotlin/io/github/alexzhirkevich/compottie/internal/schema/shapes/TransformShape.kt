@@ -1,7 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.schema.shapes
 
 import io.github.alexzhirkevich.compottie.internal.content.Content
-import io.github.alexzhirkevich.compottie.internal.schema.ModifierContent
+import io.github.alexzhirkevich.compottie.internal.content.ModifierContent
 import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedValue
@@ -34,7 +34,7 @@ internal class TransformShape(
     override val rotation : AnimatedValue ? = null,
 
     @SerialName("o")
-    override val opacity : AnimatedValue = AnimatedValue.Default(value = 100f),
+    override val opacity : AnimatedValue? = null,
 
     @SerialName("sk")
     override val skew: AnimatedValue? = null,

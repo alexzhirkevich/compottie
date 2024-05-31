@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal class VectorKeyframe(
+internal data class VectorKeyframe(
 
     @SerialName("s")
     override val start : FloatArray? = null,

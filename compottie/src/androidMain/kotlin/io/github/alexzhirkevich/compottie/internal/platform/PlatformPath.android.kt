@@ -4,13 +4,25 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.asAndroidPath
+import androidx.compose.ui.graphics.asComposePath
+import androidx.compose.ui.graphics.setFrom
 
 
-actual fun ExtendedPathMeasure() : ExtendedPathMeasure = AndroidExtendedPathMeasure(
+internal actual fun ExtendedPathMeasure() : ExtendedPathMeasure = AndroidExtendedPathMeasure(
     android.graphics.PathMeasure()
 )
 
-private val matrix = android.graphics.Matrix()
+private val tempAndroidMatrix = android.graphics.Matrix()
+internal actual fun Path.addPath(path: Path, matrix: Matrix) : Path {
+    return asAndroidPath().apply {
+        this.addPath(path.asAndroidPath(), tempAndroidMatrix.apply { setFrom(matrix) })
+    }.asComposePath()
+}
+
+//internal actual fun Path.set(other : Path) {
+//    asAndroidPath().set(other.asAndroidPath())
+//}
+
 
 private class AndroidExtendedPathMeasure(
     private val internalPathMeasure: android.graphics.PathMeasure
@@ -79,3 +91,4 @@ private class AndroidExtendedPathMeasure(
         }
     }
 }
+

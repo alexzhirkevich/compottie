@@ -2,8 +2,12 @@ package io.github.alexzhirkevich.compottie.internal.schema.animation
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonTransformingSerializer
 
-@Serializable
+@Serializable()
 internal class ValueKeyframe(
 
     @SerialName("s")
@@ -21,6 +25,5 @@ internal class ValueKeyframe(
     @SerialName("o")
     override val outValue : BezierInterpolation? = null,
 ) : Keyframe<FloatArray>()
-
 
 

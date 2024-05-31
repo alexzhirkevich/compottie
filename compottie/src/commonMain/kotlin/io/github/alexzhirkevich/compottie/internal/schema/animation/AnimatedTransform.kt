@@ -94,7 +94,7 @@ internal abstract class AnimatedTransform {
             }
 
         scale?.interpolated(frame)
-            ?.takeIf { it.x != 0f || it.y != 0f }
+            ?.takeIf { it.x != 1f || it.y != 1f }
             ?.let {
                 matrix.preScale(it.x / 100f, it.y / 100f)
             }

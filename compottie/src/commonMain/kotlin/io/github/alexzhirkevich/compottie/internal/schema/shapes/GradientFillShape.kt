@@ -23,7 +23,7 @@ import kotlinx.serialization.Transient
 
 @Serializable
 @SerialName("gf")
-internal class GradientFill(
+internal class GradientFillShape(
 
     @SerialName("mn")
     override val matchName : String? = null,

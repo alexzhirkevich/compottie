@@ -36,6 +36,8 @@ import androidx.compose.runtime.setValue
  * @param ignoreSystemAnimatorScale By default, Lottie will respect the system animator scale set in developer options or set to 0
  *                                  by things like battery saver mode. When set to 0, the speed will effectively become [Integer.MAX_VALUE].
  *                                  Set this to false if you want to ignore the system animator scale and always default to normal speed.
+ *
+ * @param forceFPS scale animation frame rate to specific value
  */
 @Composable
 fun animateLottieCompositionAsState(
@@ -50,6 +52,7 @@ fun animateLottieCompositionAsState(
     ignoreSystemAnimatorScale: Boolean = false,
     useCompositionFrameRate: Boolean = false,
 ): LottieAnimationState {
+
     require(iterations > 0) { "Iterations must be a positive number ($iterations)." }
     require(speed.isFinite()) { "Speed must be a finite number. It is $speed." }
 

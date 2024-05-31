@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 internal class LottieData(
     @SerialName("fr")
-    val frameRate : Int,
+    val frameRate : Float,
 
     @SerialName("w")
     val width : Int,
