@@ -1,13 +1,13 @@
-package io.github.alexzhirkevich.compottie.internal.schema.animation
+package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.graphics.Path
 import io.github.alexzhirkevich.compottie.internal.content.ShapeModifierContent
 import io.github.alexzhirkevich.compottie.internal.content.modifiedBy
 import io.github.alexzhirkevich.compottie.internal.platform.set
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.Bezier
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.ShapeData
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.mapPath
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.toShapeData
+import io.github.alexzhirkevich.compottie.internal.helpers.Bezier
+import io.github.alexzhirkevich.compottie.internal.helpers.ShapeData
+import io.github.alexzhirkevich.compottie.internal.helpers.mapPath
+import io.github.alexzhirkevich.compottie.internal.helpers.toShapeData
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

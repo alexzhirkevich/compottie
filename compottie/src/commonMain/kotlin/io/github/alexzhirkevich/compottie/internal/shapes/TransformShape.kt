@@ -1,10 +1,10 @@
-package io.github.alexzhirkevich.compottie.internal.schema.shapes
+package io.github.alexzhirkevich.compottie.internal.shapes
 
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.ModifierContent
-import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedTransform
-import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedVector2
-import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

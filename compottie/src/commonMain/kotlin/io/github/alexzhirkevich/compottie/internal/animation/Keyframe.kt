@@ -1,4 +1,4 @@
-package io.github.alexzhirkevich.compottie.internal.schema.animation
+package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Easing

@@ -1,11 +1,11 @@
-package io.github.alexzhirkevich.compottie.internal.schema.assets
+package io.github.alexzhirkevich.compottie.internal.assets
 
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.unit.IntSize
 import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

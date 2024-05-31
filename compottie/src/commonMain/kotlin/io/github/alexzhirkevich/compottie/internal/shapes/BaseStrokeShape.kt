@@ -1,4 +1,4 @@
-package io.github.alexzhirkevich.compottie.internal.schema.shapes
+package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Canvas
@@ -16,7 +16,7 @@ import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.platform.ExtendedPathMeasure
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.platform.set
-import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.utils.Utils
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.Serializable

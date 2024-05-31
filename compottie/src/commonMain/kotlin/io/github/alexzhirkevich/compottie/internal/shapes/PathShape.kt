@@ -1,4 +1,4 @@
-package io.github.alexzhirkevich.compottie.internal.schema.shapes
+package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
@@ -7,8 +7,8 @@ import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.content.ShapeModifierContent
 import io.github.alexzhirkevich.compottie.internal.platform.set
-import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedShape
-import io.github.alexzhirkevich.compottie.internal.schema.shapes.util.CompoundTrimPath
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
+import io.github.alexzhirkevich.compottie.internal.shapes.util.CompoundTrimPath
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient

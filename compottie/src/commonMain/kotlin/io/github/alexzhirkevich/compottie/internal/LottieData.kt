@@ -1,8 +1,8 @@
 package io.github.alexzhirkevich.compottie.internal
 
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.Marker
-import io.github.alexzhirkevich.compottie.internal.schema.assets.LottieAsset
-import io.github.alexzhirkevich.compottie.internal.schema.layers.Layer
+import io.github.alexzhirkevich.compottie.internal.helpers.Marker
+import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

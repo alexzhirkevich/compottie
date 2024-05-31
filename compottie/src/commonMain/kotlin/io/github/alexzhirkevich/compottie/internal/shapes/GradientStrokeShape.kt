@@ -1,14 +1,14 @@
-package io.github.alexzhirkevich.compottie.internal.schema.shapes
+package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Shader
 import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
-import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedValue
-import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedVector2
-import io.github.alexzhirkevich.compottie.internal.schema.animation.GradientColors
-import io.github.alexzhirkevich.compottie.internal.schema.animation.GradientType
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.animation.GradientColors
+import io.github.alexzhirkevich.compottie.internal.animation.GradientType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient

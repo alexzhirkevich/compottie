@@ -1,4 +1,4 @@
-package io.github.alexzhirkevich.compottie.internal.schema.animation
+package io.github.alexzhirkevich.compottie.internal.animation
 
 internal interface Indexable {
     val expression : String ?

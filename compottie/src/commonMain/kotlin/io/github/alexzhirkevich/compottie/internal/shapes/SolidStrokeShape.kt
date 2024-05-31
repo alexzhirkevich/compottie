@@ -1,10 +1,10 @@
-package io.github.alexzhirkevich.compottie.internal.schema.shapes
+package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
-import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedColor
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.BooleanInt
-import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
+import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

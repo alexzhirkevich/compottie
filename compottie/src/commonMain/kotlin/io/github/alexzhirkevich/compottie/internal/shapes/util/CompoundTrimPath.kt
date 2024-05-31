@@ -1,8 +1,8 @@
-package io.github.alexzhirkevich.compottie.internal.schema.shapes.util
+package io.github.alexzhirkevich.compottie.internal.shapes.util
 
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.util.fastForEachReversed
-import io.github.alexzhirkevich.compottie.internal.schema.shapes.TrimPathShape
+import io.github.alexzhirkevich.compottie.internal.shapes.TrimPathShape
 import io.github.alexzhirkevich.compottie.internal.utils.Utils
 
 internal class CompoundTrimPath {

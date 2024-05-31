@@ -1,4 +1,4 @@
-package io.github.alexzhirkevich.compottie.internal.schema.layers
+package io.github.alexzhirkevich.compottie.internal.layers
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -10,7 +10,7 @@ import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.services.LottieServiceLocator
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.Transform
+import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 
 internal abstract class BaseLayer() : DrawingContent {

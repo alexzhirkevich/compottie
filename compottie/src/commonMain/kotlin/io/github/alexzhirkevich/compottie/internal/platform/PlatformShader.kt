@@ -5,9 +5,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.TileMode
-import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedVector2
-import io.github.alexzhirkevich.compottie.internal.schema.animation.GradientColors
-import io.github.alexzhirkevich.compottie.internal.schema.animation.GradientType
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.animation.GradientColors
+import io.github.alexzhirkevich.compottie.internal.animation.GradientType
 import kotlin.math.hypot
 
 private val CACHE_LIMIT = 15

@@ -1,4 +1,4 @@
-package io.github.alexzhirkevich.compottie.internal.schema.effects
+package io.github.alexzhirkevich.compottie.internal.effects
 
 import kotlinx.serialization.Serializable
 

@@ -1,4 +1,4 @@
-package io.github.alexzhirkevich.compottie.internal.schema.animation
+package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.util.lerp

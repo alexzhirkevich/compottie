@@ -1,10 +1,10 @@
-//package io.github.alexzhirkevich.compottie.internal.schema.shapes.util
+//package io.github.alexzhirkevich.compottie.internal.shapes.util
 //
 //import androidx.compose.ui.graphics.Path
 //import androidx.compose.ui.graphics.PathMeasure
 //import androidx.compose.ui.graphics.PathOperation
 //import io.github.alexzhirkevich.compottie.internal.platform.set
-//import io.github.alexzhirkevich.compottie.internal.schema.shapes.TrimPath
+//import io.github.alexzhirkevich.compottie.internal.shapes.TrimPath
 //import kotlin.math.abs
 //import kotlin.math.max
 //import kotlin.math.min

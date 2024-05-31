@@ -1,8 +1,8 @@
-package io.github.alexzhirkevich.compottie.internal.schema.shapes
+package io.github.alexzhirkevich.compottie.internal.shapes
 
 import io.github.alexzhirkevich.compottie.internal.content.Content
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.TrimPathType
-import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.helpers.TrimPathType
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.contracts.ExperimentalContracts

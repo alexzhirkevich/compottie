@@ -1,11 +1,11 @@
-package io.github.alexzhirkevich.compottie.internal.schema.shapes
+package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.geometry.Offset
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.ShapeModifierContent
-import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedValue
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.CubicCurveData
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.ShapeData
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.helpers.CubicCurveData
+import io.github.alexzhirkevich.compottie.internal.helpers.ShapeData
 import io.github.alexzhirkevich.compottie.internal.utils.floorMod
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

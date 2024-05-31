@@ -1,4 +1,4 @@
-//package io.github.alexzhirkevich.compottie.internal.schema.shapes.util
+//package io.github.alexzhirkevich.compottie.internal.shapes.util
 //
 //import androidx.compose.ui.geometry.Offset
 //import kotlin.math.sqrt

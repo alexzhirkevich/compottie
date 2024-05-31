@@ -1,4 +1,4 @@
-package io.github.alexzhirkevich.compottie.internal.schema.util
+package io.github.alexzhirkevich.compottie.internal.util
 
 import androidx.compose.ui.geometry.Offset
 

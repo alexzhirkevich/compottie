@@ -26,7 +26,7 @@ import io.github.alexzhirkevich.compottie.assets.LottieAssetsFetcher
 import io.github.alexzhirkevich.compottie.assets.NoOpAssetsFetcher
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
-import io.github.alexzhirkevich.compottie.internal.schema.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.services.LottieAssetService
 import io.github.alexzhirkevich.compottie.internal.services.LottieServiceLocator
 import kotlinx.coroutines.Dispatchers

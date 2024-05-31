@@ -1,6 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.services
 
-import io.github.alexzhirkevich.compottie.internal.schema.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 
 internal class LottieAssetService(
     val maintainOriginalImageBounds : Boolean,

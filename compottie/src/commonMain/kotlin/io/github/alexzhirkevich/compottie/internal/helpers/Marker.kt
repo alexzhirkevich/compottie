@@ -1,4 +1,4 @@
-package io.github.alexzhirkevich.compottie.internal.schema.helpers
+package io.github.alexzhirkevich.compottie.internal.helpers
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

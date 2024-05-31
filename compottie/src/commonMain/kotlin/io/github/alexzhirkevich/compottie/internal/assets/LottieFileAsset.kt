@@ -1,6 +1,6 @@
-package io.github.alexzhirkevich.compottie.internal.schema.assets
+package io.github.alexzhirkevich.compottie.internal.assets
 
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 
 internal interface LottieFileAsset : LottieAsset {
     val path : String

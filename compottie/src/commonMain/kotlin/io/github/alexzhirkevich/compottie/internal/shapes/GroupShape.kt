@@ -1,8 +1,8 @@
-package io.github.alexzhirkevich.compottie.internal.schema.shapes
+package io.github.alexzhirkevich.compottie.internal.shapes
 
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
 import io.github.alexzhirkevich.compottie.internal.content.PathAndDrawingContext
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.Transform
+import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

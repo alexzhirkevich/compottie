@@ -1,16 +1,16 @@
-package io.github.alexzhirkevich.compottie.internal.schema.layers
+package io.github.alexzhirkevich.compottie.internal.layers
 
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
-import io.github.alexzhirkevich.compottie.internal.schema.effects.Effect
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.LottieBlendMode
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.Transform
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.BooleanInt
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.MatteMode
-import io.github.alexzhirkevich.compottie.internal.schema.shapes.Shape
-import io.github.alexzhirkevich.compottie.internal.schema.shapes.findTransform
+import io.github.alexzhirkevich.compottie.internal.effects.Effect
+import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
+import io.github.alexzhirkevich.compottie.internal.helpers.Transform
+import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
+import io.github.alexzhirkevich.compottie.internal.shapes.Shape
+import io.github.alexzhirkevich.compottie.internal.shapes.findTransform
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient

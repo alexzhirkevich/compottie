@@ -1,4 +1,4 @@
-//package io.github.alexzhirkevich.compottie.internal.schema.shapes.util
+//package io.github.alexzhirkevich.compottie.internal.shapes.util
 //
 ///*
 // * Copyright 2022 The Android Open Source Project

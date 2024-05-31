@@ -1,7 +1,7 @@
-package io.github.alexzhirkevich.compottie.internal.schema.layers
+package io.github.alexzhirkevich.compottie.internal.layers
 
 import io.github.alexzhirkevich.compottie.internal.services.LottieServiceLocator
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonClassDiscriminator
 

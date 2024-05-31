@@ -1,5 +1,5 @@
 
-package io.github.alexzhirkevich.compottie.internal.schema.animation
+package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp

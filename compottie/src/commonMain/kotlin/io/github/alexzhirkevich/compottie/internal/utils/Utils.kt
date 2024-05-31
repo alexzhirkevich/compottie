@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import io.github.alexzhirkevich.compottie.internal.platform.ExtendedPathMeasure
 import io.github.alexzhirkevich.compottie.internal.platform.set
-import io.github.alexzhirkevich.compottie.internal.schema.shapes.TrimPathShape
+import io.github.alexzhirkevich.compottie.internal.shapes.TrimPathShape
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min

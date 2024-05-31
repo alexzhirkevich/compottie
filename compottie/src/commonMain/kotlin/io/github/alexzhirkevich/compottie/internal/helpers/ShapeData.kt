@@ -1,4 +1,4 @@
-package io.github.alexzhirkevich.compottie.internal.schema.helpers
+package io.github.alexzhirkevich.compottie.internal.helpers
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path

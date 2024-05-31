@@ -1,7 +1,7 @@
-package io.github.alexzhirkevich.compottie.internal.schema.helpers
+package io.github.alexzhirkevich.compottie.internal.helpers
 
 import androidx.compose.ui.graphics.Path
-import io.github.alexzhirkevich.compottie.internal.schema.util.toOffset
+import io.github.alexzhirkevich.compottie.internal.util.toOffset
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.math.min
