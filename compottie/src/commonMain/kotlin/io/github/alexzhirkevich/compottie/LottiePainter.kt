@@ -2,7 +2,6 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,17 +27,14 @@ import io.github.alexzhirkevich.compottie.assets.NoOpAssetsFetcher
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
 import io.github.alexzhirkevich.compottie.internal.schema.assets.LottieAsset
-import io.github.alexzhirkevich.compottie.internal.schema.assets.LottieFileAsset
 import io.github.alexzhirkevich.compottie.internal.services.LottieAssetService
 import io.github.alexzhirkevich.compottie.internal.services.LottieServiceLocator
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
-import kotlin.time.measureTime
 
 
 @Composable
@@ -130,7 +126,7 @@ private class LottiePainter(
     private val currentFrame by derivedStateOf {
         val p = composition.lottieData.outPoint * progress.coerceIn(0f, 1f) -
                 composition.lottieData.inPoint
-        p.coerceAtLeast(0f).roundToInt()
+        p.coerceAtLeast(0f)
     }
 
     private var serviceLocator = LottieServiceLocator(

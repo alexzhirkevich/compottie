@@ -2,7 +2,6 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import io.github.alexzhirkevich.compottie.internal.schema.LottieJson
 
 @Stable
 sealed interface LottieCompositionSpec {

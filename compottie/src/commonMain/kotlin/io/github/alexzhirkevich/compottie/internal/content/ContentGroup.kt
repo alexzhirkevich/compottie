@@ -29,7 +29,7 @@ internal class ContentGroup(
 
     private val boundsRect = MutableRect(0f,0f,0f,0f)
 
-    override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Int) {
+    override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
 
 
         if (hidden) {
@@ -70,7 +70,7 @@ internal class ContentGroup(
         }
     }
 
-    override fun getPath(frame: Int): Path {
+    override fun getPath(frame: Float): Path {
 
         path.reset()
         if (hidden) {
@@ -106,7 +106,7 @@ internal class ContentGroup(
         outBounds: MutableRect,
         parentMatrix: Matrix,
         applyParents: Boolean,
-        frame: Int,
+        frame: Float,
     ) {
         matrix.setFrom(parentMatrix)
         if (transform != null) {

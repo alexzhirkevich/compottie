@@ -1,0 +1,41 @@
+package io.github.alexzhirkevich.compottie.internal
+
+import io.github.alexzhirkevich.compottie.internal.schema.helpers.Marker
+import io.github.alexzhirkevich.compottie.internal.schema.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.schema.layers.Layer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+
+@Serializable
+internal class LottieData(
+    @SerialName("fr")
+    val frameRate : Float,
+
+    @SerialName("w")
+    val width : Int,
+
+    @SerialName("h")
+    val height : Int,
+
+    @SerialName("v")
+    val version : String,
+
+    @SerialName("ip")
+    val inPoint : Float,
+
+    @SerialName("op")
+    val outPoint : Float,
+
+    @SerialName("nm")
+    val name : String,
+
+    val layers: List<Layer> = emptyList(),
+
+    val assets : List<LottieAsset> = emptyList(),
+
+    val markers : List<Marker> = emptyList()
+)
+
+internal val LottieData.durationMillis
+    get() = (outPoint - inPoint) / frameRate * 1000

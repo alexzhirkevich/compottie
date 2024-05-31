@@ -4,7 +4,6 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathMeasure
 import io.github.alexzhirkevich.compottie.internal.platform.ExtendedPathMeasure
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import io.github.alexzhirkevich.compottie.internal.schema.shapes.TrimPathShape
@@ -26,7 +25,7 @@ internal object Utils {
         canvas.saveLayer(rect, paint)
     }
 
-    fun applyTrimPathIfNeeded(path: Path, trimPath: TrimPathShape, frame: Int) {
+    fun applyTrimPathIfNeeded(path: Path, trimPath: TrimPathShape, frame: Float) {
         if (trimPath.hidden) {
             return
         }

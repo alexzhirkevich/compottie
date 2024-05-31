@@ -16,9 +16,9 @@ internal fun GradientShader(
     startPoint: AnimatedVector2,
     endPoint: AnimatedVector2,
     colors: GradientColors,
-    frame : Int,
+    frame: Float,
     matrix: Matrix,
-    cache : LinkedHashMap<Int, Shader>
+    cache: LinkedHashMap<Int, Shader>
 ) : Shader {
     val start = startPoint.interpolated(frame)
     val end = endPoint.interpolated(frame)

@@ -25,6 +25,7 @@ private val BOUNCING_BALL = "files/bouncing_ball.json"
 private val POLYSTAR = "files/polystar.json"
 private val RECT = "files/rect.json"
 private val ROUND_RECT = "files/roundrect.json"
+private val ROBOT = "files/robot.json"
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
