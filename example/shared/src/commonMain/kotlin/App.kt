@@ -23,6 +23,8 @@ private val CHECKMARK = "files/checkmark.json"
 private val FADE_BALLS = "files/fade_balls.json"
 private val BOUNCING_BALL = "files/bouncing_ball.json"
 private val POLYSTAR = "files/polystar.json"
+private val RECT = "files/rect.json"
+private val ROUND_RECT = "files/roundrect.json"
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable

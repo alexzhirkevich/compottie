@@ -1,7 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.schema.shapes
 
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.internal.content.Content
@@ -12,6 +11,7 @@ import io.github.alexzhirkevich.compottie.internal.schema.shapes.util.CompoundTr
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlin.math.min
 
 @Serializable
 @SerialName("rc")
@@ -62,28 +62,72 @@ internal class RectShape(
 
         val position = position.interpolated(frame)
         val size = size.interpolated(frame)
-        val radius = roundedCorners?.interpolated(frame)
+        var radius = roundedCorners?.interpolated(frame) ?: 0F
 
-        path.rewind()
+        val halfWidth = size.x / 2f
+        val halfHeight = size.y / 2f
 
-        val rect = Rect(
-            top = position.x - size.x/2,
-            left = position.y - size.y/2,
-            bottom = position.x + size.x/2,
-            right = position.y + size.y/2,
-        )
-
-        if (radius != null) {
-            path.addRoundRect(
-                RoundRect(
-                    rect = rect,
-                    radiusX = radius,
-                    radiusY = radius
-                )
-            )
-        } else {
-            path.addRect(rect)
+        val maxRadius = min(halfWidth.toDouble(), halfHeight.toDouble()).toFloat()
+        if (radius > maxRadius) {
+            radius = maxRadius
         }
+
+        path.moveTo(position.x + halfWidth, position.y - halfHeight + radius)
+
+        path.lineTo(position.x + halfWidth, position.y + halfHeight - radius)
+
+        if (radius > 0) {
+            path.arcTo(
+                Rect(
+                    position.x + halfWidth - 2 * radius,
+                    position.y + halfHeight - 2 * radius,
+                    position.x + halfWidth,
+                    position.y + halfHeight
+                ), 0f, 90f, false
+            )
+        }
+
+        path.lineTo(position.x - halfWidth + radius, position.y + halfHeight)
+
+        if (radius > 0) {
+            path.arcTo(
+                Rect(
+                    position.x - halfWidth,
+                    position.y + halfHeight - 2 * radius,
+                    position.x - halfWidth + 2 * radius,
+                    position.y + halfHeight
+                ), 90f, 90f, false
+            )
+        }
+
+        path.lineTo(position.x - halfWidth, position.y - halfHeight + radius)
+
+        if (radius > 0) {
+
+            path.arcTo(
+                Rect(
+                    position.x - halfWidth,
+                    position.y - halfHeight,
+                    position.x - halfWidth + 2 * radius,
+                    position.y - halfHeight + 2 * radius
+                ), 180f, 90f, false
+            )
+        }
+
+        path.lineTo(position.x + halfWidth - radius, position.y - halfHeight)
+
+        if (radius > 0) {
+
+            path.arcTo(
+                Rect(
+                    position.x + halfWidth - 2 * radius,
+                    position.y - halfHeight,
+                    position.x + halfWidth,
+                    position.y - halfHeight + 2 * radius
+                ), 270f, 90f, false
+            )
+        }
+        path.close()
 
         trimPaths.apply(path, frame)
 

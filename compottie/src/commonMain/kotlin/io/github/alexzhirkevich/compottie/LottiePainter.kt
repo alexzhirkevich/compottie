@@ -173,7 +173,6 @@ private class LottiePainter(
 
         scale(scale.scaleX, scale.scaleY) {
             translate(offset.x.toFloat(), offset.y.toFloat()) {
-
                 drawIntoCanvas { canvas ->
                     composition.lottieData.layers.fastForEachReversed {
                         if (it is DrawingContent) {
