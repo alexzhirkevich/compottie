@@ -13,7 +13,7 @@ internal class VectorKeyframe(
     override val end : FloatArray? = null,
 
     @SerialName("t")
-    override val time : Int,
+    override val time : Float,
 
     @SerialName("i")
     override val inValue : BezierInterpolation? = null,

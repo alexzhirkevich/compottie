@@ -7,7 +7,7 @@ import androidx.compose.animation.core.LinearEasing
 internal abstract class Keyframe<out T> {
     abstract val start: T?
     abstract val end: T?
-    abstract val time: Int
+    abstract val time: Float
     abstract val inValue: BezierInterpolation?
     abstract val outValue: BezierInterpolation?
 

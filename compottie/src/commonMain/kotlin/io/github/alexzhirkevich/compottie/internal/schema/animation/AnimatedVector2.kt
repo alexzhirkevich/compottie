@@ -13,7 +13,7 @@ internal typealias Vec2 = Offset
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable()
 @JsonClassDiscriminator("a")
-internal sealed interface AnimatedVector2 : Animated<Vec2>, Indexable {
+internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
 
     @Serializable
     @SerialName("0")
@@ -36,7 +36,7 @@ internal sealed interface AnimatedVector2 : Animated<Vec2>, Indexable {
 
     @Serializable
     @SerialName("1")
-    class Keyframed(
+    class Animated(
 
         @SerialName("k")
         val value: List<VectorKeyframe>,
@@ -52,7 +52,7 @@ internal sealed interface AnimatedVector2 : Animated<Vec2>, Indexable {
 
         @SerialName("to")
         val outTangent: FloatArray? = null,
-    ) : AnimatedVector2, Animated<Vec2> by KeyframeAnimation(
+    ) : AnimatedVector2, KeyframeAnimation<Vec2> by BaseKeyframeAnimation(
         keyframes = value,
         emptyValue = Offset.Zero,
         map = { s, e, p -> Offset(lerp(s[0], e[0], p), lerp(s[1], e[1], p)) }

@@ -1,19 +1,20 @@
 package io.github.alexzhirkevich.compottie.internal.schema.helpers
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.util.lerp
 import kotlin.math.min
 
 internal class ShapeData(
     var curves: MutableList<CubicCurveData> = mutableListOf(),
     var initialPoint: Offset = Offset.Zero,
-    var isClosed: Boolean = false
+    var isClosed: Boolean = false,
 ) {
 
     fun interpolateBetween(
-      shapeData1: ShapeData,
-      shapeData2: ShapeData,
-      percentage: Float
+        shapeData1: ShapeData,
+        shapeData2: ShapeData,
+        percentage: Float,
     ) {
         isClosed = shapeData1.isClosed || shapeData2.isClosed
 
@@ -62,5 +63,34 @@ internal class ShapeData(
               lerp(vertex1.y, vertex2.y, percentage)
             )
         }
+    }
+}
+
+internal fun ShapeData.mapPath(outPath : Path) {
+    outPath.reset()
+    outPath.moveTo(initialPoint.x, initialPoint.y)
+
+    var  pathFromDataCurrentPoint = initialPoint
+    for (i in curves.indices) {
+        val curveData = curves[i]
+        val cp1 = curveData.controlPoint1
+        val cp2 = curveData.controlPoint2
+        val vertex = curveData.vertex
+
+        if (cp1 == pathFromDataCurrentPoint&& cp2 == vertex) {
+            // On some phones like Samsung phones, zero valued control points can cause artifacting.
+            // https://github.com/airbnb/lottie-android/issues/275
+            //
+            // This does its best to add a tiny value to the vertex without affecting the final
+            // animation as much as possible.
+            // outPath.rMoveTo(0.01f, 0.01f);
+            outPath.lineTo(vertex.x, vertex.y)
+        } else {
+            outPath.cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, vertex.x, vertex.y)
+        }
+        pathFromDataCurrentPoint = vertex
+    }
+    if (isClosed) {
+        outPath.close()
     }
 }

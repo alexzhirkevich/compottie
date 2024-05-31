@@ -22,6 +22,8 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.fastForEachReversed
+import io.github.alexzhirkevich.compottie.assets.LottieAssetsFetcher
+import io.github.alexzhirkevich.compottie.assets.NoOpAssetsFetcher
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
 import io.github.alexzhirkevich.compottie.internal.schema.assets.LottieAsset

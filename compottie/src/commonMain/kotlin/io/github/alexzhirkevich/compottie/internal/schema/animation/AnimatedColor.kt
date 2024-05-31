@@ -12,7 +12,7 @@ import kotlinx.serialization.json.JsonClassDiscriminator
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonClassDiscriminator("a")
-internal sealed interface AnimatedColor : Animated<Color>, Indexable {
+internal sealed interface AnimatedColor : KeyframeAnimation<Color>, Indexable {
 
     @Serializable
     @SerialName("0")
@@ -35,7 +35,7 @@ internal sealed interface AnimatedColor : Animated<Color>, Indexable {
 
     @Serializable
     @SerialName("1")
-    class Keyframed(
+    class Animated(
 
         @SerialName("k")
         val value: List<VectorKeyframe>,
@@ -51,7 +51,7 @@ internal sealed interface AnimatedColor : Animated<Color>, Indexable {
 
         @SerialName("to")
         val outTangent: FloatArray? = null,
-    ) : AnimatedColor, Animated<Color> by KeyframeAnimation(
+    ) : AnimatedColor, KeyframeAnimation<Color> by BaseKeyframeAnimation(
         keyframes = value,
         emptyValue = Color.Transparent,
         map = { s, e, p ->

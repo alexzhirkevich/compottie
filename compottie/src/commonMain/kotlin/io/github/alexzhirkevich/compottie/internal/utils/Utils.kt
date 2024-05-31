@@ -22,10 +22,10 @@ internal object Utils {
         rect: Rect,
         paint: Paint,
     ) {
-       canvas.saveLayer(rect, paint)
+        canvas.saveLayer(rect, paint)
     }
 
-    fun applyTrimPathIfNeeded(path: Path, trimPath: TrimPathShape, frame : Int) {
+    fun applyTrimPathIfNeeded(path: Path, trimPath: TrimPathShape, frame: Int) {
         if (trimPath.hidden) {
             return
         }

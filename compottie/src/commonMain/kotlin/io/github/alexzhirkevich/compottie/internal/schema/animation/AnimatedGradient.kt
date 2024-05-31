@@ -35,7 +35,7 @@ internal value class GradientType(val type : Byte) {
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonClassDiscriminator("a")
-internal sealed interface AnimatedGradient : Animated<ColorsWithStops> {
+internal sealed interface AnimatedGradient : KeyframeAnimation<ColorsWithStops> {
 
     var numberOfColors: Int
 

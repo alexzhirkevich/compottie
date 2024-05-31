@@ -1,6 +1,5 @@
 package io.github.alexzhirkevich.compottie.internal.schema.animation
 
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.util.lerp
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -10,7 +9,7 @@ import kotlinx.serialization.json.JsonClassDiscriminator
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonClassDiscriminator("a")
-internal sealed interface AnimatedValue : Animated<Float>, Indexable {
+internal sealed interface AnimatedValue : KeyframeAnimation<Float>, Indexable {
 
     @Serializable
     @SerialName("0")
@@ -30,7 +29,7 @@ internal sealed interface AnimatedValue : Animated<Float>, Indexable {
 
     @Serializable
     @SerialName("1")
-    class Keyframed(
+    class Animated(
         @SerialName("k")
         val value: List<ValueKeyframe>,
 
@@ -39,7 +38,7 @@ internal sealed interface AnimatedValue : Animated<Float>, Indexable {
 
         @SerialName("ix")
         override val index: String? = null
-    ) : AnimatedValue, Animated<Float> by KeyframeAnimation(
+    ) : AnimatedValue, KeyframeAnimation<Float> by BaseKeyframeAnimation(
         keyframes = value,
         emptyValue = 1f,
         map = { s, e, p -> lerp(s[0], e[0], p) }

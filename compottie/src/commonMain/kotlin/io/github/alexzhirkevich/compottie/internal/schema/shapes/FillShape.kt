@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie.internal.schema.shapes
 
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
@@ -50,16 +51,14 @@ internal class FillShape(
     private val paint = Paint()
 
     override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Int) {
+
         if (hidden) {
             return
         }
 
-        paint.alpha = if (opacity != null) {
-            (parentAlpha * opacity.interpolated(frame) / 100f).coerceIn(0f, 1f)
-        }
-        else {
-            parentAlpha
-        }
+        paint.alpha = opacity?.interpolated(frame)?.let {
+            (parentAlpha * it / 100f).coerceIn(0f, 1f)
+        } ?: parentAlpha
 
         paint.color = color.interpolated(frame)
 

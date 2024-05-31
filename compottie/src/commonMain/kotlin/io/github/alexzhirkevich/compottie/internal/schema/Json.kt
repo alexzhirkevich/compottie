@@ -34,10 +34,10 @@ val LottieJson = Json {
 
         polymorphic(AnimatedValue::class){
             subclass(AnimatedValue.Default::class)
-            subclass(AnimatedValue.Keyframed::class)
+            subclass(AnimatedValue.Animated::class)
         }
         polymorphic(AnimatedVector2::class){
-            subclass(AnimatedVector2.Keyframed::class)
+            subclass(AnimatedVector2.Animated::class)
             subclass(AnimatedVector2.Default::class)
         }
         polymorphic(Shape::class){

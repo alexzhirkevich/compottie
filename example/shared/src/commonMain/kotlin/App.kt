@@ -19,8 +19,6 @@ private const val lottieData = """
 @Composable
 fun App() {
 
-    Res.readBytes()
-
     val composition = rememberLottieComposition(
         LottieCompositionSpec.JsonString(lottieData)
     )
