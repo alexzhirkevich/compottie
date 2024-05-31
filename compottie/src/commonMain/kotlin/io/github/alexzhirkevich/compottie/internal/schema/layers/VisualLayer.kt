@@ -2,8 +2,8 @@ package io.github.alexzhirkevich.compottie.internal.schema.layers
 
 import io.github.alexzhirkevich.compottie.internal.schema.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.schema.helpers.Transform
-import io.github.alexzhirkevich.compottie.internal.schema.properties.BooleanInt
-import io.github.alexzhirkevich.compottie.internal.schema.properties.MatteMode
+import io.github.alexzhirkevich.compottie.internal.schema.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.schema.helpers.MatteMode
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonClassDiscriminator
 

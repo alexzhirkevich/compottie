@@ -29,19 +29,14 @@ fun rememberLottieComposition(spec : LottieCompositionSpec) : LottieCompositionR
         LottieCompositionResultImpl()
     }
 
-    LaunchedEffect(spec){
-        when (spec){
-            is LottieCompositionSpec.JsonString -> {
-                withContext(Dispatchers.Default) {
-                    try {
-                        val composition = parseFromJsonString(spec.jsonString)
-                        result.complete(composition)
-                    } catch (c: CancellationException) {
-                        throw c
-                    } catch (t: Throwable) {
-                        result.completeExceptionally(t)
-                    }
-                }
+    LaunchedEffect(spec) {
+        withContext(Dispatchers.Default) {
+            try {
+                result.complete(spec.load())
+            } catch (c: CancellationException) {
+                throw c
+            } catch (t: Throwable) {
+                result.completeExceptionally(t)
             }
         }
     }
@@ -49,8 +44,3 @@ fun rememberLottieComposition(spec : LottieCompositionSpec) : LottieCompositionR
     return result
 }
 
-private fun parseFromJsonString(jsonString: String) : LottieComposition {
-    return LottieComposition(
-        LottieJson.decodeFromString(jsonString),
-    )
-}

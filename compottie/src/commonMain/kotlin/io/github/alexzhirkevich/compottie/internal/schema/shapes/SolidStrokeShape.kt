@@ -2,9 +2,9 @@ package io.github.alexzhirkevich.compottie.internal.schema.shapes
 
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
-import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedColor
-import io.github.alexzhirkevich.compottie.internal.schema.properties.BooleanInt
-import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedColor
+import io.github.alexzhirkevich.compottie.internal.schema.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedValue
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

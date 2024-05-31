@@ -1,28 +1,23 @@
-package io.github.alexzhirkevich.compottie.internal.schema.properties
+package io.github.alexzhirkevich.compottie.internal.schema.animation
 
-import androidx.compose.animation.core.AnimationVector
-import androidx.compose.animation.core.AnimationVector2D
-import kotlinx.serialization.DeserializationStrategy
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.util.lerp
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonClassDiscriminator
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.int
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
-import kotlin.time.Duration.Companion.milliseconds
+
+internal typealias Vec2 = Offset
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable()
 @JsonClassDiscriminator("a")
-internal sealed interface AnimatedVector2 : Animated<AnimationVector2D>, Indexable {
+internal sealed interface AnimatedVector2 : Animated<Vec2>, Indexable {
 
     @Serializable
     @SerialName("0")
-    data class Default(
+    class Default(
         @SerialName("k")
         val value: FloatArray,
 
@@ -34,9 +29,9 @@ internal sealed interface AnimatedVector2 : Animated<AnimationVector2D>, Indexab
     ) : AnimatedVector2 {
 
         @Transient
-        private val animationVector = AnimationVector(value[0], value[1])
+        private val animationVector = Offset(value[0], value[1])
 
-        override fun interpolated(frame: Int): AnimationVector2D = animationVector
+        override fun interpolated(frame: Int): Vec2 = animationVector
     }
 
     @Serializable
@@ -57,21 +52,12 @@ internal sealed interface AnimatedVector2 : Animated<AnimationVector2D>, Indexab
 
         @SerialName("to")
         val outTangent: FloatArray? = null,
-    ) : AnimatedVector2 {
-
-        @Transient
-        private val animation = value.to2DAnimation()
-
-        override fun interpolated(frame: Int): AnimationVector2D {
-            return animation.getValueFromNanos(
-                playTimeNanos = frame.milliseconds.inWholeNanoseconds,
-            )
-        }
-    }
+    ) : AnimatedVector2, Animated<Vec2> by KeyframeAnimation(
+        keyframes = value,
+        emptyValue = Offset.Zero,
+        map = { s, e, p -> Offset(lerp(s[0], e[0], p), lerp(s[1], e[1], p)) }
+    )
 }
-
-val AnimationVector2D.x : Float get() = v1
-val AnimationVector2D.y : Float get() = v2
 
 //internal class AnimatedVectorSerializer : JsonContentPolymorphicSerializer<AnimatedVector2>(
 //    AnimatedVector2::class

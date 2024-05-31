@@ -3,8 +3,8 @@ package io.github.alexzhirkevich.compottie.internal.schema
 import io.github.alexzhirkevich.compottie.internal.schema.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.schema.layers.NullLayer
 import io.github.alexzhirkevich.compottie.internal.schema.layers.ShapeLayer
-import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
-import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.schema.shapes.EllipseShape
 import io.github.alexzhirkevich.compottie.internal.schema.shapes.FillShape
 import io.github.alexzhirkevich.compottie.internal.schema.shapes.GradientFill
@@ -14,7 +14,7 @@ import io.github.alexzhirkevich.compottie.internal.schema.shapes.RectShape
 import io.github.alexzhirkevich.compottie.internal.schema.shapes.Shape
 import io.github.alexzhirkevich.compottie.internal.schema.shapes.SolidStrokeShape
 import io.github.alexzhirkevich.compottie.internal.schema.shapes.TransformShape
-import io.github.alexzhirkevich.compottie.internal.schema.shapes.TrimPath
+import io.github.alexzhirkevich.compottie.internal.schema.shapes.TrimPathShape
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
@@ -50,7 +50,7 @@ val LottieJson = Json {
 //            subclass(Round::class)
             subclass(SolidStrokeShape::class)
             subclass(GradientStroke::class)
-            subclass(TrimPath::class)
+            subclass(TrimPathShape::class)
             subclass(TransformShape::class)
         }
     }

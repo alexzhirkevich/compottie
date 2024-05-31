@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.toArgb
 
 private val tempMatrix = android.graphics.Matrix()
 
-actual fun MakeLinearGradient(
+internal actual fun MakeLinearGradient(
     from : Offset,
     to : Offset,
     colors : List<Color>,
@@ -26,11 +26,11 @@ actual fun MakeLinearGradient(
     tileMode = tileMode,
     colors = colors
 ).apply {
-    tempMatrix.setValues(matrix.values)
+    tempMatrix.setFrom(matrix)
     setLocalMatrix(tempMatrix)
 }
 
-actual fun MakeRadialGradient(
+internal actual fun MakeRadialGradient(
     center : Offset,
     radius : Float,
     colors : List<Color>,
@@ -44,7 +44,7 @@ actual fun MakeRadialGradient(
     tileMode = tileMode,
     colors = colors
 ).apply {
-    tempMatrix.setValues(matrix.values)
+    tempMatrix.setFrom(matrix)
     setLocalMatrix(tempMatrix)
 }
 

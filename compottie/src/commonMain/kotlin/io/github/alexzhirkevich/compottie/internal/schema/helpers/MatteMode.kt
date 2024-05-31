@@ -1,4 +1,4 @@
-package io.github.alexzhirkevich.compottie.internal.schema.properties
+package io.github.alexzhirkevich.compottie.internal.schema.helpers
 
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline

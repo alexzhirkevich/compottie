@@ -1,9 +1,9 @@
-package io.github.alexzhirkevich.compottie.internal.schema.properties
+package io.github.alexzhirkevich.compottie.internal.schema.animation
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-class BezierCurveInterpolation(
+class BezierInterpolation(
     val x : FloatArray,
     val y : FloatArray
 )

@@ -1,11 +1,10 @@
 package io.github.alexzhirkevich.compottie.internal.schema.shapes
 
-import androidx.compose.runtime.traceEventEnd
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.schema.ModifierContent
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.AnimatedTransform
-import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
-import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedTransform
+import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedValue
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -46,4 +45,8 @@ internal class TransformShape(
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
 
     }
+}
+
+internal fun Iterable<Shape>.findTransform() : TransformShape? {
+    return firstOrNull { it is TransformShape } as TransformShape?
 }

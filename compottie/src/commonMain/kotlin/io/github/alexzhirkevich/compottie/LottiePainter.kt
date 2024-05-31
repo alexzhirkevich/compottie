@@ -2,35 +2,38 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.geometry.MutableRect
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.withSave
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.fastForEachReversed
-import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
-import io.github.alexzhirkevich.compottie.internal.services.LottieImageService
+import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
+import io.github.alexzhirkevich.compottie.internal.schema.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.schema.assets.LottieFileAsset
+import io.github.alexzhirkevich.compottie.internal.services.LottieAssetService
 import io.github.alexzhirkevich.compottie.internal.services.LottieServiceLocator
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonClassDiscriminator
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 
@@ -38,22 +41,53 @@ import kotlin.math.roundToInt
 fun rememberLottiePainter(
     composition : LottieCompositionResult,
     maintainOriginalImageBounds: Boolean = false,
+    assetsFetcher: LottieAssetsFetcher = NoOpAssetsFetcher,
     onLoadError : (Throwable) -> Painter =  { EmptyPainter },
     progress : () -> Float
 ) : Painter {
 
-    val painter by  produceState<Painter>(EmptyPainter) {
+    val updatedOnLoadError by rememberUpdatedState(onLoadError)
+
+    val painter by produceState<Painter>(
+        EmptyPainter,
+        composition,
+        assetsFetcher,
+        maintainOriginalImageBounds
+    ) {
         value = try {
+            val comp = composition.await()
+            coroutineScope {
+                comp.lottieData.assets.map { asset ->
+                    withContext(Dispatchers.Default) {
+                        when (asset) {
+                            is LottieAsset.ImageAsset -> {
+                                if (asset.bitmap == null) {
+                                    launch {
+                                        assetsFetcher
+                                            .fetch(asset.id, asset.path, asset.fileName)
+                                            ?.let {
+                                                asset.setBitmap(ImageBitmap.fromBytes(it))
+                                            }
+                                    }
+                                } else null
+                            }
+
+                            else -> null
+                        }
+                    }
+                }
+            }.filterNotNull().joinAll()
+
             LottiePainter(
                 composition = composition.await(),
                 maintainOriginalImageBounds = maintainOriginalImageBounds
             )
-        } catch (t : Throwable) {
-            onLoadError(t)
+        } catch (t: Throwable) {
+            updatedOnLoadError(t)
         }
     }
 
-    LaunchedEffect(painter){
+    LaunchedEffect(painter) {
         snapshotFlow {
             progress()
         }.collect {
@@ -96,7 +130,7 @@ private class LottiePainter(
     }
 
     private var serviceLocator = LottieServiceLocator(
-        LottieImageService(
+        LottieAssetService(
             maintainOriginalImageBounds = maintainOriginalImageBounds,
             assets = composition.lottieData.assets
         )
@@ -136,8 +170,9 @@ private class LottiePainter(
                 layoutDirection
             )
 
-//            scale(scale.scaleX, scale.scaleY) {
-//                translate(offset.x.toFloat(), offset.y.toFloat()) {
+            scale(scale.scaleX, scale.scaleY) {
+                translate(offset.x.toFloat(), offset.y.toFloat()) {
+
                     composition.lottieData.layers.fastForEachReversed {
                         if (it is DrawingContent) {
                             it.density = density
@@ -147,8 +182,8 @@ private class LottiePainter(
                                 println("Lottie crashed in draw :(")
                                 t.printStackTrace()
                             }
-//                        }
-//                    }
+                        }
+                    }
                 }
             }
         }

@@ -1,30 +1,25 @@
 package io.github.alexzhirkevich.compottie.internal.schema.shapes
 
 import androidx.compose.ui.geometry.MutableRect
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shader
-import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
-import io.github.alexzhirkevich.compottie.internal.platform.MakeLinearGradient
-import io.github.alexzhirkevich.compottie.internal.platform.MakeRadialGradient
+import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
-import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
-import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
-import io.github.alexzhirkevich.compottie.internal.schema.properties.GradientColors
-import io.github.alexzhirkevich.compottie.internal.schema.properties.x
-import io.github.alexzhirkevich.compottie.internal.schema.properties.y
+import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.schema.animation.GradientColors
+import io.github.alexzhirkevich.compottie.internal.schema.animation.GradientType
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlin.jvm.JvmInline
-import kotlin.math.hypot
+import kotlinx.serialization.Transient
 
 @Serializable
 @SerialName("gf")
@@ -67,11 +62,18 @@ internal class GradientFill(
     val colors : GradientColors,
 ) : Shape, DrawingContent {
 
-    private val path = Path()
+    @Transient
 
+    private val path = Path()
+    @Transient
     private var paths: List<PathContent> = emptyList()
 
+    @Transient
     private val paint = Paint()
+
+
+    @Transient
+    private val gradientCache = LinkedHashMap<Int, Shader>()
 
 
     override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Int) {
@@ -83,7 +85,15 @@ internal class GradientFill(
             parentAlpha
         }
 
-        paint.shader = GradientShader(type, startPoint, endPoint, colors, frame,parentMatrix)
+        paint.shader = GradientShader(
+            type = type,
+            startPoint = startPoint,
+            endPoint = endPoint,
+            colors = colors,
+            frame = frame,
+            matrix = parentMatrix,
+            cache = gradientCache
+        )
     }
 
     override fun getBounds(
@@ -111,50 +121,3 @@ internal class GradientFill(
     }
 }
 
-internal fun GradientShader(
-    type: GradientType,
-    startPoint: AnimatedVector2,
-    endPoint: AnimatedVector2,
-    colors: GradientColors,
-    frame : Int,
-    matrix: Matrix
-) : Shader {
-    val start = startPoint.interpolated(frame)
-    val end = endPoint.interpolated(frame)
-
-    colors.colors.numberOfColors = colors.numberOfColors
-
-    val c = colors.colors.interpolated(frame)
-
-    return if (type == GradientType.Linear) {
-        MakeLinearGradient(
-            from = Offset(start.x, start.y),
-            to = Offset(end.x, end.y),
-            colors = c.colors,
-            colorStops = c.colorStops,
-            tileMode = TileMode.Clamp,
-            matrix = matrix,
-        )
-    } else {
-        val r = hypot((end.x - start.x), (end.y - start.y))
-
-        MakeRadialGradient(
-            radius = r,
-            center = Offset(start.x, start.y),
-            colors = c.colors,
-            colorStops = c.colorStops,
-            tileMode = TileMode.Clamp,
-            matrix = matrix
-        )
-    }
-}
-
-
-@Serializable
-@JvmInline
-internal value class GradientType(val type : Byte) {
-    companion object {
-        val Linear = GradientType(1)
-        val Radial = GradientType(2)
-    }
-}

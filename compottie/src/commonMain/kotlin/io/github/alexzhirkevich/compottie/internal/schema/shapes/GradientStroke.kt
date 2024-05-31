@@ -3,10 +3,12 @@ package io.github.alexzhirkevich.compottie.internal.schema.shapes
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
-import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
-import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
-import io.github.alexzhirkevich.compottie.internal.schema.properties.GradientColors
-import io.github.alexzhirkevich.compottie.internal.utils.preScale
+import androidx.compose.ui.graphics.Shader
+import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
+import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.schema.animation.GradientColors
+import io.github.alexzhirkevich.compottie.internal.schema.animation.GradientType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -67,6 +69,9 @@ internal class GradientStroke(
     @Transient
     private val boundsRect = MutableRect(0f,0f,0f,0f)
 
+    @Transient
+    private val gradientCache = LinkedHashMap<Int, Shader>()
+
     override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Int) {
 
         getBounds(boundsRect, parentMatrix, false, frame)
@@ -77,7 +82,8 @@ internal class GradientStroke(
             endPoint = endPoint,
             colors = colors,
             frame = frame,
-            matrix = parentMatrix
+            matrix = parentMatrix,
+            cache = gradientCache
         )
         super.draw(canvas, parentMatrix, parentAlpha, frame)
     }

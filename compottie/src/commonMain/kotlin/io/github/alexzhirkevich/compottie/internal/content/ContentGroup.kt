@@ -8,9 +8,7 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.AnimatedTransform
-import io.github.alexzhirkevich.compottie.internal.schema.helpers.Transform
-import io.github.alexzhirkevich.compottie.internal.schema.shapes.TransformShape
+import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.utils.Utils
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.union
@@ -32,6 +30,8 @@ internal class ContentGroup(
     private val boundsRect = MutableRect(0f,0f,0f,0f)
 
     override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Int) {
+
+
         if (hidden) {
             return
         }
@@ -72,14 +72,14 @@ internal class ContentGroup(
 
     override fun getPath(frame: Int): Path {
 
+        path.reset()
+        if (hidden) {
+            return path
+        }
         matrix.reset()
 
         if (transform != null) {
             matrix.setFrom(transform.matrix(frame))
-        }
-        path.reset()
-        if (hidden) {
-            return path
         }
         contents.fastForEachReversed {
             if (it is PathContent) {

@@ -1,10 +1,12 @@
 package io.github.alexzhirkevich.compottie.internal.schema.assets
 
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.unit.IntSize
 import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
-import io.github.alexzhirkevich.compottie.internal.schema.properties.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.schema.helpers.BooleanInt
 import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -49,17 +51,30 @@ internal sealed interface LottieAsset {
         private val h: Int? = null,
     ) : LottieFileAsset {
 
-        val width : Int get() = w ?: bitmap?.width ?: 0
+        val width: Int get() = w ?: bitmap?.width ?: 0
 
-        val height : Int get() = h ?: bitmap?.height ?: 0
+        val height: Int get() = h ?: bitmap?.height ?: 0
 
         @OptIn(ExperimentalEncodingApi::class)
         @Transient
-        val bitmap: ImageBitmap? = fileName
+        var bitmap: ImageBitmap? = fileName
             .takeIf(String::isBase64Data::get)
             ?.substringAfter("base64,")
             ?.trim()
-            ?.let { ImageBitmap.fromBytes(Base64.decode(it)) }
+            ?.let {
+                ImageBitmap.fromBytes(Base64.decode(it))
+            }?.let(::transformBitmap)
+            private set
+
+        fun setBitmap(bitmap: ImageBitmap) {
+            this.bitmap = transformBitmap(bitmap)
+        }
+
+        private fun transformBitmap(bitmap: ImageBitmap) : ImageBitmap {
+            return if (w != null && w != bitmap.width || h != null && h != bitmap.width) {
+                bitmap.resize(w ?: bitmap.width, h ?: bitmap.height)
+            } else bitmap
+        }
     }
 
     @Serializable
@@ -70,6 +85,21 @@ internal sealed interface LottieAsset {
         @SerialName("nm")
         override val name: String? = null,
     ) : LottieAsset
+}
+
+private val emptyPaint = Paint()
+private fun ImageBitmap.resize(w : Int, h : Int) : ImageBitmap {
+    val bitmap = ImageBitmap(w, h)
+
+    Canvas(bitmap).apply {
+        drawImageRect(
+            image = this@resize,
+            dstSize = IntSize(w, h),
+            paint = emptyPaint
+        )
+    }
+
+    return bitmap
 }
 
 private val String.isBase64Data : Boolean get() =

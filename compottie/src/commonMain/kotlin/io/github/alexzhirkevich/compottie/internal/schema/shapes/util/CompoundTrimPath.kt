@@ -2,13 +2,13 @@ package io.github.alexzhirkevich.compottie.internal.schema.shapes.util
 
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.util.fastForEachReversed
-import io.github.alexzhirkevich.compottie.internal.schema.shapes.TrimPath
+import io.github.alexzhirkevich.compottie.internal.schema.shapes.TrimPathShape
 import io.github.alexzhirkevich.compottie.internal.utils.Utils
 
 internal class CompoundTrimPath {
-    private val contents: MutableList<TrimPath> = mutableListOf()
+    private val contents: MutableList<TrimPathShape> = mutableListOf()
 
-    fun addTrimPath(trimPath: TrimPath) {
+    fun addTrimPath(trimPath: TrimPathShape) {
         contents.add(trimPath)
     }
 

@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.example.android
 
 import App
+import android.graphics.Matrix
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent

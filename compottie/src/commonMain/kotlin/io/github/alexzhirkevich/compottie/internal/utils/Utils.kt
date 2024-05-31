@@ -4,10 +4,9 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.util.trace
 import io.github.alexzhirkevich.compottie.internal.platform.ExtendedPathMeasure
 import io.github.alexzhirkevich.compottie.internal.platform.set
-import io.github.alexzhirkevich.compottie.internal.schema.shapes.TrimPath
+import io.github.alexzhirkevich.compottie.internal.schema.shapes.TrimPathShape
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -26,7 +25,7 @@ internal object Utils {
        canvas.saveLayer(rect, paint)
     }
 
-    fun applyTrimPathIfNeeded(path: Path, trimPath: TrimPath, frame : Int) {
+    fun applyTrimPathIfNeeded(path: Path, trimPath: TrimPathShape, frame : Int) {
         if (trimPath.hidden) {
             return
         }

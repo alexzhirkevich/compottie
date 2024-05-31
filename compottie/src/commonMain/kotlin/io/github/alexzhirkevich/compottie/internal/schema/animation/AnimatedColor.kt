@@ -1,14 +1,13 @@
 
-package io.github.alexzhirkevich.compottie.internal.schema.properties
+package io.github.alexzhirkevich.compottie.internal.schema.animation
 
-import androidx.compose.animation.core.AnimationVector2D
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonClassDiscriminator
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
@@ -29,12 +28,7 @@ internal sealed interface AnimatedColor : Animated<Color>, Indexable {
     ) : AnimatedColor {
 
         @Transient
-        private val color: Color = Color(
-            red = value[0],
-            green = value[1],
-            blue = value[2],
-            alpha = value.getOrNull(3) ?: 1f
-        )
+        private val color: Color = value.asColor()
 
         override fun interpolated(frame: Int) = color
     }
@@ -57,20 +51,21 @@ internal sealed interface AnimatedColor : Animated<Color>, Indexable {
 
         @SerialName("to")
         val outTangent: FloatArray? = null,
-    ) : AnimatedColor {
-
-        @Transient
-        private val animation = value.toColorAnimation()
-
-        override fun interpolated(time: Int): Color {
-            return animation.getValueFromNanos(
-                playTimeNanos = time.milliseconds.inWholeNanoseconds,
-            ).let {
-                Color(it.v1,it.v2,it.v3,it.v4)
-            }
+    ) : AnimatedColor, Animated<Color> by KeyframeAnimation(
+        keyframes = value,
+        emptyValue = Color.Transparent,
+        map = { s, e, p ->
+            lerp(s.asColor(), e.asColor(), p)
         }
-    }
+    )
 }
+
+private fun FloatArray.asColor() = Color(
+    red = get(0),
+    green = get(1),
+    blue = get(2),
+    alpha = getOrNull(3) ?: 1f
+)
 
 
 

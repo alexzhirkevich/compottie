@@ -16,8 +16,7 @@ import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.platform.ExtendedPathMeasure
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.platform.set
-import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
-import io.github.alexzhirkevich.compottie.internal.schema.properties.TrimPathType
+import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.utils.Utils
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.Serializable
@@ -109,14 +108,13 @@ internal abstract class BaseStrokeShape() : DrawingContent {
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
 
-        val trimPathContentBefore: TrimPath? = contentsBefore.firstOrNull {
-            it is TrimPath && it.type == TrimPathType.Companion.Individually
-        } as TrimPath?
+        val trimPathContentBefore: TrimPathShape? = contentsBefore
+            .firstOrNull(Content::isIndividualTrimPath) as TrimPathShape?
 
         var currentPathGroup: PathGroup? = null
 
         contentsAfter.fastForEachReversed { content ->
-            if (content is TrimPath && content.type == TrimPathType.Individually) {
+            if (content.isIndividualTrimPath()) {
                 currentPathGroup?.let(pathGroups::add)
 
                 currentPathGroup = PathGroup(content)
@@ -129,16 +127,14 @@ internal abstract class BaseStrokeShape() : DrawingContent {
         }
 
         contentsAfter.fastForEachReversed { content ->
-            if (content is TrimPath && content.type == TrimPathType.Individually) {
+            if (content.isIndividualTrimPath()) {
                 currentPathGroup?.let(pathGroups::add)
 
                 currentPathGroup = PathGroup(content)
 
             } else if (content is PathContent) {
                 if (currentPathGroup == null) {
-                    currentPathGroup = PathGroup(
-                        trimPathContentBefore
-                    )
+                    currentPathGroup = PathGroup(trimPathContentBefore)
                 }
                 currentPathGroup!!.paths.add(content)
             }
@@ -271,7 +267,7 @@ internal abstract class BaseStrokeShape() : DrawingContent {
 }
 
 private class PathGroup(
-    val trimPath: TrimPath?,
+    val trimPath: TrimPathShape?,
 ) {
 
     val paths: MutableList<PathContent> = mutableListOf()

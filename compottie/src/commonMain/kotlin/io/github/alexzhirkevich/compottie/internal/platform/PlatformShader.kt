@@ -5,9 +5,130 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.TileMode
+import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.schema.animation.GradientColors
+import io.github.alexzhirkevich.compottie.internal.schema.animation.GradientType
+import kotlin.math.hypot
+
+private val CACHE_LIMIT = 15
+internal fun GradientShader(
+    type: GradientType,
+    startPoint: AnimatedVector2,
+    endPoint: AnimatedVector2,
+    colors: GradientColors,
+    frame : Int,
+    matrix: Matrix,
+    cache : LinkedHashMap<Int, Shader>
+) : Shader {
+    val start = startPoint.interpolated(frame)
+    val end = endPoint.interpolated(frame)
+
+    colors.colors.numberOfColors = colors.numberOfColors
+
+    val c = colors.colors.interpolated(frame)
+
+    return if (type == GradientType.Linear) {
+        CachedLinearGradient(
+            from = Offset(start.x, start.y),
+            to = Offset(end.x, end.y),
+            colors = c.colors,
+            colorStops = c.colorStops,
+            tileMode = TileMode.Clamp,
+            matrix = matrix,
+            cache = cache
+        )
+    } else {
+        val r = hypot((end.x - start.x), (end.y - start.y))
+
+        CachedRadialGradient(
+            radius = r,
+            center = Offset(start.x, start.y),
+            colors = c.colors,
+            colorStops = c.colorStops,
+            tileMode = TileMode.Clamp,
+            matrix = matrix,
+            cache = cache
+        )
+    }
+}
+
+private fun CachedLinearGradient(
+    from : Offset,
+    to : Offset,
+    colors : List<Color>,
+    colorStops: List<Float>,
+    tileMode: TileMode = TileMode.Clamp,
+    matrix: Matrix,
+    cache : LinkedHashMap<Int, Shader>,
+) : Shader {
+
+    var hash = from.hashCode()
+    hash = (hash * 31) + to.hashCode()
+    hash = (hash * 31) + colors.hashCode()
+    hash = (hash * 31) + tileMode.hashCode()
+    hash = (hash * 31) + matrix.hashCode()
+
+    val cached = cache[hash]
+
+    if (cached != null){
+        cache.remove(hash)
+        cache[hash] = cached
+        return cached
+    }
+
+    val shader = MakeLinearGradient(from, to, colors, colorStops, tileMode, matrix)
+
+    if (cache.size >= CACHE_LIMIT){
+        repeat(cache.size - CACHE_LIMIT + 1){
+            cache.remove(cache.keys.first())
+        }
+    }
+
+    cache[hash] = shader
+
+    return shader
+}
+
+private fun CachedRadialGradient(
+    center : Offset,
+    radius : Float,
+    colors : List<Color>,
+    colorStops: List<Float>,
+    tileMode: TileMode = TileMode.Clamp,
+    matrix: Matrix,
+    cache : LinkedHashMap<Int, Shader>,
+) : Shader {
+
+    var hash = center.hashCode()
+    hash = (hash * 31) + radius.hashCode()
+    hash = (hash * 31) + colors.hashCode()
+    hash = (hash * 31) + tileMode.hashCode()
+    hash = (hash * 31) + matrix.hashCode()
+
+    val cached = cache[hash]
+
+    if (cached != null){
+        cache.remove(hash)
+        cache[hash] = cached
+        return cached
+    }
+
+    val shader = MakeRadialGradient(center, radius, colors, colorStops, tileMode, matrix)
+
+    if (cache.size >= CACHE_LIMIT){
+        repeat(cache.size - CACHE_LIMIT + 1){
+            cache.remove(cache.keys.first())
+        }
+    }
+
+    cache[hash] = shader
+
+    return shader
+}
 
 
-expect fun MakeLinearGradient(
+
+internal expect fun MakeLinearGradient(
     from : Offset,
     to : Offset,
     colors : List<Color>,
@@ -17,7 +138,7 @@ expect fun MakeLinearGradient(
 ) : Shader
 
 
-expect fun MakeRadialGradient(
+internal expect fun MakeRadialGradient(
     center : Offset,
     radius : Float,
     colors : List<Color>,
@@ -25,3 +146,4 @@ expect fun MakeRadialGradient(
     tileMode: TileMode = TileMode.Clamp,
     matrix: Matrix
 ) : Shader
+

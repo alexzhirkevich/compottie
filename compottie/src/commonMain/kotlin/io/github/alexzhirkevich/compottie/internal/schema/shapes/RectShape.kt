@@ -5,11 +5,8 @@ import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Path
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
-import io.github.alexzhirkevich.compottie.internal.schema.properties.TrimPathType
-import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedValue
-import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
-import io.github.alexzhirkevich.compottie.internal.schema.properties.x
-import io.github.alexzhirkevich.compottie.internal.schema.properties.y
+import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.schema.shapes.util.CompoundTrimPath
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -49,7 +46,7 @@ internal class RectShape(
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
         contentsBefore.forEach {
-            if (it is TrimPath && it.type == TrimPathType.Simultaneously) {
+            if (it.isSimultaneousTrimPath()) {
                 trimPaths.addTrimPath(it)
             }
         }

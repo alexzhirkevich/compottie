@@ -3,14 +3,14 @@ package io.github.alexzhirkevich.compottie.internal.schema.layers
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
-import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
 import io.github.alexzhirkevich.compottie.internal.schema.effects.Effect
 import io.github.alexzhirkevich.compottie.internal.schema.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.schema.helpers.Transform
-import io.github.alexzhirkevich.compottie.internal.schema.properties.BooleanInt
-import io.github.alexzhirkevich.compottie.internal.schema.properties.MatteMode
+import io.github.alexzhirkevich.compottie.internal.schema.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.schema.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.schema.shapes.Shape
+import io.github.alexzhirkevich.compottie.internal.schema.shapes.findTransform
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -88,13 +88,13 @@ internal class ShapeLayer(
         name = name,
         hidden = hidden,
         contents = shapes,
-        transform = transform
+        transform = shapes.findTransform()
     ).apply {
         setContents(emptyList(), emptyList())
     }
 
     override fun drawLayer(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame : Int) {
-       contentGroup.draw(canvas, parentMatrix, parentAlpha, frame)
+        contentGroup.draw(canvas, parentMatrix, parentAlpha, frame)
     }
 
     override fun getBounds(

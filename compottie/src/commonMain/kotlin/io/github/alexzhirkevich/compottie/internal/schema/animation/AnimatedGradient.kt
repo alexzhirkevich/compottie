@@ -1,4 +1,4 @@
-package io.github.alexzhirkevich.compottie.internal.schema.properties
+package io.github.alexzhirkevich.compottie.internal.schema.animation
 
 import androidx.compose.ui.graphics.Color
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -6,6 +6,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonClassDiscriminator
+import kotlin.jvm.JvmInline
 
 internal class ColorsWithStops(
     val colorStops: List<Float>,
@@ -21,6 +22,15 @@ internal class GradientColors(
     @SerialName("p")
     val numberOfColors: Int = 0
 )
+
+@Serializable
+@JvmInline
+internal value class GradientType(val type : Byte) {
+    companion object {
+        val Linear = GradientType(1)
+        val Radial = GradientType(2)
+    }
+}
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
@@ -40,24 +50,7 @@ internal sealed interface AnimatedGradient : Animated<ColorsWithStops> {
         override var numberOfColors: Int = 0
 
         private val colors by lazy {
-            ColorsWithStops(
-                colorStops = (0 until numberOfColors).map {
-                    colorsVector[it * 4]
-                },
-                colors = (0 until numberOfColors).map {
-
-                    val alpha = if (colorsVector.size == numberOfColors * 6) {
-                        colorsVector[colorsVector.lastIndex - numberOfColors * 2 + (it + 1) * 2]
-                    } else 1f
-
-                    Color(
-                        red = colorsVector[it * 4 + 1],
-                        green = colorsVector[it * 4 + 2],
-                        blue = colorsVector[it * 4 + 3],
-                        alpha = alpha
-                    )
-                }
-            )
+            colorsVector.asGradient(numberOfColors)
         }
 
         override fun interpolated(frame: Int): ColorsWithStops {
@@ -65,3 +58,22 @@ internal sealed interface AnimatedGradient : Animated<ColorsWithStops> {
         }
     }
 }
+
+private fun FloatArray.asGradient(numberOfColors: Int) : ColorsWithStops = ColorsWithStops(
+    colorStops = (0 until numberOfColors).map {
+        this[it * 4]
+    },
+    colors = (0 until numberOfColors).map {
+
+        val alpha = if (size == numberOfColors * 6) {
+            this[lastIndex - numberOfColors * 2 + (it + 1) * 2]
+        } else 1f
+
+        Color(
+            red = this[it * 4 + 1],
+            green = this[it * 4 + 2],
+            blue = this[it * 4 + 3],
+            alpha = alpha
+        )
+    }
+)

@@ -12,15 +12,14 @@ import org.jetbrains.skia.Matrix33
 import org.jetbrains.skia.Matrix44
 import org.jetbrains.skia.Shader
 
-
-actual fun MakeLinearGradient(
+internal actual fun MakeLinearGradient(
     from : Offset,
     to : Offset,
     colors : List<Color>,
     colorStops: List<Float>,
     tileMode: TileMode,
     matrix: Matrix
-) =  Shader.makeLinearGradient(
+) = Shader.makeLinearGradient(
     x0 = from.x,
     y0 = from.y,
     x1 = to.x,
@@ -30,11 +29,11 @@ actual fun MakeLinearGradient(
     style = GradientStyle(
         tileMode = tileMode.toSkiaTileMode(),
         isPremul = true,
-        localMatrix = Matrix44(*matrix.values).asMatrix33()
+        localMatrix = matrix.asSkia33()
     )
 )
 
-actual fun MakeRadialGradient(
+internal actual fun MakeRadialGradient(
     center : Offset,
     radius : Float,
     colors : List<Color>,
@@ -50,9 +49,24 @@ actual fun MakeRadialGradient(
     style = GradientStyle(
         tileMode = tileMode.toSkiaTileMode(),
         isPremul = true,
-        localMatrix = Matrix44(*matrix.values).asMatrix33()
+        localMatrix = matrix.asSkia33()
     )
 )
+
+
+private fun Matrix.asSkia33() : Matrix33 {
+    return Matrix33(
+        values[Matrix.ScaleX],
+        values[Matrix.SkewX],
+        values[Matrix.TranslateX],
+        values[Matrix.SkewY],
+        values[Matrix.ScaleY],
+        values[Matrix.TranslateY],
+        values[Matrix.Perspective0],
+        values[Matrix.Perspective1],
+        values[Matrix.Perspective2],
+    )
+}
 
 private fun List<Color>.toIntArray(): IntArray =
     IntArray(size) { i -> this[i].toArgb() }

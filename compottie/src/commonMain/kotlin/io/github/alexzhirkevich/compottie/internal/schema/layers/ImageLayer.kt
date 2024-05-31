@@ -7,10 +7,10 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.unit.IntSize
 import io.github.alexzhirkevich.compottie.internal.schema.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.schema.helpers.Transform
-import io.github.alexzhirkevich.compottie.internal.schema.properties.BooleanInt
-import io.github.alexzhirkevich.compottie.internal.schema.properties.MatteMode
+import io.github.alexzhirkevich.compottie.internal.schema.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.schema.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.schema.assets.LottieAsset
-import io.github.alexzhirkevich.compottie.internal.services.LottieImageService
+import io.github.alexzhirkevich.compottie.internal.services.LottieAssetService
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -87,7 +87,7 @@ internal class ImageLayer(
     private val paint = Paint()
 
     private val service by lazy {
-        serviceLocator?.get<LottieImageService>()
+        serviceLocator?.get<LottieAssetService>()
     }
 
     private val asset : LottieAsset.ImageAsset? by lazy {

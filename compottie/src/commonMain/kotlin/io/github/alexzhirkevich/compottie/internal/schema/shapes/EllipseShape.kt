@@ -4,10 +4,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Path
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
-import io.github.alexzhirkevich.compottie.internal.schema.properties.AnimatedVector2
-import io.github.alexzhirkevich.compottie.internal.schema.properties.TrimPathType
-import io.github.alexzhirkevich.compottie.internal.schema.properties.x
-import io.github.alexzhirkevich.compottie.internal.schema.properties.y
+import io.github.alexzhirkevich.compottie.internal.schema.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.schema.shapes.util.CompoundTrimPath
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -67,7 +64,7 @@ internal class EllipseShape(
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
         for (i in contentsBefore.indices) {
             val content = contentsBefore[i]
-            if (content is TrimPath && content.type == TrimPathType.Simultaneously) {
+            if (content.isSimultaneousTrimPath()) {
                 trimPaths.addTrimPath(content)
             }
         }
