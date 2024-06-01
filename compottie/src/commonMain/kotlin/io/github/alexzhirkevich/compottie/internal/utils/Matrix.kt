@@ -2,12 +2,12 @@ package io.github.alexzhirkevich.compottie.internal.utils
 
 import androidx.compose.ui.graphics.Matrix
 
-private val tempMatrix = Matrix()
-
+private val tempMatrixConcat = Matrix()
+private val tempMatrixTransform = Matrix()
 
 fun Matrix.preTranslate(x : Float, y : Float) {
 
-    preConcat(tempMatrix.apply {
+    preConcat(tempMatrixTransform.apply {
         reset()
         translate(x, y)
     })
@@ -15,9 +15,9 @@ fun Matrix.preTranslate(x : Float, y : Float) {
 }
 
 fun Matrix.preConcat(other : Matrix) {
-    tempMatrix.setFrom(other)
-    tempMatrix.timesAssign(this)
-    this.setFrom(tempMatrix)
+    tempMatrixConcat.setFrom(other)
+    tempMatrixConcat.timesAssign(this)
+    this.setFrom(tempMatrixConcat)
 //    timesAssign(other)
 }
 
@@ -34,16 +34,16 @@ fun Matrix.setValues(values : FloatArray){
 }
 
 fun Matrix.preRotate(degree : Float) {
-    preConcat(tempMatrix.apply {
+    preConcat(tempMatrixTransform.apply {
         reset()
         rotateZ(degree)
     })
-//
-//    return rotateZ(degree)
+
+    return rotateZ(degree)
 }
 
 fun Matrix.preScale(x : Float, y : Float) {
-    preConcat(tempMatrix.apply {
+    preConcat(tempMatrixTransform.apply {
         reset()
         scale(x, y)
     })

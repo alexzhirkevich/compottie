@@ -186,8 +186,10 @@ internal abstract class BaseStrokeShape() : DrawingContent {
         val width = strokeWidth.interpolated(frame)
 
         rect.set(
-            rect.left - width / 2f, rect.top - width / 2f,
-            rect.right + width / 2f, rect.bottom + width / 2f
+            rect.left - width / 2f,
+            rect.top - width / 2f,
+            rect.right + width / 2f,
+            rect.bottom + width / 2f
         )
         outBounds.set(rect)
 

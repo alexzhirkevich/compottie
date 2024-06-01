@@ -8,6 +8,11 @@ import androidx.compose.ui.graphics.nativeCanvas
 
 internal actual fun Canvas.getMatrix(matrix: Matrix) {
     nativeCanvas.localToDevice.mat.copyInto(matrix.values)
+
+    //TODO: some random perspective is always
+    // returned for skiko canvas even if it is untouched
+    matrix[0, 3] = 0f
+    matrix[1, 3] = 0f
 }
 
 internal actual fun Canvas.saveLayer(rect : MutableRect, paint : Paint, flag : Int) {

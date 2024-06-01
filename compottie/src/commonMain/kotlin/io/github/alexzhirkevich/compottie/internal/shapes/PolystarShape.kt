@@ -86,7 +86,7 @@ internal class PolystarShape(
 
     override fun getPath(frame: Float): Path {
 
-        path.reset()
+        path.rewind()
 
         when (starType) {
             StarType.Star -> createStarPath(frame)

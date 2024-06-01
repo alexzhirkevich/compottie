@@ -48,8 +48,7 @@ internal class ContentGroup(
             }
         }
 
-        //TODO: doesn't work, something wrong with getBounds
-        val isRenderingWithOffScreen = false//hasTwoOrMoreDrawableContent() && layerAlpha != 1f
+        val isRenderingWithOffScreen = hasTwoOrMoreDrawableContent() && layerAlpha < 1f
 
         drawScope.drawIntoCanvas { canvas ->
             if (isRenderingWithOffScreen) {
@@ -115,7 +114,6 @@ internal class ContentGroup(
         if (transform != null) {
             matrix.preConcat(transform.matrix(frame))
         }
-
         rect.set(0f, 0f, 0f, 0f)
 
         contents.fastForEachReversed {

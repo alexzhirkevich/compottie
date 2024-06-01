@@ -13,7 +13,6 @@ import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.platform.clipRect
-import io.github.alexzhirkevich.compottie.internal.services.LottieAssetService
 import io.github.alexzhirkevich.compottie.internal.utils.Utils
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -52,7 +51,7 @@ internal class PrecompositionLayer(
     override val name: String? = null,
 
     @SerialName("sr")
-    override val stretch: Float = 1f,
+    override val timeStretch: Float = 1f,
 
     @SerialName("parent")
     override val parent: Int? = null,
@@ -68,14 +67,13 @@ internal class PrecompositionLayer(
 ) : BaseLayer() {
 
     @Transient
-    private val newClipRect = MutableRect(0f,0f,0f,0f)
+    private val newClipRect = MutableRect(0f, 0f, 0f, 0f)
 
     @Transient
     private val layerPaint = Paint()
 
     private val layers by lazy {
-        val a = serviceLocator?.get<LottieAssetService>()?.asset(refId)
-        (a as? LottieAsset.PrecompositionAsset?)?.layers
+        (assets[refId] as? LottieAsset.PrecompositionAsset?)?.layers
     }
 
     override fun drawLayer(
@@ -89,7 +87,7 @@ internal class PrecompositionLayer(
         parentMatrix.map(newClipRect)
 
         // Apply off-screen rendering only when needed in order to improve rendering performance.
-        val isDrawingWithOffScreen = false
+        val isDrawingWithOffScreen = layers.isNullOrEmpty() && parentAlpha < 1f
 
         drawScope.drawIntoCanvas { canvas ->
 
@@ -104,25 +102,34 @@ internal class PrecompositionLayer(
 
             layers?.fastForEachReversed { layer ->
                 // Only clip precomps. This mimics the way After Effects renders animations.
-                val ignoreClipOnThisLayer = "__container" == layer.name
+                val ignoreClipOnThisLayer = isContainerLayer
 
                 if (!ignoreClipOnThisLayer && !newClipRect.isEmpty) {
                     canvas.clipRect(newClipRect)
                 }
 
-                (layer as? DrawingContent)?.draw(drawScope, parentMatrix, childAlpha, remappedFrame(frame))
+                (layer as? DrawingContent)?.draw(
+                    drawScope,
+                    parentMatrix,
+                    childAlpha,
+                    remappedFrame(frame)
+                )
             }
 
             canvas.restore()
         }
     }
 
-    private fun remappedFrame(frame: Float) : Float{
+    private fun remappedFrame(frame: Float): Float {
 
         if (timeRemapping == null)
             return frame
 
-        return timeRemapping.interpolated(frame) *
-                composition.frameRate + composition.startFrame
+        val f = if (timeStretch != 0f && !isContainerLayer) {
+            frame / timeStretch
+        } else frame
+
+        return timeRemapping.interpolated(f) *
+                composition.frameRate - composition.startFrame
     }
 }

@@ -58,7 +58,7 @@ internal class ShapeLayer(
     val effect: List<Effect> = emptyList(),
 
     @SerialName("sr")
-    override val stretch: Float = 1f,
+    override val timeStretch: Float = 1f,
 
     @SerialName("parent")
     override val parent: Int? = null,
@@ -86,9 +86,6 @@ internal class ShapeLayer(
 ) : BaseLayer(), VisualLayer  {
 
     @Transient
-    private val boundMatrix = Matrix()
-
-    @Transient
     private val contentGroup = ContentGroup(
         name = name,
         hidden = hidden,
@@ -109,6 +106,6 @@ internal class ShapeLayer(
         frame: Float,
     ) {
         super.getBounds(outBounds, parentMatrix, applyParents, frame)
-        contentGroup.getBounds(outBounds, boundMatrix, applyParents, frame)
+        contentGroup.getBounds(outBounds, boundsMatrix, applyParents, frame)
     }
 }

@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.MutableRect
+import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
@@ -11,11 +12,14 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.DrawStyle
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.isIdentity
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.LottieComposition
+import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
@@ -26,7 +30,6 @@ import io.github.alexzhirkevich.compottie.internal.platform.getMatrix
 import io.github.alexzhirkevich.compottie.internal.platform.isAndroidAtMost
 import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
 import io.github.alexzhirkevich.compottie.internal.platform.set
-import io.github.alexzhirkevich.compottie.internal.services.LottieServiceLocator
 import io.github.alexzhirkevich.compottie.internal.utils.Utils
 import io.github.alexzhirkevich.compottie.internal.utils.intersect
 import io.github.alexzhirkevich.compottie.internal.utils.overlaps
@@ -41,7 +44,10 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
 
     abstract val transform: Transform
     override var density by mutableStateOf(1f)
-    override var serviceLocator: LottieServiceLocator? = null
+    override var assets: Map<String, LottieAsset> = emptyMap()
+
+    override var maintainOriginalImageBounds = false
+
     override lateinit var composition : LottieComposition
 
     protected val boundsMatrix = Matrix()
@@ -106,7 +112,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
             return
         }
 
-        getBounds(rect, matrix, false, frame);
+        getBounds(rect, matrix, false, frame)
 
 //        intersectBoundsWithMatte(rect, parentMatrix)
 
@@ -117,13 +123,15 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         // If the canvas has a transform, then we need to transform its bounds by its matrix
         // so that we know the coordinate space that the canvas is showing.
         canvasBounds.set(0f, 0f, drawScope.size.width, drawScope.size.height)
-
         drawScope.drawIntoCanvas { canvas ->
             canvas.getMatrix(canvasMatrix)
-            if (!canvasMatrix.isIdentity()) {
-                canvasMatrix.invert()
-                canvasMatrix.map(canvasBounds)
-            }
+
+            //TODO: fix mask canvas mapping
+//            if (!canvasMatrix.isIdentity()) {
+//                canvasMatrix.invert()
+//                canvasMatrix.map(canvasBounds)
+//            }
+
             if (rect.overlaps(canvasBounds)) {
                 rect.intersect(canvasBounds)
             } else {
@@ -249,10 +257,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
             return
         }
 
-        val mMasks = this.masks
-        val size: Int = mMasks!!.size
-
-        this.masks?.fastForEachIndexed { i, mask ->
+        masks?.fastForEachIndexed { i, mask ->
 
             val maskPath = mask.shape?.interpolated(frame) ?: return@fastForEachIndexed
 

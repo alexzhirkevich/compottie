@@ -13,7 +13,6 @@ import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
-import io.github.alexzhirkevich.compottie.internal.services.LottieAssetService
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -56,7 +55,7 @@ internal class ImageLayer(
     override val name: String? = null,
 
     @SerialName("sr")
-    override val stretch: Float = 1f,
+    override val timeStretch: Float = 1f,
 
     @SerialName("parent")
     override val parent: Int? = null,
@@ -93,19 +92,13 @@ internal class ImageLayer(
     @Transient
     private val paint = Paint()
 
-    private val service by lazy {
-        serviceLocator?.get<LottieAssetService>()
-    }
-
     private val asset : LottieAsset.ImageAsset? by lazy {
-        service?.asset(refId) as? LottieAsset.ImageAsset
+        assets[refId] as? LottieAsset.ImageAsset
     }
 
     override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
         val mAsset = asset ?: return
         val bitmap = mAsset.bitmap ?: return
-
-        val maintainOriginalImageBounds = service?.maintainOriginalImageBounds ?: false
 
         paint.alpha = parentAlpha
 
@@ -117,18 +110,20 @@ internal class ImageLayer(
 
             val dstSize = if (maintainOriginalImageBounds) {
                 IntSize(
-                    (mAsset.width * density).roundToInt(),
-                    (mAsset.height * density).roundToInt()
+                    (mAsset.width * drawScope.density).roundToInt(),
+                    (mAsset.height * drawScope.density).roundToInt()
                 )
             } else {
                 IntSize(
-                    (bitmap.width * density).roundToInt(),
-                    (bitmap.height * density).roundToInt()
+                    (bitmap.width * drawScope.density).roundToInt(),
+                    (bitmap.height * drawScope.density).roundToInt()
                 )
             }
 
-            val srcSize =
-                IntSize((bitmap.width * density).toInt(), (bitmap.height * density).toInt())
+            val srcSize = IntSize(
+                (bitmap.width * drawScope.density).toInt(),
+                (bitmap.height * drawScope.density).toInt()
+            )
 
             canvas.drawImageRect(
                 bitmap,

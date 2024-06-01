@@ -1,7 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
 import io.github.alexzhirkevich.compottie.LottieComposition
-import io.github.alexzhirkevich.compottie.internal.services.LottieServiceLocator
+import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonClassDiscriminator
@@ -18,7 +18,7 @@ internal sealed interface Layer {
 
     val parent : Int?
 
-    val stretch : Float
+    val timeStretch : Float
 
     val inPoint : Float?
 
@@ -30,10 +30,15 @@ internal sealed interface Layer {
 
     var composition : LottieComposition
 
-    var serviceLocator : LottieServiceLocator?
 
     var density : Float
+
+    var assets: Map<String, LottieAsset>
+
+    var maintainOriginalImageBounds: Boolean
 }
+
+internal val Layer.isContainerLayer get()   =  name == "__container"
 
 
 

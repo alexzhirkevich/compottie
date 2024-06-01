@@ -81,7 +81,7 @@ internal class FillShape(
 
         path.reset()
         paths.fastForEach {
-            this.path.addPath(it.getPath(frame), parentMatrix)
+            path.addPath(it.getPath(frame), parentMatrix)
         }
 
         outBounds.set(path.getBounds())

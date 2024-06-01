@@ -49,7 +49,7 @@ internal class NullLayer(
     override val name: String? = null,
 
     @SerialName("sr")
-    override val stretch: Float = 1f,
+    override val timeStretch: Float = 1f,
 
     @SerialName("parent")
     override val parent: Int? = null,

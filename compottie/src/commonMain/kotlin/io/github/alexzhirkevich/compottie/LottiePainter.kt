@@ -17,24 +17,29 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
+import androidx.compose.ui.util.fastJoinToString
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsFetcher
 import io.github.alexzhirkevich.compottie.assets.NoOpAssetsFetcher
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
-import io.github.alexzhirkevich.compottie.internal.services.LottieAssetService
-import io.github.alexzhirkevich.compottie.internal.services.LottieServiceLocator
+import io.github.alexzhirkevich.compottie.internal.platform.getMatrix
+import io.github.alexzhirkevich.compottie.internal.utils.preScale
+import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
+import kotlin.time.Duration
+import kotlin.time.measureTime
 
 
 @Composable
@@ -129,17 +134,11 @@ private class LottiePainter(
         p.coerceAtLeast(0f)
     }
 
-    private var serviceLocator = LottieServiceLocator(
-        LottieAssetService(
-            maintainOriginalImageBounds = maintainOriginalImageBounds,
-            assets = composition.lottieData.assets
-        )
-    )
-
     init {
         composition.lottieData.layers.fastForEach {
-            it.serviceLocator = serviceLocator
+            it.assets = composition.lottieData.assets.associateBy(LottieAsset::id)
             it.composition = composition
+            it.maintainOriginalImageBounds = maintainOriginalImageBounds
         }
     }
 
@@ -158,15 +157,19 @@ private class LottiePainter(
 
         val offset = Alignment.Center.align(
             IntSize(
-                (intrinsicSize.width).roundToInt(),
+                (intrinsicSize.width ).roundToInt(),
                 (intrinsicSize.height).roundToInt()
             ),
             IntSize(
-                size.width.roundToInt(),
-                size.height.roundToInt()
+                (size.width).roundToInt(),
+                (size.height).roundToInt()
             ),
             layoutDirection
         )
+
+        matrix.reset()
+//        matrix.preScale(scale.scaleX, scale.scaleY)
+//        matrix.preTranslate(offset.x.toFloat(), offset.y.toFloat())
 
         scale(scale.scaleX, scale.scaleY) {
             translate(offset.x.toFloat(), offset.y.toFloat()) {

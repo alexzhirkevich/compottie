@@ -59,6 +59,7 @@ internal class RectShape(
             path.rewind()
             return path
         }
+        path.rewind()
 
         val position = position.interpolated(frame)
         val size = size.interpolated(frame)
