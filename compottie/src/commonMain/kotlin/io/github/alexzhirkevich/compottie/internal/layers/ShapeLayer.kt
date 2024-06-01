@@ -3,11 +3,13 @@ package io.github.alexzhirkevich.compottie.internal.layers
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
 import io.github.alexzhirkevich.compottie.internal.effects.Effect
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.shapes.Shape
 import io.github.alexzhirkevich.compottie.internal.shapes.findTransform
@@ -78,6 +80,9 @@ internal class ShapeLayer(
 
     @SerialName("ct")
     override val collapseTransform: BooleanInt = BooleanInt.No,
+
+    @SerialName("masksProperties")
+    override val masks: List<Mask>? = null,
 ) : BaseLayer(), VisualLayer  {
 
     @Transient
@@ -93,8 +98,8 @@ internal class ShapeLayer(
         setContents(emptyList(), emptyList())
     }
 
-    override fun drawLayer(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
-        contentGroup.draw(canvas, parentMatrix, parentAlpha, frame)
+    override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
+        contentGroup.draw(drawScope, parentMatrix, parentAlpha, frame)
     }
 
     override fun getBounds(

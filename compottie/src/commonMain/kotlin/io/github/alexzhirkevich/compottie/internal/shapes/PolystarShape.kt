@@ -8,7 +8,7 @@ import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
-import io.github.alexzhirkevich.compottie.internal.shapes.util.CompoundTrimPath
+import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
 import io.github.alexzhirkevich.compottie.internal.utils.Math
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

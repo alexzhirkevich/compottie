@@ -6,6 +6,8 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shader
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
@@ -76,7 +78,7 @@ internal class GradientFillShape(
     private val gradientCache = LinkedHashMap<Int, Shader>()
 
 
-    override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
+    override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
 
         paint.alpha = if (opacity != null) {
             (parentAlpha * opacity.interpolated(frame) / 100f).coerceIn(0f, 1f)
@@ -94,6 +96,9 @@ internal class GradientFillShape(
             matrix = parentMatrix,
             cache = gradientCache
         )
+        drawScope.drawIntoCanvas {
+            it.drawPath(path, paint)
+        }
     }
 
     override fun getBounds(

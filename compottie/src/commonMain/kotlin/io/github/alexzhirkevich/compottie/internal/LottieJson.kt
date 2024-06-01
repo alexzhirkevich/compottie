@@ -4,10 +4,12 @@ import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.layers.NullLayer
 import io.github.alexzhirkevich.compottie.internal.layers.ShapeLayer
 import io.github.alexzhirkevich.compottie.internal.layers.ImageLayer
+import io.github.alexzhirkevich.compottie.internal.layers.PrecompositionLayer
 import io.github.alexzhirkevich.compottie.internal.shapes.EllipseShape
 import io.github.alexzhirkevich.compottie.internal.shapes.FillShape
 import io.github.alexzhirkevich.compottie.internal.shapes.GradientFillShape
@@ -42,10 +44,17 @@ internal val LottieJson by lazy {
                 subclass(ShapeLayer::class)
                 subclass(NullLayer::class)
                 subclass(ImageLayer::class)
+                subclass(PrecompositionLayer::class)
 
                 defaultDeserializer {
                     NullLayer.serializer()
                 }
+            }
+
+            polymorphic(LottieAsset::class){
+                subclass(LottieAsset.ImageAsset::class)
+                subclass(LottieAsset.PrecompositionAsset::class)
+                subclass(LottieAsset.EmptyAsset::class)
             }
 
             polymorphic(Shape::class) {

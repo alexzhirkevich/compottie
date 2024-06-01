@@ -1,4 +1,4 @@
-package io.github.alexzhirkevich.compottie.internal.shapes.util
+package io.github.alexzhirkevich.compottie.internal.helpers
 
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.util.fastForEachReversed

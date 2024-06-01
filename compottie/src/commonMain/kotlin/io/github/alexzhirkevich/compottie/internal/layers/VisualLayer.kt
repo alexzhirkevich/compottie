@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie.internal.layers
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonClassDiscriminator
@@ -28,6 +29,8 @@ internal sealed interface VisualLayer : Layer {
     val htmlId : String?
 
     val collapseTransform : BooleanInt
+
+    val masks : List<Mask>?
 }
 
 

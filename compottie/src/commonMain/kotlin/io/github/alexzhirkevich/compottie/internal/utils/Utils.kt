@@ -1,6 +1,8 @@
 package io.github.alexzhirkevich.compottie.internal.utils
 
+import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
@@ -11,11 +13,14 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
+
+
 internal object Utils {
 
     private val pathMeasure = ExtendedPathMeasure()
     private val tempPath = Path()
     private val tempPath2 = Path()
+
 
     fun saveLayerCompat(
         canvas: Canvas,
@@ -24,6 +29,15 @@ internal object Utils {
     ) {
         canvas.saveLayer(rect, paint)
     }
+
+    fun saveLayerCompat(
+        canvas: Canvas,
+        rect: MutableRect,
+        paint: Paint,
+    ) {
+        canvas.saveLayer(rect.toRect(), paint)
+    }
+
 
     fun applyTrimPathIfNeeded(path: Path, trimPath: TrimPathShape, frame: Float) {
         if (trimPath.hidden) {

@@ -8,6 +8,8 @@ import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.internal.content.Content
@@ -66,15 +68,15 @@ internal abstract class BaseStrokeShape() : DrawingContent {
 
     abstract val opacity: AnimatedValue
     abstract val strokeWidth: AnimatedValue
-    abstract val lineCap : LineCap
-    abstract val lineJoin : LineJoin
-    abstract val strokeMiter : Float
+    abstract val lineCap: LineCap
+    abstract val lineJoin: LineJoin
+    abstract val strokeMiter: Float
 
     private val pathGroups = mutableListOf<PathGroup>()
 
     private val trimPathPath = Path()
     private val path = Path()
-    private val rect = MutableRect(0f,0f,0f,0f)
+    private val rect = MutableRect(0f, 0f, 0f, 0f)
     protected val paint = Paint().apply {
         strokeMiterLimit = strokeMiter
         strokeCap = lineCap.asStrokeCap()
@@ -82,26 +84,33 @@ internal abstract class BaseStrokeShape() : DrawingContent {
     }
     private val pm = ExtendedPathMeasure()
 
-    override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
+    override fun draw(
+        drawScope: DrawScope,
+        parentMatrix: Matrix,
+        parentAlpha: Float,
+        frame: Float
+    ) {
 
         paint.style = PaintingStyle.Stroke
-        paint.alpha = parentAlpha * (opacity.interpolated(frame) / 100f).coerceIn(0f,1f)
+        paint.alpha = parentAlpha * (opacity.interpolated(frame) / 100f).coerceIn(0f, 1f)
         paint.strokeWidth = strokeWidth.interpolated(frame)
 
         if (paint.strokeWidth <= 0) {
             return
         }
+        drawScope.drawIntoCanvas { canvas ->
 
-        pathGroups.fastForEach { pathGroup ->
+            pathGroups.fastForEach { pathGroup ->
 
-            if (pathGroup.trimPath != null) {
-                applyTrimPath(canvas, frame, pathGroup, parentMatrix)
-            } else {
-                path.reset()
-                pathGroup.paths.fastForEachReversed {
-                    path.addPath(it.getPath(frame), parentMatrix)
+                if (pathGroup.trimPath != null) {
+                    applyTrimPath(canvas, frame, pathGroup, parentMatrix)
+                } else {
+                    path.reset()
+                    pathGroup.paths.fastForEachReversed {
+                        path.addPath(it.getPath(frame), parentMatrix)
+                    }
+                    canvas.drawPath(path, paint)
                 }
-                canvas.drawPath(path, paint)
             }
         }
     }
@@ -167,15 +176,14 @@ internal abstract class BaseStrokeShape() : DrawingContent {
         frame: Float,
     ) {
         path.reset()
-        for (i in pathGroups.indices) {
-            val pathGroup = pathGroups[i]
-            for (j in pathGroup.paths.indices) {
-                path.addPath(pathGroup.paths[j].getPath(frame), parentMatrix)
+        pathGroups.fastForEach { pathGroup ->
+            pathGroup.paths.fastForEach {
+                path.addPath(it.getPath(frame), parentMatrix)
             }
         }
         rect.set(path.getBounds())
 
-        val width =  strokeWidth.interpolated(frame)
+        val width = strokeWidth.interpolated(frame)
 
         rect.set(
             rect.left - width / 2f, rect.top - width / 2f,
@@ -231,8 +239,9 @@ internal abstract class BaseStrokeShape() : DrawingContent {
         ).toFloat()
 
         var currentLength = 0f
-        for (j in pathGroup.paths.indices.reversed()) {
-            trimPathPath.set(pathGroup.paths[j].getPath(time))
+
+        pathGroup.paths.fastForEachReversed {
+            trimPathPath.set(it.getPath(time))
             trimPathPath.transform(parentMatrix)
             pm.setPath(trimPathPath, false)
             val length: Float = pm.length

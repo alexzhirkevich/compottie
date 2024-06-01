@@ -5,6 +5,8 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
@@ -49,7 +51,7 @@ internal class FillShape(
 
     private val paint = Paint()
 
-    override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
+    override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
 
         if (hidden) {
             return
@@ -63,11 +65,12 @@ internal class FillShape(
 
         path.reset()
 
-        for (i in paths.indices) {
-            path.addPath(paths[i].getPath(frame), parentMatrix)
+        paths.fastForEach {
+            path.addPath(it.getPath(frame), parentMatrix)
         }
-
-        canvas.drawPath(path, paint)
+        drawScope.drawIntoCanvas { canvas ->
+            canvas.drawPath(path, paint)
+        }
     }
     override fun getBounds(
         outBounds: MutableRect,

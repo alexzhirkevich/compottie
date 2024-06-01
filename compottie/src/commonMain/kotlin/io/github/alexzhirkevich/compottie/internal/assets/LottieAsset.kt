@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.unit.IntSize
 import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -20,7 +21,6 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 internal sealed interface LottieAsset {
 
     val id: String
-    val name: String?
 
     @Serializable
     class ImageAsset(
@@ -39,7 +39,7 @@ internal sealed interface LottieAsset {
         override val slotId: String? = null,
 
         @SerialName("nm")
-        override val name: String? = null,
+        val name: String? = null,
 
         @SerialName("e")
         override val embedded: BooleanInt = BooleanInt.No,
@@ -78,12 +78,15 @@ internal sealed interface LottieAsset {
     }
 
     @Serializable
+    class PrecompositionAsset(
+        override val id: String,
+        val layers : List<Layer>
+    ) : LottieAsset
+
+    @Serializable
     class EmptyAsset(
         @SerialName("id")
-        override val id: String,
-
-        @SerialName("nm")
-        override val name: String? = null,
+        override val id: String = "",
     ) : LottieAsset
 }
 
@@ -109,6 +112,7 @@ internal class AssetSerializer : JsonContentPolymorphicSerializer<LottieAsset>(L
 
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<LottieAsset> {
         return when {
+            "layers" in element.jsonObject.keys -> LottieAsset.PrecompositionAsset.serializer()
             "p" in element.jsonObject.keys -> LottieAsset.ImageAsset.serializer()
             else -> LottieAsset.EmptyAsset.serializer()
         }

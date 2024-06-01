@@ -4,12 +4,15 @@ import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.unit.IntSize
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.services.LottieAssetService
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -73,9 +76,13 @@ internal class ImageLayer(
     @SerialName("ct")
     override val collapseTransform: BooleanInt = BooleanInt.No,
 
+    @SerialName("masksProperties")
+    override val masks: List<Mask>? = null,
+
     @SerialName("refId")
-    val refId : String
-) : BaseLayer(), VisualLayer {
+    val refId : String,
+
+    ) : BaseLayer(), VisualLayer {
 
     @Transient
     private val src = MutableRect(0f,0f,0f,0f)
@@ -94,7 +101,7 @@ internal class ImageLayer(
         service?.asset(refId) as? LottieAsset.ImageAsset
     }
 
-    override fun drawLayer(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
+    override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
         val mAsset = asset ?: return
         val bitmap = mAsset.bitmap ?: return
 
@@ -102,25 +109,35 @@ internal class ImageLayer(
 
         paint.alpha = parentAlpha
 
-        canvas.save()
-        canvas.concat(parentMatrix)
-        src.set(0f, 0f, bitmap.width.toFloat(), bitmap.height.toFloat())
+        drawScope.drawIntoCanvas { canvas ->
 
-        val dstSize = if (maintainOriginalImageBounds){
-            IntSize((mAsset.width * density).roundToInt(), (mAsset.height * density).roundToInt())
-        } else {
-            IntSize((bitmap.width * density).roundToInt(), (bitmap.height * density).roundToInt())
+            canvas.save()
+            canvas.concat(parentMatrix)
+            src.set(0f, 0f, bitmap.width.toFloat(), bitmap.height.toFloat())
+
+            val dstSize = if (maintainOriginalImageBounds) {
+                IntSize(
+                    (mAsset.width * density).roundToInt(),
+                    (mAsset.height * density).roundToInt()
+                )
+            } else {
+                IntSize(
+                    (bitmap.width * density).roundToInt(),
+                    (bitmap.height * density).roundToInt()
+                )
+            }
+
+            val srcSize =
+                IntSize((bitmap.width * density).toInt(), (bitmap.height * density).toInt())
+
+            canvas.drawImageRect(
+                bitmap,
+                srcSize = srcSize,
+                dstSize = dstSize,
+                paint = paint
+            )
+            canvas.restore()
         }
-
-        val srcSize = IntSize((bitmap.width * density).toInt(), (bitmap.height * density).toInt())
-
-        canvas.drawImageRect(
-            bitmap,
-            srcSize = srcSize,
-            dstSize = dstSize,
-            paint = paint
-        )
-        canvas.restore()
     }
 
     override fun getBounds(

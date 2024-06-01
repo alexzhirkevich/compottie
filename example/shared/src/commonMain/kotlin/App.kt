@@ -26,13 +26,14 @@ private val POLYSTAR = "files/polystar.json"
 private val RECT = "files/rect.json"
 private val ROUND_RECT = "files/roundrect.json"
 private val ROBOT = "files/robot.json"
+private val PRECOMP_WITH_REMAPPING = "files/precomp_with_remapping.json"
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun App() {
 
     val json by produceState<String?>(null){
-        value = Res.readBytes(CHECKMARK).decodeToString()
+        value = Res.readBytes(PRECOMP_WITH_REMAPPING).decodeToString()
     }
 
     if (json != null) {

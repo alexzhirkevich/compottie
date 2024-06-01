@@ -2,10 +2,12 @@ package io.github.alexzhirkevich.compottie.internal.content
 
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.geometry.toRect
-import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
@@ -29,8 +31,7 @@ internal class ContentGroup(
 
     private val boundsRect = MutableRect(0f,0f,0f,0f)
 
-    override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
-
+    override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
 
         if (hidden) {
             return
@@ -47,26 +48,28 @@ internal class ContentGroup(
             }
         }
 
-        val isRenderingWithOffScreen = false//hasTwoOrMoreDrawableContent()
+        //TODO: doesn't work, something wrong with getBounds
+        val isRenderingWithOffScreen = false//hasTwoOrMoreDrawableContent() && layerAlpha != 1f
 
-        if (isRenderingWithOffScreen) {
-            offscreenRect.set(0f, 0f, 0f, 0f)
-            getBounds(offscreenRect, matrix, true, frame)
-            offscreenPaint.alpha = layerAlpha
-            Utils.saveLayerCompat(canvas, offscreenRect.toRect(), offscreenPaint)
-        }
-
-        val childAlpha = if (isRenderingWithOffScreen) 1f else layerAlpha
-
-        for (i in contents.indices.reversed()) {
-            val content: Any = contents[i]
-            if (content is DrawingContent) {
-                content.draw(canvas, matrix, childAlpha, frame)
+        drawScope.drawIntoCanvas { canvas ->
+            if (isRenderingWithOffScreen) {
+                offscreenRect.set(0f, 0f, 0f, 0f)
+                getBounds(offscreenRect, matrix, true, frame)
+                offscreenPaint.alpha = layerAlpha
+                Utils.saveLayerCompat(canvas, offscreenRect.toRect(), offscreenPaint)
             }
-        }
 
-        if (isRenderingWithOffScreen) {
-            canvas.restore()
+            val childAlpha = if (isRenderingWithOffScreen) 1f else layerAlpha
+
+            contents.fastForEachReversed { content ->
+                if (content is DrawingContent) {
+                    content.draw(drawScope, matrix, childAlpha, frame)
+                }
+            }
+
+            if (isRenderingWithOffScreen) {
+                canvas.restore()
+            }
         }
     }
 
@@ -126,8 +129,8 @@ internal class ContentGroup(
 
     private fun hasTwoOrMoreDrawableContent(): Boolean {
         var drawableContentCount = 0
-        for (i in contents.indices) {
-            if (contents[i] is DrawingContent) {
+        contents.fastForEach {
+            if (it is DrawingContent) {
                 drawableContentCount += 1
                 if (drawableContentCount >= 2) {
                     return true

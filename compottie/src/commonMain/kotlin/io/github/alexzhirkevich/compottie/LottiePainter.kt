@@ -139,6 +139,7 @@ private class LottiePainter(
     init {
         composition.lottieData.layers.fastForEach {
             it.serviceLocator = serviceLocator
+            it.composition = composition
         }
     }
 
@@ -169,16 +170,14 @@ private class LottiePainter(
 
         scale(scale.scaleX, scale.scaleY) {
             translate(offset.x.toFloat(), offset.y.toFloat()) {
-                drawIntoCanvas { canvas ->
-                    composition.lottieData.layers.fastForEachReversed {
-                        if (it is DrawingContent) {
-                            it.density = density
-                            try {
-                                it.draw(canvas, matrix, alpha, currentFrame)
-                            } catch (t: Throwable) {
-                                println("Lottie crashed in draw :(")
-                                t.printStackTrace()
-                            }
+                composition.lottieData.layers.fastForEachReversed {
+                    if (it is DrawingContent) {
+                        it.density = density
+                        try {
+                            it.draw(this, matrix, alpha, currentFrame)
+                        } catch (t: Throwable) {
+                            println("Lottie crashed in draw :(")
+                            t.printStackTrace()
                         }
                     }
                 }

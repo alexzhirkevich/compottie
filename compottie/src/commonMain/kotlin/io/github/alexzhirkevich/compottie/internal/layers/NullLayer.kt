@@ -3,9 +3,11 @@ package io.github.alexzhirkevich.compottie.internal.layers
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -66,9 +68,12 @@ internal class NullLayer(
 
     @SerialName("ct")
     override val collapseTransform: BooleanInt = BooleanInt.No,
+
+    @SerialName("masksProperties")
+    override val masks: List<Mask>? = null,
 ) : BaseLayer(), VisualLayer {
 
-    override fun drawLayer(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
+    override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
     }
 
     override fun getBounds(

@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
+import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.internal.services.LottieServiceLocator
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -26,6 +27,8 @@ internal sealed interface Layer {
     val startTime : Int?
 
     val name : String?
+
+    var composition : LottieComposition
 
     var serviceLocator : LottieServiceLocator?
 

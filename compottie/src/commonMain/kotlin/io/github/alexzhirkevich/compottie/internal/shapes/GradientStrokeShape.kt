@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Shader
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
@@ -72,7 +73,7 @@ internal class GradientStrokeShape(
     @Transient
     private val gradientCache = LinkedHashMap<Int, Shader>()
 
-    override fun draw(canvas: Canvas, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
+    override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
 
         getBounds(boundsRect, parentMatrix, false, frame)
 
@@ -85,7 +86,7 @@ internal class GradientStrokeShape(
             matrix = parentMatrix,
             cache = gradientCache
         )
-        super.draw(canvas, parentMatrix, parentAlpha, frame)
+        super.draw(drawScope, parentMatrix, parentAlpha, frame)
     }
 }
 

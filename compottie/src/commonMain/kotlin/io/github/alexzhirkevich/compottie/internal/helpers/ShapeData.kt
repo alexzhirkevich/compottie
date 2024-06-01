@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie.internal.helpers
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.lerp
 import kotlin.math.min
 
@@ -71,13 +72,13 @@ internal fun ShapeData.mapPath(outPath : Path) {
     outPath.moveTo(initialPoint.x, initialPoint.y)
 
     var pathFromDataCurrentPoint = initialPoint
-    for (i in curves.indices) {
-        val curveData = curves[i]
+
+    curves.fastForEach { curveData ->
         val cp1 = curveData.controlPoint1
         val cp2 = curveData.controlPoint2
         val vertex = curveData.vertex
 
-        if (cp1 == pathFromDataCurrentPoint&& cp2 == vertex) {
+        if (cp1 == pathFromDataCurrentPoint && cp2 == vertex) {
             // On some phones like Samsung phones, zero valued control points can cause artifacting.
             // https://github.com/airbnb/lottie-android/issues/275
             //
