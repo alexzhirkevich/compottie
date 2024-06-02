@@ -9,7 +9,14 @@ internal class BaseKeyframeAnimation<T,K>(
     private val map : Keyframe<K>.(start : K, end : K, progress: Float,  frame: Float) -> T
 ) : KeyframeAnimation<T> {
 
-    private val sortedKeyframes = keyframes//.sortedBy { it.time }
+    private val sortedKeyframes = keyframes
+        .sortedBy { it.time }
+        .takeIf { it != keyframes }
+        ?: keyframes // ensure keyframes are sorted. don't store extra refs list if so
+
+    private val timeIntervals = (0..<sortedKeyframes.lastIndex).map {
+        sortedKeyframes[it].time..sortedKeyframes[it + 1].time
+    }
 
     private val firstFrame: Float by lazy {
         sortedKeyframes.first().time
@@ -59,20 +66,20 @@ internal class BaseKeyframeAnimation<T,K>(
             frame >= lastFrame -> targetValue
             frame <= firstFrame -> initialValue
             else -> {
-                var kfIdx = sortedKeyframes.lastIndex
-                var progress = 1f
 
-                for (i in 0..<sortedKeyframes.lastIndex) {
-                    val s = sortedKeyframes[i].time
-                    val e = sortedKeyframes[i + 1].time
-                    if (frame in s..e) {
-                        kfIdx = i
-                        progress = (frame - s) / (e - s)
-                        break
+                val kfIdx = timeIntervals.binarySearch {
+                    when {
+                        frame < it.start -> 1
+                        frame > it.endInclusive -> -1
+                        else -> 0
                     }
                 }
 
-//                println(kfIdx)
+                require(kfIdx >= 0, InvalidKeyframeError)
+
+                val progress = timeIntervals[kfIdx].let {
+                    (frame - it.start) / (it.endInclusive - it.start)
+                }
 
                 sortedKeyframes[kfIdx].run {
                     map(
