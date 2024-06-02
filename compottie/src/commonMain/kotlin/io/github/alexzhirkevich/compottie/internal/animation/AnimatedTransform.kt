@@ -21,7 +21,7 @@ internal abstract class AnimatedTransform {
     abstract val skew: AnimatedValue?
     abstract val skewAxis: AnimatedValue?
 
-    private val matrix: Matrix = Matrix()
+    protected val matrix: Matrix = Matrix()
 
     private val skewMatrix1: Matrix by lazy {
         Matrix()

@@ -148,6 +148,8 @@ internal class PolystarShape(
             currentAngle += halfAnglePerPoint
         }
 
+        val startX = x
+        val startY = y
 
         // True means the line will go to outer radius. False means inner radius.
         var longSegment = false
@@ -167,7 +169,11 @@ internal class PolystarShape(
             y = radius * sin(currentAngle)
 
             if (innerRoundedness == 0f && outerRoundedness == 0f) {
-                path.lineTo(x, y)
+                if (i == numPoints-1){
+                    path.lineTo(startX, startY)
+                } else {
+                    path.lineTo(x, y)
+                }
             } else {
                 val cp1Theta = (atan2(previousY, previousX) - HalfPI)
                 val cp1Dx = cos(cp1Theta).toFloat()
@@ -209,7 +215,7 @@ internal class PolystarShape(
         }
 
 
-        val position = position?.interpolated(frame)?.let {
+        position?.interpolated(frame)?.let {
             path.translate(it)
         }
 

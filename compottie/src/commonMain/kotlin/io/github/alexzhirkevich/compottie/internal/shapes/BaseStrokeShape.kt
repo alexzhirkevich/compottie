@@ -103,13 +103,14 @@ internal abstract class BaseStrokeShape() : DrawingContent {
         FloatArray(dashPattern?.size ?: 0)
     }
 
+    private var roundShape : RoundShape? = null
+
     override fun draw(
         drawScope: DrawScope,
         parentMatrix: Matrix,
         parentAlpha: Float,
         frame: Float
     ) {
-
         paint.style = PaintingStyle.Stroke
         paint.alpha = parentAlpha * (opacity.interpolated(frame) / 100f).coerceIn(0f, 1f)
         paint.strokeWidth = strokeWidth.interpolated(frame)
@@ -119,6 +120,8 @@ internal abstract class BaseStrokeShape() : DrawingContent {
         }
 
         applyDashPatternIfNeeded(parentMatrix, frame)
+
+        roundShape?.applyTo(paint, frame)
 
         drawScope.drawIntoCanvas { canvas ->
 
@@ -156,6 +159,8 @@ internal abstract class BaseStrokeShape() : DrawingContent {
                     currentPathGroup = PathGroup(trimPathContentBefore)
                 }
                 currentPathGroup!!.paths.add(content)
+            } else if (content is RoundShape){
+                roundShape = content
             }
         }
 
@@ -286,6 +291,7 @@ internal abstract class BaseStrokeShape() : DrawingContent {
             currentLength += length
         }
     }
+
 
     private fun applyDashPatternIfNeeded(parentMatrix: Matrix, frame: Float) {
 

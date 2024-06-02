@@ -73,10 +73,11 @@ internal class GradientFillShape(
     @Transient
     private val paint = Paint()
 
-
     @Transient
     private val gradientCache = LinkedHashMap<Int, Shader>()
 
+    @Transient
+    private var roundShape : RoundShape? = null
 
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
 
@@ -96,6 +97,9 @@ internal class GradientFillShape(
             matrix = parentMatrix,
             cache = gradientCache
         )
+
+        roundShape?.applyTo(paint, frame)
+
         drawScope.drawIntoCanvas {
             it.drawPath(path, paint)
         }
@@ -123,6 +127,7 @@ internal class GradientFillShape(
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
         paths = contentsAfter.filterIsInstance<PathContent>()
+        roundShape = contentsBefore.find { it is RoundShape } as? RoundShape
     }
 }
 

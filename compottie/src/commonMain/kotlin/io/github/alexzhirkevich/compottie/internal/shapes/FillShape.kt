@@ -18,6 +18,7 @@ import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 @SerialName("fl")
@@ -45,11 +46,17 @@ internal class FillShape(
     val color : AnimatedColor,
 ) : Shape, DrawingContent {
 
+    @Transient
     private val path = Path()
 
+    @Transient
     private var paths: List<PathContent> = emptyList()
 
+    @Transient
     private val paint = Paint()
+
+    @Transient
+    private var roundShape : RoundShape? = null
 
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
 
@@ -68,6 +75,9 @@ internal class FillShape(
         paths.fastForEach {
             path.addPath(it.getPath(frame), parentMatrix)
         }
+
+        roundShape?.applyTo(paint, frame)
+
         drawScope.drawIntoCanvas { canvas ->
             canvas.drawPath(path, paint)
         }
@@ -96,5 +106,7 @@ internal class FillShape(
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
         paths = contentsAfter.filterIsInstance<PathContent>()
+
+        roundShape = contentsBefore?.find { it is RoundShape } as? RoundShape
     }
 }

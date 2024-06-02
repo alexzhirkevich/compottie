@@ -34,13 +34,15 @@ private val ROBOT = "files/robot.json"
 private val PRECOMP_WITH_REMAPPING = "files/precomp_with_remapping.json"
 private val MASK_ADD = "files/mask_add.json"
 private val DASH = "files/dash.json"
+private val ROUNDING_CORENERS = "files/rounding_corners.json"
+private val REPEATER = "files/repeater.json"
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun App() {
 
     val json by produceState<String?>(null){
-        value = Res.readBytes(DASH).decodeToString()
+        value = Res.readBytes(ROUNDING_CORENERS).decodeToString()
     }
 
 

@@ -55,8 +55,11 @@ fun Matrix.preRotate(degree : Float) {
         rotateZ(degree)
     })
 
-    return rotateZ(degree)
+//    return rotateZ(degree)
 }
+
+
+
 
 fun Matrix.preScale(x : Float, y : Float) {
     preConcat(tempMatrixTransform.apply {

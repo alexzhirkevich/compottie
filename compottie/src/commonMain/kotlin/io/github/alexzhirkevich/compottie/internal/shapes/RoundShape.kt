@@ -1,6 +1,8 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.PathEffect
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.ShapeModifierContent
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
@@ -30,6 +32,7 @@ internal class RoundShape(
 
     @Transient
     private var shapeData: ShapeData? = null
+
     override fun modify(shape: ShapeData, frame: Float): ShapeData {
         val startingCurves: List<CubicCurveData> = shape.curves
 
@@ -182,6 +185,18 @@ internal class RoundShape(
         }
         shapeData?.isClosed = isClosed
         return shapeData!!
+    }
+}
+
+internal fun RoundShape.applyTo(paint: Paint, frame: Float){
+    if (!hidden){
+        val radius = radius.interpolated(frame)
+        val effect = PathEffect.cornerPathEffect(radius)
+        paint.pathEffect = if (paint.pathEffect == null) {
+            effect
+        } else {
+            PathEffect.chainPathEffect(effect, paint.pathEffect!!)
+        }
     }
 }
 

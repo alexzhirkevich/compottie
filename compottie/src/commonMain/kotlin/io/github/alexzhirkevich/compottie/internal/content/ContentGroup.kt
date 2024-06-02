@@ -18,7 +18,7 @@ import io.github.alexzhirkevich.compottie.internal.utils.union
 internal class ContentGroup(
     override val name: String?,
     val hidden: Boolean,
-    val contents: List<Content>,
+    contents: List<Content>,
     val transform: AnimatedTransform?,
 ) : PathAndDrawingContext {
 
@@ -30,6 +30,16 @@ internal class ContentGroup(
     private var pathContents: MutableList<PathContent>? = null
 
     private val boundsRect = MutableRect(0f,0f,0f,0f)
+
+    private val contents = contents.toMutableList()
+
+    init {
+        val greedyContents = contents.filterIsInstance<GreedyContent>().reversed()
+
+        greedyContents.fastForEachReversed {
+            it.absorbContent(this.contents.listIterator(this.contents.size))
+        }
+    }
 
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
 
