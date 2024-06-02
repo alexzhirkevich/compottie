@@ -1,7 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.geometry.MutableRect
-import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
@@ -9,15 +8,15 @@ import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.animation.GradientColors
+import io.github.alexzhirkevich.compottie.internal.animation.GradientType
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
-import io.github.alexzhirkevich.compottie.internal.animation.GradientColors
-import io.github.alexzhirkevich.compottie.internal.animation.GradientType
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -97,6 +96,13 @@ internal class GradientFillShape(
             matrix = parentMatrix,
             cache = gradientCache
         )
+
+        path.reset()
+
+        paths.fastForEach {
+            path.addPath(it.getPath(frame), parentMatrix)
+        }
+
 
         roundShape?.applyTo(paint, frame)
 

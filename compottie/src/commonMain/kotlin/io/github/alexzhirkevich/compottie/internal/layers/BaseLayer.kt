@@ -74,7 +74,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
     }
 
     private val maskBoundsRect = MutableRect(0f, 0f, 0f, 0f)
-    private val rect = MutableRect(0f, 0f, 0f, 0f)
+    protected val rect = MutableRect(0f, 0f, 0f, 0f)
     private var parentLayers: MutableList<BaseLayer>? = null
 
     private var parentLayer: BaseLayer? = null

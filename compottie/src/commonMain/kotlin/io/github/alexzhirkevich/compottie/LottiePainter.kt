@@ -29,6 +29,9 @@ import io.github.alexzhirkevich.compottie.assets.NoOpAssetsFetcher
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.layers.BaseCompositionLayer
+import io.github.alexzhirkevich.compottie.internal.layers.CompositionLayer
+import io.github.alexzhirkevich.compottie.internal.layers.PrecompositionLayer
 import io.github.alexzhirkevich.compottie.internal.platform.getMatrix
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
@@ -163,8 +166,8 @@ private class LottiePainter(
 ) : Painter() {
 
     override val intrinsicSize: Size = Size(
-        composition.lottieData.width.toFloat(),
-        composition.lottieData.height.toFloat()
+        composition.lottieData.width,
+        composition.lottieData.height
     )
 
     var progress: Float by mutableStateOf(0f)
@@ -179,8 +182,15 @@ private class LottiePainter(
         p.coerceAtLeast(0f)
     }
 
+    val compositionLayer = if (composition.lottieData.layers.size == 1 && composition.lottieData.layers[0] is PrecompositionLayer){
+        composition.lottieData.layers[0] as BaseCompositionLayer
+    } else {
+        CompositionLayer(composition)
+    }
+
+
     init {
-        composition.lottieData.layers.fastForEach {
+        compositionLayer.let {
             it.assets = composition.lottieData.assets.associateBy(LottieAsset::id)
             it.composition = composition
             it.maintainOriginalImageBounds = maintainOriginalImageBounds
@@ -218,16 +228,12 @@ private class LottiePainter(
 
         scale(scale.scaleX, scale.scaleY) {
             translate(offset.x.toFloat(), offset.y.toFloat()) {
-                composition.lottieData.layers.fastForEachReversed {
-                    if (it is DrawingContent) {
-                        it.density = density
-                        try {
-                            it.draw(this, matrix, alpha, currentFrame)
-                        } catch (t: Throwable) {
-                            println("Lottie crashed in draw :(")
-                            t.printStackTrace()
-                        }
-                    }
+                compositionLayer.density = density
+                try {
+                    compositionLayer.draw(this, matrix, alpha, currentFrame)
+                } catch (t: Throwable) {
+                    println("Lottie crashed in draw :(")
+                    t.printStackTrace()
                 }
             }
         }

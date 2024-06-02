@@ -31,6 +31,7 @@ private val POLYSTAR = "files/polystar.json"
 private val RECT = "files/rect.json"
 private val ROUND_RECT = "files/roundrect.json"
 private val ROBOT = "files/robot.json"
+private val ROBOT_404 = "files/robot_404.json"
 private val PRECOMP_WITH_REMAPPING = "files/precomp_with_remapping.json"
 private val MASK_ADD = "files/mask_add.json"
 private val DASH = "files/dash.json"
@@ -42,9 +43,8 @@ private val REPEATER = "files/repeater.json"
 fun App() {
 
     val json by produceState<String?>(null){
-        value = Res.readBytes(ROUNDING_CORENERS).decodeToString()
+        value = Res.readBytes(ROBOT).decodeToString()
     }
-
 
     if (json != null) {
         val composition by rememberLottieComposition(

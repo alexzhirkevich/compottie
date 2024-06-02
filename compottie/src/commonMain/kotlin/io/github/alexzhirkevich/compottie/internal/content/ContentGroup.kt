@@ -9,35 +9,43 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
-import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
+import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.utils.Utils
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.union
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 internal class ContentGroup(
     override val name: String?,
     val hidden: Boolean,
     contents: List<Content>,
-    val transform: AnimatedTransform?,
-) : PathAndDrawingContext {
+    override val transform: AnimatedTransform?,
+) : ContentGroupBase {
 
     private val rect = MutableRect(0f,0f,0f,0f)
     private val offscreenRect = MutableRect(0f,0f,0f,0f)
     private val offscreenPaint = Paint()
     private val matrix = Matrix()
     private val path = Path()
-    private var pathContents: MutableList<PathContent>? = null
-
     private val boundsRect = MutableRect(0f,0f,0f,0f)
 
-    private val contents = contents.toMutableList()
+    private val mContents by lazy {
+        contents.filter {
+            !(it is ContentGroupBase && it.pathContents.isEmpty())
+        }.toMutableList()
+    }
+
+    override val pathContents: List<PathContent> by lazy {
+        this.mContents.filterIsInstance<PathContent>()
+    }
 
     init {
         val greedyContents = contents.filterIsInstance<GreedyContent>().reversed()
 
         greedyContents.fastForEachReversed {
-            it.absorbContent(this.contents.listIterator(this.contents.size))
+            it.absorbContent(this.mContents.listIterator(this.mContents.size))
         }
     }
 
@@ -70,7 +78,7 @@ internal class ContentGroup(
 
             val childAlpha = if (isRenderingWithOffScreen) 1f else layerAlpha
 
-            contents.fastForEachReversed { content ->
+            mContents.fastForEachReversed { content ->
                 if (content is DrawingContent) {
                     content.draw(drawScope, matrix, childAlpha, frame)
                 }
@@ -93,7 +101,7 @@ internal class ContentGroup(
         if (transform != null) {
             matrix.setFrom(transform.matrix(frame))
         }
-        contents.fastForEachReversed {
+        mContents.fastForEachReversed {
             if (it is PathContent) {
                 path.addPath(it.getPath(frame), matrix)
             }
@@ -104,12 +112,12 @@ internal class ContentGroup(
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
         // Do nothing with contents after.
-        val myContentsBefore: MutableList<Content> = ArrayList(contentsBefore.size + contents.size)
+        val myContentsBefore: MutableList<Content> = ArrayList(contentsBefore.size + mContents.size)
         myContentsBefore.addAll(contentsBefore)
 
-        for (i in contents.indices.reversed()) {
-            val content = contents[i]
-            content.setContents(myContentsBefore, contents.subList(0, i))
+        for (i in mContents.indices.reversed()) {
+            val content = mContents[i]
+            content.setContents(myContentsBefore, mContents.subList(0, i))
             myContentsBefore.add(content)
         }
     }
@@ -126,7 +134,7 @@ internal class ContentGroup(
         }
         rect.set(0f, 0f, 0f, 0f)
 
-        contents.fastForEachReversed {
+        mContents.fastForEachReversed {
             if (it is DrawingContent) {
                 it.getBounds(rect, matrix, applyParents, frame)
                 outBounds.union(rect)
@@ -137,7 +145,7 @@ internal class ContentGroup(
 
     private fun hasTwoOrMoreDrawableContent(): Boolean {
         var drawableContentCount = 0
-        contents.fastForEach {
+        mContents.fastForEach {
             if (it is DrawingContent) {
                 drawableContentCount += 1
                 if (drawableContentCount >= 2) {

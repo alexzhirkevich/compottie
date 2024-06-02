@@ -1,7 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
 import androidx.compose.ui.geometry.MutableRect
-import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
@@ -54,6 +53,7 @@ internal class ShapeLayer(
     @SerialName("nm")
     override val name: String? = null,
 
+
     @SerialName("ef")
     val effect: List<Effect> = emptyList(),
 
@@ -83,6 +83,7 @@ internal class ShapeLayer(
 
     @SerialName("masksProperties")
     override val masks: List<Mask>? = null,
+
 ) : BaseLayer(), VisualLayer  {
 
     @Transient

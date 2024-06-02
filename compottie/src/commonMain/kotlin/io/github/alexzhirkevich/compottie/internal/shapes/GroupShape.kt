@@ -1,8 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
-import io.github.alexzhirkevich.compottie.internal.content.PathAndDrawingContext
-import io.github.alexzhirkevich.compottie.internal.helpers.Transform
+import io.github.alexzhirkevich.compottie.internal.content.ContentGroupBase
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -25,7 +24,7 @@ internal class GroupShape(
     @SerialName("it")
     val items : List<Shape> = emptyList(),
 
-) : Shape, PathAndDrawingContext by ContentGroup(
+) : Shape, ContentGroupBase by ContentGroup(
     name = name,
     hidden = hidden,
     contents = items,

@@ -13,10 +13,10 @@ internal class LottieData(
     val frameRate : Float,
 
     @SerialName("w")
-    val width : Int,
+    val width : Float,
 
     @SerialName("h")
-    val height : Int,
+    val height : Float,
 
     @SerialName("v")
     val version : String,

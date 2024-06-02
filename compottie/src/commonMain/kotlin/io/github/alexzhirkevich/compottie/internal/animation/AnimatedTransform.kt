@@ -7,6 +7,8 @@ import io.github.alexzhirkevich.compottie.internal.utils.preRotate
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
 import io.github.alexzhirkevich.compottie.internal.utils.setValues
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.tan
