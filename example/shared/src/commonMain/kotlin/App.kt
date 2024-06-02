@@ -32,6 +32,7 @@ private val RECT = "files/rect.json"
 private val ROUND_RECT = "files/roundrect.json"
 private val ROBOT = "files/robot.json"
 private val ROBOT_404 = "files/robot_404.json"
+private val CONFETTI = "files/confetti.json"
 private val PRECOMP_WITH_REMAPPING = "files/precomp_with_remapping.json"
 private val MASK_ADD = "files/mask_add.json"
 private val DASH = "files/dash.json"
@@ -43,7 +44,7 @@ private val REPEATER = "files/repeater.json"
 fun App() {
 
     val json by produceState<String?>(null){
-        value = Res.readBytes(ROBOT).decodeToString()
+        value = Res.readBytes(CONFETTI).decodeToString()
     }
 
     if (json != null) {
@@ -55,8 +56,7 @@ fun App() {
             modifier = Modifier.fillMaxSize().background(Color.LightGray),
             painter = rememberLottiePainter(
                 composition = composition,
-                iterations = LottieConstants.IterateForever,
-                onLoadError = { throw it }
+                iterations = LottieConstants.IterateForever
             ),
             contentDescription = null
         )

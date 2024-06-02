@@ -50,7 +50,6 @@ internal class ContentGroup(
     }
 
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
-
         if (hidden) {
             return
         }
@@ -62,6 +61,7 @@ internal class ContentGroup(
         if (transform != null) {
             matrix.preConcat(transform.matrix(frame))
             transform.opacity?.interpolated(frame)?.let {
+
                 layerAlpha = (layerAlpha * it / 100f).coerceIn(0f, 1f)
             }
         }

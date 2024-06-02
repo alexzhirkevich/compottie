@@ -80,13 +80,6 @@ internal class GradientFillShape(
 
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
 
-        paint.alpha = if (opacity != null) {
-            (parentAlpha * opacity.interpolated(frame) / 100f).coerceIn(0f, 1f)
-        }
-        else {
-            parentAlpha
-        }
-
         paint.shader = GradientShader(
             type = type,
             startPoint = startPoint,
@@ -96,6 +89,13 @@ internal class GradientFillShape(
             matrix = parentMatrix,
             cache = gradientCache
         )
+
+        paint.alpha = if (opacity != null) {
+            (parentAlpha * opacity.interpolated(frame) / 100f).coerceIn(0f, 1f)
+        }
+        else {
+            parentAlpha
+        }
 
         path.reset()
 

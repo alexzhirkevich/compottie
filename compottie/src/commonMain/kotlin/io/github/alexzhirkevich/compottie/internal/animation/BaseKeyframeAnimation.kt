@@ -9,7 +9,7 @@ internal class BaseKeyframeAnimation<T,K>(
     private val map : Keyframe<K>.(start : K, end : K, progress: Float,  frame: Float) -> T
 ) : KeyframeAnimation<T> {
 
-    private val sortedKeyframes = keyframes.sortedBy { it.time }
+    private val sortedKeyframes = keyframes//.sortedBy { it.time }
 
     private val firstFrame: Float by lazy {
         sortedKeyframes.first().time
@@ -23,11 +23,11 @@ internal class BaseKeyframeAnimation<T,K>(
         keyframes.first().run {
             map(
                 requireNotNull(
-                    sortedKeyframes[0].start,
+                    start,
                     InvalidKeyframeError
                 ),
                 requireNotNull(
-                    sortedKeyframes[0].endHold ?: sortedKeyframes.getOrNull(1)?.start,
+                    endHold ?: sortedKeyframes.getOrNull(1)?.start,
                     InvalidKeyframeError
                 ),
                 0f,
@@ -44,8 +44,7 @@ internal class BaseKeyframeAnimation<T,K>(
                     InvalidKeyframeError
                 ),
                 requireNotNull(
-                    sortedKeyframes.getOrNull(sortedKeyframes.lastIndex - 1)?.endHold
-                        ?: sortedKeyframes.last().start,
+                    sortedKeyframes.getOrNull(sortedKeyframes.lastIndex - 1)?.endHold ?: start,
                     InvalidKeyframeError
                 ),
                 1f,
@@ -66,12 +65,14 @@ internal class BaseKeyframeAnimation<T,K>(
                 for (i in 0..<sortedKeyframes.lastIndex) {
                     val s = sortedKeyframes[i].time
                     val e = sortedKeyframes[i + 1].time
-                    if (frame.toFloat() in s..<e) {
+                    if (frame in s..e) {
                         kfIdx = i
-                        progress = (frame - s) / (e - s).toFloat()
+                        progress = (frame - s) / (e - s)
                         break
                     }
                 }
+
+//                println(kfIdx)
 
                 sortedKeyframes[kfIdx].run {
                     map(

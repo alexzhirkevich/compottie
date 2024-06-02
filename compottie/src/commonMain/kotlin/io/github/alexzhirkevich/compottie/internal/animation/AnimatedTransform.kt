@@ -6,9 +6,12 @@ import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.preRotate
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
+import io.github.alexzhirkevich.compottie.internal.utils.scale
 import io.github.alexzhirkevich.compottie.internal.utils.setValues
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlin.math.abs
+import kotlin.math.absoluteValue
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.tan
@@ -96,7 +99,7 @@ internal abstract class AnimatedTransform {
             }
 
         scale?.interpolated(frame)
-            ?.takeIf { it.x != 1f || it.y != 1f }
+            ?.takeIf { it.x != 100f || it.y != 100f }
             ?.let {
                 matrix.preScale(it.x / 100f, it.y / 100f)
             }

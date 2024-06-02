@@ -29,8 +29,6 @@ internal class Transform(
 
     @SerialName("sa")
     override val skewAxis: AnimatedValue? = null,
-) : AnimatedTransform() {
-
-}
+) : AnimatedTransform()
 
 

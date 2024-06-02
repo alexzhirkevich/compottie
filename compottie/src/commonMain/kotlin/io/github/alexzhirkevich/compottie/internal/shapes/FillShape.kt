@@ -64,11 +64,11 @@ internal class FillShape(
             return
         }
 
+        paint.color = color.interpolated(frame)
+
         paint.alpha = opacity?.interpolated(frame)?.let {
             (parentAlpha * it / 100f).coerceIn(0f, 1f)
         } ?: parentAlpha
-
-        paint.color = color.interpolated(frame)
 
         path.reset()
 

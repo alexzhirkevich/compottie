@@ -50,19 +50,19 @@ internal class PolystarShape(
     val direction : Int = 1,
 
     @SerialName("is")
-    val innerRoundness : AnimatedValue?,
+    val innerRoundness : AnimatedValue? = null,
 
     @SerialName("ir")
-    val innerRadius : AnimatedValue,
+    val innerRadius : AnimatedValue? = null,
 
     @SerialName("or")
-    val outerRadius : AnimatedValue,
+    val outerRadius : AnimatedValue? = null,
 
     @SerialName("os")
-    val outerRoundness : AnimatedValue?,
+    val outerRoundness : AnimatedValue? = null,
 
     @SerialName("r")
-    val rotation : AnimatedValue?,
+    val rotation : AnimatedValue? = null,
 
     @SerialName("pt")
     val points : AnimatedValue,
@@ -93,8 +93,6 @@ internal class PolystarShape(
             StarType.Polygon -> createPolygonPath(frame)
         }
 
-        path.close()
-
         trimPaths.apply(path, frame)
 
         return path
@@ -123,8 +121,8 @@ internal class PolystarShape(
             currentAngle += (halfAnglePerPoint * (1f - partialPointAmount))
         }
 
-        val outerRadius = outerRadius.interpolated(frame)
-        val innerRadius = innerRadius.interpolated(frame)
+        val outerRadius = outerRadius?.interpolated(frame) ?: 0f
+        val innerRadius = innerRadius?.interpolated(frame) ?: 0f
 
         val innerRoundedness = innerRoundness?.interpolated(frame)?.div(100f) ?: 0f
         val outerRoundedness = outerRoundness?.interpolated(frame)?.div(100f) ?: 0f
@@ -230,7 +228,7 @@ internal class PolystarShape(
         val anglePerPoint = (TwoPI / points).toFloat()
 
         val roundedness = outerRoundness?.interpolated(frame)?.div(100f) ?: 0f
-        val radius = outerRadius.interpolated(frame)
+        val radius = outerRadius?.interpolated(frame) ?: 0f
         var x: Float
         var y: Float
         var previousX: Float

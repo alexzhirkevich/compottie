@@ -182,7 +182,10 @@ private class LottiePainter(
         p.coerceAtLeast(0f)
     }
 
-    val compositionLayer = if (composition.lottieData.layers.size == 1 && composition.lottieData.layers[0] is PrecompositionLayer){
+    val compositionLayer : BaseCompositionLayer = if (
+            composition.lottieData.layers.size == 1 &&
+            composition.lottieData.layers[0] is PrecompositionLayer
+        ){
         composition.lottieData.layers[0] as BaseCompositionLayer
     } else {
         CompositionLayer(composition)
@@ -223,17 +226,17 @@ private class LottiePainter(
         )
 
         matrix.reset()
-//        matrix.preScale(scale.scaleX, scale.scaleY)
-//        matrix.preTranslate(offset.x.toFloat(), offset.y.toFloat())
 
-        scale(scale.scaleX, scale.scaleY) {
-            translate(offset.x.toFloat(), offset.y.toFloat()) {
-                compositionLayer.density = density
-                try {
-                    compositionLayer.draw(this, matrix, alpha, currentFrame)
-                } catch (t: Throwable) {
-                    println("Lottie crashed in draw :(")
-                    t.printStackTrace()
+        measureTime {
+            scale(scale.scaleX, scale.scaleY) {
+                translate(offset.x.toFloat(), offset.y.toFloat()) {
+                    compositionLayer.density = density
+                    try {
+                        compositionLayer.draw(this, matrix, alpha, currentFrame)
+                    } catch (t: Throwable) {
+                        println("Lottie crashed in draw :(")
+                        t.printStackTrace()
+                    }
                 }
             }
         }

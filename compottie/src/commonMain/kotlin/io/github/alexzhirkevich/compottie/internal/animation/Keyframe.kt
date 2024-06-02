@@ -26,7 +26,12 @@ internal abstract class Keyframe<out T> {
                 !i?.y.isNullOrEmpty() &&
                 !o?.x.isNullOrEmpty() && !o?.y.isNullOrEmpty()
             ) {
-                CubicBezierEasing(o!!.x[0], o.y[0], i!!.x[0], i.y[0])
+                CubicBezierEasing(
+                    o!!.x[0].coerceIn(0f,1f),
+                    o.y[0].coerceIn(0f,1f),
+                    i!!.x[0].coerceIn(0f,1f),
+                    i.y[0].coerceIn(0f,1f)
+                )
             } else LinearEasing
         }
     }
@@ -39,7 +44,12 @@ internal abstract class Keyframe<out T> {
             val o = outValue
 
             if (i?.x?.size == 2 && i.y.size == 2 && o?.x?.size == 2 && o.y.size == 2) {
-                CubicBezierEasing(o.x[1], o.y[1], i.x[1], i.y[1])
+                CubicBezierEasing(
+                    o.x[1].coerceIn(0f,1f),
+                    o.y[1].coerceIn(0f,1f),
+                    i.x[1].coerceIn(0f,1f),
+                    i.y[1].coerceIn(0f,1f)
+                )
             } else {
                 easingX
             }

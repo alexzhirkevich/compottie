@@ -92,6 +92,10 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         parentAlpha: Float,
         frame: Float
     ) {
+
+        if (hidden || (inPoint ?: 0f) > frame || (outPoint ?: Float.MAX_VALUE) < frame)
+            return
+
         buildParentLayerListIfNeeded()
         matrix.reset()
 

@@ -82,6 +82,7 @@ internal class NullLayer(
         applyParents: Boolean,
         frame: Float
     ) {
+        super.getBounds(outBounds, parentMatrix, applyParents, frame)
         outBounds.set(0f,0f,0f,0f)
     }
 }

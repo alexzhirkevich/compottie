@@ -42,6 +42,7 @@ internal sealed interface AnimatedValue : KeyframeAnimation<Float>, Indexable {
         keyframes = value,
         emptyValue = 1f,
         map = { s, e, p, _ ->
+
             lerp(s[0], e[0], easingX.transform(p))
         }
     )
