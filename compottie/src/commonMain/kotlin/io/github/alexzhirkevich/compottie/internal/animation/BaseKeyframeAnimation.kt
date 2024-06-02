@@ -27,7 +27,7 @@ internal class BaseKeyframeAnimation<T,K>(
                     InvalidKeyframeError
                 ),
                 requireNotNull(
-                    sortedKeyframes[0].end ?: sortedKeyframes.getOrNull(1)?.start,
+                    sortedKeyframes[0].endHold ?: sortedKeyframes.getOrNull(1)?.start,
                     InvalidKeyframeError
                 ),
                 0f,
@@ -44,7 +44,7 @@ internal class BaseKeyframeAnimation<T,K>(
                     InvalidKeyframeError
                 ),
                 requireNotNull(
-                    sortedKeyframes.getOrNull(sortedKeyframes.lastIndex - 1)?.end
+                    sortedKeyframes.getOrNull(sortedKeyframes.lastIndex - 1)?.endHold
                         ?: sortedKeyframes.last().start,
                     InvalidKeyframeError
                 ),
@@ -80,7 +80,7 @@ internal class BaseKeyframeAnimation<T,K>(
                             InvalidKeyframeError
                         ),
                         requireNotNull(
-                            sortedKeyframes[kfIdx].end
+                            sortedKeyframes[kfIdx].endHold
                                 ?: sortedKeyframes.getOrNull(kfIdx + 1)?.start,
                             InvalidKeyframeError
                         ),

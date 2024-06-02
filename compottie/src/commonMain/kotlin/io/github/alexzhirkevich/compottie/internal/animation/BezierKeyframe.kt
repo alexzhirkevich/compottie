@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie.internal.animation
 import io.github.alexzhirkevich.compottie.internal.content.ShapeModifierContent
 import io.github.alexzhirkevich.compottie.internal.content.modifiedBy
 import io.github.alexzhirkevich.compottie.internal.helpers.Bezier
+import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.ShapeData
 import io.github.alexzhirkevich.compottie.internal.helpers.toShapeData
 import kotlinx.serialization.SerialName
@@ -20,6 +21,9 @@ internal class BezierKeyframe(
     @SerialName("t")
     override val time: Float,
 
+    @SerialName("h")
+    override val hold: BooleanInt = BooleanInt.No,
+
     @SerialName("i")
     override val inValue : BezierInterpolation? = null,
 
@@ -35,7 +39,8 @@ internal fun BezierKeyframe.toShapeKeyframe(
     end = end?.toShapeData()?.modifiedBy(modifiers, frame),
     time = time,
     inValue = inValue,
-    outValue = outValue
+    outValue = outValue,
+    hold = hold
 )
 
 internal class ShapeKeyframe(
@@ -46,7 +51,10 @@ internal class ShapeKeyframe(
 
     override val time: Float,
 
+    override val hold: BooleanInt = BooleanInt.No,
+
     override val inValue : BezierInterpolation? = null,
 
     override val outValue : BezierInterpolation? = null,
+
 ) : Keyframe<ShapeData>()
