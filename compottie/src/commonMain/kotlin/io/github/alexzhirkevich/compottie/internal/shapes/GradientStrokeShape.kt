@@ -1,7 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.geometry.MutableRect
-import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -10,6 +9,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.GradientColors
 import io.github.alexzhirkevich.compottie.internal.animation.GradientType
+import io.github.alexzhirkevich.compottie.internal.helpers.StrokeDash
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -37,10 +37,13 @@ internal class GradientStrokeShape(
     override val strokeMiter : Float = 0f,
 
     @SerialName("o")
-    override val opacity : AnimatedValue,
+    override val opacity : AnimatedValue = AnimatedValue.Default(100f),
 
     @SerialName("w")
     override val strokeWidth : AnimatedValue,
+
+    @SerialName("d")
+    override val strokeDash: List<StrokeDash>? = null,
 
     @SerialName("s")
     val startPoint : AnimatedVector2,
@@ -64,7 +67,7 @@ internal class GradientStrokeShape(
     val colors : GradientColors,
 
     @SerialName("t")
-    val type : GradientType,
+    val type : GradientType = GradientType.Linear,
 )  : BaseStrokeShape(), Shape {
 
     @Transient

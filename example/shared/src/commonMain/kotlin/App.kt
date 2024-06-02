@@ -6,16 +6,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import compottie.example.shared.generated.resources.Res
 import io.github.alexzhirkevich.compottie.JsonString
+import io.github.alexzhirkevich.compottie.LottieAnimation
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.LottieConstants
 import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import org.jetbrains.compose.resources.ExperimentalResourceApi
+import kotlin.time.TimeSource
+import kotlin.time.measureTime
 
 private val GRADIENT_ELLIPSE = "files/gradient_ellipse.json"
 private val TEST = "files/test.json"
@@ -28,32 +33,27 @@ private val ROUND_RECT = "files/roundrect.json"
 private val ROBOT = "files/robot.json"
 private val PRECOMP_WITH_REMAPPING = "files/precomp_with_remapping.json"
 private val MASK_ADD = "files/mask_add.json"
+private val DASH = "files/dash.json"
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun App() {
 
     val json by produceState<String?>(null){
-        value = Res.readBytes(MASK_ADD).decodeToString()
+        value = Res.readBytes(DASH).decodeToString()
     }
 
-    if (json != null) {
-        val composition = rememberLottieComposition(
-            LottieCompositionSpec.JsonString(json!!)
-        )
 
-        val progress by animateLottieCompositionAsState(
-            composition = composition.value,
-            iterations = LottieConstants.IterateForever,
+    if (json != null) {
+        val composition by rememberLottieComposition(
+            LottieCompositionSpec.JsonString(json!!)
         )
 
         Image(
             modifier = Modifier.fillMaxSize().background(Color.LightGray),
             painter = rememberLottiePainter(
                 composition = composition,
-                progress = {
-                    progress
-                },
+                iterations = LottieConstants.IterateForever,
                 onLoadError = { throw it }
             ),
             contentDescription = null

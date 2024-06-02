@@ -34,6 +34,8 @@ import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -41,17 +43,56 @@ import kotlin.math.roundToInt
 import kotlin.time.Duration
 import kotlin.time.measureTime
 
-
 @Composable
 fun rememberLottiePainter(
-    composition : LottieCompositionResult,
+    composition : LottieComposition?,
+    isPlaying: Boolean = true,
+    restartOnPlay: Boolean = true,
+    reverseOnRepeat: Boolean = false,
+    clipSpec: LottieClipSpec? = null,
+    speed: Float = 1f,
+    iterations: Int = 1,
+    cancellationBehavior: LottieCancellationBehavior = LottieCancellationBehavior.Immediately,
+    ignoreSystemAnimatorScale: Boolean = false,
+    useCompositionFrameRate: Boolean = false,
     maintainOriginalImageBounds: Boolean = false,
     assetsFetcher: LottieAssetsFetcher = NoOpAssetsFetcher,
     onLoadError : (Throwable) -> Painter =  { EmptyPainter },
-    progress : () -> Float
+) : Painter {
+    val progress = animateLottieCompositionAsState(
+        composition = composition,
+        isPlaying = isPlaying,
+        restartOnPlay = restartOnPlay,
+        reverseOnRepeat = reverseOnRepeat,
+        clipSpec = clipSpec,
+        speed = speed,
+        iterations = iterations,
+        cancellationBehavior = cancellationBehavior,
+        ignoreSystemAnimatorScale = ignoreSystemAnimatorScale,
+        useCompositionFrameRate = useCompositionFrameRate
+    )
+
+    return rememberLottiePainter(
+        composition = composition,
+        progress = { progress.value },
+        maintainOriginalImageBounds = maintainOriginalImageBounds,
+        assetsFetcher = assetsFetcher,
+        onLoadError = onLoadError
+    )
+}
+
+@Composable
+fun rememberLottiePainter(
+    composition : LottieComposition?,
+    progress : () -> Float,
+    maintainOriginalImageBounds: Boolean = false,
+    assetsFetcher: LottieAssetsFetcher = NoOpAssetsFetcher,
+    onLoadError : (Throwable) -> Painter =  { EmptyPainter },
 ) : Painter {
 
     val updatedOnLoadError by rememberUpdatedState(onLoadError)
+
+    val updatedComposition by rememberUpdatedState(composition)
 
     val painter by produceState<Painter>(
         EmptyPainter,
@@ -59,37 +100,41 @@ fun rememberLottiePainter(
         assetsFetcher,
         maintainOriginalImageBounds
     ) {
-        value = try {
-            val comp = composition.await()
-            coroutineScope {
-                comp.lottieData.assets.map { asset ->
-                    withContext(Dispatchers.Default) {
-                        when (asset) {
-                            is LottieAsset.ImageAsset -> {
-                                if (asset.bitmap == null) {
-                                    launch {
-                                        assetsFetcher
-                                            .fetch(asset.id, asset.path, asset.fileName)
-                                            ?.let {
-                                                asset.setBitmap(ImageBitmap.fromBytes(it))
+
+        snapshotFlow { updatedComposition }
+            .filterNotNull()
+            .collectLatest {
+                value = try {
+                    coroutineScope {
+                        it.lottieData.assets.map { asset ->
+                            withContext(Dispatchers.Default) {
+                                when (asset) {
+                                    is LottieAsset.ImageAsset -> {
+                                        if (asset.bitmap == null) {
+                                            launch {
+                                                assetsFetcher
+                                                    .fetch(asset.id, asset.path, asset.fileName)
+                                                    ?.let {
+                                                        asset.setBitmap(ImageBitmap.fromBytes(it))
+                                                    }
                                             }
+                                        } else null
                                     }
-                                } else null
+
+                                    else -> null
+                                }
                             }
-
-                            else -> null
                         }
-                    }
-                }
-            }.filterNotNull().joinAll()
+                    }.filterNotNull().joinAll()
 
-            LottiePainter(
-                composition = composition.await(),
-                maintainOriginalImageBounds = maintainOriginalImageBounds
-            )
-        } catch (t: Throwable) {
-            updatedOnLoadError(t)
-        }
+                    LottiePainter(
+                        composition = it,
+                        maintainOriginalImageBounds = maintainOriginalImageBounds
+                    )
+                } catch (t: Throwable) {
+                    updatedOnLoadError(t)
+                }
+            }
     }
 
     LaunchedEffect(painter) {

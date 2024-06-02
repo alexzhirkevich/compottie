@@ -1,11 +1,11 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
-import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.helpers.StrokeDash
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -39,6 +39,9 @@ internal class SolidStrokeShape(
 
     @SerialName("w")
     override val strokeWidth : AnimatedValue,
+
+    @SerialName("d")
+    override val strokeDash: List<StrokeDash>? = null,
 
     @SerialName("c")
     val color : AnimatedColor,

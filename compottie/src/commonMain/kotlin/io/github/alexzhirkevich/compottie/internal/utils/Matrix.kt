@@ -1,9 +1,25 @@
 package io.github.alexzhirkevich.compottie.internal.utils
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
+import kotlin.math.hypot
+import kotlin.math.sqrt
 
 private val tempMatrixConcat = Matrix()
 private val tempMatrixTransform = Matrix()
+
+
+
+private val InvSqrt2Offset = Offset(
+    1/sqrt(2f),
+    1/sqrt(2f),
+)
+val Matrix.scale: Float get() {
+    val p1 = map(Offset.Zero)
+    val p2 = map(InvSqrt2Offset)
+
+    return hypot(p2.x - p1.x, p2.y - p1.y)
+}
 
 fun Matrix.preTranslate(x : Float, y : Float) {
 

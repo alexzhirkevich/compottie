@@ -6,20 +6,25 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
+import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
+import io.github.alexzhirkevich.compottie.internal.helpers.DashType
+import io.github.alexzhirkevich.compottie.internal.helpers.StrokeDash
 import io.github.alexzhirkevich.compottie.internal.platform.ExtendedPathMeasure
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.platform.set
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.utils.Utils
+import io.github.alexzhirkevich.compottie.internal.utils.scale
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
@@ -71,8 +76,10 @@ internal abstract class BaseStrokeShape() : DrawingContent {
     abstract val lineCap: LineCap
     abstract val lineJoin: LineJoin
     abstract val strokeMiter: Float
+    abstract val strokeDash: List<StrokeDash>?
 
     private val pathGroups = mutableListOf<PathGroup>()
+
 
     private val trimPathPath = Path()
     private val path = Path()
@@ -83,6 +90,18 @@ internal abstract class BaseStrokeShape() : DrawingContent {
         strokeJoin = lineJoin.asStrokeJoin()
     }
     private val pm = ExtendedPathMeasure()
+
+    private val dashPattern by lazy {
+        strokeDash?.filter { it.dashType != DashType.Offset }?.map { it.value }
+    }
+
+    private val dashOffset by lazy {
+        strokeDash?.first { it.dashType == DashType.Offset }?.value
+    }
+
+    private val dashPatternValues by lazy {
+        FloatArray(dashPattern?.size ?: 0)
+    }
 
     override fun draw(
         drawScope: DrawScope,
@@ -98,6 +117,9 @@ internal abstract class BaseStrokeShape() : DrawingContent {
         if (paint.strokeWidth <= 0) {
             return
         }
+
+        applyDashPatternIfNeeded(parentMatrix, frame)
+
         drawScope.drawIntoCanvas { canvas ->
 
             pathGroups.fastForEach { pathGroup ->
@@ -139,35 +161,6 @@ internal abstract class BaseStrokeShape() : DrawingContent {
 
         currentPathGroup?.let(pathGroups::add)
     }
-
-//    override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
-//        var trimPathContentBefore: TrimPathShape? = null
-//        for (i in contentsBefore.indices.reversed()) {
-//            val content = contentsBefore[i]
-//            if (content.isIndividualTrimPath()) {
-//                trimPathContentBefore = content
-//            }
-//        }
-//
-//        var currentPathGroup: PathGroup? = null
-//        for (i in contentsAfter.indices.reversed()) {
-//            val content = contentsAfter[i]
-//            if (content.isIndividualTrimPath()) {
-//                if (currentPathGroup != null) {
-//                    pathGroups.add(currentPathGroup)
-//                }
-//                currentPathGroup = PathGroup(content)
-//            } else if (content is PathContent) {
-//                if (currentPathGroup == null) {
-//                    currentPathGroup = PathGroup(trimPathContentBefore)
-//                }
-//                currentPathGroup.paths.add(content)
-//            }
-//        }
-//        if (currentPathGroup != null) {
-//            pathGroups.add(currentPathGroup)
-//        }
-//    }
 
     override fun getBounds(
         outBounds: MutableRect,
@@ -211,6 +204,7 @@ internal abstract class BaseStrokeShape() : DrawingContent {
         if (pathGroup.trimPath == null) {
             return
         }
+
         path.reset()
 
         pathGroup.paths.fastForEachReversed {
@@ -291,6 +285,37 @@ internal abstract class BaseStrokeShape() : DrawingContent {
                 }
             currentLength += length
         }
+    }
+
+    private fun applyDashPatternIfNeeded(parentMatrix: Matrix, frame: Float) {
+
+        val dp = dashPattern
+        val o = dashOffset?.interpolated(frame) ?: 0f
+        if (dp.isNullOrEmpty()) {
+            return
+        }
+
+        val scale = parentMatrix.scale
+
+        dp.fastForEachIndexed { i, strokeDash ->
+            dashPatternValues[i] = strokeDash.interpolated(frame)
+            // If the value of the dash pattern or gap is too small, the number of individual sections
+            // approaches infinity as the value approaches 0.
+            // To mitigate this, we essentially put a minimum value on the dash pattern size of 1px
+            // and a minimum gap size of 0.01.
+            if (i % 2 == 0) {
+                if (dashPatternValues[i] < 1f) {
+                    dashPatternValues[i] = 1f
+                }
+            } else {
+                if (dashPatternValues[i] < 0.1f) {
+                    dashPatternValues[i] = 0.1f
+                }
+            }
+            dashPatternValues[i] = dashPatternValues[i] * scale
+        }
+
+        paint.pathEffect = PathEffect.dashPathEffect(dashPatternValues, o)
     }
 }
 

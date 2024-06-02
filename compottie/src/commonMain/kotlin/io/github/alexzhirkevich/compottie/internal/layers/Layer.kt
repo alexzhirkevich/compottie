@@ -30,7 +30,6 @@ internal sealed interface Layer {
 
     var composition : LottieComposition
 
-
     var density : Float
 
     var assets: Map<String, LottieAsset>

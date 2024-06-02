@@ -1,62 +1,74 @@
-//package io.github.alexzhirkevich.compottie
-//
-//import androidx.compose.foundation.Canvas
-//import androidx.compose.foundation.layout.size
-//import androidx.compose.runtime.Composable
-//import androidx.compose.runtime.remember
-//import androidx.compose.ui.Alignment
-//import androidx.compose.ui.Modifier
-//import androidx.compose.ui.geometry.Size
-//import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-//import androidx.compose.ui.graphics.nativeCanvas
-//import androidx.compose.ui.layout.ContentScale
-//import androidx.compose.ui.platform.LocalDensity
-//import androidx.compose.ui.unit.DpSize
-//import androidx.compose.ui.unit.IntSize
-//import androidx.compose.ui.unit.toOffset
-//import org.jetbrains.skia.Rect
-//import org.jetbrains.skia.skottie.RenderFlag
-//import kotlin.math.roundToInt
-//
-//
-//@Composable
-//fun LottieAnimation(
-//    composition : LottieComposition?,
-//    progress : () -> Float,
-//    modifier: Modifier,
-//    alignment: Alignment,
-//    contentScale: ContentScale,
-//    clipToCompositionBounds : Boolean,
-//) {
-//    val density = LocalDensity.current
-//
-//
-//    Canvas(modifier) {
-//        if (composition == null || composition.animation.isClosed || composition.invalidationController.isClosed)
-//            return@Canvas
-//
-//        val compositionSize = composition.animation.size.let { Size(it.x, it.y) }
-//
-//        val scale = contentScale.computeScaleFactor(compositionSize, size)
-//        val intSize = size.round()
-//        val translation = alignment.align(compositionSize * scale, intSize, layoutDirection).toOffset()
-//
-//        drawIntoCanvas {
-//            if (clipToCompositionBounds)
-//                it.clipRect(0f, 0f, size.width, size.height)
-//
-//            it.translate(translation.x, translation.y)
-//            it.scale(scale.scaleX, scale.scaleY)
-//
-//            composition.animation
-//                .seek(progress(), composition.invalidationController)
-//                .render(
-//                    canvas = it.nativeCanvas,
-//                    dst = Rect.makeWH(compositionSize.width, compositionSize.height),
-//                    *flags
-//                )
-//        }
-//    }
-//}
-//
-//internal fun Size.round() = IntSize(width.roundToInt(), height.roundToInt())
+package io.github.alexzhirkevich.compottie
+
+import androidx.compose.foundation.Image
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+
+
+@Composable
+@Deprecated(
+    "Use Image with rememberLottiePainter(...) instead",
+    replaceWith = ReplaceWith(
+        "Image(rememberLottiePainter(composition,progress),null,modifier,alignment,contentScale)",
+        "androidx.compose.foundation.Image",
+        "io.github.alexzhirkevich.compottie.rememberLottiePainter"
+    )
+)
+fun LottieAnimation(
+    composition : LottieComposition?,
+    progress : () -> Float,
+    modifier: Modifier = Modifier,
+    alignment: Alignment = Alignment.Center,
+    contentScale: ContentScale = ContentScale.Fit,
+    clipToCompositionBounds : Boolean = true,
+) {
+    Image(
+        painter = rememberLottiePainter(composition, progress),
+        contentDescription = null,
+        modifier = modifier,
+        alignment = alignment,
+        contentScale = contentScale,
+    )
+}
+
+@Deprecated(
+    "Use Image with rememberLottiePainter(...) instead",
+    replaceWith = ReplaceWith(
+        "Image(rememberLottiePainter(composition,isPlaying,restartOnPlay,reverseOnRepeat,clipSpec,speed,iterations),null,modifier,alignment,contentScale)",
+        "androidx.compose.foundation.Image",
+        "io.github.alexzhirkevich.compottie.rememberLottiePainter"
+    )
+)
+@Composable
+fun LottieAnimation(
+    composition: LottieComposition?,
+    modifier: Modifier = Modifier,
+    isPlaying: Boolean = true,
+    restartOnPlay: Boolean = true,
+    clipSpec: LottieClipSpec? = null,
+    speed: Float = 1f,
+    iterations: Int = 1,
+    reverseOnRepeat: Boolean = false,
+    alignment: Alignment = Alignment.Center,
+    contentScale: ContentScale = ContentScale.Fit,
+    clipToCompositionBounds: Boolean = true,
+) {
+    Image(
+        painter = rememberLottiePainter(
+            composition = composition,
+            isPlaying = isPlaying,
+            restartOnPlay = restartOnPlay,
+            reverseOnRepeat = reverseOnRepeat,
+            clipSpec = clipSpec,
+            speed = speed,
+            iterations = iterations
+        ),
+        contentDescription = null,
+        modifier = modifier,
+        alignment = alignment,
+        contentScale = contentScale,
+    )
+}
+
