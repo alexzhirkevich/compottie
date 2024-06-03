@@ -38,9 +38,13 @@ private class AndroidExtendedPathMeasure(
     override val length: Float
         get() = internalPathMeasure.length
 
-    private var positionArray: FloatArray? = null
+    private val positionArray: FloatArray by lazy {
+        FloatArray(2)
+    }
 
-    private var tangentArray: FloatArray? = null
+    private val tangentArray: FloatArray by lazy {
+        FloatArray(2)
+    }
 
     override fun getSegment(
         startDistance: Float,
@@ -63,15 +67,10 @@ private class AndroidExtendedPathMeasure(
     override fun getPosition(
         distance: Float
     ): Offset {
-        if (positionArray == null) {
-            positionArray = FloatArray(2)
-        }
-        if (tangentArray == null) {
-            tangentArray = FloatArray(2)
-        }
+
         val result = internalPathMeasure.getPosTan(distance, positionArray, tangentArray)
         return if (result) {
-            Offset(positionArray!![0], positionArray!![1])
+            Offset(positionArray[0], positionArray[1])
         } else {
             Offset.Unspecified
         }
@@ -80,15 +79,9 @@ private class AndroidExtendedPathMeasure(
     override fun getTangent(
         distance: Float
     ): Offset {
-        if (positionArray == null) {
-            positionArray = FloatArray(2)
-        }
-        if (tangentArray == null) {
-            tangentArray = FloatArray(2)
-        }
         val result = internalPathMeasure.getPosTan(distance, positionArray, tangentArray)
         return if (result) {
-            Offset(tangentArray!![0], tangentArray!![1])
+            Offset(tangentArray[0], tangentArray[1])
         } else {
             Offset.Unspecified
         }

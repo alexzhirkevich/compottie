@@ -1,6 +1,8 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.isSpecified
+import androidx.compose.ui.geometry.isUnspecified
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.util.lerp
@@ -64,9 +66,9 @@ internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
             emptyValue = Offset.Zero,
             map = { s, e, p, _ ->
 
-                if (withTangents && !s.contentEquals(e)) {
+                if (inTangent != null && outTangent != null && !s.contentEquals(e)) {
                     path.reset()
-                    path.createPath(s, e, outTangent!!, inTangent!!)
+                    path.createPath(s, e, outTangent, inTangent)
                     pathMeasure.setPath(path, false)
 
                     val length = pathMeasure.length
@@ -104,15 +106,16 @@ private fun Path.createPath(
 ) {
     moveTo(startPoint[0], startPoint[1])
 
-
     if ((cp1.hypot() != 0f || cp2.hypot() != 0f)) {
         cubicTo(
-            startPoint[0] + cp1[0], startPoint[1] + cp1[1],
-            endPoint[0] + cp2[0], endPoint[1] + cp2[1],
+            startPoint[0] + cp1[0],
+            startPoint[1] + cp1[1],
+            endPoint[0] + cp2[0],
+            endPoint[1] + cp2[1],
             endPoint[0], endPoint[1]
         )
     } else {
-        lineTo(endPoint[0], endPoint[0])
+        lineTo(endPoint[0], endPoint[1])
     }
 }
 

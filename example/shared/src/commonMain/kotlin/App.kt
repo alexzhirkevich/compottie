@@ -30,13 +30,14 @@ private val DASH = "files/dash.json"
 private val ROUNDING_CORENERS = "files/rounding_corners.json"
 private val REPEATER = "files/repeater.json"
 private val TEXT_WITH_PATH = "files/text_with_path.json"
+private val TEXT = "files/text.json"
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun App() {
 
     val json by produceState<String?>(null){
-        value = Res.readBytes(TEXT_WITH_PATH).decodeToString()
+        value = Res.readBytes(ROBOT).decodeToString()
     }
 
     if (json != null) {
@@ -48,6 +49,7 @@ fun App() {
             modifier = Modifier.fillMaxSize().background(Color.LightGray),
             painter = rememberLottiePainter(
                 composition = composition,
+//                progress = {.8f}
                 iterations = LottieConstants.IterateForever
             ),
             contentDescription = null
