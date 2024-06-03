@@ -14,8 +14,6 @@ import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.utils.Utils
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.union
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 
 internal class ContentGroup(
     override val name: String?,
@@ -71,7 +69,7 @@ internal class ContentGroup(
         drawScope.drawIntoCanvas { canvas ->
             if (isRenderingWithOffScreen) {
                 offscreenRect.set(0f, 0f, 0f, 0f)
-                getBounds(offscreenRect, matrix, true, frame)
+                getBounds(drawScope, matrix, true, frame, offscreenRect)
                 offscreenPaint.alpha = layerAlpha
                 Utils.saveLayerCompat(canvas, offscreenRect.toRect(), offscreenPaint)
             }
@@ -123,10 +121,11 @@ internal class ContentGroup(
     }
 
     override fun getBounds(
-        outBounds: MutableRect,
+        drawScope: DrawScope,
         parentMatrix: Matrix,
         applyParents: Boolean,
         frame: Float,
+        outBounds: MutableRect,
     ) {
         matrix.setFrom(parentMatrix)
         if (transform != null) {
@@ -136,7 +135,7 @@ internal class ContentGroup(
 
         mContents.fastForEachReversed {
             if (it is DrawingContent) {
-                it.getBounds(rect, matrix, applyParents, frame)
+                it.getBounds(drawScope, matrix, applyParents, frame, rect)
                 outBounds.union(rect)
             }
         }

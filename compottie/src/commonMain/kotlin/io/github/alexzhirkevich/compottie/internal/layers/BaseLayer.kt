@@ -4,7 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.MutableRect
-import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
@@ -12,10 +11,9 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.DrawStyle
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.isIdentity
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.LottieComposition
@@ -43,12 +41,8 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
     abstract val masks: List<Mask>?
 
     abstract val transform: Transform
-    override var density by mutableStateOf(1f)
-    override var assets: Map<String, LottieAsset> = emptyMap()
 
-    override var maintainOriginalImageBounds = false
-
-    override lateinit var composition : LottieComposition
+    override var painterProperties: PainterProperties? = null
 
     protected val boundsMatrix = Matrix()
     protected val path = Path()
@@ -116,7 +110,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
             return
         }
 
-        getBounds(rect, matrix, false, frame)
+        getBounds(drawScope, matrix, false, frame, rect)
 
 //        intersectBoundsWithMatte(rect, parentMatrix)
 
@@ -194,10 +188,11 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
     }
 
     override fun getBounds(
-        outBounds: MutableRect,
+        drawScope: DrawScope,
         parentMatrix: Matrix,
         applyParents: Boolean,
         frame: Float,
+        outBounds: MutableRect,
     ) {
         rect.set(0f, 0f, 0f, 0f)
         buildParentLayerListIfNeeded()

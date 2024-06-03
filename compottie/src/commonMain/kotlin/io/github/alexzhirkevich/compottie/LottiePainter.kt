@@ -20,6 +20,8 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFontFamilyResolver
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
@@ -31,6 +33,7 @@ import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.layers.BaseCompositionLayer
 import io.github.alexzhirkevich.compottie.internal.layers.CompositionLayer
+import io.github.alexzhirkevich.compottie.internal.layers.PainterProperties
 import io.github.alexzhirkevich.compottie.internal.layers.PrecompositionLayer
 import io.github.alexzhirkevich.compottie.internal.platform.getMatrix
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
@@ -89,6 +92,7 @@ fun rememberLottiePainter(
     composition : LottieComposition?,
     progress : () -> Float,
     maintainOriginalImageBounds: Boolean = false,
+    clipTextToBoundingBoxes: Boolean = false,
     assetsFetcher: LottieAssetsFetcher = NoOpAssetsFetcher,
     onLoadError : (Throwable) -> Painter =  { EmptyPainter },
 ) : Painter {
@@ -97,11 +101,15 @@ fun rememberLottiePainter(
 
     val updatedComposition by rememberUpdatedState(composition)
 
+    val fontFamilyResolver = LocalFontFamilyResolver.current
+
     val painter by produceState<Painter>(
         EmptyPainter,
         composition,
         assetsFetcher,
-        maintainOriginalImageBounds
+        maintainOriginalImageBounds,
+        clipTextToBoundingBoxes,
+        fontFamilyResolver
     ) {
 
         snapshotFlow { updatedComposition }
@@ -132,7 +140,9 @@ fun rememberLottiePainter(
 
                     LottiePainter(
                         composition = it,
-                        maintainOriginalImageBounds = maintainOriginalImageBounds
+                        maintainOriginalImageBounds = maintainOriginalImageBounds,
+                        clipTextToBoundingBoxes = clipTextToBoundingBoxes,
+                        fontFamilyResolver = fontFamilyResolver
                     )
                 } catch (t: Throwable) {
                     updatedOnLoadError(t)
@@ -162,7 +172,9 @@ private object EmptyPainter : Painter() {
 
 private class LottiePainter(
     private val composition: LottieComposition,
+    private val fontFamilyResolver : FontFamily.Resolver,
     private val maintainOriginalImageBounds : Boolean,
+    private val clipTextToBoundingBoxes : Boolean,
 ) : Painter() {
 
     override val intrinsicSize: Size = Size(
@@ -182,10 +194,10 @@ private class LottiePainter(
         p.coerceAtLeast(0f)
     }
 
-    val compositionLayer : BaseCompositionLayer = if (
-            composition.lottieData.layers.size == 1 &&
-            composition.lottieData.layers[0] is PrecompositionLayer
-        ){
+    val compositionLayer: BaseCompositionLayer = if (
+        composition.lottieData.layers.size == 1 &&
+        composition.lottieData.layers[0] is PrecompositionLayer
+    ) {
         composition.lottieData.layers[0] as BaseCompositionLayer
     } else {
         CompositionLayer(composition)
@@ -193,11 +205,13 @@ private class LottiePainter(
 
 
     init {
-        compositionLayer.let {
-            it.assets = composition.lottieData.assets.associateBy(LottieAsset::id)
-            it.composition = composition
-            it.maintainOriginalImageBounds = maintainOriginalImageBounds
-        }
+        compositionLayer.painterProperties = PainterProperties(
+            assets = composition.lottieData.assets.associateBy(LottieAsset::id),
+            composition = composition,
+            maintainOriginalImageBounds = maintainOriginalImageBounds,
+            clipTextToBoundingBoxes = clipTextToBoundingBoxes,
+            fontFamilyResolver = fontFamilyResolver
+        )
     }
 
     override fun applyAlpha(alpha: Float): Boolean {
@@ -215,7 +229,7 @@ private class LottiePainter(
 
         val offset = Alignment.Center.align(
             IntSize(
-                (intrinsicSize.width ).roundToInt(),
+                (intrinsicSize.width).roundToInt(),
                 (intrinsicSize.height).roundToInt()
             ),
             IntSize(
@@ -227,16 +241,13 @@ private class LottiePainter(
 
         matrix.reset()
 
-        measureTime {
-            scale(scale.scaleX, scale.scaleY) {
-                translate(offset.x.toFloat(), offset.y.toFloat()) {
-                    compositionLayer.density = density
-                    try {
-                        compositionLayer.draw(this, matrix, alpha, currentFrame)
-                    } catch (t: Throwable) {
-                        println("Lottie crashed in draw :(")
-                        t.printStackTrace()
-                    }
+        scale(scale.scaleX, scale.scaleY) {
+            translate(offset.x.toFloat(), offset.y.toFloat()) {
+                try {
+                    compositionLayer.draw(this, matrix, alpha, currentFrame)
+                } catch (t: Throwable) {
+                    println("Lottie crashed in draw :(")
+                    t.printStackTrace()
                 }
             }
         }

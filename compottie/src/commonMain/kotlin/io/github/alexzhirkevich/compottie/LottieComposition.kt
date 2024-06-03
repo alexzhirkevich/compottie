@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalFontFamilyResolver
+import androidx.compose.ui.text.font.Font
 import io.github.alexzhirkevich.compottie.internal.LottieData
 import io.github.alexzhirkevich.compottie.internal.LottieJson
 import io.github.alexzhirkevich.compottie.internal.durationMillis
@@ -15,17 +17,21 @@ import kotlinx.coroutines.withContext
 @Stable
 class LottieComposition internal constructor(
     internal val lottieData: LottieData,
+    val fonts : Map<String, Font> = emptyMap(),
 ) {
-    val startFrame : Float get()  = lottieData.inPoint
+    val startFrame: Float get() = lottieData.inPoint
 
-    val endFrame : Float get()  = lottieData.outPoint
+    val endFrame: Float get() = lottieData.outPoint
 
     val duration: Float get() = lottieData.durationMillis
 
     val frameRate: Float get() = lottieData.frameRate
 
     companion object {
-        fun parse(json: String) = LottieComposition(LottieJson.decodeFromString(json))
+        fun parse(json: String) =
+            LottieComposition(
+                lottieData = LottieJson.decodeFromString(json),
+            )
     }
 }
 
@@ -39,10 +45,12 @@ fun rememberLottieComposition(spec : LottieCompositionSpec) : LottieCompositionR
         LottieCompositionResultImpl()
     }
 
-    LaunchedEffect(spec) {
+    val fontFamilyResolver = LocalFontFamilyResolver.current
+
+    LaunchedEffect(spec, fontFamilyResolver) {
         withContext(Dispatchers.Default) {
             try {
-                result.complete(spec.load())
+                result.complete(spec.load(fontFamilyResolver))
             } catch (c: CancellationException) {
                 throw c
             } catch (t: Throwable) {
@@ -53,4 +61,3 @@ fun rememberLottieComposition(spec : LottieCompositionSpec) : LottieCompositionR
 
     return result
 }
-

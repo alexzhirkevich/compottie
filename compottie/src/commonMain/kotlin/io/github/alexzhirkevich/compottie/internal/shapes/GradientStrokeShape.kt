@@ -78,7 +78,7 @@ internal class GradientStrokeShape(
 
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
 
-        getBounds(boundsRect, parentMatrix, false, frame)
+        getBounds(drawScope, parentMatrix, false, frame, boundsRect)
 
         paint.shader = GradientShader(
             type = type,

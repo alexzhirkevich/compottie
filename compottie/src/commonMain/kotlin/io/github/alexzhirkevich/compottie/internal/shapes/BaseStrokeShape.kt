@@ -168,10 +168,11 @@ internal abstract class BaseStrokeShape() : DrawingContent {
     }
 
     override fun getBounds(
-        outBounds: MutableRect,
+        drawScope: DrawScope,
         parentMatrix: Matrix,
         applyParents: Boolean,
         frame: Float,
+        outBounds: MutableRect,
     ) {
         path.reset()
         pathGroups.fastForEach { pathGroup ->

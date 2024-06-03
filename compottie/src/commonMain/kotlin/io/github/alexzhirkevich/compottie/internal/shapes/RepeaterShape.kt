@@ -72,12 +72,13 @@ internal class RepeaterShape(
     }
 
     override fun getBounds(
-        outBounds: MutableRect,
+        drawScope: DrawScope,
         parentMatrix: Matrix,
         applyParents: Boolean,
-        frame: Float
+        frame: Float,
+        outBounds: MutableRect
     ) {
-        contentGroup?.getBounds(outBounds, parentMatrix, applyParents, frame)
+        contentGroup?.getBounds(drawScope, parentMatrix, applyParents, frame, outBounds)
     }
 
     override fun getPath(frame: Float): Path {

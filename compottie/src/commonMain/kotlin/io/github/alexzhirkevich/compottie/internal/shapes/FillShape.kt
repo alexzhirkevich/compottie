@@ -1,7 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.geometry.MutableRect
-import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
@@ -83,10 +82,11 @@ internal class FillShape(
         }
     }
     override fun getBounds(
-        outBounds: MutableRect,
+        drawScope: DrawScope,
         parentMatrix: Matrix,
         applyParents: Boolean,
-        frame: Float
+        frame: Float,
+        outBounds: MutableRect
     ) {
 
         path.reset()

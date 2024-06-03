@@ -66,6 +66,7 @@ internal class PrecompositionLayer(
     override val transform: Transform = Transform(),
 ) : BaseCompositionLayer() {
     override fun loadLayers(): List<Layer> {
-        return (assets[refId] as? LottieAsset.PrecompositionAsset?)?.layers.orEmpty()
+        return (painterProperties?.assets?.get(refId) as? LottieAsset.PrecompositionAsset?)
+            ?.layers.orEmpty()
     }
 }

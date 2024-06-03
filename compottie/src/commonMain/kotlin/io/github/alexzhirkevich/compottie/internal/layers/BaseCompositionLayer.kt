@@ -5,6 +5,8 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.LottieComposition
@@ -50,35 +52,12 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         l
     }
 
-    override var density: Float
-        get() = super.density
+    override var painterProperties: PainterProperties?
+        get() = super.painterProperties
         set(value) {
-            super.density = value
-            layers.fastForEach { it.density = value }
-        }
-
-    override var maintainOriginalImageBounds: Boolean
-        get() = super.maintainOriginalImageBounds
-        set(value) {
-            super.maintainOriginalImageBounds = value
+            super.painterProperties = value
             layers.fastForEach {
-                it.maintainOriginalImageBounds = value
-            }
-        }
-
-    override var assets: Map<String, LottieAsset>
-        get() = super.assets
-        set(value) {
-            super.assets = value
-            layers.fastForEach { it.assets = value }
-        }
-
-    final override var composition: LottieComposition
-        get() = super.composition
-        set(value) {
-            super.composition = value
-            layers.fastForEach {
-                it.composition = value
+                it.painterProperties = value
             }
         }
 
@@ -127,15 +106,16 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
     }
 
     override fun getBounds(
-        outBounds: MutableRect,
+        drawScope: DrawScope,
         parentMatrix: Matrix,
         applyParents: Boolean,
-        frame: Float
+        frame: Float,
+        outBounds: MutableRect
     ) {
-        super.getBounds(outBounds, parentMatrix, applyParents, frame)
+        super.getBounds(drawScope, parentMatrix, applyParents, frame, outBounds)
         layers.fastForEachReversed {
             rect.set(0f, 0f, 0f, 0f)
-            it.getBounds(rect, boundsMatrix, true,frame)
+            it.getBounds(drawScope, boundsMatrix, true, frame, rect)
             outBounds.union(rect)
         }
     }
@@ -147,6 +127,8 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         val f = if (timeStretch != 0f && !isContainerLayer) {
             frame / timeStretch
         } else frame
+
+        val composition = checkNotNull(painterProperties?.composition)
 
         return tr.interpolated(f) *
                 composition.frameRate - composition.startFrame

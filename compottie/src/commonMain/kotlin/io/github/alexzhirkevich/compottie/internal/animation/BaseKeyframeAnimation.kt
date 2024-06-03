@@ -3,10 +3,10 @@ package io.github.alexzhirkevich.compottie.internal.animation
 import kotlin.math.roundToInt
 
 
-internal class BaseKeyframeAnimation<T,K>(
-    keyframes: List<Keyframe<K>>,
+internal class BaseKeyframeAnimation<T, K, out KF : Keyframe<K>>(
+    keyframes: List<KF>,
     private val emptyValue : T,
-    private val map : Keyframe<K>.(start : K, end : K, progress: Float,  frame: Float) -> T
+    private val map : KF.(start : K, end : K, progress: Float,  frame: Float) -> T
 ) : KeyframeAnimation<T> {
 
     private val sortedKeyframes = keyframes

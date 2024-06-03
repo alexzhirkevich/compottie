@@ -28,7 +28,7 @@ internal sealed interface AnimatedColor : KeyframeAnimation<Color>, Indexable {
     ) : AnimatedColor {
 
         @Transient
-        private val color: Color = value.asColor()
+        private val color: Color = value.toColor()
 
         override fun interpolated(frame: Float) = color
     }
@@ -44,23 +44,17 @@ internal sealed interface AnimatedColor : KeyframeAnimation<Color>, Indexable {
         override val expression: String? = null,
 
         @SerialName("ix")
-        override val index: String? = null,
-
-        @SerialName("ti")
-        val inTangent: FloatArray? = null,
-
-        @SerialName("to")
-        val outTangent: FloatArray? = null,
+        override val index: String? = null
     ) : AnimatedColor, KeyframeAnimation<Color> by BaseKeyframeAnimation(
         keyframes = value,
         emptyValue = Color.Transparent,
         map = { s, e, p, _ ->
-            lerp(s.asColor(), e.asColor(), easingX.transform(p))
+            lerp(s.toColor(), e.toColor(), easingX.transform(p))
         }
     )
 }
 
-private fun FloatArray.asColor() = Color(
+internal fun FloatArray.toColor() = Color(
     red = get(0),
     green = get(1),
     blue = get(2),

@@ -1,7 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
 import androidx.compose.ui.geometry.MutableRect
-import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
@@ -77,12 +76,13 @@ internal class NullLayer(
     }
 
     override fun getBounds(
-        outBounds: MutableRect,
+        drawScope: DrawScope,
         parentMatrix: Matrix,
         applyParents: Boolean,
-        frame: Float
+        frame: Float,
+        outBounds: MutableRect
     ) {
-        super.getBounds(outBounds, parentMatrix, applyParents, frame)
+        super.getBounds(drawScope, parentMatrix, applyParents, frame, outBounds)
         outBounds.set(0f,0f,0f,0f)
     }
 }

@@ -1,26 +1,17 @@
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import compottie.example.shared.generated.resources.Res
-import io.github.alexzhirkevich.compottie.JsonString
-import io.github.alexzhirkevich.compottie.LottieAnimation
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.LottieConstants
-import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import kotlin.time.TimeSource
-import kotlin.time.measureTime
 
 private val GRADIENT_ELLIPSE = "files/gradient_ellipse.json"
 private val TEST = "files/test.json"
@@ -38,13 +29,14 @@ private val MASK_ADD = "files/mask_add.json"
 private val DASH = "files/dash.json"
 private val ROUNDING_CORENERS = "files/rounding_corners.json"
 private val REPEATER = "files/repeater.json"
+private val TEXT_WITH_PATH = "files/text_with_path.json"
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun App() {
 
     val json by produceState<String?>(null){
-        value = Res.readBytes(CONFETTI).decodeToString()
+        value = Res.readBytes(TEXT_WITH_PATH).decodeToString()
     }
 
     if (json != null) {

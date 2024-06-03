@@ -101,12 +101,13 @@ internal class ShapeLayer(
     }
 
     override fun getBounds(
-        outBounds: MutableRect,
+        drawScope: DrawScope,
         parentMatrix: Matrix,
         applyParents: Boolean,
         frame: Float,
+        outBounds: MutableRect,
     ) {
-        super.getBounds(outBounds, parentMatrix, applyParents, frame)
-        contentGroup.getBounds(outBounds, boundsMatrix, applyParents, frame)
+        super.getBounds(drawScope, parentMatrix, applyParents, frame, outBounds)
+        contentGroup.getBounds(drawScope, boundsMatrix, applyParents, frame, outBounds)
     }
 }

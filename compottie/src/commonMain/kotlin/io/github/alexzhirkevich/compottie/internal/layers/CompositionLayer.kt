@@ -7,12 +7,8 @@ import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 
 internal class CompositionLayer(
-    composition: LottieComposition
+    private val composition: LottieComposition
 ) : BaseCompositionLayer() {
-
-    init {
-        this.composition = composition
-    }
 
     override val width: Float get() = composition.lottieData.width
     override val height: Float get() = composition.lottieData.height

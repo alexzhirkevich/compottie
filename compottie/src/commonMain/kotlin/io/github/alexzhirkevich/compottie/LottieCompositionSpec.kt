@@ -2,43 +2,30 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.text.font.FontFamily
+import kotlin.jvm.JvmInline
 
 @Stable
 sealed interface LottieCompositionSpec {
-    suspend fun load() : LottieComposition
+    suspend fun load(fontFamilyResolver: FontFamily.Resolver) : LottieComposition
 
-    companion object
+    companion object {
+        @Stable
+        fun JsonString(
+            jsonString: String
+        ): LottieCompositionSpec = JsonStringImpl(jsonString)
+    }
 }
 
 
-@Stable
-fun LottieCompositionSpec.Companion.JsonString(
-    jsonString: String
-): LottieCompositionSpec = JsonStringImpl(jsonString)
-
-
 @Immutable
-private class JsonStringImpl(
+@JvmInline
+private value class JsonStringImpl(
     private val jsonString: String
 ) : LottieCompositionSpec  {
 
-    override suspend fun load(): LottieComposition {
+    override suspend fun load(fontFamilyResolver: FontFamily.Resolver): LottieComposition {
         return LottieComposition.parse(jsonString)
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as JsonStringImpl
-
-        if (jsonString != other.jsonString) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return jsonString.hashCode()
     }
 
     override fun toString(): String {

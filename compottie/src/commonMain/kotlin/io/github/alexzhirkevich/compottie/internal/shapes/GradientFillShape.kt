@@ -112,10 +112,11 @@ internal class GradientFillShape(
     }
 
     override fun getBounds(
-        outBounds: MutableRect,
+        drawScope: DrawScope,
         parentMatrix: Matrix,
         applyParents: Boolean,
-        frame: Float
+        frame: Float,
+        outBounds: MutableRect
     ) {
         path.reset()
         paths.fastForEach {

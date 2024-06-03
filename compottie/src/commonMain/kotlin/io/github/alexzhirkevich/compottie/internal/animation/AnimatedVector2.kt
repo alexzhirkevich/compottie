@@ -1,14 +1,17 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.util.lerp
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonClassDiscriminator
+import kotlin.math.hypot
 
-internal typealias Vec2 = Offset
+typealias Vec2 = Offset
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable()
@@ -37,7 +40,6 @@ internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
     @Serializable
     @SerialName("1")
     class Animated(
-
         @SerialName("k")
         val value: List<VectorKeyframe>,
 
@@ -46,34 +48,72 @@ internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
 
         @SerialName("ix")
         override val index: String? = null,
+    ) : AnimatedVector2 {
 
-        @SerialName("ti")
-        val inTangent: FloatArray? = null,
-
-        @SerialName("to")
-        val outTangent: FloatArray? = null,
-    ) : AnimatedVector2, KeyframeAnimation<Vec2> by BaseKeyframeAnimation(
-        keyframes = value,
-        emptyValue = Offset.Zero,
-        map = { s, e, p, _ ->
-            Offset(
-                lerp(s[0], e[0], easingX.transform(p)),
-                lerp(s[1], e[1], easingY.transform(p))
-            )
+        private val path by lazy {
+            Path()
         }
-    )
+
+        private val pathMeasure by lazy {
+            PathMeasure()
+        }
+
+        @Transient
+        private val delegate: KeyframeAnimation<Vec2> = BaseKeyframeAnimation(
+            keyframes = value,
+            emptyValue = Offset.Zero,
+            map = { s, e, p, _ ->
+
+                if (inTangent != null && outTangent != null && !s.contentEquals(e)) {
+                    path.reset()
+                    path.createPath(s, e, outTangent, inTangent)
+                    pathMeasure.setPath(path, false)
+
+                    val length = pathMeasure.length
+
+                    val distance: Float = easingX.transform(p) * length
+
+                    val pos = pathMeasure.getPosition(distance)
+                    val tangent = pathMeasure.getTangent(distance)
+
+                    when {
+                        distance < 0 ->  pos + tangent * distance
+                        distance > length -> pos + tangent * (distance - length)
+                        else -> pos
+                    }
+                } else {
+                    Offset(
+                        lerp(s[0], e[0], easingX.transform(p)),
+                        lerp(s[1], e[1], easingY.transform(p))
+                    )
+                }
+            }
+        )
+
+        override fun interpolated(frame: Float): Offset {
+            return delegate.interpolated(frame)
+        }
+    }
 }
 
-//internal class AnimatedVectorSerializer : JsonContentPolymorphicSerializer<AnimatedVector2>(
-//    AnimatedVector2::class
-//) {
-//    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedVector2> {
-//        return when(element.jsonObject["a"]?.jsonPrimitive?.int){
-//            1 -> AnimatedVector2.Keyframed.serializer()
-//            else -> AnimatedVector2.Default.serializer()
-//        }
-//    }
-//}
-//
+fun Path.createPath(
+    startPoint : FloatArray,
+    endPoint: FloatArray,
+    cp1: FloatArray,
+    cp2: FloatArray
+) {
+    moveTo(startPoint[0], startPoint[1])
 
 
+    if ((cp1.hupot() != 0f || cp2.hupot() != 0f)) {
+        cubicTo(
+            startPoint[0] + cp1[0], startPoint[1] + cp1[1],
+            endPoint[0] + cp2[0], endPoint[1] + cp2[1],
+            endPoint[0], endPoint[1]
+        )
+    } else {
+        lineTo(endPoint[0], endPoint[0])
+    }
+}
+
+private fun FloatArray.hupot() = hypot(this[0], this[1])

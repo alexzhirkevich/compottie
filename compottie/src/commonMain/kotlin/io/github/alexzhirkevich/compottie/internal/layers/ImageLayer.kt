@@ -1,7 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
 import androidx.compose.ui.geometry.MutableRect
-import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -93,7 +92,7 @@ internal class ImageLayer(
     private val paint = Paint()
 
     private val asset : LottieAsset.ImageAsset? by lazy {
-        assets[refId] as? LottieAsset.ImageAsset
+        painterProperties?.assets?.get(refId) as? LottieAsset.ImageAsset
     }
 
     override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
@@ -107,6 +106,8 @@ internal class ImageLayer(
             canvas.save()
             canvas.concat(parentMatrix)
             src.set(0f, 0f, bitmap.width.toFloat(), bitmap.height.toFloat())
+
+            val maintainOriginalImageBounds = painterProperties?.maintainOriginalImageBounds == true
 
             val dstSize = if (maintainOriginalImageBounds) {
                 IntSize(
@@ -136,15 +137,21 @@ internal class ImageLayer(
     }
 
     override fun getBounds(
-        outBounds: MutableRect,
+        drawScope: DrawScope,
         parentMatrix: Matrix,
         applyParents: Boolean,
-        frame: Float
+        frame: Float,
+        outBounds: MutableRect
     ) {
-        super.getBounds(outBounds, parentMatrix, applyParents, frame)
+        super.getBounds(drawScope, parentMatrix, applyParents, frame, outBounds)
 
         asset?.let {
-            outBounds.set(0f, 0f, it.width * density, it.height * density)
+            outBounds.set(
+                left = 0f,
+                top = 0f,
+                right = it.width * drawScope.density,
+                bottom = it.height * drawScope.density
+            )
             boundsMatrix.map(outBounds)
         }
     }
