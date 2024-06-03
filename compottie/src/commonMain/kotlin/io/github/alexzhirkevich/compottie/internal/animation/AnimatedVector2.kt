@@ -64,9 +64,9 @@ internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
             emptyValue = Offset.Zero,
             map = { s, e, p, _ ->
 
-                if (inTangent != null && outTangent != null && !s.contentEquals(e)) {
+                if (withTangents && !s.contentEquals(e)) {
                     path.reset()
-                    path.createPath(s, e, outTangent, inTangent)
+                    path.createPath(s, e, outTangent!!, inTangent!!)
                     pathMeasure.setPath(path, false)
 
                     val length = pathMeasure.length
@@ -96,7 +96,7 @@ internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
     }
 }
 
-fun Path.createPath(
+private fun Path.createPath(
     startPoint : FloatArray,
     endPoint: FloatArray,
     cp1: FloatArray,
@@ -105,7 +105,7 @@ fun Path.createPath(
     moveTo(startPoint[0], startPoint[1])
 
 
-    if ((cp1.hupot() != 0f || cp2.hupot() != 0f)) {
+    if ((cp1.hypot() != 0f || cp2.hypot() != 0f)) {
         cubicTo(
             startPoint[0] + cp1[0], startPoint[1] + cp1[1],
             endPoint[0] + cp2[0], endPoint[1] + cp2[1],
@@ -116,4 +116,4 @@ fun Path.createPath(
     }
 }
 
-private fun FloatArray.hupot() = hypot(this[0], this[1])
+private fun FloatArray.hypot() = hypot(this[0], this[1])

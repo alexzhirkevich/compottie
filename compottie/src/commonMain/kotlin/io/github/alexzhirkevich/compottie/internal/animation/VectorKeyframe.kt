@@ -32,7 +32,15 @@ internal class VectorKeyframe(
 
     @SerialName("to")
     val outTangent: FloatArray? = null,
-) : Keyframe<FloatArray>()
+) : Keyframe<FloatArray>() {
+
+    val withTangents = inTangent != null
+            && outTangent != null
+            && !inTangent.ofNulls() &&
+            !outTangent.ofNulls()
+}
+
+private fun FloatArray.ofNulls() = all { it == 0f }
 
 
 
