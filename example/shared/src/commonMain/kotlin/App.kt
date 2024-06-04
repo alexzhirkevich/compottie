@@ -4,6 +4,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import compottie.example.shared.generated.resources.Res
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
@@ -12,6 +21,7 @@ import io.github.alexzhirkevich.compottie.assets.rememberLottieAssetsManager
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import org.jetbrains.compose.resources.ExperimentalResourceApi
+import kotlin.math.roundToInt
 
 private val GRADIENT_ELLIPSE = "gradient_ellipse.json"
 private val TEST = "test.json"
@@ -38,7 +48,7 @@ private val IMAGE_ASSET = "image_asset.json"
 fun App() {
 
     val composition = rememberLottieComposition(
-        LottieCompositionSpec.Resource(MATTE_LUMA)
+        LottieCompositionSpec.Resource(ROBOT)
     )
 
     LaunchedEffect(composition) {
@@ -46,7 +56,9 @@ fun App() {
     }
 
     Image(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .opacityGrid(),
         painter = rememberLottiePainter(
             composition = composition.value,
             iterations = LottieConstants.IterateForever,
@@ -56,7 +68,6 @@ fun App() {
         contentDescription = null
     )
 }
-
 
 /**
  * [LottieComposition] spec from composeResources/[dir]/[path] json asset
@@ -104,3 +115,20 @@ private fun rememberResourcesAssetsManager(
         readBytes(fullPath)
     }
 
+private val DarkOpacity = Color(0xff7f7f7f)
+private val LightOpacity = Color(0xffb2b2b2)
+private fun Modifier.opacityGrid(cellSize : Dp = 30.dp) = drawBehind {
+
+    val sizePx = cellSize.toPx()
+    val s = Size(sizePx,sizePx)
+    repeat((size.width /sizePx).toInt() + 1){ i ->
+        repeat((size.height / sizePx).toInt() + 1){ j->
+
+            drawRect(
+                color = if (i % 2 ==  j % 2) DarkOpacity else LightOpacity,
+                topLeft = Offset(i * sizePx, j * sizePx),
+                size = s
+            )
+        }
+    }
+}
