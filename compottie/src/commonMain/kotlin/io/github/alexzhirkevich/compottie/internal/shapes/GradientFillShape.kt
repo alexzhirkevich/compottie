@@ -84,7 +84,9 @@ internal class GradientFillShape(
     private var paths: List<PathContent> = emptyList()
 
     @Transient
-    private val paint = Paint()
+    private val paint = Paint().apply {
+        isAntiAlias = true
+    }
 
     @Transient
     private val gradientCache = LinkedHashMap<Int, Shader>()

@@ -85,6 +85,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
     private val path = Path()
     private val rect = MutableRect(0f, 0f, 0f, 0f)
     protected val paint = Paint().apply {
+        isAntiAlias = true
         strokeMiterLimit = strokeMiter
         strokeCap = lineCap.asStrokeCap()
         strokeJoin = lineJoin.asStrokeJoin()

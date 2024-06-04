@@ -5,6 +5,8 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 
 internal actual fun ImageBitmap.Companion.fromBytes(bytes: ByteArray) : ImageBitmap {
-    return BitmapFactory.decodeByteArray(bytes, 0, bytes.size).asImageBitmap()
+    return BitmapFactory
+        .decodeByteArray(bytes, 0, bytes.size)
+        .asImageBitmap()
 }
 

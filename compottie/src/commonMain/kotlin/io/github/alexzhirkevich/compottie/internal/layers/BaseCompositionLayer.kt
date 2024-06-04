@@ -28,7 +28,9 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
     private val newClipRect = MutableRect(0f, 0f, 0f, 0f)
 
     @Transient
-    private val layerPaint = Paint()
+    private val layerPaint = Paint().apply {
+        isAntiAlias = true
+    }
 
     abstract fun loadLayers() : List<Layer>
 

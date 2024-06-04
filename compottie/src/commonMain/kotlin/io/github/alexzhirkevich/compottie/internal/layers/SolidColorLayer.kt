@@ -108,6 +108,7 @@ internal class SolidColorLayer(
 
     private val paint by lazy {
         Paint().apply {
+            isAntiAlias = true
             blendMode = this@SolidColorLayer.blendMode.asComposeBlendMode()
         }
     }

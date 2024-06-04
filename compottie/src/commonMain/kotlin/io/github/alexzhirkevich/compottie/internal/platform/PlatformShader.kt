@@ -4,7 +4,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.graphics.ColorMatrixColorFilter
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Shader
@@ -152,12 +151,13 @@ internal expect fun MakeRadialGradient(
     matrix: Matrix
 ) : Shader
 
-internal expect fun Paint.setBlurMaskFiler(radius: Float)
+internal expect fun Paint.setBlurMaskFilter(radius: Float, isImage : Boolean = false)
+
 
 internal val ColorFilter.Companion.Luma : ColorFilter get() = LumaColorFilter
 
 private val LumaColorFilter by lazy {
-    ColorMatrixColorFilter(
+    ColorFilter.colorMatrix(
         ColorMatrix(
             floatArrayOf(
                 0f, 0f, 0f, 0f, 0f,

@@ -69,6 +69,7 @@ internal class FillShape(
 
     private val paint by lazy {
         Paint().apply {
+            isAntiAlias = true
             layer.blendMode.asComposeBlendMode()
         }
     }

@@ -22,7 +22,9 @@ internal class ContentGroup(
 
     private val rect = MutableRect(0f, 0f, 0f, 0f)
     private val offscreenRect = MutableRect(0f, 0f, 0f, 0f)
-    private val offscreenPaint = Paint()
+    private val offscreenPaint = Paint().apply {
+        isAntiAlias = true
+    }
     private val matrix = Matrix()
     private val path = Path()
     private val boundsRect = MutableRect(0f, 0f, 0f, 0f)

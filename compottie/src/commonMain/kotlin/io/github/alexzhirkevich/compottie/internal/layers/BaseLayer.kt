@@ -19,7 +19,6 @@ import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.effects.BlurEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MaskMode
-import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.helpers.isInvert
 import io.github.alexzhirkevich.compottie.internal.helpers.isLuma
 import io.github.alexzhirkevich.compottie.internal.platform.Luma
@@ -28,7 +27,7 @@ import io.github.alexzhirkevich.compottie.internal.platform.getMatrix
 import io.github.alexzhirkevich.compottie.internal.platform.isAndroidAtMost
 import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
 import io.github.alexzhirkevich.compottie.internal.platform.set
-import io.github.alexzhirkevich.compottie.internal.platform.setBlurMaskFiler
+import io.github.alexzhirkevich.compottie.internal.platform.setBlurMaskFilter
 import io.github.alexzhirkevich.compottie.internal.utils.intersectOrReset
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.set
@@ -53,6 +52,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
     }
     private val clearPaint by lazy {
         Paint().apply {
+            isAntiAlias = true
             blendMode = BlendMode.Clear
         }
     }
@@ -232,7 +232,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
             val radius = it.radius?.interpolated(frame) ?: return@let null
 
             if (radius != lastBlurRadius) {
-                paint.setBlurMaskFiler(radius)
+                paint.setBlurMaskFilter(radius, isImage = this is ImageLayer)
             }
             return radius
         } ?: 0f

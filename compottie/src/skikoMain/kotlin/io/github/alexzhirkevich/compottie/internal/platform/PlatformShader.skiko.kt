@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.platform
 
+import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -14,9 +15,12 @@ import androidx.compose.ui.graphics.toArgb
 import org.jetbrains.skia.FilterBlurMode
 import org.jetbrains.skia.FilterTileMode
 import org.jetbrains.skia.GradientStyle
+import org.jetbrains.skia.ImageFilter
 import org.jetbrains.skia.MaskFilter
 import org.jetbrains.skia.Matrix33
 import org.jetbrains.skia.Shader
+import kotlin.math.PI
+import kotlin.math.sqrt
 
 internal actual fun MakeLinearGradient(
     from : Offset,
@@ -89,12 +93,26 @@ internal fun TileMode.toSkiaTileMode(): FilterTileMode = when (this) {
 
 
 
-internal actual fun Paint.setBlurMaskFiler(radius: Float) {
+internal actual fun Paint.setBlurMaskFilter(radius: Float, isImage : Boolean) {
     val skPaint = asFrameworkPaint()
 
-    if (radius > 0f) {
-        skPaint.maskFilter = MaskFilter.makeBlur(FilterBlurMode.NORMAL, radius)
+    val sigma = if (radius > 0) {
+        BlurSigmaScale * radius
     } else {
+        0.0f
+    }
+
+    if (sigma > 0f) {
+        if (isImage) {
+            skPaint.imageFilter = ImageFilter.makeBlur(sigma, sigma, FilterTileMode.DECAL)
+        } else  {
+            skPaint.maskFilter = MaskFilter.makeBlur(FilterBlurMode.NORMAL, sigma)
+        }
+    } else {
+        skPaint.imageFilter = null
         skPaint.maskFilter = null
     }
 }
+
+private val BlurSigmaScale = .3f
+

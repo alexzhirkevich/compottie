@@ -61,7 +61,6 @@ private class LazyJsonString(
 ) : LottieCompositionSpec {
 
     override suspend fun load(): LottieComposition {
-        println("READING")
         return LottieComposition.parse(jsonString())
     }
 
