@@ -69,7 +69,7 @@ internal fun LineCap.asStrokeCap() : StrokeCap {
     }
 }
 
-internal abstract class BaseStrokeShape() : DrawingContent {
+internal abstract class BaseStrokeShape() : Shape, DrawingContent {
 
     abstract val opacity: AnimatedValue
     abstract val strokeWidth: AnimatedValue
@@ -105,6 +105,8 @@ internal abstract class BaseStrokeShape() : DrawingContent {
 
     private var roundShape : RoundShape? = null
 
+    private var lastBlurRadius : Float? = null
+
     override fun draw(
         drawScope: DrawScope,
         parentMatrix: Matrix,
@@ -120,6 +122,8 @@ internal abstract class BaseStrokeShape() : DrawingContent {
         }
 
         applyDashPatternIfNeeded(parentMatrix, frame)
+
+        lastBlurRadius = layer.applyBlurEffectIfNeeded(paint, frame, lastBlurRadius)
 
         roundShape?.applyTo(paint, frame)
 

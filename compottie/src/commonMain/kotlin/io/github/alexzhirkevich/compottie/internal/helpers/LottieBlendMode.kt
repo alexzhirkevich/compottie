@@ -33,7 +33,7 @@ internal fun LottieBlendMode.asComposeBlendMode() : BlendMode {
 
 private val BlendModeMapping by lazy {
     mapOf(
-        LottieBlendMode.Normal to null,
+        LottieBlendMode.Normal to BlendMode.SrcOver,
         LottieBlendMode.Multiply to BlendMode.Multiply,
         LottieBlendMode.Screen to BlendMode.Screen,
         LottieBlendMode.Overlay to BlendMode.Overlay,

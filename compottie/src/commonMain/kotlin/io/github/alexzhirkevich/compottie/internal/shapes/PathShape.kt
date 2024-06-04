@@ -9,6 +9,7 @@ import io.github.alexzhirkevich.compottie.internal.content.ShapeModifierContent
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
+import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -28,6 +29,9 @@ internal class PathShape(
     @SerialName("ks")
     val shape : AnimatedShape
 ) : Shape, PathContent {
+
+    @Transient
+    override lateinit var layer: Layer
 
     @Transient
     private val trimPaths: CompoundTrimPath = CompoundTrimPath()

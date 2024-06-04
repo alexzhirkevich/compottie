@@ -1,11 +1,15 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LayoutDirection
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
+import io.github.alexzhirkevich.compottie.internal.helpers.Mask
+import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
+import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonClassDiscriminator
 
@@ -32,6 +36,30 @@ internal sealed interface Layer {
     val name : String?
 
     var painterProperties : PainterProperties?
+
+    val blendMode : LottieBlendMode
+
+    val transform : Transform
+
+    val autoOrient : BooleanInt
+
+    val matteMode : MatteMode?
+
+    val matteParent : Int?
+
+    val matteTarget : BooleanInt?
+
+    val clazz : String?
+
+    val htmlId : String?
+
+    val collapseTransform : BooleanInt
+
+    val masks : List<Mask>?
+
+    val effects: List<LayerEffect>
+
+    fun applyBlurEffectIfNeeded(paint: Paint, frame: Float, lastBlurRadius : Float?) : Float
 }
 
 internal val Layer.isContainerLayer get()   =  name == "__container"

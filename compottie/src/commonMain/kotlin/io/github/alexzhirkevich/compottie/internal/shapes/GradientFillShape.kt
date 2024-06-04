@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.geometry.MutableRect
+import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
@@ -15,6 +16,9 @@ import io.github.alexzhirkevich.compottie.internal.animation.GradientType
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
+import io.github.alexzhirkevich.compottie.internal.helpers.FillRule
+import io.github.alexzhirkevich.compottie.internal.helpers.asPathFillType
+import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.utils.set
@@ -61,11 +65,21 @@ internal class GradientFillShape(
 
     @SerialName("g")
     val colors : GradientColors,
+
+    @SerialName("r")
+    val fillRule : FillRule? = null,
 ) : Shape, DrawingContent {
 
     @Transient
+    override lateinit var layer: Layer
 
-    private val path = Path()
+    @Transient
+    private val path = Path().apply {
+        fillRule?.asPathFillType()?.let {
+            fillType = it
+        }
+    }
+
     @Transient
     private var paths: List<PathContent> = emptyList()
 
@@ -77,6 +91,8 @@ internal class GradientFillShape(
 
     @Transient
     private var roundShape : RoundShape? = null
+
+    private var lastBlurRadius : Float? = null
 
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
 
@@ -97,12 +113,14 @@ internal class GradientFillShape(
             parentAlpha
         }
 
+        lastBlurRadius = layer.applyBlurEffectIfNeeded(paint, frame, lastBlurRadius)
+
+
         path.reset()
 
         paths.fastForEach {
             path.addPath(it.getPath(frame), parentMatrix)
         }
-
 
         roundShape?.applyTo(paint, frame)
 

@@ -2,8 +2,11 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroupBase
+import io.github.alexzhirkevich.compottie.internal.layers.Layer
+import io.github.alexzhirkevich.compottie.internal.layers.NullLayer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 @SerialName("gr")
@@ -29,4 +32,13 @@ internal class GroupShape(
     hidden = hidden,
     contents = items,
     transform = items.findTransform()
-)
+){
+    @Transient
+    override var layer: Layer = NullLayer()
+        set(value) {
+            field = value
+            items.forEach {
+                it.layer = value
+            }
+        }
+}

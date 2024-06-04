@@ -4,7 +4,7 @@ import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
-import io.github.alexzhirkevich.compottie.internal.effects.Effect
+import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
@@ -53,18 +53,14 @@ internal class ShapeLayer(
     @SerialName("nm")
     override val name: String? = null,
 
-
     @SerialName("ef")
-    val effect: List<Effect> = emptyList(),
+    override val effects: List<LayerEffect> = emptyList(),
 
     @SerialName("sr")
     override val timeStretch: Float = 1f,
 
     @SerialName("parent")
     override val parent: Int? = null,
-
-    @SerialName("shapes")
-    val shapes: List<Shape> = emptyList(),
 
     @SerialName("tt")
     override val matteMode: MatteMode? = null,
@@ -84,7 +80,15 @@ internal class ShapeLayer(
     @SerialName("masksProperties")
     override val masks: List<Mask>? = null,
 
-) : BaseLayer(), VisualLayer  {
+    @SerialName("shapes")
+    val shapes: List<Shape> = emptyList(),
+) : BaseLayer()  {
+
+    init {
+        shapes.forEach {
+            it.layer = this
+        }
+    }
 
     @Transient
     private val contentGroup = ContentGroup(

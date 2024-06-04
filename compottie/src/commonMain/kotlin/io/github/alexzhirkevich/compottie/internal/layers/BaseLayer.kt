@@ -1,8 +1,5 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Canvas
@@ -12,22 +9,20 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
-import io.github.alexzhirkevich.compottie.LottieComposition
-import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
+import io.github.alexzhirkevich.compottie.internal.effects.BlurEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MaskMode
-import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.platform.drawRect
 import io.github.alexzhirkevich.compottie.internal.platform.getMatrix
 import io.github.alexzhirkevich.compottie.internal.platform.isAndroidAtMost
 import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
 import io.github.alexzhirkevich.compottie.internal.platform.set
+import io.github.alexzhirkevich.compottie.internal.platform.setBlurMaskFiler
 import io.github.alexzhirkevich.compottie.internal.utils.Utils
 import io.github.alexzhirkevich.compottie.internal.utils.intersect
 import io.github.alexzhirkevich.compottie.internal.utils.overlaps
@@ -38,14 +33,11 @@ import kotlin.math.min
 
 internal abstract class BaseLayer() : Layer, DrawingContent {
 
-    abstract val masks: List<Mask>?
-
-    abstract val transform: Transform
 
     override var painterProperties: PainterProperties? = null
 
     protected val boundsMatrix = Matrix()
-    protected val path = Path()
+    private val path = Path()
 
     private val matrix = Matrix()
     private val canvasMatrix = Matrix()
@@ -72,6 +64,10 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
     private var parentLayers: MutableList<BaseLayer>? = null
 
     private var parentLayer: BaseLayer? = null
+
+    private val blurEffect by lazy {
+        effects.fastFirstOrNull { it is BlurEffect } as? BlurEffect
+    }
 
     abstract fun drawLayer(
         drawScope: DrawScope,
@@ -217,6 +213,18 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
 
     fun setParentLayer(layer: BaseLayer) {
         this.parentLayer = layer
+    }
+
+    override fun applyBlurEffectIfNeeded(paint: Paint, frame: Float,  lastBlurRadius : Float?) : Float {
+
+        return blurEffect?.let {
+            val radius = it.radius?.interpolated(frame) ?: return@let null
+
+            if (radius != lastBlurRadius) {
+                paint.setBlurMaskFiler(radius)
+            }
+            return radius
+        } ?: 0f
     }
 
     private fun buildParentLayerListIfNeeded() {

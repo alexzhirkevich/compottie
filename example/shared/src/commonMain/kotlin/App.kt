@@ -1,61 +1,106 @@
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import compottie.example.shared.generated.resources.Res
+import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.LottieConstants
+import io.github.alexzhirkevich.compottie.assets.rememberLottieAssetsManager
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 
-private val GRADIENT_ELLIPSE = "files/gradient_ellipse.json"
-private val TEST = "files/test.json"
-private val CHECKMARK = "files/checkmark.json"
-private val FADE_BALLS = "files/fade_balls.json"
-private val BOUNCING_BALL = "files/bouncing_ball.json"
-private val POLYSTAR = "files/polystar.json"
-private val RECT = "files/rect.json"
-private val ROUND_RECT = "files/roundrect.json"
-private val ROBOT = "files/robot.json"
-private val ROBOT_404 = "files/robot_404.json"
-private val CONFETTI = "files/confetti.json"
-private val PRECOMP_WITH_REMAPPING = "files/precomp_with_remapping.json"
-private val MASK_ADD = "files/mask_add.json"
-private val DASH = "files/dash.json"
-private val ROUNDING_CORENERS = "files/rounding_corners.json"
-private val REPEATER = "files/repeater.json"
-private val TEXT_WITH_PATH = "files/text_with_path.json"
-private val TEXT = "files/text.json"
+private val GRADIENT_ELLIPSE = "gradient_ellipse.json"
+private val TEST = "test.json"
+private val CHECKMARK = "checkmark.json"
+private val FADE_BALLS = "fade_balls.json"
+private val BOUNCING_BALL = "bouncing_ball.json"
+private val POLYSTAR = "polystar.json"
+private val RECT = "rect.json"
+private val ROUND_RECT = "roundrect.json"
+private val ROBOT = "robot.json"
+private val ROBOT_404 = "robot_404.json"
+private val CONFETTI = "confetti.json"
+private val PRECOMP_WITH_REMAPPING = "precomp_with_remapping.json"
+private val MASK_ADD = "mask_add.json"
+private val DASH = "dash.json"
+private val ROUNDING_CORENERS = "rounding_corners.json"
+private val REPEATER = "repeater.json"
+private val TEXT_WITH_PATH = "text_with_path.json"
+private val TEXT = "text.json"
+private val IMAGE_ASSET = "image_asset.json"
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun App() {
 
-    val json by produceState<String?>(null){
-        value = Res.readBytes(ROBOT).decodeToString()
+    val composition = rememberLottieComposition(
+        LottieCompositionSpec.Resource(ROBOT)
+    )
+
+    LaunchedEffect(composition) {
+        composition.await()
     }
 
-    if (json != null) {
-        val composition by rememberLottieComposition(
-            LottieCompositionSpec.JsonString(json!!)
-        )
-
-        Image(
-            modifier = Modifier.fillMaxSize().background(Color.LightGray),
-            painter = rememberLottiePainter(
-                composition = composition,
-//                progress = {.8f}
-                iterations = LottieConstants.IterateForever
-            ),
-            contentDescription = null
-        )
-    }
+    Image(
+        modifier = Modifier.fillMaxSize(),
+        painter = rememberLottiePainter(
+            composition = composition.value,
+            iterations = LottieConstants.IterateForever,
+            onLoadError = { throw it },
+            assetManager = rememberComposeResourcesAssetsManager()
+        ),
+        contentDescription = null
+    )
 }
 
 
+/**
+ * [LottieComposition] spec from composeResources/[dir]/[path] resource
+ * */
+@OptIn(ExperimentalResourceApi::class)
+@Stable
+fun LottieCompositionSpec.Companion.Resource(
+    path : String,
+    dir : String = "files",
+    readBytes: suspend (path: String) -> ByteArray = Res::readBytes
+) : LottieCompositionSpec = JsonString { readBytes("$dir/$path").decodeToString() }
+
+/**
+ * Compose resources asset manager.
+ *
+ * Assess are stored in the _**composeResources/[relativeTo]**_ directory.
+ *
+ * Handles the following possible cases:
+ * - path="/images/", name="image.png"
+ * - path="images/", name="image.png"
+ * - path="", name="/images/image.png"
+ * - path="", name="images/image.png"
+ * */
+@OptIn(ExperimentalResourceApi::class)
+@Composable
+private fun rememberComposeResourcesAssetsManager(
+    relativeTo : String = "files",
+    readBytes : suspend (path : String) -> ByteArray = Res::readBytes,
+) =
+    rememberLottieAssetsManager { _, path, name ->
+        val trimPath = path
+            .removePrefix("/")
+            .removeSuffix("/")
+            .takeIf(String::isNotEmpty)
+
+        val trimName = name
+            .removePrefix("/")
+            .removeSuffix("/")
+            .takeIf(String::isNotEmpty)
+
+        val fullPath = listOf(relativeTo.takeIf(String::isNotEmpty), trimPath, trimName)
+            .filterNotNull()
+            .joinToString("/")
+
+        readBytes(fullPath)
+    }
 

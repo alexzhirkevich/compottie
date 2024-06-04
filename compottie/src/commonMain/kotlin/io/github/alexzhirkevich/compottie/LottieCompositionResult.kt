@@ -80,7 +80,8 @@ interface LottieCompositionResult : State<LottieComposition?> {
 
 @Stable
 internal class LottieCompositionResultImpl : LottieCompositionResult {
-    private val compositionDeferred = CompletableDeferred<LottieComposition>()
+
+    private var compositionDeferred = CompletableDeferred<LottieComposition>()
 
     override var value: LottieComposition? by mutableStateOf(null)
         private set

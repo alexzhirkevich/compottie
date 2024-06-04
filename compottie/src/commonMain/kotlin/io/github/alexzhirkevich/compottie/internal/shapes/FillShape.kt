@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
@@ -14,6 +15,10 @@ import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.helpers.FillRule
+import io.github.alexzhirkevich.compottie.internal.helpers.asComposeBlendMode
+import io.github.alexzhirkevich.compottie.internal.helpers.asPathFillType
+import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -43,19 +48,35 @@ internal class FillShape(
 
     @SerialName("c")
     val color : AnimatedColor,
+
+    @SerialName("r")
+    val fillRule : FillRule? = null,
+
 ) : Shape, DrawingContent {
 
     @Transient
-    private val path = Path()
+    override lateinit var layer: Layer
+
+    @Transient
+    private val path = Path().apply {
+        fillRule?.asPathFillType()?.let {
+            fillType = it
+        }
+    }
 
     @Transient
     private var paths: List<PathContent> = emptyList()
 
-    @Transient
-    private val paint = Paint()
+    private val paint by lazy {
+        Paint().apply {
+            layer.blendMode.asComposeBlendMode()
+        }
+    }
 
     @Transient
     private var roundShape : RoundShape? = null
+
+    private var lastBlurRadius : Float? = null
 
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
 
@@ -69,13 +90,16 @@ internal class FillShape(
             (parentAlpha * it / 100f).coerceIn(0f, 1f)
         } ?: parentAlpha
 
+        roundShape?.applyTo(paint, frame)
+
+        lastBlurRadius = layer.applyBlurEffectIfNeeded(paint, frame, lastBlurRadius)
+
         path.reset()
 
         paths.fastForEach {
             path.addPath(it.getPath(frame), parentMatrix)
         }
 
-        roundShape?.applyTo(paint, frame)
 
         drawScope.drawIntoCanvas { canvas ->
             canvas.drawPath(path, paint)

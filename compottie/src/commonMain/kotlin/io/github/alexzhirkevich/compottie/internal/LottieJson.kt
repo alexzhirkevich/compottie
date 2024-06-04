@@ -5,11 +5,15 @@ import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.effects.BlurEffect
+import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.layers.NullLayer
 import io.github.alexzhirkevich.compottie.internal.layers.ShapeLayer
 import io.github.alexzhirkevich.compottie.internal.layers.ImageLayer
 import io.github.alexzhirkevich.compottie.internal.layers.PrecompositionLayer
+import io.github.alexzhirkevich.compottie.internal.layers.SolidColorLayer
+import io.github.alexzhirkevich.compottie.internal.layers.TextLayer
 import io.github.alexzhirkevich.compottie.internal.shapes.EllipseShape
 import io.github.alexzhirkevich.compottie.internal.shapes.FillShape
 import io.github.alexzhirkevich.compottie.internal.shapes.GradientFillShape
@@ -37,14 +41,13 @@ internal val LottieJson by lazy {
         allowTrailingComma = true
         serializersModule = SerializersModule {
 
-            // all this polymorphic stuff doesn't really do anything.
-            // just referencing classes here to avoid them been tree-shaken by the proguard/webpack
-
             polymorphic(Layer::class) {
                 subclass(ShapeLayer::class)
                 subclass(NullLayer::class)
                 subclass(ImageLayer::class)
                 subclass(PrecompositionLayer::class)
+                subclass(TextLayer::class)
+                subclass(SolidColorLayer::class)
 
                 defaultDeserializer {
                     NullLayer.serializer()
@@ -54,7 +57,10 @@ internal val LottieJson by lazy {
             polymorphic(LottieAsset::class){
                 subclass(LottieAsset.ImageAsset::class)
                 subclass(LottieAsset.PrecompositionAsset::class)
-                subclass(LottieAsset.EmptyAsset::class)
+
+                defaultDeserializer {
+                    LottieAsset.UnsupportedAsset.serializer()
+                }
             }
 
             polymorphic(Shape::class) {
@@ -70,7 +76,22 @@ internal val LottieJson by lazy {
                 subclass(SolidStrokeShape::class)
                 subclass(TransformShape::class)
                 subclass(TrimPathShape::class)
+
+                defaultDeserializer {
+                    Shape.UnsupportedShape.serializer()
+                }
             }
+
+            polymorphic(LayerEffect::class){
+                subclass(BlurEffect::class)
+
+                defaultDeserializer {
+                    LayerEffect.UnsupportedEffect.serializer()
+                }
+            }
+
+            // the rest polymorphic stuff doesn't really do anything.
+            // just referencing classes here to avoid them been tree-shaken by the proguard/webpack
 
             polymorphic(AnimatedColor::class) {
                 subclass(AnimatedColor.Default::class)

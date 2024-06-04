@@ -1,10 +1,10 @@
 package io.github.alexzhirkevich.compottie.assets
 
 internal class CompoundLottieAssetsFetcher(
-    private val localFetcher: LottieAssetsFetcher,
-    private val remoteFetcher : LottieAssetsFetcher,
+    private val localFetcher: LottieAssetsManager,
+    private val remoteFetcher : LottieAssetsManager,
     private val cache : LottieAssetsCache
-) : LottieAssetsFetcher {
+) : LottieAssetsManager {
 
     override suspend fun fetch(id: String, path: String, name: String): ByteArray? {
         return if (path.startsWith("https://", true) ||

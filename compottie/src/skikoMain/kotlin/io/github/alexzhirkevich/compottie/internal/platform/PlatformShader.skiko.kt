@@ -3,11 +3,14 @@ package io.github.alexzhirkevich.compottie.internal.platform
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.TileMode.Companion.Clamp
 import androidx.compose.ui.graphics.toArgb
+import org.jetbrains.skia.FilterBlurMode
 import org.jetbrains.skia.FilterTileMode
 import org.jetbrains.skia.GradientStyle
+import org.jetbrains.skia.MaskFilter
 import org.jetbrains.skia.Matrix33
 import org.jetbrains.skia.Matrix44
 import org.jetbrains.skia.Shader
@@ -77,4 +80,14 @@ internal fun TileMode.toSkiaTileMode(): FilterTileMode = when (this) {
     TileMode.Mirror -> FilterTileMode.MIRROR
     TileMode.Decal -> FilterTileMode.DECAL
     else -> FilterTileMode.CLAMP
+}
+
+internal actual fun Paint.setBlurMaskFiler(radius: Float) {
+    val skPaint = asFrameworkPaint()
+
+    if (radius > 0f) {
+        skPaint.maskFilter = MaskFilter.makeBlur(FilterBlurMode.NORMAL, radius)
+    } else {
+        skPaint.maskFilter = null
+    }
 }

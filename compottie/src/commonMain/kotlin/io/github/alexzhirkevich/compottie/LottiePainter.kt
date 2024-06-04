@@ -14,39 +14,26 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.util.fastForEach
-import androidx.compose.ui.util.fastForEachReversed
-import androidx.compose.ui.util.fastJoinToString
-import io.github.alexzhirkevich.compottie.assets.LottieAssetsFetcher
+import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.NoOpAssetsFetcher
-import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.layers.BaseCompositionLayer
 import io.github.alexzhirkevich.compottie.internal.layers.CompositionLayer
 import io.github.alexzhirkevich.compottie.internal.layers.PainterProperties
-import io.github.alexzhirkevich.compottie.internal.layers.PrecompositionLayer
-import io.github.alexzhirkevich.compottie.internal.platform.getMatrix
-import io.github.alexzhirkevich.compottie.internal.utils.preScale
-import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
-import kotlin.time.Duration
 import kotlin.time.measureTime
 
 @Composable
@@ -59,10 +46,9 @@ fun rememberLottiePainter(
     speed: Float = 1f,
     iterations: Int = 1,
     cancellationBehavior: LottieCancellationBehavior = LottieCancellationBehavior.Immediately,
-    ignoreSystemAnimatorScale: Boolean = false,
     useCompositionFrameRate: Boolean = false,
     maintainOriginalImageBounds: Boolean = false,
-    assetsFetcher: LottieAssetsFetcher = NoOpAssetsFetcher,
+    assetManager: LottieAssetsManager = NoOpAssetsFetcher,
     onLoadError : (Throwable) -> Painter =  { EmptyPainter },
 ) : Painter {
     val progress = animateLottieCompositionAsState(
@@ -74,7 +60,6 @@ fun rememberLottiePainter(
         speed = speed,
         iterations = iterations,
         cancellationBehavior = cancellationBehavior,
-        ignoreSystemAnimatorScale = ignoreSystemAnimatorScale,
         useCompositionFrameRate = useCompositionFrameRate
     )
 
@@ -82,7 +67,7 @@ fun rememberLottiePainter(
         composition = composition,
         progress = { progress.value },
         maintainOriginalImageBounds = maintainOriginalImageBounds,
-        assetsFetcher = assetsFetcher,
+        assetsFetcher = assetManager,
         onLoadError = onLoadError
     )
 }
@@ -93,61 +78,39 @@ fun rememberLottiePainter(
     progress : () -> Float,
     maintainOriginalImageBounds: Boolean = false,
     clipTextToBoundingBoxes: Boolean = false,
-    assetsFetcher: LottieAssetsFetcher = NoOpAssetsFetcher,
+    assetsFetcher: LottieAssetsManager = NoOpAssetsFetcher,
     onLoadError : (Throwable) -> Painter =  { EmptyPainter },
 ) : Painter {
 
     val updatedOnLoadError by rememberUpdatedState(onLoadError)
 
-    val updatedComposition by rememberUpdatedState(composition)
 
     val fontFamilyResolver = LocalFontFamilyResolver.current
 
     val painter by produceState<Painter>(
         EmptyPainter,
-        composition,
         assetsFetcher,
+        composition,
         maintainOriginalImageBounds,
         clipTextToBoundingBoxes,
         fontFamilyResolver
     ) {
 
-        snapshotFlow { updatedComposition }
-            .filterNotNull()
-            .collectLatest {
-                value = try {
-                    coroutineScope {
-                        it.lottieData.assets.map { asset ->
-                            withContext(Dispatchers.Default) {
-                                when (asset) {
-                                    is LottieAsset.ImageAsset -> {
-                                        if (asset.bitmap == null) {
-                                            launch {
-                                                assetsFetcher
-                                                    .fetch(asset.id, asset.path, asset.fileName)
-                                                    ?.let {
-                                                        asset.setBitmap(ImageBitmap.fromBytes(it))
-                                                    }
-                                            }
-                                        } else null
-                                    }
+        if (composition != null) {
+            value = try {
 
-                                    else -> null
-                                }
-                            }
-                        }
-                    }.filterNotNull().joinAll()
+                composition.preloadAssets(assetsFetcher)
 
-                    LottiePainter(
-                        composition = it,
-                        maintainOriginalImageBounds = maintainOriginalImageBounds,
-                        clipTextToBoundingBoxes = clipTextToBoundingBoxes,
-                        fontFamilyResolver = fontFamilyResolver
-                    )
-                } catch (t: Throwable) {
-                    updatedOnLoadError(t)
-                }
+                LottiePainter(
+                    composition = composition,
+                    maintainOriginalImageBounds = maintainOriginalImageBounds,
+                    clipTextToBoundingBoxes = clipTextToBoundingBoxes,
+                    fontFamilyResolver = fontFamilyResolver
+                )
+            } catch (t: Throwable) {
+                updatedOnLoadError(t)
             }
+        }
     }
 
     LaunchedEffect(painter) {
@@ -194,14 +157,12 @@ private class LottiePainter(
         p.coerceAtLeast(0f)
     }
 
-    val compositionLayer: BaseCompositionLayer = if (
-        composition.lottieData.layers.size == 1 &&
-        composition.lottieData.layers[0] is PrecompositionLayer
-    ) {
-        composition.lottieData.layers[0] as BaseCompositionLayer
-    } else {
-        CompositionLayer(composition)
-    }
+    val compositionLayer: BaseCompositionLayer =  composition.lottieData
+        .layers
+        .takeIf {
+            it.size == 1                     // don't create extra composition layer
+        }?.first() as? BaseCompositionLayer  // if Precomposition is the only layer
+        ?: CompositionLayer(composition)
 
 
     init {
@@ -241,15 +202,47 @@ private class LottiePainter(
 
         matrix.reset()
 
-        scale(scale.scaleX, scale.scaleY) {
-            translate(offset.x.toFloat(), offset.y.toFloat()) {
-                try {
-                    compositionLayer.draw(this, matrix, alpha, currentFrame)
-                } catch (t: Throwable) {
-                    println("Lottie crashed in draw :(")
-                    t.printStackTrace()
+        measureTime {
+            scale(scale.scaleX, scale.scaleY) {
+                translate(offset.x.toFloat(), offset.y.toFloat()) {
+                    try {
+                        compositionLayer.draw(this, matrix, alpha, currentFrame)
+                    } catch (t: Throwable) {
+                        println("Lottie crashed in draw :(")
+                        t.printStackTrace()
+                    }
                 }
+            }
+        }.let {
+            if (it.inWholeMilliseconds > 0) {
+                println(it.inWholeMilliseconds)
             }
         }
     }
+}
+
+private suspend fun LottieComposition.preloadAssets(
+    assetsFetcher: LottieAssetsManager
+){
+    coroutineScope {
+        lottieData.assets.map { asset ->
+            withContext(Dispatchers.Default) {
+                when (asset) {
+                    is LottieAsset.ImageAsset -> {
+                        if (asset.bitmap == null) {
+                            launch {
+                                assetsFetcher
+                                    .fetch(asset.id, asset.path, asset.fileName)
+                                    ?.let {
+                                        asset.setBitmap(ImageBitmap.fromBytes(it))
+                                    }
+                            }
+                        } else null
+                    }
+
+                    else -> null
+                }
+            }
+        }
+    }.filterNotNull().joinAll()
 }

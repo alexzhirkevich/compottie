@@ -9,6 +9,7 @@ import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
+import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.utils.Math
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -71,6 +72,9 @@ internal class PolystarShape(
     val starType : StarType,
 
 ) : Shape, PathContent {
+
+    @Transient
+    override lateinit var layer: Layer
 
     @Transient
     private val path = Path()

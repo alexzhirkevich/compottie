@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie.internal.platform
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.TileMode
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
@@ -11,6 +12,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.GradientType
 import kotlin.math.hypot
 
 private val CACHE_LIMIT = 15
+
 internal fun GradientShader(
     type: GradientType,
     startPoint: AnimatedVector2,
@@ -147,3 +149,4 @@ internal expect fun MakeRadialGradient(
     matrix: Matrix
 ) : Shader
 
+internal expect fun Paint.setBlurMaskFiler(radius: Float)

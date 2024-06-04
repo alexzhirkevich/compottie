@@ -28,7 +28,7 @@ internal class LottieData(
     val outPoint : Float,
 
     @SerialName("nm")
-    val name : String,
+    val name : String? = null,
 
     val layers: List<Layer> = emptyList(),
 

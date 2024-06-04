@@ -6,6 +6,7 @@ import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
+import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -32,6 +33,9 @@ internal class EllipseShape(
     @SerialName("s")
     val size : AnimatedVector2,
 ) : Shape, PathContent {
+
+    @Transient
+    override lateinit var layer: Layer
 
     @Transient
     private val path = Path()

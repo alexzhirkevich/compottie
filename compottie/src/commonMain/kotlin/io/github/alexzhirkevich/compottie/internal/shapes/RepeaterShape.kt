@@ -12,6 +12,7 @@ import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.GreedyContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
+import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import kotlinx.serialization.SerialName
@@ -40,6 +41,9 @@ internal class RepeaterShape(
     @SerialName("hd")
     override val hidden: Boolean = false
 ) : Shape, GreedyContent, DrawingContent, PathContent {
+
+    @Transient
+    override lateinit var layer: Layer
 
     @Transient
     private var contentGroup: ContentGroup? = null

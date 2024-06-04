@@ -5,14 +5,11 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
@@ -24,8 +21,11 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEachIndexed
 import io.github.alexzhirkevich.compottie.internal.animation.toColor
+import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
+import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.helpers.text.TextData
 import io.github.alexzhirkevich.compottie.internal.helpers.text.TextDocument
@@ -76,9 +76,37 @@ internal class TextLayer(
     @SerialName("masksProperties")
     override val masks: List<Mask>? = null,
 
+    @SerialName("ef")
+    override val effects: List<LayerEffect> = emptyList(),
+
     @SerialName("t")
-    private val textData: TextData
-) : BaseLayer() {
+    private val textData: TextData,
+
+    @SerialName("ao")
+    override val autoOrient: BooleanInt = BooleanInt.No,
+
+    @SerialName("tt")
+    override val matteMode: MatteMode? = null,
+
+    @SerialName("tp")
+    override val matteParent: Int? = null,
+
+    @SerialName("td")
+    override val matteTarget: BooleanInt? = null,
+
+    @SerialName("bm")
+    override val blendMode: LottieBlendMode = LottieBlendMode.Normal,
+
+    @SerialName("cl")
+    override val clazz: String? = null,
+
+    @SerialName("ln")
+    override val htmlId: String? = null,
+
+    @SerialName("ct")
+    override val collapseTransform: BooleanInt = BooleanInt.No
+
+    ) : BaseLayer() {
 
     @Transient
     private val fillPaint = DrawProperties(Fill)

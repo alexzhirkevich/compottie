@@ -12,6 +12,7 @@ import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.platform.clipRect
 import io.github.alexzhirkevich.compottie.internal.utils.Utils
 import io.github.alexzhirkevich.compottie.internal.utils.union
@@ -32,6 +33,7 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
     private val layerPaint = Paint()
 
     abstract fun loadLayers() : List<Layer>
+
 
     private val layers by lazy {
         val l = loadLayers().filterIsInstance<BaseLayer>()

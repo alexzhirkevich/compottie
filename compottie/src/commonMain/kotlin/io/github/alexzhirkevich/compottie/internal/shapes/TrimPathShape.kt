@@ -3,8 +3,10 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.helpers.TrimPathType
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -33,6 +35,10 @@ internal class TrimPathShape(
     @SerialName("m")
     val type : TrimPathType = TrimPathType.Simultaneously
 ) : Shape {
+
+    @Transient
+    override lateinit var layer: Layer
+
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
 
     }

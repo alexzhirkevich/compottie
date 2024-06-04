@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.font.Font
@@ -45,12 +46,10 @@ fun rememberLottieComposition(spec : LottieCompositionSpec) : LottieCompositionR
         LottieCompositionResultImpl()
     }
 
-    val fontFamilyResolver = LocalFontFamilyResolver.current
-
-    LaunchedEffect(spec, fontFamilyResolver) {
+    LaunchedEffect(result) {
         withContext(Dispatchers.Default) {
             try {
-                result.complete(spec.load(fontFamilyResolver))
+                result.complete(spec.load())
             } catch (c: CancellationException) {
                 throw c
             } catch (t: Throwable) {

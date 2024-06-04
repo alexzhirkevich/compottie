@@ -8,6 +8,7 @@ import io.github.alexzhirkevich.compottie.internal.content.ShapeModifierContent
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.helpers.CubicCurveData
 import io.github.alexzhirkevich.compottie.internal.helpers.ShapeData
+import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.utils.floorMod
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -29,6 +30,9 @@ internal class RoundShape(
     @SerialName("r")
     val radius : AnimatedValue,
 ) : Shape, ShapeModifierContent {
+
+    @Transient
+    override lateinit var layer: Layer
 
     @Transient
     private var shapeData: ShapeData? = null

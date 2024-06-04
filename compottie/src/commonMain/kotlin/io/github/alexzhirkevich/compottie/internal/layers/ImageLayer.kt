@@ -11,6 +11,7 @@ import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -77,10 +78,12 @@ internal class ImageLayer(
     @SerialName("masksProperties")
     override val masks: List<Mask>? = null,
 
+    @SerialName("ef")
+    override val effects: List<LayerEffect> = emptyList(),
+
     @SerialName("refId")
     val refId : String,
-
-    ) : BaseLayer(), VisualLayer {
+) : BaseLayer() {
 
     @Transient
     private val src = MutableRect(0f,0f,0f,0f)
@@ -95,11 +98,15 @@ internal class ImageLayer(
         painterProperties?.assets?.get(refId) as? LottieAsset.ImageAsset
     }
 
+    private var lastBlurRadius : Float? = null
+
     override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
         val mAsset = asset ?: return
         val bitmap = mAsset.bitmap ?: return
 
         paint.alpha = parentAlpha
+
+        lastBlurRadius = applyBlurEffectIfNeeded(paint, frame, lastBlurRadius)
 
         drawScope.drawIntoCanvas { canvas ->
 

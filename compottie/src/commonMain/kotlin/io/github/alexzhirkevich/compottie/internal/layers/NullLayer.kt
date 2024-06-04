@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie.internal.layers
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
@@ -70,7 +71,10 @@ internal class NullLayer(
 
     @SerialName("masksProperties")
     override val masks: List<Mask>? = null,
-) : BaseLayer(), VisualLayer {
+
+    @SerialName("ef")
+    override val effects: List<LayerEffect> = emptyList(),
+) : BaseLayer() {
 
     override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
     }

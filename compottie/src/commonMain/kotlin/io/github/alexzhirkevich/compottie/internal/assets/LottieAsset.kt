@@ -84,10 +84,9 @@ internal sealed interface LottieAsset {
     ) : LottieAsset
 
     @Serializable
-    class EmptyAsset(
-        @SerialName("id")
-        override val id: String = "",
-    ) : LottieAsset
+    data object UnsupportedAsset : LottieAsset {
+        override val id: String get() = ""
+    }
 }
 
 private val emptyPaint = Paint()
@@ -114,7 +113,7 @@ internal class AssetSerializer : JsonContentPolymorphicSerializer<LottieAsset>(L
         return when {
             "layers" in element.jsonObject.keys -> LottieAsset.PrecompositionAsset.serializer()
             "p" in element.jsonObject.keys -> LottieAsset.ImageAsset.serializer()
-            else -> LottieAsset.EmptyAsset.serializer()
+            else -> LottieAsset.UnsupportedAsset.serializer()
         }
     }
 }

@@ -1,9 +1,12 @@
 package io.github.alexzhirkevich.compottie.internal.platform
 
+import android.graphics.Bitmap
+import android.graphics.BlurMaskFilter
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.LinearGradientShader
 import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.RadialGradientShader
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.setFrom
@@ -48,3 +51,13 @@ internal actual fun MakeRadialGradient(
     setLocalMatrix(tempMatrix)
 }
 
+
+internal actual fun Paint.setBlurMaskFiler(radius: Float) {
+    val fPaint = asFrameworkPaint()
+
+    if (radius > 0f) {
+        fPaint.setMaskFilter(BlurMaskFilter(radius, BlurMaskFilter.Blur.NORMAL))
+    } else {
+        fPaint.setMaskFilter(null)
+    }
+}

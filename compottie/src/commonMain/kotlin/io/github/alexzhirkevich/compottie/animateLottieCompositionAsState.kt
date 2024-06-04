@@ -49,7 +49,6 @@ fun animateLottieCompositionAsState(
     speed: Float = 1f,
     iterations: Int = 1,
     cancellationBehavior: LottieCancellationBehavior = LottieCancellationBehavior.Immediately,
-    ignoreSystemAnimatorScale: Boolean = false,
     useCompositionFrameRate: Boolean = false,
 ): LottieAnimationState {
 
@@ -60,13 +59,12 @@ fun animateLottieCompositionAsState(
     var wasPlaying by remember { mutableStateOf(isPlaying) }
 
     // Dividing by 0 correctly yields Float.POSITIVE_INFINITY here.
-    val actualSpeed = if (ignoreSystemAnimatorScale) speed else speed //TODO
 
     LaunchedEffect(
         composition,
         isPlaying,
         clipSpec,
-        actualSpeed,
+        speed,
         iterations,
     ) {
         if (isPlaying && !wasPlaying && restartOnPlay) {
@@ -79,7 +77,7 @@ fun animateLottieCompositionAsState(
             composition,
             iterations = iterations,
             reverseOnRepeat = reverseOnRepeat,
-            speed = actualSpeed,
+            speed = speed,
             clipSpec = clipSpec,
             initialProgress = animatable.progress,
             continueFromPreviousAnimate = false,

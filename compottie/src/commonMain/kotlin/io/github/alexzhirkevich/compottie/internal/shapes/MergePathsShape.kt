@@ -9,6 +9,7 @@ import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroupBase
 import io.github.alexzhirkevich.compottie.internal.content.GreedyContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
+import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import kotlinx.serialization.SerialName
@@ -34,10 +35,15 @@ internal class MergePathsShape(
 ) : Shape, GreedyContent, PathContent {
 
     @Transient
+    override lateinit var layer: Layer
+
+    @Transient
     private val path = Path()
 
     @Transient
     private val remainderPath = Path()
+
+    @Transient
     private val firstPath = Path()
 
     @Transient

@@ -6,8 +6,10 @@ import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.helpers.StrokeDash
+import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 @SerialName("st")
@@ -46,6 +48,9 @@ internal class SolidStrokeShape(
     @SerialName("c")
     val color : AnimatedColor,
 ) : BaseStrokeShape(), Shape {
+
+    @Transient
+    override lateinit var layer: Layer
 
     override fun draw(drawScope : DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
         paint.color = color.interpolated(frame)
