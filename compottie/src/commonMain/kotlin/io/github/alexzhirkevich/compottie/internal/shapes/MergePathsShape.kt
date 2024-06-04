@@ -5,12 +5,10 @@ import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.internal.content.Content
-import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroupBase
 import io.github.alexzhirkevich.compottie.internal.content.GreedyContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
-import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -111,7 +109,6 @@ internal class MergePathsShape(
                     }
                     remainderPath.addPath(p)
                 }
-
             } else {
                 remainderPath.addPath(content.getPath(frame))
             }

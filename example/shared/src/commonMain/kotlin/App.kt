@@ -26,6 +26,7 @@ private val ROBOT_404 = "robot_404.json"
 private val CONFETTI = "confetti.json"
 private val PRECOMP_WITH_REMAPPING = "precomp_with_remapping.json"
 private val MASK_ADD = "mask_add.json"
+private val MATTE = "matte.json"
 private val DASH = "dash.json"
 private val ROUNDING_CORENERS = "rounding_corners.json"
 private val REPEATER = "repeater.json"
@@ -33,7 +34,6 @@ private val TEXT_WITH_PATH = "text_with_path.json"
 private val TEXT = "text.json"
 private val IMAGE_ASSET = "image_asset.json"
 
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun App() {
 
@@ -51,7 +51,7 @@ fun App() {
             composition = composition.value,
             iterations = LottieConstants.IterateForever,
             onLoadError = { throw it },
-            assetManager = rememberComposeResourcesAssetsManager()
+            assetManager = rememberResourcesAssetsManager()
         ),
         contentDescription = null
     )
@@ -59,7 +59,7 @@ fun App() {
 
 
 /**
- * [LottieComposition] spec from composeResources/[dir]/[path] resource
+ * [LottieComposition] spec from composeResources/[dir]/[path] json asset
  * */
 @OptIn(ExperimentalResourceApi::class)
 @Stable
@@ -82,7 +82,7 @@ fun LottieCompositionSpec.Companion.Resource(
  * */
 @OptIn(ExperimentalResourceApi::class)
 @Composable
-private fun rememberComposeResourcesAssetsManager(
+private fun rememberResourcesAssetsManager(
     relativeTo : String = "files",
     readBytes : suspend (path : String) -> ByteArray = Res::readBytes,
 ) =

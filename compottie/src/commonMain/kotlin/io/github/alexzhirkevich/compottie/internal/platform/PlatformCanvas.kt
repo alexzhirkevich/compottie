@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.platform
 
 import androidx.compose.ui.geometry.MutableRect
+import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
@@ -27,3 +28,5 @@ internal fun Canvas.clipRect(rect: MutableRect) {
 internal expect fun Canvas.getMatrix(matrix: Matrix)
 
 internal expect fun Canvas.saveLayer(rect : MutableRect, paint : Paint, flag : Int)
+
+internal fun Canvas.saveLayer(rect: MutableRect, paint: Paint) = saveLayer(rect.toRect(), paint)

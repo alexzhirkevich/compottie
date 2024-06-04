@@ -2,8 +2,8 @@ package io.github.alexzhirkevich.compottie.internal.helpers
 
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.util.fastForEachReversed
+import io.github.alexzhirkevich.compottie.internal.platform.applyTrimPath
 import io.github.alexzhirkevich.compottie.internal.shapes.TrimPathShape
-import io.github.alexzhirkevich.compottie.internal.utils.Utils
 
 internal class CompoundTrimPath {
     private val contents: MutableList<TrimPathShape> = mutableListOf()
@@ -14,7 +14,7 @@ internal class CompoundTrimPath {
 
     fun apply(path: Path, frame: Float) {
         contents.fastForEachReversed {
-            Utils.applyTrimPathIfNeeded(path, it, frame)
+            path.applyTrimPath(it, frame)
         }
     }
 }

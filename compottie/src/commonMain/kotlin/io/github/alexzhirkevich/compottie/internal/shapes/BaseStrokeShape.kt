@@ -22,8 +22,8 @@ import io.github.alexzhirkevich.compottie.internal.helpers.DashType
 import io.github.alexzhirkevich.compottie.internal.helpers.StrokeDash
 import io.github.alexzhirkevich.compottie.internal.platform.ExtendedPathMeasure
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
+import io.github.alexzhirkevich.compottie.internal.platform.applyTrimPath
 import io.github.alexzhirkevich.compottie.internal.platform.set
-import io.github.alexzhirkevich.compottie.internal.utils.Utils
 import io.github.alexzhirkevich.compottie.internal.utils.scale
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.Serializable
@@ -113,6 +113,11 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         parentAlpha: Float,
         frame: Float
     ) {
+
+        if (hidden){
+            return
+        }
+
         paint.style = PaintingStyle.Stroke
         paint.alpha = parentAlpha * (opacity.interpolated(frame) / 100f).coerceIn(0f, 1f)
         paint.strokeWidth = strokeWidth.interpolated(frame)
@@ -259,15 +264,8 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
                 } else {
                     0f
                 }
-                val endValue =
-                    min(((endLength - totalLength) / length).toDouble(), 1.0)
-                        .toFloat()
-                Utils.applyTrimPathIfNeeded(
-                    trimPathPath,
-                    startValue,
-                    endValue,
-                    0f
-                )
+                val endValue = min(((endLength - totalLength) / length), 1f)
+                trimPathPath.applyTrimPath(startValue, endValue, 0f)
                 canvas.drawPath(trimPathPath, paint)
             } else
                 if (currentLength + length < startLength || currentLength > endLength) {
@@ -285,12 +283,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
                     } else {
                         (endLength - currentLength) / length
                     }
-                    Utils.applyTrimPathIfNeeded(
-                        trimPathPath,
-                        startValue,
-                        endValue,
-                        0f
-                    )
+                    trimPathPath.applyTrimPath(startValue, endValue, 0f)
                     canvas.drawPath(trimPathPath, paint)
                 }
             currentLength += length

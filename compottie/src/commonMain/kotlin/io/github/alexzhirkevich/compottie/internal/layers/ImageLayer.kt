@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.unit.IntSize
+import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
@@ -94,8 +95,8 @@ internal class ImageLayer(
     @Transient
     private val paint = Paint()
 
-    private val asset : LottieAsset.ImageAsset? by lazy {
-        painterProperties?.assets?.get(refId) as? LottieAsset.ImageAsset
+    private val asset : ImageAsset? by lazy {
+        painterProperties?.assets?.get(refId) as? ImageAsset
     }
 
     private var lastBlurRadius : Float? = null

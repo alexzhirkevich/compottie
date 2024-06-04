@@ -7,11 +7,9 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
-import io.github.alexzhirkevich.compottie.internal.utils.Utils
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.union
 
@@ -22,12 +20,12 @@ internal class ContentGroup(
     override val transform: AnimatedTransform?,
 ) : ContentGroupBase {
 
-    private val rect = MutableRect(0f,0f,0f,0f)
-    private val offscreenRect = MutableRect(0f,0f,0f,0f)
+    private val rect = MutableRect(0f, 0f, 0f, 0f)
+    private val offscreenRect = MutableRect(0f, 0f, 0f, 0f)
     private val offscreenPaint = Paint()
     private val matrix = Matrix()
     private val path = Path()
-    private val boundsRect = MutableRect(0f,0f,0f,0f)
+    private val boundsRect = MutableRect(0f, 0f, 0f, 0f)
 
     private val mContents by lazy {
         contents.filter {
@@ -39,6 +37,10 @@ internal class ContentGroup(
         this.mContents.filterIsInstance<PathContent>()
     }
 
+    private val drawingContents: List<DrawingContent> by lazy {
+        this.mContents.filterIsInstance<DrawingContent>()
+    }
+
     init {
         val greedyContents = contents.filterIsInstance<GreedyContent>().reversed()
 
@@ -47,7 +49,12 @@ internal class ContentGroup(
         }
     }
 
-    override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
+    override fun draw(
+        drawScope: DrawScope,
+        parentMatrix: Matrix,
+        parentAlpha: Float,
+        frame: Float
+    ) {
         if (hidden) {
             return
         }
@@ -64,22 +71,20 @@ internal class ContentGroup(
             }
         }
 
-        val isRenderingWithOffScreen = hasTwoOrMoreDrawableContent() && layerAlpha < 1f
+        val isRenderingWithOffScreen = drawingContents.size > 2 && layerAlpha < 1f
 
         drawScope.drawIntoCanvas { canvas ->
             if (isRenderingWithOffScreen) {
                 offscreenRect.set(0f, 0f, 0f, 0f)
                 getBounds(drawScope, matrix, true, frame, offscreenRect)
                 offscreenPaint.alpha = layerAlpha
-                Utils.saveLayerCompat(canvas, offscreenRect.toRect(), offscreenPaint)
+                canvas.saveLayer(offscreenRect.toRect(), offscreenPaint)
             }
 
             val childAlpha = if (isRenderingWithOffScreen) 1f else layerAlpha
 
-            mContents.fastForEachReversed { content ->
-                if (content is DrawingContent) {
-                    content.draw(drawScope, matrix, childAlpha, frame)
-                }
+            drawingContents.fastForEachReversed { content ->
+                content.draw(drawScope, matrix, childAlpha, frame)
             }
 
             if (isRenderingWithOffScreen) {
@@ -99,10 +104,8 @@ internal class ContentGroup(
         if (transform != null) {
             matrix.setFrom(transform.matrix(frame))
         }
-        mContents.fastForEachReversed {
-            if (it is PathContent) {
-                path.addPath(it.getPath(frame), matrix)
-            }
+        pathContents.fastForEachReversed {
+            path.addPath(it.getPath(frame), matrix)
         }
 
         return path
@@ -133,25 +136,9 @@ internal class ContentGroup(
         }
         rect.set(0f, 0f, 0f, 0f)
 
-        mContents.fastForEachReversed {
-            if (it is DrawingContent) {
-                it.getBounds(drawScope, matrix, applyParents, frame, rect)
-                outBounds.union(rect)
-            }
+        drawingContents.fastForEachReversed {
+            it.getBounds(drawScope, matrix, applyParents, frame, rect)
+            outBounds.union(rect)
         }
-    }
-
-
-    private fun hasTwoOrMoreDrawableContent(): Boolean {
-        var drawableContentCount = 0
-        mContents.fastForEach {
-            if (it is DrawingContent) {
-                drawableContentCount += 1
-                if (drawableContentCount >= 2) {
-                    return true
-                }
-            }
-        }
-        return false
     }
 }

@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.isIdentity
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
@@ -17,22 +18,20 @@ import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.effects.BlurEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MaskMode
+import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.platform.drawRect
 import io.github.alexzhirkevich.compottie.internal.platform.getMatrix
 import io.github.alexzhirkevich.compottie.internal.platform.isAndroidAtMost
 import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import io.github.alexzhirkevich.compottie.internal.platform.setBlurMaskFiler
-import io.github.alexzhirkevich.compottie.internal.utils.Utils
-import io.github.alexzhirkevich.compottie.internal.utils.intersect
-import io.github.alexzhirkevich.compottie.internal.utils.overlaps
+import io.github.alexzhirkevich.compottie.internal.utils.intersectOrReset
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlin.math.max
 import kotlin.math.min
 
 internal abstract class BaseLayer() : Layer, DrawingContent {
-
 
     override var painterProperties: PainterProperties? = null
 
@@ -42,28 +41,47 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
     private val matrix = Matrix()
     private val canvasMatrix = Matrix()
     private val canvasBounds = MutableRect(0f, 0f, 0f, 0f)
-    private val contentPaint = Paint().apply {
-        isAntiAlias = true
+
+    private val contentPaint by lazy {
+        Paint().apply {
+            isAntiAlias = true
+        }
     }
-    private val clearPaint = Paint().apply {
-        blendMode = BlendMode.Clear
+    private val clearPaint by lazy {
+        Paint().apply {
+            blendMode = BlendMode.Clear
+        }
     }
 
-    private val dstInPaint = Paint().apply {
-        blendMode = BlendMode.DstIn
-        isAntiAlias = true
+    private val dstInPaint by lazy {
+        Paint().apply {
+            blendMode = BlendMode.DstIn
+            isAntiAlias = true
+        }
     }
 
-    private val dstOutPaint = Paint().apply {
-        blendMode = BlendMode.DstOut
-        isAntiAlias = true
+    private val dstOutPaint by lazy {
+        Paint().apply {
+            blendMode = BlendMode.DstOut
+            isAntiAlias = true
+        }
     }
 
     private val maskBoundsRect = MutableRect(0f, 0f, 0f, 0f)
+    private val matteBoundsRect = MutableRect(0f, 0f, 0f, 0f)
+    private val mattePaint by lazy {
+        Paint().apply {
+            isAntiAlias = true
+            blendMode = if (matteMode == MatteMode.Invert){
+                BlendMode.DstOut
+            } else BlendMode.DstIn
+        }
+    }
     protected val rect = MutableRect(0f, 0f, 0f, 0f)
     private var parentLayers: MutableList<BaseLayer>? = null
 
     private var parentLayer: BaseLayer? = null
+    private var matteLayer: BaseLayer? = null
 
     private val blurEffect by lazy {
         effects.fastFirstOrNull { it is BlurEffect } as? BlurEffect
@@ -80,7 +98,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         drawScope: DrawScope,
         parentMatrix: Matrix,
         parentAlpha: Float,
-        frame: Float
+        frame: Float,
     ) {
 
         if (hidden || (inPoint ?: 0f) > frame || (outPoint ?: Float.MAX_VALUE) < frame)
@@ -100,7 +118,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
             alpha = (alpha * (it / 100f)).coerceIn(0f, 1f)
         }
 
-        if (!hasMask()) {
+        if (matteLayer == null && !hasMask()) {
             matrix.preConcat(transform.matrix(frame))
             drawLayer(drawScope, matrix, alpha, frame)
             return
@@ -108,7 +126,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
 
         getBounds(drawScope, matrix, false, frame, rect)
 
-//        intersectBoundsWithMatte(rect, parentMatrix)
+        intersectBoundsWithMatte(drawScope, rect, matrix, frame)
 
         matrix.preConcat(transform.matrix(frame))
         intersectBoundsWithMask(rect, matrix, frame)
@@ -121,23 +139,19 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
             canvas.getMatrix(canvasMatrix)
 
             //TODO: fix mask canvas mapping
-//            if (!canvasMatrix.isIdentity()) {
-//                canvasMatrix.invert()
-//                canvasMatrix.map(canvasBounds)
-//            }
-
-            if (rect.overlaps(canvasBounds)) {
-                rect.intersect(canvasBounds)
-            } else {
-                rect.set(0f, 0f, 0f, 0f)
+            if (!canvasMatrix.isIdentity()) {
+                canvasMatrix.invert()
+                canvasMatrix.map(canvasBounds)
             }
+
+            rect.intersectOrReset(canvasBounds)
 
             // Ensure that what we are drawing is >=1px of width and height.
             // On older devices, drawing to an offscreen buffer of <1px would draw back as a black bar.
             // https://github.com/airbnb/lottie-android/issues/1625
             if (rect.width >= 1f && rect.height >= 1f) {
                 contentPaint.alpha = 1f
-                Utils.saveLayerCompat(canvas, rect, contentPaint)
+                canvas.saveLayer(rect, contentPaint)
 
                 // Clear the off screen buffer. This is necessary for some phones.
                 clearCanvas(canvas)
@@ -147,26 +161,12 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
                     applyMasks(canvas, matrix, frame)
                 }
 
-//                if (hasMatteOnThisLayer()) {
-//                    if (L.isTraceEnabled()) {
-//                        L.beginSection("Layer#drawMatte")
-//                        L.beginSection("Layer#saveLayer")
-//                    }
-//                    Utils.saveLayerCompat(canvas, rect, mattePaint, BaseLayer.SAVE_FLAGS)
-//                    if (L.isTraceEnabled()) {
-//                        L.endSection("Layer#saveLayer")
-//                    }
-//                    clearCanvas(canvas)
-//                    matteLayer.draw(canvas, parentMatrix, alpha)
-//                    if (L.isTraceEnabled()) {
-//                        L.beginSection("Layer#restoreLayer")
-//                    }
-//                    canvas.restore()
-//                    if (L.isTraceEnabled()) {
-//                        L.endSection("Layer#restoreLayer")
-//                        L.endSection("Layer#drawMatte")
-//                    }
-//                }
+                matteLayer?.let {
+                    canvas.saveLayer(rect, mattePaint, SAVE_FLAGS)
+                    clearCanvas(canvas)
+                    it.draw(drawScope, parentMatrix, alpha, frame)
+                    canvas.restore()
+                }
 
                 canvas.restore()
             }
@@ -215,6 +215,10 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         this.parentLayer = layer
     }
 
+    fun setMatteLayer(layer: BaseLayer) {
+        this.matteLayer = layer
+    }
+
     override fun applyBlurEffectIfNeeded(paint: Paint, frame: Float,  lastBlurRadius : Float?) : Float {
 
         return blurEffect?.let {
@@ -244,7 +248,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         }
     }
 
-    protected fun hasMask(): Boolean = !masks.isNullOrEmpty()
+    private fun hasMask(): Boolean = !masks.isNullOrEmpty()
 
     private fun clearCanvas(canvas: Canvas) {
         // If we don't pad the clear draw, some phones leave a 1px border of the graphics buffer.
@@ -315,11 +319,23 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
             }
         }
 
-        if (rect.overlaps(maskBoundsRect)) {
-            rect.intersect(maskBoundsRect)
-        } else {
-            rect.set(0f, 0f, 0f, 0f)
+        rect.intersectOrReset(maskBoundsRect)
+    }
+
+    private fun intersectBoundsWithMatte(drawScope: DrawScope, rect: MutableRect, matrix: Matrix, frame : Float) {
+
+        val matteLayer = matteLayer ?: return
+
+        if (matteMode == MatteMode.Invert) {
+            // We can't trim the bounds if the mask is inverted since it extends all the way to the
+            // composition bounds.
+            return
         }
+        matteBoundsRect.set(0f, 0f, 0f, 0f)
+        matteLayer.getBounds(drawScope, matrix, true, frame, matteBoundsRect)
+
+
+        rect.intersectOrReset(matteBoundsRect)
     }
 
     private fun applyMasks(canvas: Canvas, matrix: Matrix, frame: Float) {
@@ -374,9 +390,9 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         canvas: Canvas,
         matrix: Matrix,
         mask: Mask,
-        frame: Float
+        frame: Float,
     ) {
-        Utils.saveLayerCompat(canvas, rect, contentPaint)
+        canvas.saveLayer(rect, contentPaint)
         canvas.drawRect(rect, contentPaint)
         val maskPath = mask.shape?.interpolated(frame) ?: return
         path.set(maskPath)
@@ -390,7 +406,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         canvas: Canvas,
         matrix: Matrix,
         mask: Mask,
-        frame: Float
+        frame: Float,
     ) {
         val maskPath = mask.shape?.interpolated(frame) ?: return
         path.set(maskPath)
@@ -403,7 +419,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         canvas: Canvas,
         matrix: Matrix,
         mask: Mask,
-        frame: Float
+        frame: Float,
     ) {
         val maskPath = mask.shape?.interpolated(frame) ?: return
         path.set(maskPath)
@@ -415,9 +431,9 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         canvas: Canvas,
         matrix: Matrix,
         mask: Mask,
-        frame: Float
+        frame: Float,
     ) {
-        Utils.saveLayerCompat(canvas, rect, dstOutPaint)
+        canvas.saveLayer(rect, dstOutPaint)
         canvas.drawRect(rect, contentPaint)
         dstOutPaint.alpha = mask.opacity?.interpolated(frame)?.div(100f)?.coerceIn(0f, 1f) ?: 1f
         val maskPath = mask.shape?.interpolated(frame) ?: return
@@ -431,9 +447,9 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         canvas: Canvas,
         matrix: Matrix,
         mask: Mask,
-        frame: Float
+        frame: Float,
     ) {
-        Utils.saveLayerCompat(canvas, rect, dstInPaint)
+        canvas.saveLayer(rect, dstInPaint)
         val maskPath = mask.shape?.interpolated(frame) ?: return
         path.set(maskPath)
         path.transform(matrix)
@@ -446,9 +462,9 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         canvas: Canvas,
         matrix: Matrix,
         mask: Mask,
-        frame: Float
+        frame: Float,
     ) {
-        Utils.saveLayerCompat(canvas, rect, dstInPaint)
+        canvas.saveLayer(rect, dstInPaint)
         canvas.drawRect(rect, contentPaint)
         dstOutPaint.alpha = mask.opacity?.interpolated(frame)?.div(100f)?.coerceIn(0f, 1f) ?: 1f
         val maskPath = mask.shape?.interpolated(frame) ?: return

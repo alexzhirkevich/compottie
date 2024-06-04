@@ -7,9 +7,9 @@ import kotlin.jvm.JvmInline
 @JvmInline
 value class MatteMode(val mode : Byte) {
     companion object {
-        val Normal = MatteMode(0)
-        val Alpha = MatteMode(1)
-        val InvertedAlpha = MatteMode(2)
+        val None = MatteMode(0)
+        val Add = MatteMode(1)
+        val Invert = MatteMode(2)
         val Luma = MatteMode(3)
         val InvertedLuma = MatteMode(4)
     }

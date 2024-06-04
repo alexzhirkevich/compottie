@@ -5,6 +5,14 @@ import androidx.compose.ui.geometry.Rect
 import kotlin.math.max
 import kotlin.math.min
 
+internal fun MutableRect.intersectOrReset(other: MutableRect) {
+    if (overlaps(other)) {
+        intersect(other)
+    } else {
+        set(0f, 0f, 0f, 0f)
+    }
+}
+
 internal fun MutableRect.intersect(other: MutableRect) =
     intersect(
         left = other.left,
@@ -12,6 +20,7 @@ internal fun MutableRect.intersect(other: MutableRect) =
         right = other.right,
         bottom = other.bottom
     )
+
 internal fun MutableRect.overlaps(other: MutableRect): Boolean {
     if (right <= other.left || other.right <= left)
         return false

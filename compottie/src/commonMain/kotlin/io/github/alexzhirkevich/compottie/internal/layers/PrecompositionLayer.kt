@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie.internal.layers
 
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.assets.PrecompositionAsset
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
@@ -87,7 +88,7 @@ internal class PrecompositionLayer(
 ) : BaseCompositionLayer() {
 
     override fun loadLayers(): List<Layer> {
-        return (painterProperties?.assets?.get(refId) as? LottieAsset.PrecompositionAsset?)
+        return (painterProperties?.assets?.get(refId) as? PrecompositionAsset?)
             ?.layers.orEmpty()
     }
 }

@@ -4,7 +4,9 @@ import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.assets.PrecompositionAsset
 import io.github.alexzhirkevich.compottie.internal.effects.BlurEffect
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
@@ -19,9 +21,11 @@ import io.github.alexzhirkevich.compottie.internal.shapes.FillShape
 import io.github.alexzhirkevich.compottie.internal.shapes.GradientFillShape
 import io.github.alexzhirkevich.compottie.internal.shapes.GradientStrokeShape
 import io.github.alexzhirkevich.compottie.internal.shapes.GroupShape
+import io.github.alexzhirkevich.compottie.internal.shapes.MergePathsShape
 import io.github.alexzhirkevich.compottie.internal.shapes.PathShape
 import io.github.alexzhirkevich.compottie.internal.shapes.PolystarShape
 import io.github.alexzhirkevich.compottie.internal.shapes.RectShape
+import io.github.alexzhirkevich.compottie.internal.shapes.RepeaterShape
 import io.github.alexzhirkevich.compottie.internal.shapes.RoundShape
 import io.github.alexzhirkevich.compottie.internal.shapes.Shape
 import io.github.alexzhirkevich.compottie.internal.shapes.SolidStrokeShape
@@ -55,8 +59,8 @@ internal val LottieJson by lazy {
             }
 
             polymorphic(LottieAsset::class){
-                subclass(LottieAsset.ImageAsset::class)
-                subclass(LottieAsset.PrecompositionAsset::class)
+                subclass(ImageAsset::class)
+                subclass(PrecompositionAsset::class)
 
                 defaultDeserializer {
                     LottieAsset.UnsupportedAsset.serializer()
@@ -69,9 +73,11 @@ internal val LottieJson by lazy {
                 subclass(GradientFillShape::class)
                 subclass(GradientStrokeShape::class)
                 subclass(GroupShape::class)
+                subclass(MergePathsShape::class)
                 subclass(PathShape::class)
                 subclass(PolystarShape::class)
                 subclass(RectShape::class)
+                subclass(RepeaterShape::class)
                 subclass(RoundShape::class)
                 subclass(SolidStrokeShape::class)
                 subclass(TransformShape::class)

@@ -5,16 +5,13 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
-import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
-import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
-import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
+import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.platform.clipRect
-import io.github.alexzhirkevich.compottie.internal.utils.Utils
+import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
 import io.github.alexzhirkevich.compottie.internal.utils.union
 import kotlinx.serialization.Transient
 
@@ -36,22 +33,41 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
 
 
     private val layers by lazy {
-        val l = loadLayers().filterIsInstance<BaseLayer>()
+        val layers = loadLayers().filterIsInstance<BaseLayer>()
+        val matteLayers = mutableSetOf<BaseLayer>()
 
-        val layersWithIndex = l
+        val layersWithIndex = layers
             .filter { it.index != null }
             .associateBy { it.index }
 
-        l.forEach {
+        layers.forEachIndexed { i, it ->
             it.parent?.let { pId ->
                 val p = layersWithIndex[pId]
 
-                if (p != null){
+                if (p != null) {
                     it.setParentLayer(p)
                 }
             }
+
+            if (it.matteMode == MatteMode.Add || it.matteMode == MatteMode.Invert) {
+                if (it.matteParent != null) {
+                    val p = layersWithIndex[it.matteParent]
+
+                    if (p != null) {
+                        it.setMatteLayer(p)
+                        matteLayers.add(p)
+                    }
+                } else {
+                    if (i > 0) {
+                        it.setMatteLayer(layers[i - 1])
+                        matteLayers.add(layers[i - 1])
+                    }
+                }
+
+            }
         }
-        l
+
+        (layers - matteLayers).filterNot { it.matteTarget == BooleanInt.Yes }
     }
 
     override var painterProperties: PainterProperties?
@@ -80,7 +96,7 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
 
             if (isDrawingWithOffScreen) {
                 layerPaint.alpha = parentAlpha
-                Utils.saveLayerCompat(canvas, newClipRect, layerPaint)
+                canvas.saveLayer(newClipRect, layerPaint)
             } else {
                 canvas.save()
             }

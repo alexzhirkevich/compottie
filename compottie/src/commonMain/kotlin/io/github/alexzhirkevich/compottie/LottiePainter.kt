@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.IntSize
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.NoOpAssetsFetcher
+import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.layers.BaseCompositionLayer
@@ -228,7 +229,7 @@ private suspend fun LottieComposition.preloadAssets(
         lottieData.assets.map { asset ->
             withContext(Dispatchers.Default) {
                 when (asset) {
-                    is LottieAsset.ImageAsset -> {
+                    is ImageAsset -> {
                         if (asset.bitmap == null) {
                             launch {
                                 assetsFetcher

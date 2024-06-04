@@ -96,6 +96,10 @@ internal class GradientFillShape(
 
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
 
+        if (hidden){
+            return
+        }
+
         paint.shader = GradientShader(
             type = type,
             startPoint = startPoint,
