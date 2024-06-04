@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
@@ -19,6 +20,9 @@ import io.github.alexzhirkevich.compottie.internal.effects.BlurEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MaskMode
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
+import io.github.alexzhirkevich.compottie.internal.helpers.isInvert
+import io.github.alexzhirkevich.compottie.internal.helpers.isLuma
+import io.github.alexzhirkevich.compottie.internal.platform.Luma
 import io.github.alexzhirkevich.compottie.internal.platform.drawRect
 import io.github.alexzhirkevich.compottie.internal.platform.getMatrix
 import io.github.alexzhirkevich.compottie.internal.platform.isAndroidAtMost
@@ -72,7 +76,10 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
     private val mattePaint by lazy {
         Paint().apply {
             isAntiAlias = true
-            blendMode = if (matteMode == MatteMode.Invert){
+            if (matteMode?.isLuma() == true){
+                colorFilter = ColorFilter.Luma
+            }
+            blendMode = if (matteMode?.isInvert() == true){
                 BlendMode.DstOut
             } else BlendMode.DstIn
         }
@@ -326,7 +333,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
 
         val matteLayer = matteLayer ?: return
 
-        if (matteMode == MatteMode.Invert) {
+        if (matteMode?.isInvert() == true) {
             // We can't trim the bounds if the mask is inverted since it extends all the way to the
             // composition bounds.
             return

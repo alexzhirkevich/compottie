@@ -14,3 +14,11 @@ value class MatteMode(val mode : Byte) {
         val InvertedLuma = MatteMode(4)
     }
 }
+
+fun MatteMode.isInvert() : Boolean  = this == MatteMode.Invert || this == MatteMode.InvertedLuma
+fun MatteMode.isLuma() : Boolean  = this == MatteMode.Luma || this == MatteMode.InvertedLuma
+
+fun MatteMode.isSupported() = this == MatteMode.Add ||
+            this == MatteMode.Invert ||
+            this == MatteMode.Luma ||
+            this == MatteMode.InvertedLuma

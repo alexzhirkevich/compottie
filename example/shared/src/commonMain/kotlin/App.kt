@@ -26,7 +26,7 @@ private val ROBOT_404 = "robot_404.json"
 private val CONFETTI = "confetti.json"
 private val PRECOMP_WITH_REMAPPING = "precomp_with_remapping.json"
 private val MASK_ADD = "mask_add.json"
-private val MATTE = "matte.json"
+private val MATTE_LUMA = "luma_matte.json"
 private val DASH = "dash.json"
 private val ROUNDING_CORENERS = "rounding_corners.json"
 private val REPEATER = "repeater.json"
@@ -38,7 +38,7 @@ private val IMAGE_ASSET = "image_asset.json"
 fun App() {
 
     val composition = rememberLottieComposition(
-        LottieCompositionSpec.Resource(ROBOT)
+        LottieCompositionSpec.Resource(MATTE_LUMA)
     )
 
     LaunchedEffect(composition) {

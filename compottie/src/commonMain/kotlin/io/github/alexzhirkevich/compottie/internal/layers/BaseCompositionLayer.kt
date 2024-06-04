@@ -10,6 +10,7 @@ import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
+import io.github.alexzhirkevich.compottie.internal.helpers.isSupported
 import io.github.alexzhirkevich.compottie.internal.platform.clipRect
 import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
 import io.github.alexzhirkevich.compottie.internal.utils.union
@@ -49,7 +50,7 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
                 }
             }
 
-            if (it.matteMode == MatteMode.Add || it.matteMode == MatteMode.Invert) {
+            if (it.matteMode?.isSupported() == true) {
                 if (it.matteParent != null) {
                     val p = layersWithIndex[it.matteParent]
 

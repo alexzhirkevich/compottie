@@ -2,17 +2,20 @@ package io.github.alexzhirkevich.compottie.internal.platform
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.ColorMatrixColorFilter
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.TileMode.Companion.Clamp
+import androidx.compose.ui.graphics.asComposeColorFilter
 import androidx.compose.ui.graphics.toArgb
 import org.jetbrains.skia.FilterBlurMode
 import org.jetbrains.skia.FilterTileMode
 import org.jetbrains.skia.GradientStyle
 import org.jetbrains.skia.MaskFilter
 import org.jetbrains.skia.Matrix33
-import org.jetbrains.skia.Matrix44
 import org.jetbrains.skia.Shader
 
 internal actual fun MakeLinearGradient(
@@ -81,6 +84,10 @@ internal fun TileMode.toSkiaTileMode(): FilterTileMode = when (this) {
     TileMode.Decal -> FilterTileMode.DECAL
     else -> FilterTileMode.CLAMP
 }
+
+//internal actual val ColorFilter.Companion.Luma get() = org.jetbrains.skia.ColorFilter.luma.asComposeColorFilter()
+
+
 
 internal actual fun Paint.setBlurMaskFiler(radius: Float) {
     val skPaint = asFrameworkPaint()
