@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie.internal.layers
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
@@ -97,18 +98,18 @@ internal class ShapeLayer(
         setContents(emptyList(), emptyList())
     }
 
-    override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
-        contentGroup.draw(drawScope, parentMatrix, parentAlpha, frame)
+    override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
+        contentGroup.draw(drawScope, parentMatrix, parentAlpha, state)
     }
 
     override fun getBounds(
         drawScope: DrawScope,
         parentMatrix: Matrix,
         applyParents: Boolean,
-        frame: Float,
+        state: AnimationState,
         outBounds: MutableRect,
     ) {
-        super.getBounds(drawScope, parentMatrix, applyParents, frame, outBounds)
-        contentGroup.getBounds(drawScope, boundsMatrix, applyParents, frame, outBounds)
+        super.getBounds(drawScope, parentMatrix, applyParents, state, outBounds)
+        contentGroup.getBounds(drawScope, boundsMatrix, applyParents, state, outBounds)
     }
 }

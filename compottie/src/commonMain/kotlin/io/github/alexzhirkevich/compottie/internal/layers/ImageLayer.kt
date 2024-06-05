@@ -6,12 +6,12 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.unit.IntSize
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
-import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import kotlinx.serialization.SerialName
@@ -98,57 +98,56 @@ internal class ImageLayer(
 
     private var lastBlurRadius : Float? = null
 
-    override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
+    override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
         val mAsset = asset ?: return
         val bitmap = mAsset.bitmap ?: return
 
         paint.alpha = parentAlpha
 
-        lastBlurRadius = applyBlurEffectIfNeeded(paint, frame, lastBlurRadius)
+        lastBlurRadius = applyBlurEffectIfNeeded(paint, state, lastBlurRadius)
 
-        drawScope.drawIntoCanvas { canvas ->
+        val canvas = drawScope.drawContext.canvas
 
-            canvas.save()
-            canvas.concat(parentMatrix)
-            src.set(0f, 0f, bitmap.width.toFloat(), bitmap.height.toFloat())
+        canvas.save()
+        canvas.concat(parentMatrix)
+        src.set(0f, 0f, bitmap.width.toFloat(), bitmap.height.toFloat())
 
-            val maintainOriginalImageBounds = painterProperties?.maintainOriginalImageBounds == true
+        val maintainOriginalImageBounds = painterProperties?.maintainOriginalImageBounds == true
 
-            val dstSize = if (maintainOriginalImageBounds) {
-                IntSize(
-                    (mAsset.width * drawScope.density).roundToInt(),
-                    (mAsset.height * drawScope.density).roundToInt()
-                )
-            } else {
-                IntSize(
-                    (bitmap.width * drawScope.density).roundToInt(),
-                    (bitmap.height * drawScope.density).roundToInt()
-                )
-            }
-
-            val srcSize = IntSize(
-                (bitmap.width * drawScope.density).toInt(),
-                (bitmap.height * drawScope.density).toInt()
+        val dstSize = if (maintainOriginalImageBounds) {
+            IntSize(
+                (mAsset.width * drawScope.density).roundToInt(),
+                (mAsset.height * drawScope.density).roundToInt()
             )
-
-            canvas.drawImageRect(
-                bitmap,
-                srcSize = srcSize,
-                dstSize = dstSize,
-                paint = paint
+        } else {
+            IntSize(
+                (bitmap.width * drawScope.density).roundToInt(),
+                (bitmap.height * drawScope.density).roundToInt()
             )
-            canvas.restore()
         }
+
+        val srcSize = IntSize(
+            (bitmap.width * drawScope.density).toInt(),
+            (bitmap.height * drawScope.density).toInt()
+        )
+
+        canvas.drawImageRect(
+            bitmap,
+            srcSize = srcSize,
+            dstSize = dstSize,
+            paint = paint
+        )
+        canvas.restore()
     }
 
     override fun getBounds(
         drawScope: DrawScope,
         parentMatrix: Matrix,
         applyParents: Boolean,
-        frame: Float,
+        state: AnimationState,
         outBounds: MutableRect
     ) {
-        super.getBounds(drawScope, parentMatrix, applyParents, frame, outBounds)
+        super.getBounds(drawScope, parentMatrix, applyParents, state, outBounds)
 
         asset?.let {
             outBounds.set(

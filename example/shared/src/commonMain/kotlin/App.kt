@@ -1,5 +1,6 @@
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -33,6 +34,7 @@ private val RECT = "rect.json"
 private val ROUND_RECT = "roundrect.json"
 private val ROBOT = "robot.json"
 private val ROBOT_404 = "robot_404.json"
+private val ASTRONAUT = "astronaut.json"
 private val CONFETTI = "confetti.json"
 private val PRECOMP_WITH_REMAPPING = "precomp_with_remapping.json"
 private val MASK_ADD = "mask_add.json"
@@ -43,6 +45,7 @@ private val REPEATER = "repeater.json"
 private val TEXT_WITH_PATH = "text_with_path.json"
 private val TEXT = "text.json"
 private val IMAGE_ASSET = "image_asset.json"
+private val IMAGE_ASSET_EMBEDDED = "image_asset_embedded.json"
 
 @Composable
 fun App() {

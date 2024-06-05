@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.util.lerp
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.animation.RepeaterTransform
 import io.github.alexzhirkevich.compottie.internal.content.Content
@@ -58,19 +59,19 @@ internal class RepeaterShape(
         drawScope: DrawScope,
         parentMatrix: Matrix,
         parentAlpha: Float,
-        frame: Float
+        state: AnimationState
     ) {
         contentGroup?.let { contentGroup ->
-            val copies = copies.interpolated(frame)
-            val offset = offset?.interpolated(frame) ?: 0f
-            val startOpacity = transform.startOpacity?.interpolated(frame)?.div(100f) ?: 1f
-            val endOpacity = transform.endOpacity?.interpolated(frame)?.div(100f) ?: 1f
+            val copies = copies.interpolated(state)
+            val offset = offset?.interpolated(state) ?: 0f
+            val startOpacity = transform.startOpacity?.interpolated(state)?.div(100f) ?: 1f
+            val endOpacity = transform.endOpacity?.interpolated(state)?.div(100f) ?: 1f
 
             for (i in copies.toInt() - 1 downTo 0) {
                 matrix.setFrom(parentMatrix)
-                matrix.preConcat(transform.repeaterMatrix(frame, i + offset))
+                matrix.preConcat(transform.repeaterMatrix(state, i + offset))
                 val newAlpha = parentAlpha * lerp(startOpacity, endOpacity, i / copies)
-                contentGroup.draw(drawScope, matrix, newAlpha, frame)
+                contentGroup.draw(drawScope, matrix, newAlpha, state)
             }
         }
     }
@@ -79,21 +80,21 @@ internal class RepeaterShape(
         drawScope: DrawScope,
         parentMatrix: Matrix,
         applyParents: Boolean,
-        frame: Float,
+        state: AnimationState,
         outBounds: MutableRect
     ) {
-        contentGroup?.getBounds(drawScope, parentMatrix, applyParents, frame, outBounds)
+        contentGroup?.getBounds(drawScope, parentMatrix, applyParents, state, outBounds)
     }
 
-    override fun getPath(frame: Float): Path {
+    override fun getPath(state: AnimationState): Path {
         path.reset()
-        val contentPath = contentGroup?.getPath(frame) ?: return path
+        val contentPath = contentGroup?.getPath(state) ?: return path
 
-        val copies = copies.interpolated(frame)
-        val offset = offset?.interpolated(frame) ?: 0f
+        val copies = copies.interpolated(state)
+        val offset = offset?.interpolated(state) ?: 0f
 
         for (i in copies.toInt() - 1 downTo 0) {
-            matrix.setFrom(transform.repeaterMatrix(frame, i + offset))
+            matrix.setFrom(transform.repeaterMatrix(state, i + offset))
             path.addPath(contentPath, matrix)
         }
         return path

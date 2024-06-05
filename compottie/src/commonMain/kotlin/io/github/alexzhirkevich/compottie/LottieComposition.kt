@@ -7,6 +7,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import io.github.alexzhirkevich.compottie.internal.LottieData
 import io.github.alexzhirkevich.compottie.internal.LottieJson
 import io.github.alexzhirkevich.compottie.internal.durationMillis
@@ -18,7 +19,7 @@ import kotlinx.coroutines.withContext
 @Stable
 class LottieComposition internal constructor(
     internal val lottieData: LottieData,
-    val fonts : Map<String, Font> = emptyMap(),
+    val fonts : Map<String, FontFamily> = emptyMap(),
 ) {
     val startFrame: Float get() = lottieData.inPoint
 

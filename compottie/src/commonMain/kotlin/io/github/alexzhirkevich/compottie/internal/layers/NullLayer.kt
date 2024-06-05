@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie.internal.layers
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
@@ -73,17 +74,17 @@ internal class NullLayer(
     override val effects: List<LayerEffect> = emptyList(),
 ) : BaseLayer() {
 
-    override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
+    override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
     }
 
     override fun getBounds(
         drawScope: DrawScope,
         parentMatrix: Matrix,
         applyParents: Boolean,
-        frame: Float,
+        state: AnimationState,
         outBounds: MutableRect
     ) {
-        super.getBounds(drawScope, parentMatrix, applyParents, frame, outBounds)
+        super.getBounds(drawScope, parentMatrix, applyParents, state, outBounds)
         outBounds.set(0f,0f,0f,0f)
     }
 }

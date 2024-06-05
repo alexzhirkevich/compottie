@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.util.fastForEach
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
@@ -43,13 +44,13 @@ internal class EllipseShape(
     @Transient
     private val trimPaths = CompoundTrimPath()
 
-    override fun getPath(frame: Float): Path {
+    override fun getPath(state: AnimationState): Path {
         if (hidden) {
             path.rewind()
             return path
         }
 
-        val size = size.interpolated(frame)
+        val size = size.interpolated(state)
         val halfWidth = size.x / 2f
         val halfHeight = size.y / 2f
 
@@ -72,13 +73,13 @@ internal class EllipseShape(
             path.cubicTo(-halfWidth, 0 - cpH, 0 - cpW, -halfHeight, 0f, -halfHeight)
 //        }
 
-        val position = position.interpolated(frame)
+        val position = position.interpolated(state)
 
         path.translate(position)
 
         path.close()
 
-        trimPaths.apply(path, frame)
+        trimPaths.apply(path, state)
 
         return path
     }

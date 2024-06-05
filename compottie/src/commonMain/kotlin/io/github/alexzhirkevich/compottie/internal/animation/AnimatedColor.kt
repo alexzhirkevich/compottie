@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -30,7 +31,7 @@ internal sealed interface AnimatedColor : KeyframeAnimation<Color>, Indexable {
         @Transient
         private val color: Color = value.toColor()
 
-        override fun interpolated(frame: Float) = color
+        override fun interpolated(state: AnimationState) = color
     }
 
     @Serializable
@@ -46,9 +47,10 @@ internal sealed interface AnimatedColor : KeyframeAnimation<Color>, Indexable {
         @SerialName("ix")
         override val index: String? = null
     ) : AnimatedColor, KeyframeAnimation<Color> by BaseKeyframeAnimation(
+        expression = expression,
         keyframes = value,
         emptyValue = Color.Transparent,
-        map = { s, e, p, _ ->
+        map = { s, e, p ->
             lerp(s.toColor(), e.toColor(), easingX.transform(p))
         }
     )

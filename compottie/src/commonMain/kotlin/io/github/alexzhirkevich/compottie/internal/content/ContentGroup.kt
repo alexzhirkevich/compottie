@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEachReversed
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
@@ -55,7 +56,7 @@ internal class ContentGroup(
         drawScope: DrawScope,
         parentMatrix: Matrix,
         parentAlpha: Float,
-        frame: Float
+        state: AnimationState
     ) {
         if (hidden) {
             return
@@ -66,8 +67,8 @@ internal class ContentGroup(
         matrix.setFrom(parentMatrix)
 
         if (transform != null) {
-            matrix.preConcat(transform.matrix(frame))
-            transform.opacity?.interpolated(frame)?.let {
+            matrix.preConcat(transform.matrix(state))
+            transform.opacity?.interpolated(state)?.let {
 
                 layerAlpha = (layerAlpha * it / 100f).coerceIn(0f, 1f)
             }
@@ -75,27 +76,26 @@ internal class ContentGroup(
 
         val isRenderingWithOffScreen = drawingContents.size > 2 && layerAlpha < 1f
 
-        drawScope.drawIntoCanvas { canvas ->
-            if (isRenderingWithOffScreen) {
-                offscreenRect.set(0f, 0f, 0f, 0f)
-                getBounds(drawScope, matrix, true, frame, offscreenRect)
-                offscreenPaint.alpha = layerAlpha
-                canvas.saveLayer(offscreenRect.toRect(), offscreenPaint)
-            }
+        val canvas = drawScope.drawContext.canvas
+        if (isRenderingWithOffScreen) {
+            offscreenRect.set(0f, 0f, 0f, 0f)
+            getBounds(drawScope, matrix, true, state, offscreenRect)
+            offscreenPaint.alpha = layerAlpha
+            canvas.saveLayer(offscreenRect.toRect(), offscreenPaint)
+        }
 
-            val childAlpha = if (isRenderingWithOffScreen) 1f else layerAlpha
+        val childAlpha = if (isRenderingWithOffScreen) 1f else layerAlpha
 
-            drawingContents.fastForEachReversed { content ->
-                content.draw(drawScope, matrix, childAlpha, frame)
-            }
+        drawingContents.fastForEachReversed { content ->
+            content.draw(drawScope, matrix, childAlpha, state)
+        }
 
-            if (isRenderingWithOffScreen) {
-                canvas.restore()
-            }
+        if (isRenderingWithOffScreen) {
+            canvas.restore()
         }
     }
 
-    override fun getPath(frame: Float): Path {
+    override fun getPath(state: AnimationState): Path {
 
         path.reset()
         if (hidden) {
@@ -104,10 +104,10 @@ internal class ContentGroup(
         matrix.reset()
 
         if (transform != null) {
-            matrix.setFrom(transform.matrix(frame))
+            matrix.setFrom(transform.matrix(state))
         }
         pathContents.fastForEachReversed {
-            path.addPath(it.getPath(frame), matrix)
+            path.addPath(it.getPath(state), matrix)
         }
 
         return path
@@ -129,17 +129,17 @@ internal class ContentGroup(
         drawScope: DrawScope,
         parentMatrix: Matrix,
         applyParents: Boolean,
-        frame: Float,
+        state: AnimationState,
         outBounds: MutableRect,
     ) {
         matrix.setFrom(parentMatrix)
         if (transform != null) {
-            matrix.preConcat(transform.matrix(frame))
+            matrix.preConcat(transform.matrix(state))
         }
         rect.set(0f, 0f, 0f, 0f)
 
         drawingContents.fastForEachReversed {
-            it.getBounds(drawScope, matrix, applyParents, frame, rect)
+            it.getBounds(drawScope, matrix, applyParents, state, rect)
             outBounds.union(rect)
         }
     }

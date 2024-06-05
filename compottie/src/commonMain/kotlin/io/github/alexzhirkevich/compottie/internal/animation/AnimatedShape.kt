@@ -1,9 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.graphics.Path
-import io.github.alexzhirkevich.compottie.internal.content.ShapeModifierContent
-import io.github.alexzhirkevich.compottie.internal.content.modifiedBy
-import io.github.alexzhirkevich.compottie.internal.platform.set
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.helpers.Bezier
 import io.github.alexzhirkevich.compottie.internal.helpers.ShapeData
 import io.github.alexzhirkevich.compottie.internal.helpers.mapPath
@@ -19,8 +17,6 @@ import kotlinx.serialization.json.JsonClassDiscriminator
 @JsonClassDiscriminator("a")
 internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
 
-    var shapeModifiers: List<ShapeModifierContent>
-
     @SerialName("0")
     @Serializable
     class Default(
@@ -34,9 +30,6 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
         val bezier: Bezier,
     ) : AnimatedShape {
 
-        @Transient
-        override var shapeModifiers: List<ShapeModifierContent> = emptyList()
-
         private val unmodifiedPath by lazy {
             Path().also {
                 bezier.toShapeData().mapPath(it)
@@ -49,14 +42,9 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
 
         @Transient
         private val tmpPath = Path()
-        override fun interpolated(frame: Float): Path {
-            if (shapeModifiers.isEmpty()) {
-                tmpPath.set(unmodifiedPath)
-                return unmodifiedPath
-            }
-
+        override fun interpolated(state: AnimationState): Path {
             tmpPath.reset()
-            shapeData.modifiedBy(shapeModifiers, frame).mapPath(tmpPath)
+            shapeData.mapPath(tmpPath)
             return tmpPath
         }
     }
@@ -75,9 +63,6 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
     ) : AnimatedShape, KeyframeAnimation<Path> {
 
         @Transient
-        override var shapeModifiers: List<ShapeModifierContent> = emptyList()
-
-        @Transient
         private val tmpPath = Path()
 
         @Transient
@@ -85,18 +70,18 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
 
         @Transient
         private var delegate =  BaseKeyframeAnimation(
+            expression = expression,
             keyframes = keyframes.map { it.toShapeKeyframe() },
             emptyValue = tmpPath,
-            map = { s, e, p, frame ->
+            map = { s, e, p->
                 tmpShapeData.interpolateBetween(s, e, easingX.transform(p))
-                val modified = tmpShapeData.modifiedBy(shapeModifiers, frame)
-                modified.mapPath(tmpPath)
+                tmpShapeData.mapPath(tmpPath)
                 tmpPath
             }
         )
 
-        override fun interpolated(frame: Float): Path {
-            return delegate.interpolated(frame)
+        override fun interpolated(state: AnimationState): Path {
+            return delegate.interpolated(state)
         }
     }
 }

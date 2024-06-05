@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.util.fastForEach
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
@@ -57,7 +58,7 @@ internal class RectShape(
         }
     }
 
-    override fun getPath(frame: Float): Path {
+    override fun getPath(state: AnimationState): Path {
 
         if (hidden) {
             path.rewind()
@@ -65,9 +66,9 @@ internal class RectShape(
         }
         path.rewind()
 
-        val position = position.interpolated(frame)
-        val size = size.interpolated(frame)
-        var radius = roundedCorners?.interpolated(frame) ?: 0F
+        val position = position.interpolated(state)
+        val size = size.interpolated(state)
+        var radius = roundedCorners?.interpolated(state) ?: 0F
 
         val halfWidth = size.x / 2f
         val halfHeight = size.y / 2f
@@ -134,7 +135,7 @@ internal class RectShape(
         }
         path.close()
 
-        trimPaths.apply(path, frame)
+        trimPaths.apply(path, state)
 
         return path
     }

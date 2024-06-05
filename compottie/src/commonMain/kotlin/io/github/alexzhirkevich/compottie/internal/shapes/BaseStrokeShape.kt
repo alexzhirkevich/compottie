@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
@@ -119,7 +120,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         drawScope: DrawScope,
         parentMatrix: Matrix,
         parentAlpha: Float,
-        frame: Float,
+        state: AnimationState,
     ) {
 
         if (hidden){
@@ -127,29 +128,29 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         }
 
         paint.style = PaintingStyle.Stroke
-        paint.alpha = parentAlpha * (opacity.interpolated(frame) / 100f).coerceIn(0f, 1f)
-        paint.strokeWidth = strokeWidth.interpolated(frame)
+        paint.alpha = parentAlpha * (opacity.interpolated(state) / 100f).coerceIn(0f, 1f)
+        paint.strokeWidth = strokeWidth.interpolated(state)
 
         if (paint.strokeWidth <= 0) {
             return
         }
 
-        applyDashPatternIfNeeded(parentMatrix, frame)
+        applyDashPatternIfNeeded(parentMatrix, state)
 
-        lastBlurRadius = layer.applyBlurEffectIfNeeded(paint, frame, lastBlurRadius)
+        lastBlurRadius = layer.applyBlurEffectIfNeeded(paint, state, lastBlurRadius)
 
-        roundShape?.applyTo(paint, frame)
+        roundShape?.applyTo(paint, state)
 
         drawScope.drawIntoCanvas { canvas ->
 
             pathGroups.fastForEach { pathGroup ->
 
                 if (pathGroup.trimPath != null) {
-                    applyTrimPath(canvas, frame, pathGroup, parentMatrix)
+                    applyTrimPath(canvas, state, pathGroup, parentMatrix)
                 } else {
                     path.reset()
                     pathGroup.paths.fastForEachReversed {
-                        path.addPath(it.getPath(frame), parentMatrix)
+                        path.addPath(it.getPath(state), parentMatrix)
                     }
                     canvas.drawPath(path, paint)
                 }
@@ -188,18 +189,18 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         drawScope: DrawScope,
         parentMatrix: Matrix,
         applyParents: Boolean,
-        frame: Float,
+        state: AnimationState,
         outBounds: MutableRect,
     ) {
         path.reset()
         pathGroups.fastForEach { pathGroup ->
             pathGroup.paths.fastForEach {
-                path.addPath(it.getPath(frame), parentMatrix)
+                path.addPath(it.getPath(state), parentMatrix)
             }
         }
         rect.set(path.getBounds())
 
-        val width = strokeWidth.interpolated(frame)
+        val width = strokeWidth.interpolated(state)
 
         rect.set(
             rect.left - width / 2f,
@@ -220,7 +221,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
 
     private fun applyTrimPath(
         canvas: Canvas,
-        time: Float,
+        state: AnimationState,
         pathGroup: PathGroup,
         parentMatrix: Matrix,
     ) {
@@ -231,11 +232,11 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         path.reset()
 
         pathGroup.paths.fastForEachReversed {
-            path.addPath(it.getPath(time).apply { transform(parentMatrix) })
+            path.addPath(it.getPath(state).apply { transform(parentMatrix) })
         }
-        val animStartValue: Float = pathGroup.trimPath.start.interpolated(time) / 100f
-        val animEndValue: Float = pathGroup.trimPath.end.interpolated(time) / 100f
-        val animOffsetValue: Float = pathGroup.trimPath.offset.interpolated(time) / 360f
+        val animStartValue: Float = pathGroup.trimPath.start.interpolated(state) / 100f
+        val animEndValue: Float = pathGroup.trimPath.end.interpolated(state) / 100f
+        val animOffsetValue: Float = pathGroup.trimPath.offset.interpolated(state) / 360f
 
         // If the start-end is ~100, consider it to be the full path.
         if (animStartValue < 0.01f && animEndValue > 0.99f) {
@@ -260,7 +261,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         var currentLength = 0f
 
         pathGroup.paths.fastForEachReversed {
-            trimPathPath.set(it.getPath(time))
+            trimPathPath.set(it.getPath(state))
             trimPathPath.transform(parentMatrix)
             pm.setPath(trimPathPath, false)
             val length: Float = pm.length
@@ -299,7 +300,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
     }
 
 
-    private fun applyDashPatternIfNeeded(parentMatrix: Matrix, frame: Float) {
+    private fun applyDashPatternIfNeeded(parentMatrix: Matrix, state: AnimationState) {
 
 
         val dp = dashPattern
@@ -310,11 +311,11 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
 
         val scale = parentMatrix.scale
 
-        val o = dashOffset?.interpolated(frame)?.times(scale) ?: 0f
+        val o = dashOffset?.interpolated(state)?.times(scale) ?: 0f
 
         dp.fastForEachIndexed { i, strokeDash ->
 
-            dashPatternValues[i] = strokeDash.interpolated(frame)
+            dashPatternValues[i] = strokeDash.interpolated(state)
 
             // If the value of the dash pattern or gap is too small, the number of individual sections
             // approaches infinity as the value approaches 0.

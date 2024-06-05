@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.util.lerp
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -24,7 +25,7 @@ internal sealed interface AnimatedValue : KeyframeAnimation<Float>, Indexable {
         override val index: String? = null
     ) : AnimatedValue {
 
-        override fun interpolated(frame: Float): Float = value
+        override fun interpolated(state: AnimationState): Float = value
     }
 
     @Serializable
@@ -39,10 +40,10 @@ internal sealed interface AnimatedValue : KeyframeAnimation<Float>, Indexable {
         @SerialName("ix")
         override val index: String? = null
     ) : AnimatedValue, KeyframeAnimation<Float> by BaseKeyframeAnimation(
+        expression = expression,
         keyframes = value,
         emptyValue = 1f,
-        map = { s, e, p, _ ->
-
+        map = { s, e, p ->
             lerp(s[0], e[0], easingX.transform(p))
         }
     )

@@ -3,9 +3,9 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.util.fastForEach
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
-import io.github.alexzhirkevich.compottie.internal.content.ShapeModifierContent
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
@@ -37,31 +37,27 @@ internal class PathShape(
     private val trimPaths: CompoundTrimPath = CompoundTrimPath()
 
     private val path = Path()
-    override fun getPath(frame: Float): Path {
+
+    override fun getPath(state: AnimationState): Path {
         path.reset()
 
         if (hidden) {
             return path
         }
-        path.set(shape.interpolated(frame))
+        path.set(shape.interpolated(state))
         path.fillType = PathFillType.EvenOdd
 
-        trimPaths.apply(path, frame)
+        trimPaths.apply(path, state)
         return path
     }
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
-        val shapeModifierContents: MutableList<ShapeModifierContent> = mutableListOf()
 
         contentsBefore.fastForEach { content ->
             if (content.isSimultaneousTrimPath()) {
                 // Trim path individually will be handled by the stroke where paths are combined.
                 trimPaths.addTrimPath(content)
-            } else if (content is ShapeModifierContent) {
-                shapeModifierContents.add(content)
             }
         }
-
-        shape.shapeModifiers = shapeModifierContents
     }
 }

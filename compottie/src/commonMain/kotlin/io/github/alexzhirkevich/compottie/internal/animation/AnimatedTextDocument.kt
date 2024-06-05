@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.helpers.text.TextDocument
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -22,16 +23,16 @@ internal class AnimatedTextDocument(
 
     @Transient
     private val delegate = BaseKeyframeAnimation(
+        expression = expression,
         keyframes = keyframes,
         emptyValue = document,
-        map = { s, e, p, _ ->
-
+        map = { s, e, p ->
             //TODO: lerp properties?
             if (p != 1.0f) s else e
         }
     )
 
-    override fun interpolated(frame: Float): TextDocument {
-        return delegate.interpolated(frame)
+    override fun interpolated(state: AnimationState): TextDocument {
+        return delegate.interpolated(state)
     }
 }

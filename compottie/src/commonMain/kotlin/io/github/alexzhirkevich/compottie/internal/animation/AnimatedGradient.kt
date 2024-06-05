@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.graphics.Color
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -53,7 +54,7 @@ internal sealed interface AnimatedGradient : KeyframeAnimation<ColorsWithStops> 
             colorsVector.asGradient(numberOfColors)
         }
 
-        override fun interpolated(frame: Float): ColorsWithStops {
+        override fun interpolated(state: AnimationState): ColorsWithStops {
             return colors
         }
     }

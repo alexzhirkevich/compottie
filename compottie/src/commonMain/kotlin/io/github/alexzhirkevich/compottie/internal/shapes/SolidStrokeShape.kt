@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
@@ -52,9 +53,9 @@ internal class SolidStrokeShape(
     @Transient
     override lateinit var layer: Layer
 
-    override fun draw(drawScope : DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
-        paint.color = color.interpolated(frame)
+    override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
+        paint.color = color.interpolated(state)
 
-        super.draw(drawScope, parentMatrix, parentAlpha, frame)
+        super.draw(drawScope, parentMatrix, parentAlpha, state)
     }
 }

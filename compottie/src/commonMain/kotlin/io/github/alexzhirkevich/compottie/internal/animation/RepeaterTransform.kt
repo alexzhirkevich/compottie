@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.graphics.Matrix
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.utils.preRotate
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
@@ -38,25 +39,25 @@ internal class RepeaterTransform(
     val endOpacity : AnimatedValue? = null,
 ) : AnimatedTransform() {
 
-    fun repeaterMatrix(frame: Float, amount: Float): Matrix {
+    fun repeaterMatrix(state: AnimationState, amount: Float): Matrix {
         matrix.reset()
 
-        position?.interpolated(frame)?.let {
+        position?.interpolated(state)?.let {
             matrix.preTranslate(
                 it.x * amount,
                 it.y * amount
             )
         }
 
-        scale?.interpolated(frame)?.let {
+        scale?.interpolated(state)?.let {
             matrix.preScale(
                 it.x.div(100f).pow(amount),
                 it.y.div(100f).pow(amount)
             )
         }
 
-        rotation?.interpolated(frame)?.let {
-            val anchorPoint = anchorPoint?.interpolated(it)
+        rotation?.interpolated(state)?.let {
+            val anchorPoint = anchorPoint?.interpolated(state)
 
             if (anchorPoint != null) {
                 matrix.translate(anchorPoint.x, anchorPoint.y)

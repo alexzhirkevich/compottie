@@ -4,12 +4,12 @@ import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.GradientColors
 import io.github.alexzhirkevich.compottie.internal.animation.GradientType
-import io.github.alexzhirkevich.compottie.internal.helpers.FillRule
 import io.github.alexzhirkevich.compottie.internal.helpers.StrokeDash
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
@@ -81,20 +81,20 @@ internal class GradientStrokeShape(
     @Transient
     private val gradientCache = LinkedHashMap<Int, Shader>()
 
-    override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
+    override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
 
-        getBounds(drawScope, parentMatrix, false, frame, boundsRect)
+        getBounds(drawScope, parentMatrix, false, state, boundsRect)
 
         paint.shader = GradientShader(
             type = type,
             startPoint = startPoint,
             endPoint = endPoint,
             colors = colors,
-            frame = frame,
+            state = state,
             matrix = parentMatrix,
             cache = gradientCache
         )
-        super.draw(drawScope, parentMatrix, parentAlpha, frame)
+        super.draw(drawScope, parentMatrix, parentAlpha, state)
     }
 }
 

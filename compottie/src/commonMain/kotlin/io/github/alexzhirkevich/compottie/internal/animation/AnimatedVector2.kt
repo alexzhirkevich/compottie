@@ -1,17 +1,14 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.isSpecified
-import androidx.compose.ui.geometry.isUnspecified
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.util.lerp
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlinx.serialization.json.JsonClassDiscriminator
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.booleanOrNull
@@ -40,7 +37,7 @@ internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
         @Transient
         private val animationVector = Offset(value[0], value[1])
 
-        override fun interpolated(frame: Float): Vec2 = animationVector
+        override fun interpolated(state: AnimationState): Vec2 = animationVector
     }
 
     @Serializable
@@ -65,9 +62,10 @@ internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
 
         @Transient
         private val delegate: KeyframeAnimation<Vec2> = BaseKeyframeAnimation(
+            expression = expression,
             keyframes = value,
             emptyValue = Offset.Zero,
-            map = { s, e, p, _ ->
+            map = { s, e, p ->
 
                 if (inTangent != null && outTangent != null && !s.contentEquals(e)) {
                     path.reset()
@@ -95,8 +93,8 @@ internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
             }
         )
 
-        override fun interpolated(frame: Float): Offset {
-            return delegate.interpolated(frame)
+        override fun interpolated(state: AnimationState): Offset {
+            return delegate.interpolated(state)
         }
     }
 
@@ -109,10 +107,10 @@ internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
         override val expression: String? get() = null
         override val index: String? get() = null
 
-        override fun interpolated(frame: Float): Vec2 {
+        override fun interpolated(state: AnimationState): Vec2 {
             return Offset(
-                x.interpolated(frame),
-                y.interpolated(frame)
+                x.interpolated(state),
+                y.interpolated(state)
             )
         }
     }

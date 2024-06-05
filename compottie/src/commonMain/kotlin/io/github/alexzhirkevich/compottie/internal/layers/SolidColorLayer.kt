@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
@@ -117,7 +118,7 @@ internal class SolidColorLayer(
         drawScope: DrawScope,
         parentMatrix: Matrix,
         parentAlpha: Float,
-        frame: Float
+        state: AnimationState
     ) {
 
         if (hidden) {
@@ -126,7 +127,7 @@ internal class SolidColorLayer(
         paint.color = color
 
         paint.alpha = (color.alpha * parentAlpha *
-                (transform.opacity?.interpolated(frame)?.div(100f) ?: 1f)).coerceIn(0f, 1f)
+                (transform.opacity?.interpolated(state)?.div(100f) ?: 1f)).coerceIn(0f, 1f)
 
         if (paint.alpha == 0f) {
             return
@@ -141,9 +142,6 @@ internal class SolidColorLayer(
 
         path.close()
 
-
-        drawScope.drawIntoCanvas {
-            it.drawPath(path, paint)
-        }
+        drawScope.drawContext.canvas.drawPath(path, paint)
     }
 }

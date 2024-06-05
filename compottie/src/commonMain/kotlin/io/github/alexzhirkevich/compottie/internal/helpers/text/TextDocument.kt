@@ -25,7 +25,7 @@ internal class TextDocument(
     var fontSize : Float = 10f,
 
     @SerialName("lh")
-    var lineHeight : Float = 10f,
+    var lineHeight : Float = fontSize,
 
     @SerialName("sz")
     var wrapSize : FloatArray? = null,

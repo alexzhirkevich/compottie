@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.IntSize
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.NoOpAssetsFetcher
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
@@ -52,6 +53,8 @@ fun rememberLottiePainter(
     assetManager: LottieAssetsManager = NoOpAssetsFetcher,
     onLoadError : (Throwable) -> Painter =  { EmptyPainter },
 ) : Painter {
+
+
     val progress = animateLottieCompositionAsState(
         composition = composition,
         isPlaying = isPlaying,
@@ -176,6 +179,12 @@ private class LottiePainter(
         )
     }
 
+    private val frame: Float by derivedStateOf {
+        val p = composition.lottieData.outPoint * progress -
+                composition.lottieData.inPoint
+        p.coerceAtLeast(0f)
+    }
+
     override fun applyAlpha(alpha: Float): Boolean {
         if (alpha !in 0f..1f)
             return false
@@ -185,6 +194,8 @@ private class LottiePainter(
     }
 
     override fun DrawScope.onDraw() {
+
+
         matrix.reset()
 
         val scale = ContentScale.Fit.computeScaleFactor(intrinsicSize, size)
@@ -207,7 +218,7 @@ private class LottiePainter(
             scale(scale.scaleX, scale.scaleY) {
                 translate(offset.x.toFloat(), offset.y.toFloat()) {
                     try {
-                        compositionLayer.draw(this, matrix, alpha, currentFrame)
+                        compositionLayer.draw(this, matrix, alpha, AnimationState(frame))
                     } catch (t: Throwable) {
                         println("Lottie crashed in draw :(")
                         t.printStackTrace()
@@ -216,7 +227,7 @@ private class LottiePainter(
             }
         }.let {
             if (it.inWholeMilliseconds > 0) {
-//                println(it.inWholeMilliseconds)
+                println(it.inWholeMilliseconds)
             }
         }
     }
@@ -247,3 +258,4 @@ private suspend fun LottieComposition.preloadAssets(
         }
     }.filterNotNull().joinAll()
 }
+

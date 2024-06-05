@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
-interface KeyframeAnimation<T> {
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 
-    fun interpolated(frame: Float) : T
+internal interface KeyframeAnimation<T> {
+    fun interpolated(state: AnimationState) : T
 }

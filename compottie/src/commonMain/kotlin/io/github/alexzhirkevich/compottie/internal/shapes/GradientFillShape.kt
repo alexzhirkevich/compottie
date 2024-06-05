@@ -1,7 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.geometry.MutableRect
-import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
@@ -9,6 +8,7 @@ import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.GradientColors
@@ -96,7 +96,7 @@ internal class GradientFillShape(
 
     private var lastBlurRadius : Float? = null
 
-    override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
+    override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
 
         if (hidden){
             return
@@ -107,28 +107,28 @@ internal class GradientFillShape(
             startPoint = startPoint,
             endPoint = endPoint,
             colors = colors,
-            frame = frame,
+            state = state,
             matrix = parentMatrix,
             cache = gradientCache
         )
 
         paint.alpha = if (opacity != null) {
-            (parentAlpha * opacity.interpolated(frame) / 100f).coerceIn(0f, 1f)
+            (parentAlpha * opacity.interpolated(state) / 100f).coerceIn(0f, 1f)
         }
         else {
             parentAlpha
         }
 
-        lastBlurRadius = layer.applyBlurEffectIfNeeded(paint, frame, lastBlurRadius)
+        lastBlurRadius = layer.applyBlurEffectIfNeeded(paint, state, lastBlurRadius)
 
 
         path.reset()
 
         paths.fastForEach {
-            path.addPath(it.getPath(frame), parentMatrix)
+            path.addPath(it.getPath(state), parentMatrix)
         }
 
-        roundShape?.applyTo(paint, frame)
+        roundShape?.applyTo(paint, state)
 
         drawScope.drawIntoCanvas {
             it.drawPath(path, paint)
@@ -139,12 +139,12 @@ internal class GradientFillShape(
         drawScope: DrawScope,
         parentMatrix: Matrix,
         applyParents: Boolean,
-        frame: Float,
+        state: AnimationState,
         outBounds: MutableRect
     ) {
         path.reset()
         paths.fastForEach {
-            path.addPath(it.getPath(frame), parentMatrix)
+            path.addPath(it.getPath(state), parentMatrix)
         }
         outBounds.set(path.getBounds())
         // Add padding to account for rounding errors.

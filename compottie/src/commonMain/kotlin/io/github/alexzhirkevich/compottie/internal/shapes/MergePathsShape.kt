@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroupBase
 import io.github.alexzhirkevich.compottie.internal.content.GreedyContent
@@ -47,7 +48,7 @@ internal class MergePathsShape(
     @Transient
     private val pathContents = mutableListOf<PathContent>()
 
-    override fun getPath(frame: Float): Path {
+    override fun getPath(state: AnimationState): Path {
 
         path.reset()
 
@@ -56,11 +57,11 @@ internal class MergePathsShape(
         }
 
         when (mode) {
-            MergeMode.Normal -> addPaths(frame)
-            MergeMode.Add -> opFirstPathWithRest(PathOperation.Union, frame)
-            MergeMode.Subtract -> opFirstPathWithRest(PathOperation.Difference, frame)
-            MergeMode.Intersect -> opFirstPathWithRest(PathOperation.Intersect, frame)
-            MergeMode.ExcludeIntersections -> opFirstPathWithRest(PathOperation.Xor, frame)
+            MergeMode.Normal -> addPaths(state)
+            MergeMode.Add -> opFirstPathWithRest(PathOperation.Union, state)
+            MergeMode.Subtract -> opFirstPathWithRest(PathOperation.Difference, state)
+            MergeMode.Intersect -> opFirstPathWithRest(PathOperation.Intersect, state)
+            MergeMode.ExcludeIntersections -> opFirstPathWithRest(PathOperation.Xor, state)
         }
 
         return path
@@ -87,13 +88,13 @@ internal class MergePathsShape(
         }
     }
 
-    private fun addPaths(frame: Float) {
+    private fun addPaths(state: AnimationState) {
         pathContents.fastForEach {
-            path.addPath(it.getPath(frame))
+            path.addPath(it.getPath(state))
         }
     }
 
-    private fun opFirstPathWithRest(op: PathOperation, frame: Float) {
+    private fun opFirstPathWithRest(op: PathOperation, state: AnimationState) {
 
         remainderPath.reset()
         firstPath.reset()
@@ -103,26 +104,26 @@ internal class MergePathsShape(
 
             if (content is ContentGroupBase) {
                 content.pathContents.fastForEachReversed { path ->
-                    val p = path.getPath(frame)
-                    content.transform?.matrix(frame)?.let {
+                    val p = path.getPath(state)
+                    content.transform?.matrix(state)?.let {
                         p.transform(it)
                     }
                     remainderPath.addPath(p)
                 }
             } else {
-                remainderPath.addPath(content.getPath(frame))
+                remainderPath.addPath(content.getPath(state))
             }
         }
 
         val lastContent = pathContents[0]
         if (lastContent is ContentGroupBase) {
             lastContent.pathContents.fastForEach {
-                val path = it.getPath(frame)
-                lastContent.transform?.matrix(frame)?.let(path::transform)
+                val path = it.getPath(state)
+                lastContent.transform?.matrix(state)?.let(path::transform)
                 firstPath.addPath(path)
             }
         } else {
-            firstPath.set(lastContent.getPath(frame))
+            firstPath.set(lastContent.getPath(state))
         }
 
         if (pathContents.size == 1) {

@@ -4,10 +4,10 @@ import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
@@ -79,26 +79,26 @@ internal class FillShape(
 
     private var lastBlurRadius : Float? = null
 
-    override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, frame: Float) {
+    override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
 
         if (hidden) {
             return
         }
 
-        paint.color = color.interpolated(frame)
+        paint.color = color.interpolated(state)
 
-        paint.alpha = opacity?.interpolated(frame)?.let {
+        paint.alpha = opacity?.interpolated(state)?.let {
             (parentAlpha * it / 100f).coerceIn(0f, 1f)
         } ?: parentAlpha
 
-        roundShape?.applyTo(paint, frame)
+        roundShape?.applyTo(paint, state)
 
-        lastBlurRadius = layer.applyBlurEffectIfNeeded(paint, frame, lastBlurRadius)
+        lastBlurRadius = layer.applyBlurEffectIfNeeded(paint, state, lastBlurRadius)
 
         path.reset()
 
         paths.fastForEach {
-            path.addPath(it.getPath(frame), parentMatrix)
+            path.addPath(it.getPath(state), parentMatrix)
         }
 
 
@@ -110,13 +110,13 @@ internal class FillShape(
         drawScope: DrawScope,
         parentMatrix: Matrix,
         applyParents: Boolean,
-        frame: Float,
+        state: AnimationState,
         outBounds: MutableRect
     ) {
 
         path.reset()
         paths.fastForEach {
-            path.addPath(it.getPath(frame), parentMatrix)
+            path.addPath(it.getPath(state), parentMatrix)
         }
 
         outBounds.set(path.getBounds())

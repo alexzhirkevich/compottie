@@ -1,12 +1,14 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
-import kotlin.math.roundToInt
+import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.evaluate
 
 
 internal class BaseKeyframeAnimation<T, K, out KF : Keyframe<K>>(
+    private val expression : String?,
     keyframes: List<KF>,
     private val emptyValue : T,
-    private val map : KF.(start : K, end : K, progress: Float,  frame: Float) -> T
+    private val map : KF.(start : K, end : K, progress: Float) -> T
 ) : KeyframeAnimation<T> {
 
     private val sortedKeyframes = keyframes
@@ -38,39 +40,42 @@ internal class BaseKeyframeAnimation<T, K, out KF : Keyframe<K>>(
                     InvalidKeyframeError
                 ),
                 0f,
-                firstFrame
             )
         }
     }
 
     private val targetValue by lazy {
+
+        val preLast = sortedKeyframes.getOrNull(sortedKeyframes.lastIndex - 1)
+
         keyframes.last().run {
             map(
                 requireNotNull(
-                    sortedKeyframes.getOrNull(sortedKeyframes.lastIndex - 1)?.start,
+                    preLast?.start ?: start,
                     InvalidKeyframeError
                 ),
                 requireNotNull(
-                    sortedKeyframes.getOrNull(sortedKeyframes.lastIndex - 1)?.endHold ?: start,
+                    preLast?.endHold ?: start,
                     InvalidKeyframeError
                 ),
                 1f,
-                lastFrame
             )
         }
     }
 
-    override fun interpolated(frame: Float): T {
-        return when {
+
+    override fun interpolated(state: AnimationState): T {
+
+        val value = when {
             sortedKeyframes.isEmpty() -> emptyValue
-            frame >= lastFrame -> targetValue
-            frame <= firstFrame -> initialValue
+            state.frame >= lastFrame -> targetValue
+            state.frame <= firstFrame -> initialValue
             else -> {
 
                 val kfIdx = timeIntervals.binarySearch {
                     when {
-                        frame < it.start -> 1
-                        frame > it.endInclusive -> -1
+                        state.frame < it.start -> 1
+                        state.frame > it.endInclusive -> -1
                         else -> 0
                     }
                 }
@@ -78,30 +83,35 @@ internal class BaseKeyframeAnimation<T, K, out KF : Keyframe<K>>(
                 require(kfIdx >= 0, InvalidKeyframeError)
 
                 val progress = timeIntervals[kfIdx].let {
-                    (frame - it.start) / (it.endInclusive - it.start)
+                    (state.frame - it.start) / (it.endInclusive - it.start)
                 }
 
-                sortedKeyframes[kfIdx].run {
+                val keyframe = sortedKeyframes[kfIdx]
+                keyframe.run {
                     map(
                         requireNotNull(
-                            sortedKeyframes[kfIdx].start,
+                            keyframe.start,
                             InvalidKeyframeError
                         ),
                         requireNotNull(
-                            sortedKeyframes[kfIdx].endHold
+                            keyframe.endHold
                                 ?: sortedKeyframes.getOrNull(kfIdx + 1)?.start,
                             InvalidKeyframeError
                         ),
                         progress,
-                        frame
                     )
                 }
             }
         }
+
+        if (expression == null) {
+            return value
+        }
+
+        return evaluate(expression, state, value)
     }
 }
 
 private val InvalidKeyframeError = {
     "Invalid keyframe"
 }
-

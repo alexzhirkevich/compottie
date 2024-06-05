@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie.internal.platform
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.shapes.TrimPathShape
 import io.github.alexzhirkevich.compottie.internal.utils.floorMod
 import kotlin.math.abs
@@ -24,13 +25,13 @@ internal fun Path.set(other : Path){
 
 internal expect fun Path.addPath(path: Path, matrix: Matrix) : Path
 
-internal fun Path.applyTrimPath(trimPath: TrimPathShape, frame: Float) {
+internal fun Path.applyTrimPath(trimPath: TrimPathShape, state: AnimationState) {
     if (trimPath.hidden) {
         return
     }
-    val start: Float = trimPath.start.interpolated(frame)
-    val end: Float = trimPath.end.interpolated(frame)
-    val offset: Float = trimPath.offset.interpolated(frame)
+    val start: Float = trimPath.start.interpolated(state)
+    val end: Float = trimPath.end.interpolated(state)
+    val offset: Float = trimPath.offset.interpolated(state)
 
     applyTrimPath(
         startValue = start / 100f,

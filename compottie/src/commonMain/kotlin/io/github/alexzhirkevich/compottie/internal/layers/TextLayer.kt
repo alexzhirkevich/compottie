@@ -12,14 +12,14 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEachIndexed
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.toColor
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
@@ -127,8 +127,7 @@ internal class TextLayer(
     private val textSubLines: MutableList<TextSubLine> = ArrayList()
 
     @Transient
-    private var textStyle: androidx.compose.ui.text.TextStyle =
-        androidx.compose.ui.text.TextStyle.Default
+    private var textStyle: TextStyle = TextStyle.Default
 
     @Transient
     private val codePointCache = mutableMapOf<Long, String>()
@@ -140,16 +139,17 @@ internal class TextLayer(
         drawScope: DrawScope,
         parentMatrix: Matrix,
         parentAlpha: Float,
-        frame: Float
+        state: AnimationState
     ) {
-        val document = textData.document.interpolated(frame)
+        val document = textData.document.interpolated(state)
 
         drawScope.drawIntoCanvas { canvas ->
             canvas.save()
             canvas.concat(parentMatrix)
 
-            configurePaint(document, parentAlpha, frame)
-            configureTextStyle(drawScope, document, frame)
+            configurePaint(document, parentAlpha, state)
+            configureTextStyle(drawScope, document)
+            drawTextWithFonts(drawScope, document)
 
             canvas.restore()
         }
@@ -159,25 +159,25 @@ internal class TextLayer(
         drawScope: DrawScope,
         parentMatrix: Matrix,
         applyParents: Boolean,
-        frame: Float,
+        state: AnimationState,
         outBounds: MutableRect
     ) {
-        super.getBounds(drawScope, parentMatrix, applyParents, frame, outBounds)
+        super.getBounds(drawScope, parentMatrix, applyParents, state, outBounds)
 
         val composition = checkNotNull(painterProperties?.composition)
 
         outBounds.set(0f, 0f, composition.lottieData.width, composition.lottieData.height)
     }
 
-    private fun configurePaint(document: TextDocument, parentAlpha: Float, frame: Float) {
+    private fun configurePaint(document: TextDocument, parentAlpha: Float, state: AnimationState) {
 
-        fillPaint.color = textAnimation?.style?.fillColor?.interpolated(frame)
+        fillPaint.color = textAnimation?.style?.fillColor?.interpolated(state)
             ?: document.fillColor.toColor()
 
-        strokePaint.color = textAnimation?.style?.strokeColor?.interpolated(frame)
+        strokePaint.color = textAnimation?.style?.strokeColor?.interpolated(state)
             ?: document.strokeColor?.toColor() ?: Color.Transparent
 
-        fillPaint.alpha = transform.opacity?.interpolated(frame)
+        fillPaint.alpha = transform.opacity?.interpolated(state)
             ?.div(100f)?.times(parentAlpha)
             ?: parentAlpha
 
@@ -185,7 +185,7 @@ internal class TextLayer(
             strokePaint.alpha = fillPaint.alpha
         }
 
-        val strokeWidth = textAnimation?.style?.strokeWidth?.interpolated(frame)
+        val strokeWidth = textAnimation?.style?.strokeWidth?.interpolated(state)
             ?: document.strokeWidth
 
         if (strokePaint.style.width != strokeWidth){
@@ -195,7 +195,7 @@ internal class TextLayer(
         }
     }
 
-    private fun configureTextStyle(drawScope: DrawScope, document: TextDocument, frame: Float) {
+    private fun configureTextStyle(drawScope: DrawScope, document: TextDocument) {
 
         val fontSize = document.fontSize.sp
         val baselineShift = document.baselineShift
@@ -205,7 +205,7 @@ internal class TextLayer(
         val lineHeight = document.lineHeight.sp
 
         val fontFamily = checkNotNull(painterProperties?.composition?.fonts)
-            .get(document.fontFamily)?.let { FontFamily(it) }
+            .get(document.fontFamily)
 
         if (
             textStyle.fontSize != fontSize ||
@@ -217,7 +217,8 @@ internal class TextLayer(
                 baselineShift = baselineShift,
                 fontSize = fontSize,
                 lineHeight = lineHeight,
-                fontFamily = fontFamily
+                fontFamily = fontFamily,
+                color = Color.Red
             )
         }
     }
@@ -246,7 +247,7 @@ internal class TextLayer(
         return tm
     }
 
-    private fun drawTextWithFonts(drawScope: DrawScope, document: TextDocument, font: Font) {
+    private fun drawTextWithFonts(drawScope: DrawScope, document: TextDocument) {
         val measurer = getTextMeasurer(drawScope, drawScope.layoutDirection)
 
         var tracking = document.textTracking?.div(10f) ?: 0f
@@ -260,29 +261,28 @@ internal class TextLayer(
             tracking.sp.toPx()
         }
 
-        drawScope.drawIntoCanvas { canvas ->
+        val canvas = drawScope.drawContext.canvas
 
-            allLines.fastForEachIndexed { alLinesIdx, textLine ->
-                val boxWidth = document.wrapSize?.firstOrNull() ?: 0f
+        allLines.fastForEachIndexed { alLinesIdx, textLine ->
+            val boxWidth = document.wrapSize?.firstOrNull() ?: 0f
 
-                val lines = splitGlyphTextIntoLines(measurer, textLine, boxWidth, tracking)
+            val lines = splitGlyphTextIntoLines(measurer, textLine, boxWidth, tracking)
 
-                lines.fastForEachIndexed { idx, line ->
+            lines.fastForEachIndexed { idx, line ->
 
-                    canvas.save()
-                    if (offsetCanvas(canvas, drawScope, document, alLinesIdx + idx, line.width)) {
-                        drawFontTextLine(
-                            line.text,
-                            measurer,
-                            document,
-                            drawScope,
-                            canvas,
-                            tracking
-                        )
-                    }
-
-                    canvas.restore()
+                canvas.save()
+                if (offsetCanvas(canvas, drawScope, document, alLinesIdx + idx, line.width)) {
+                    drawFontTextLine(
+                        line.text,
+                        measurer,
+                        document,
+                        drawScope,
+                        canvas,
+                        tracking
+                    )
                 }
+
+                canvas.restore()
             }
         }
     }
@@ -398,13 +398,12 @@ internal class TextLayer(
         val position = document.wrapPosition?.toOffset()
         val size = document.wrapSize?.let { Size(it[0], it[1]) }
         val lineStartY = if (position == null) {
-            0f
+            density.run { -document.lineHeight.sp.toPx() }
         } else {
             document.lineHeight * density.density + position.y
         }
 
         val lineOffset: Float = (lineIndex * document.lineHeight * density.density) + lineStartY
-
 
         val clip = painterProperties?.clipTextToBoundingBoxes == true
 
@@ -434,11 +433,15 @@ internal class TextLayer(
         canvas: Canvas,
         tracking: Float
     ) {
+
         var i = 0
         while (i < text.length) {
             val charString: String = codePointToString(text, i)
             i += charString.length
+
+
             val measureResult = textMeasurer.measure(charString, textStyle)
+
             drawCharacterFromFont(measureResult, documentData, drawScope)
             val charWidth = measureResult.size.width
             val tx = charWidth + tracking
@@ -481,7 +484,7 @@ internal class TextLayer(
         drawScope: DrawScope
     ) {
         if (documentData.strokeOverFill) {
-            drawCharacter(character,  fillPaint, drawScope)
+            drawCharacter(character, fillPaint, drawScope)
             drawCharacter(character, strokePaint, drawScope)
         } else {
             drawCharacter(character, strokePaint, drawScope)
@@ -516,7 +519,7 @@ private class DrawProperties<S : DrawStyle>(
     var alpha: Float = 1f
 )
 
-private class TextSubLine(
+private data class TextSubLine(
     var text : String= "",
     var width : Float = 0f
 ) {

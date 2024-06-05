@@ -1,17 +1,13 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.graphics.Matrix
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.utils.Math
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.preRotate
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
-import io.github.alexzhirkevich.compottie.internal.utils.scale
 import io.github.alexzhirkevich.compottie.internal.utils.setValues
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
-import kotlin.math.abs
-import kotlin.math.absoluteValue
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.tan
@@ -44,23 +40,23 @@ internal abstract class AnimatedTransform {
         FloatArray(9)
     }
 
-    fun matrix(frame: Float): Matrix {
+    fun matrix(state: AnimationState): Matrix {
         matrix.reset()
 
-        position?.interpolated(frame)
+        position?.interpolated(state)
             ?.takeIf { it.x != 0f || it.y != 0f }
             ?.let {
                 matrix.preTranslate(it.x, it.y)
             }
 
-        rotation?.interpolated(frame)
+        rotation?.interpolated(state)
             ?.takeIf { it != 0f }
             ?.let(matrix::preRotate)
 
-        skew?.interpolated(frame)
+        skew?.interpolated(state)
             ?.takeIf { it != 0f }
             ?.let { sk ->
-                val skewAngle = skewAxis?.interpolated(frame)
+                val skewAngle = skewAxis?.interpolated(state)
 
                 val mCos = if (skewAngle == null)
                     0f
@@ -98,14 +94,14 @@ internal abstract class AnimatedTransform {
                 matrix.preConcat(skewMatrix3)
             }
 
-        scale?.interpolated(frame)
+        scale?.interpolated(state)
             ?.takeIf { it.x != 100f || it.y != 100f }
             ?.let {
                 matrix.preScale(it.x / 100f, it.y / 100f)
             }
 
 
-        anchorPoint?.interpolated(frame)
+        anchorPoint?.interpolated(state)
             ?.takeIf { it.x != 0f || it.y != 0f }
             ?.let {
                 matrix.preTranslate(-it.x, -it.y)

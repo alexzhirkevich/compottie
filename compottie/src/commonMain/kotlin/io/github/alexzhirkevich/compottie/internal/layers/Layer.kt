@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie.internal.layers
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.text.font.FontFamily
 import io.github.alexzhirkevich.compottie.LottieComposition
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
@@ -57,7 +58,7 @@ internal sealed interface Layer {
 
     val effects: List<LayerEffect>
 
-    fun applyBlurEffectIfNeeded(paint: Paint, frame: Float, lastBlurRadius : Float?) : Float
+    fun applyBlurEffectIfNeeded(paint: Paint, state: AnimationState, lastBlurRadius : Float?) : Float
 }
 
 internal val Layer.isContainerLayer get()   =  name == "__container"

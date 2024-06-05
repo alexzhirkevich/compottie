@@ -1,16 +1,12 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
-import io.github.alexzhirkevich.compottie.internal.content.ShapeModifierContent
-import io.github.alexzhirkevich.compottie.internal.content.modifiedBy
 import io.github.alexzhirkevich.compottie.internal.helpers.Bezier
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.ShapeData
 import io.github.alexzhirkevich.compottie.internal.helpers.toShapeData
-import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonTransformingSerializer
 
@@ -40,10 +36,10 @@ internal class BezierKeyframe(
 
 
 internal fun BezierKeyframe.toShapeKeyframe(
-    modifiers: List<ShapeModifierContent> = emptyList(), frame: Float = 0f
+
 ) = ShapeKeyframe(
-    start = start?.toShapeData()?.modifiedBy(modifiers, frame),
-    end = end?.toShapeData()?.modifiedBy(modifiers, frame),
+    start = start?.toShapeData(),
+    end = end?.toShapeData(),
     time = time,
     inValue = inValue,
     outValue = outValue,

@@ -7,9 +7,9 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
-import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.helpers.isSupported
 import io.github.alexzhirkevich.compottie.internal.platform.clipRect
 import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
@@ -31,6 +31,12 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
     private val layerPaint = Paint().apply {
         isAntiAlias = true
     }
+
+//    private val remappedState  by lazy {
+//        RemappedAnimationState(
+//            frameRemapping = ::remappedFrame
+//        )
+//    }
 
     abstract fun loadLayers() : List<Layer>
 
@@ -86,8 +92,9 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         drawScope: DrawScope,
         parentMatrix: Matrix,
         parentAlpha: Float,
-        frame: Float
+        state: AnimationState
     ) {
+//        remappedState.delegate = state
 
         newClipRect.set(0f, 0f, width, height)
         parentMatrix.map(newClipRect)
@@ -95,63 +102,62 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         // Apply off-screen rendering only when needed in order to improve rendering performance.
         val isDrawingWithOffScreen = layers.isEmpty() && parentAlpha < 1f
 
-        drawScope.drawIntoCanvas { canvas ->
+        val canvas = drawScope.drawContext.canvas
 
-            if (isDrawingWithOffScreen) {
-                layerPaint.alpha = parentAlpha
-                canvas.saveLayer(newClipRect, layerPaint)
-            } else {
-                canvas.save()
-            }
-
-            val childAlpha = if (isDrawingWithOffScreen) 1f else parentAlpha
-
-            layers.fastForEachReversed { layer ->
-                // Only clip precomps. This mimics the way After Effects renders animations.
-                val ignoreClipOnThisLayer = isContainerLayer
-
-                if (!ignoreClipOnThisLayer && !newClipRect.isEmpty) {
-                    canvas.clipRect(newClipRect)
-                }
-
-                layer.draw(
-                    drawScope,
-                    parentMatrix,
-                    childAlpha,
-                    remappedFrame(frame)
-                )
-            }
-
-            canvas.restore()
+        if (isDrawingWithOffScreen) {
+            layerPaint.alpha = parentAlpha
+            canvas.saveLayer(newClipRect, layerPaint)
+        } else {
+            canvas.save()
         }
+
+        val childAlpha = if (isDrawingWithOffScreen) 1f else parentAlpha
+
+        layers.fastForEachReversed { layer ->
+            // Only clip precomps. This mimics the way After Effects renders animations.
+            val ignoreClipOnThisLayer = isContainerLayer
+
+            if (!ignoreClipOnThisLayer && !newClipRect.isEmpty) {
+                canvas.clipRect(newClipRect)
+            }
+
+            layer.draw(
+                drawScope,
+                parentMatrix,
+                childAlpha,
+                AnimationState(remappedFrame(state))
+            )
+        }
+
+        canvas.restore()
     }
 
     override fun getBounds(
         drawScope: DrawScope,
         parentMatrix: Matrix,
         applyParents: Boolean,
-        frame: Float,
+        state: AnimationState,
         outBounds: MutableRect
     ) {
-        super.getBounds(drawScope, parentMatrix, applyParents, frame, outBounds)
+        super.getBounds(drawScope, parentMatrix, applyParents, state, outBounds)
         layers.fastForEachReversed {
             rect.set(0f, 0f, 0f, 0f)
-            it.getBounds(drawScope, boundsMatrix, true, frame, rect)
+            it.getBounds(drawScope, boundsMatrix, true, state, rect)
             outBounds.union(rect)
         }
     }
 
-    private fun remappedFrame(frame: Float): Float {
+    private fun remappedFrame(state: AnimationState): Float {
 
-        val tr = timeRemapping ?: return frame
+        val tr = timeRemapping ?: return state.frame
 
         val f = if (timeStretch != 0f && !isContainerLayer) {
-            frame / timeStretch
-        } else frame
+            state.frame / timeStretch
+        } else state.frame
 
         val composition = checkNotNull(painterProperties?.composition)
 
-        return tr.interpolated(f) *
+        return tr.interpolated(state) *
                 composition.frameRate - composition.startFrame
     }
 }

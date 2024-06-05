@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.TileMode
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.GradientColors
 import io.github.alexzhirkevich.compottie.internal.animation.GradientType
@@ -20,16 +21,16 @@ internal fun GradientShader(
     startPoint: AnimatedVector2,
     endPoint: AnimatedVector2,
     colors: GradientColors,
-    frame: Float,
+    state: AnimationState,
     matrix: Matrix,
     cache: LinkedHashMap<Int, Shader>
 ) : Shader {
-    val start = startPoint.interpolated(frame)
-    val end = endPoint.interpolated(frame)
+    val start = startPoint.interpolated(state)
+    val end = endPoint.interpolated(state)
 
     colors.colors.numberOfColors = colors.numberOfColors
 
-    val c = colors.colors.interpolated(frame)
+    val c = colors.colors.interpolated(state)
 
     return if (type == GradientType.Linear) {
         CachedLinearGradient(
