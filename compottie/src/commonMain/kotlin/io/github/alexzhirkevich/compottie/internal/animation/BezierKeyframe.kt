@@ -6,16 +6,23 @@ import io.github.alexzhirkevich.compottie.internal.helpers.Bezier
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.ShapeData
 import io.github.alexzhirkevich.compottie.internal.helpers.toShapeData
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonContentPolymorphicSerializer
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonTransformingSerializer
 
 @Serializable
 internal class BezierKeyframe(
 
     @SerialName("s")
+    @Serializable(with = BezierSerializer::class)
     override val start: Bezier? = null,
 
     @SerialName("e")
+    @Serializable(with = BezierSerializer::class)
     override val end: Bezier? = null,
 
     @SerialName("t")
@@ -58,3 +65,13 @@ internal class ShapeKeyframe(
     override val outValue : BezierInterpolation? = null,
 
 ) : Keyframe<ShapeData>()
+
+
+internal class BezierSerializer : JsonTransformingSerializer<Bezier>(Bezier.serializer()) {
+    override fun transformDeserialize(element: JsonElement): JsonElement {
+        if (element is JsonArray){
+            return element.first()
+        }
+        return element
+    }
+}

@@ -39,7 +39,6 @@ internal class CompositionLayer(
 
     override val inPoint: Float get() = composition.lottieData.inPoint
     override val outPoint: Float get() = composition.lottieData.outPoint
-    override val startTime: Int get() = 0
 
     override val name: String? = null
 

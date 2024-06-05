@@ -93,7 +93,14 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
     private val pm = ExtendedPathMeasure()
 
     private val dashPattern by lazy {
-        strokeDash?.filter { it.dashType != DashType.Offset }?.map { it.value }
+        strokeDash?.filter { it.dashType != DashType.Offset }?.map { it.value }?.let {
+
+            // If there is only 1 value then it is assumed to be equal parts on and off.
+
+            if (it.size == 1)
+                it + it[0]
+            else it
+        }
     }
 
     private val dashOffset by lazy {
@@ -101,7 +108,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
     }
 
     private val dashPatternValues by lazy {
-        FloatArray(dashPattern?.size ?: 0)
+        FloatArray(dashPattern?.size?.coerceAtLeast(2) ?: 0)
     }
 
     private var roundShape : RoundShape? = null
@@ -112,7 +119,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         drawScope: DrawScope,
         parentMatrix: Matrix,
         parentAlpha: Float,
-        frame: Float
+        frame: Float,
     ) {
 
         if (hidden){
@@ -294,31 +301,34 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
 
     private fun applyDashPatternIfNeeded(parentMatrix: Matrix, frame: Float) {
 
+
         val dp = dashPattern
-        val o = dashOffset?.interpolated(frame) ?: 0f
+
         if (dp.isNullOrEmpty()) {
             return
         }
 
         val scale = parentMatrix.scale
 
+        val o = dashOffset?.interpolated(frame)?.times(scale) ?: 0f
+
         dp.fastForEachIndexed { i, strokeDash ->
+
             dashPatternValues[i] = strokeDash.interpolated(frame)
+
             // If the value of the dash pattern or gap is too small, the number of individual sections
             // approaches infinity as the value approaches 0.
             // To mitigate this, we essentially put a minimum value on the dash pattern size of 1px
             // and a minimum gap size of 0.01.
-            if (i % 2 == 0) {
-                if (dashPatternValues[i] < 1f) {
-                    dashPatternValues[i] = 1f
-                }
-            } else {
-                if (dashPatternValues[i] < 0.1f) {
-                    dashPatternValues[i] = 0.1f
-                }
+            when {
+                i % 2 == 0 -> dashPatternValues[i] = dashPatternValues[i].coerceAtLeast(1f)
+                i % 2 == 1 -> dashPatternValues[i] = dashPatternValues[i].coerceAtLeast(.01f)
             }
+
             dashPatternValues[i] = dashPatternValues[i] * scale
         }
+
+        println(scale)
 
         paint.pathEffect = PathEffect.dashPathEffect(dashPatternValues, o)
     }

@@ -20,6 +20,7 @@ import org.jetbrains.skia.MaskFilter
 import org.jetbrains.skia.Matrix33
 import org.jetbrains.skia.Shader
 import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.sqrt
 
 internal actual fun MakeLinearGradient(
@@ -29,19 +30,26 @@ internal actual fun MakeLinearGradient(
     colorStops: List<Float>,
     tileMode: TileMode,
     matrix: Matrix
-) = Shader.makeLinearGradient(
-    x0 = from.x,
-    y0 = from.y,
-    x1 = to.x,
-    y1 = to.y,
-    colors = colors.toIntArray(),
-    positions = colorStops.toFloatArray(),
-    style = GradientStyle(
-        tileMode = tileMode.toSkiaTileMode(),
-        isPremul = true,
-        localMatrix = matrix.asSkia33()
-    )
-)
+) : Shader {
+    return try {
+        Shader.makeLinearGradient(
+            x0 = from.x,
+            y0 = from.y,
+            x1 = to.x,
+            y1 = to.y,
+            colors = colors.toIntArray(),
+            positions = colorStops.toFloatArray(),
+            style = GradientStyle(
+                tileMode = tileMode.toSkiaTileMode(),
+                isPremul = true,
+                localMatrix = matrix.asSkia33(coerceScale = true)
+            )
+        )
+    }catch (t : Throwable){
+        print("${matrix.values[Matrix.ScaleX]} ${matrix.values[Matrix.ScaleY]}")
+        throw t
+    }
+}
 
 internal actual fun MakeRadialGradient(
     center : Offset,
@@ -59,18 +67,32 @@ internal actual fun MakeRadialGradient(
     style = GradientStyle(
         tileMode = tileMode.toSkiaTileMode(),
         isPremul = true,
-        localMatrix = matrix.asSkia33()
+        localMatrix = matrix.asSkia33(coerceScale = true)
     )
 )
 
 
-internal fun Matrix.asSkia33() : Matrix33 {
+internal fun Matrix.asSkia33(coerceScale : Boolean = false) : Matrix33 {
+
+    // skiko shaders with zero scale cause crash
+
+    val scaleX = when {
+        coerceScale && abs(values[Matrix.ScaleX]) < 0.001f -> 0.001f
+        else -> values[Matrix.ScaleX]
+    }
+
+    val scaleY = when {
+        coerceScale && abs(values[Matrix.ScaleY]) < 0.001f -> 0.001f
+        else -> values[Matrix.ScaleY]
+    }
+
+
     return Matrix33(
-        values[Matrix.ScaleX],
+        scaleX,
         values[Matrix.SkewX],
         values[Matrix.TranslateX],
         values[Matrix.SkewY],
-        values[Matrix.ScaleY],
+        scaleY,
         values[Matrix.TranslateY],
         values[Matrix.Perspective0],
         values[Matrix.Perspective1],

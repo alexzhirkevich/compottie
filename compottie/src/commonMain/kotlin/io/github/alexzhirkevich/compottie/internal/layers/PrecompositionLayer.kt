@@ -38,9 +38,6 @@ internal class PrecompositionLayer(
     @SerialName("op")
     override val outPoint: Float? = null,
 
-    @SerialName("st")
-    override val startTime: Int? = null,
-
     @SerialName("nm")
     override val name: String? = null,
 

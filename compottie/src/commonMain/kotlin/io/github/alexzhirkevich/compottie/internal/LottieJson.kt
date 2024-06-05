@@ -117,6 +117,7 @@ internal val LottieJson by lazy {
             polymorphic(AnimatedVector2::class) {
                 subclass(AnimatedVector2.Default::class)
                 subclass(AnimatedVector2.Animated::class)
+                subclass(AnimatedVector2.Split::class)
             }
         }
     }

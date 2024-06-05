@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie.internal.utils
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
 import kotlin.math.hypot
+import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 private val tempMatrixConcat = Matrix()
@@ -18,7 +19,9 @@ val Matrix.scale: Float get() {
     val p1 = map(Offset.Zero)
     val p2 = map(InvSqrt2Offset)
 
-    return hypot(p2.x - p1.x, p2.y - p1.y)
+    // hypot can result in float errors like 1.00000010
+    // that cause some problems like invalid stroke dash offset
+    return (hypot(p2.x - p1.x, p2.y - p1.y) * 1000).roundToInt() / 1000f
 }
 
 fun Matrix.preTranslate(x : Float, y : Float) {

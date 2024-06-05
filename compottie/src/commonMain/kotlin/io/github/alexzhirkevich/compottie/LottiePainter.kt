@@ -216,7 +216,7 @@ private class LottiePainter(
             }
         }.let {
             if (it.inWholeMilliseconds > 0) {
-                println(it.inWholeMilliseconds)
+//                println(it.inWholeMilliseconds)
             }
         }
     }

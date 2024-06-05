@@ -31,8 +31,6 @@ internal sealed interface Layer {
 
     val outPoint : Float?
 
-    val startTime : Int?
-
     val name : String?
 
     var painterProperties : PainterProperties?
