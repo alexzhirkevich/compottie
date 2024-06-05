@@ -6,22 +6,26 @@ import androidx.compose.ui.geometry.isUnspecified
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.util.lerp
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonClassDiscriminator
+import kotlinx.serialization.json.JsonContentPolymorphicSerializer
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.math.hypot
 
-typealias Vec2 = Offset
+internal typealias Vec2 = Offset
 
-@OptIn(ExperimentalSerializationApi::class)
-@Serializable()
-@JsonClassDiscriminator("a")
+@Serializable(with = AnimatedVector2Serializer::class)
 internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
 
     @Serializable
-    @SerialName("0")
     class Default(
         @SerialName("k")
         val value: FloatArray,
@@ -40,7 +44,6 @@ internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
     }
 
     @Serializable
-    @SerialName("1")
     class Animated(
         @SerialName("k")
         val value: List<VectorKeyframe>,
@@ -79,7 +82,7 @@ internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
                     val tangent = pathMeasure.getTangent(distance)
 
                     when {
-                        distance < 0 ->  pos + tangent * distance
+                        distance < 0 -> pos + tangent * distance
                         distance > length -> pos + tangent * (distance - length)
                         else -> pos
                     }
@@ -94,6 +97,44 @@ internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
 
         override fun interpolated(frame: Float): Offset {
             return delegate.interpolated(frame)
+        }
+    }
+
+    @Serializable
+    class Split(
+        val x: AnimatedValue,
+        val y: AnimatedValue,
+    ) : AnimatedVector2 {
+
+        override val expression: String? get() = null
+        override val index: String? get() = null
+
+        override fun interpolated(frame: Float): Vec2 {
+            return Offset(
+                x.interpolated(frame),
+                y.interpolated(frame)
+            )
+        }
+    }
+}
+
+
+internal class AnimatedVector2Serializer : JsonContentPolymorphicSerializer<AnimatedVector2>(AnimatedVector2::class){
+
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedVector2> {
+
+        return when {
+            element.jsonObject["s"]?.jsonPrimitive?.booleanOrNull == true ->
+                AnimatedVector2.Split.serializer()
+
+            element.jsonObject["a"]?.jsonPrimitive?.intOrNull == 1 ->
+                AnimatedVector2.Animated.serializer()
+
+            element.jsonObject["a"]?.jsonPrimitive?.intOrNull == 0 ->
+                AnimatedVector2.Default.serializer()
+
+            else -> error("Unknown transform")
+
         }
     }
 }
