@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.asComposeColorFilter
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.GradientColors
@@ -155,8 +156,21 @@ internal expect fun MakeRadialGradient(
 internal expect fun Paint.setBlurMaskFilter(radius: Float, isImage : Boolean = false)
 
 
-internal val ColorFilter.Companion.Luma : ColorFilter get() = LumaColorFilter
+internal val ColorFilter.Companion.Luma : ColorFilter
+    get() = org.jetbrains.skia.ColorFilter.luma.asComposeColorFilter()
 
+
+fun foo(){
+    ColorFilter
+    ColorMatrix(
+        floatArrayOf(
+            0f, 0f, 0f, 0f, 0f,
+            0f, 0f, 0f, 0f, 0f,
+            0f, 0f, 0f, 0f, 0f,
+            0.2126f, 0.7152f, 0.0722f, 0f, 0f
+        )
+    )
+}
 private val LumaColorFilter by lazy {
     ColorFilter.colorMatrix(
         ColorMatrix(

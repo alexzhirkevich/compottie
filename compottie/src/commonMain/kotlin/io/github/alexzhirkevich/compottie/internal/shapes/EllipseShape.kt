@@ -45,6 +45,7 @@ internal class EllipseShape(
     private val trimPaths = CompoundTrimPath()
 
     override fun getPath(state: AnimationState): Path {
+
         if (hidden) {
             path.rewind()
             return path

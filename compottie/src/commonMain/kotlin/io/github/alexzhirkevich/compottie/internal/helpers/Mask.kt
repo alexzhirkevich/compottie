@@ -1,7 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.helpers
 
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
@@ -16,13 +16,13 @@ internal class Mask(
     val shape : AnimatedShape? = null,
 
     @SerialName("o")
-    val opacity : AnimatedValue? = null,
+    val opacity : AnimatedNumber? = null,
 
     @SerialName("mode")
     val mode : MaskMode = MaskMode.Intersect,
 
     @SerialName("x")
-    val expand: AnimatedValue? = null
+    val expand: AnimatedNumber? = null
 )
 
 @Serializable

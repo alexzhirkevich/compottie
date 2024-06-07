@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.RepeaterTransform
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
@@ -25,10 +25,10 @@ import kotlinx.serialization.Transient
 internal class RepeaterShape(
 
     @SerialName("c")
-    val copies : AnimatedValue,
+    val copies : AnimatedNumber,
 
     @SerialName("o")
-    val offset : AnimatedValue? = null,
+    val offset : AnimatedNumber? = null,
 
     @SerialName("tr")
     val transform: RepeaterTransform,

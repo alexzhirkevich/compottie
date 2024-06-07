@@ -23,7 +23,7 @@ internal sealed interface Shape : Content {
         override val matchName: String? get() = null
         override val hidden: Boolean get() = true
         override var layer: Layer
-            get() = TODO("Not yet implemented")
+            get() = error("Unsupported shape doesn't have layer")
             set(value) {}
 
         override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {

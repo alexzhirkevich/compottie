@@ -6,18 +6,23 @@ import io.github.alexzhirkevich.compottie.internal.helpers.Bezier
 import io.github.alexzhirkevich.compottie.internal.helpers.ShapeData
 import io.github.alexzhirkevich.compottie.internal.helpers.mapPath
 import io.github.alexzhirkevich.compottie.internal.helpers.toShapeData
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonClassDiscriminator
+import kotlinx.serialization.json.JsonContentPolymorphicSerializer
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
-@OptIn(ExperimentalSerializationApi::class)
-@Serializable
-@JsonClassDiscriminator("a")
+@Serializable(with = AnimatedShapeSerializer::class)
 internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
 
-    @SerialName("0")
     @Serializable
     class Default(
         @SerialName("x")
@@ -49,7 +54,6 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
         }
     }
 
-    @SerialName("1")
     @Serializable
     class Animated(
         @SerialName("x")
@@ -84,6 +88,23 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
             return delegate.interpolated(state)
         }
     }
+}
+
+internal class AnimatedShapeSerializer : JsonContentPolymorphicSerializer<AnimatedShape>(
+    baseClass = AnimatedShape::class
+){
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedShape> {
+        val k = requireNotNull(element.jsonObject["k"]){
+            "Animated shape must have 'k' parameter"
+        }
+
+        return if (element.jsonObject["a"]?.jsonPrimitive?.intOrNull == 0 || k is JsonObject){
+            AnimatedShape.Default.serializer()
+        } else {
+            AnimatedShape.Animated.serializer()
+        }
+    }
+
 }
 
 

@@ -1,6 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.helpers.text
 
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -12,17 +12,17 @@ internal class TextFollowPath(
     val mask: Mask? = null,
 
     @SerialName("f")
-    val firstMargin : AnimatedValue? = null,
+    val firstMargin : AnimatedNumber? = null,
 
     @SerialName("l")
-    val lastMargin : AnimatedValue? = null,
+    val lastMargin : AnimatedNumber? = null,
 
     @SerialName("r")
-    val reversePath : AnimatedValue? = null,
+    val reversePath : AnimatedNumber? = null,
 
     @SerialName("a")
-    val forceAlignment : AnimatedValue? = null,
+    val forceAlignment : AnimatedNumber? = null,
 
     @SerialName("p")
-    val perpendicularToPath : AnimatedValue? = null,
+    val perpendicularToPath : AnimatedNumber? = null,
 )

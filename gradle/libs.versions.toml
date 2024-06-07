@@ -5,10 +5,13 @@ dokka="1.9.0"
 compose="1.6.10"
 androidGradlePlugin = "8.1.1"
 lottie-android="6.4.0"
+okio = "3.9.0"
 serialization="1.6.2"
 
 [libraries]
 lottie-android = { module ="com.airbnb.android:lottie-compose", version.ref = "lottie-android" }
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+okio-fakefilesystem = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okio" }
 serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 
 [plugins]
@@ -20,3 +23,4 @@ android-library = { id = "com.android.library", version.ref = "androidGradlePlug
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+

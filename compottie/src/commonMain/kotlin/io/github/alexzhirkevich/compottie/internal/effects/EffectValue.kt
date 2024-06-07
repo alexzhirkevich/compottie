@@ -1,6 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.effects
 
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -15,13 +15,13 @@ internal sealed interface EffectValue {
     @SerialName("0")
     class Slider(
         @SerialName("v")
-        val value : AnimatedValue? = null
+        val value : AnimatedNumber? = null
     ) : EffectValue
 
     @Serializable
     @SerialName("4")
     class CheckBox(
         @SerialName("v")
-        val value : AnimatedValue? = null
+        val value : AnimatedNumber? = null
     ) : EffectValue
 }

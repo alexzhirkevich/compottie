@@ -13,7 +13,7 @@ import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.FillRule
 import io.github.alexzhirkevich.compottie.internal.helpers.asComposeBlendMode
@@ -44,7 +44,7 @@ internal class FillShape(
     val direction : Int = 1,
 
     @SerialName("o")
-    val opacity : AnimatedValue?,
+    val opacity : AnimatedNumber?,
 
     @SerialName("c")
     val color : AnimatedColor,
@@ -52,7 +52,7 @@ internal class FillShape(
     @SerialName("r")
     val fillRule : FillRule? = null,
 
-) : Shape, DrawingContent {
+    ) : Shape, DrawingContent {
 
     @Transient
     override lateinit var layer: Layer

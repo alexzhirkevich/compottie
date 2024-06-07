@@ -45,7 +45,7 @@ private val pathMeasure = ExtendedPathMeasure()
 private val tempPath = Path()
 private val tempPath2 = Path()
 
-fun Path.applyTrimPath(
+internal fun Path.applyTrimPath(
     startValue: Float,
     endValue: Float,
     offsetValue: Float,
@@ -61,6 +61,7 @@ fun Path.applyTrimPath(
     }
     val start = length * startValue
     val end = length * endValue
+
     var newStart = min(start, end)
     var newEnd = max(start, end)
 

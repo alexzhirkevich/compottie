@@ -1,6 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.helpers
 
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
@@ -17,7 +17,7 @@ internal class StrokeDash(
     val dashType: DashType,
 
     @SerialName("v")
-    val value : AnimatedValue
+    val value : AnimatedNumber
 )
 
 @JvmInline

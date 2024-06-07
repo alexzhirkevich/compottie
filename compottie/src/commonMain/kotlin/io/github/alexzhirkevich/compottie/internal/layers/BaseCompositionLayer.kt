@@ -4,11 +4,10 @@ import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.isSupported
 import io.github.alexzhirkevich.compottie.internal.platform.clipRect
@@ -22,7 +21,7 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
 
     abstract val height : Float
 
-    abstract val timeRemapping : AnimatedValue?
+    abstract val timeRemapping : AnimatedNumber?
 
     @Transient
     private val newClipRect = MutableRect(0f, 0f, 0f, 0f)

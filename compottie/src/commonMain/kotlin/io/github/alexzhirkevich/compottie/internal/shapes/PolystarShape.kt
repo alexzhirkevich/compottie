@@ -7,7 +7,7 @@ import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
@@ -52,27 +52,27 @@ internal class PolystarShape(
     val direction : Int = 1,
 
     @SerialName("is")
-    val innerRoundness : AnimatedValue? = null,
+    val innerRoundness : AnimatedNumber? = null,
 
     @SerialName("ir")
-    val innerRadius : AnimatedValue? = null,
+    val innerRadius : AnimatedNumber? = null,
 
     @SerialName("or")
-    val outerRadius : AnimatedValue? = null,
+    val outerRadius : AnimatedNumber? = null,
 
     @SerialName("os")
-    val outerRoundness : AnimatedValue? = null,
+    val outerRoundness : AnimatedNumber? = null,
 
     @SerialName("r")
-    val rotation : AnimatedValue? = null,
+    val rotation : AnimatedNumber? = null,
 
     @SerialName("pt")
-    val points : AnimatedValue,
+    val points : AnimatedNumber,
 
     @SerialName("sy")
     val starType : StarType,
 
-) : Shape, PathContent {
+    ) : Shape, PathContent {
 
     @Transient
     override lateinit var layer: Layer

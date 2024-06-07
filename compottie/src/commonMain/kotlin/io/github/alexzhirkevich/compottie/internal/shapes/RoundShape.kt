@@ -3,7 +3,7 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PathEffect
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
@@ -22,7 +22,7 @@ internal class RoundShape(
     override val hidden : Boolean = false,
 
     @SerialName("r")
-    val radius : AnimatedValue,
+    val radius : AnimatedNumber,
 ) : Shape {
 
     @Transient

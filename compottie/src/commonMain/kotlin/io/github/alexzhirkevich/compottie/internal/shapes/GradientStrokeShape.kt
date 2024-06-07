@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.GradientColors
 import io.github.alexzhirkevich.compottie.internal.animation.GradientType
@@ -39,10 +39,10 @@ internal class GradientStrokeShape(
     override val strokeMiter : Float = 0f,
 
     @SerialName("o")
-    override val opacity : AnimatedValue = AnimatedValue.Default(100f),
+    override val opacity : AnimatedNumber = AnimatedNumber.Default(100f),
 
     @SerialName("w")
-    override val strokeWidth : AnimatedValue,
+    override val strokeWidth : AnimatedNumber,
 
     @SerialName("d")
     override val strokeDash: List<StrokeDash>? = null,
@@ -57,13 +57,13 @@ internal class GradientStrokeShape(
      * Gradient Highlight Length. Only if type is Radial
      * */
     @SerialName("h")
-    val highlightLength : AnimatedValue? = null,
+    val highlightLength : AnimatedNumber? = null,
 
     /**
      * Highlight Angle. Only if type is Radial
      * */
     @SerialName("a")
-    val highlightAngle : AnimatedValue? = null,
+    val highlightAngle : AnimatedNumber? = null,
 
     @SerialName("g")
     val colors : GradientColors,

@@ -2,7 +2,7 @@ package io.github.alexzhirkevich.compottie.internal.helpers
 
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -10,7 +10,7 @@ import kotlinx.serialization.Serializable
 internal class Transform(
 
     @SerialName("a")
-    override val anchorPoint : AnimatedVector2? = null ,
+    override val anchorPoint : AnimatedVector2? = null,
 
     @SerialName("p")
     override val position : AnimatedVector2? = null,
@@ -19,16 +19,16 @@ internal class Transform(
     override val scale : AnimatedVector2? = null,
 
     @SerialName("r")
-    override val rotation : AnimatedValue? = null,
+    override val rotation : AnimatedNumber? = null,
 
     @SerialName("o")
-    override val opacity : AnimatedValue? = null,
+    override val opacity : AnimatedNumber? = null,
 
     @SerialName("sk")
-    override val skew: AnimatedValue? = null,
+    override val skew: AnimatedNumber? = null,
 
     @SerialName("sa")
-    override val skewAxis: AnimatedValue? = null,
+    override val skewAxis: AnimatedNumber? = null,
 ) : AnimatedTransform()
 
 

@@ -1,7 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
-import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.assets.PrecompositionAsset
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
@@ -24,7 +23,7 @@ internal class PrecompositionLayer(
     override val height : Float,
 
     @SerialName("tm")
-    override val timeRemapping : AnimatedValue? = null,
+    override val timeRemapping : AnimatedNumber? = null,
 
     @SerialName("ddd")
     override val is3d: BooleanInt = BooleanInt.No,

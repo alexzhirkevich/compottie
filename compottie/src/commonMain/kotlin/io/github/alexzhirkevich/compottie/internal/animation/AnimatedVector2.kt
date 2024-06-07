@@ -9,8 +9,10 @@ import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
@@ -100,8 +102,8 @@ internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
 
     @Serializable
     class Split(
-        val x: AnimatedValue,
-        val y: AnimatedValue,
+        val x: AnimatedNumber,
+        val y: AnimatedNumber,
     ) : AnimatedVector2 {
 
         override val expression: String? get() = null
@@ -117,22 +119,23 @@ internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
 }
 
 
-internal class AnimatedVector2Serializer : JsonContentPolymorphicSerializer<AnimatedVector2>(AnimatedVector2::class){
+internal class AnimatedVector2Serializer : JsonContentPolymorphicSerializer<AnimatedVector2>(AnimatedVector2::class) {
 
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedVector2> {
+
+        val k = requireNotNull(element.jsonObject["k"]) {
+            "Animation vector must have 'k' property"
+        }
 
         return when {
             element.jsonObject["s"]?.jsonPrimitive?.booleanOrNull == true ->
                 AnimatedVector2.Split.serializer()
 
-            element.jsonObject["a"]?.jsonPrimitive?.intOrNull == 1 ->
+            element.jsonObject["a"]?.jsonPrimitive?.intOrNull == 1 ||
+                    k is JsonArray && k[0] is JsonObject ->
                 AnimatedVector2.Animated.serializer()
 
-            element.jsonObject["a"]?.jsonPrimitive?.intOrNull == 0 ->
-                AnimatedVector2.Default.serializer()
-
-            else -> error("Unknown transform")
-
+            else -> AnimatedVector2.Default.serializer()
         }
     }
 }

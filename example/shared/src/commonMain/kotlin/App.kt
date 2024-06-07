@@ -1,20 +1,17 @@
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import compottie.example.shared.generated.resources.Res
+import io.github.alexzhirkevich.compottie.DotLottie
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.LottieConstants
@@ -22,7 +19,6 @@ import io.github.alexzhirkevich.compottie.assets.rememberLottieAssetsManager
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import kotlin.math.roundToInt
 
 private val GRADIENT_ELLIPSE = "gradient_ellipse.json"
 private val TEST = "test.json"
@@ -47,11 +43,16 @@ private val TEXT = "text.json"
 private val IMAGE_ASSET = "image_asset.json"
 private val IMAGE_ASSET_EMBEDDED = "image_asset_embedded.json"
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun App() {
 
     val composition = rememberLottieComposition(
-        LottieCompositionSpec.Resource(ROBOT)
+        spec = LottieCompositionSpec.DotLottie {
+            Res.readBytes("files/dotlottie/dot.lottie")
+        },
+//        spec = LottieCompositionSpec.Resource(ROBOT),
+        assetsManager =  rememberResourcesAssetsManager()
     )
 
     LaunchedEffect(composition) {
@@ -66,7 +67,6 @@ fun App() {
             composition = composition.value,
             iterations = LottieConstants.IterateForever,
             onLoadError = { throw it },
-            assetManager = rememberResourcesAssetsManager()
         ),
         contentDescription = null
     )

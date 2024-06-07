@@ -148,7 +148,7 @@ internal class TextLayer(
             canvas.concat(parentMatrix)
 
             configurePaint(document, parentAlpha, state)
-            configureTextStyle(drawScope, document)
+            configureTextStyle(drawScope, document, state)
             drawTextWithFonts(drawScope, document)
 
             canvas.restore()
@@ -195,31 +195,39 @@ internal class TextLayer(
         }
     }
 
-    private fun configureTextStyle(drawScope: DrawScope, document: TextDocument) {
+    private fun configureTextStyle(drawScope: DrawScope, document: TextDocument, animationState: AnimationState) {
 
-        val fontSize = document.fontSize.sp
-        val baselineShift = document.baselineShift
-            ?.let { BaselineShift(it) }
-            ?: textStyle.baselineShift
+        drawScope.run {
+            val fontSize = document.fontSize.sp
+            val baselineShift = document.baselineShift
+                ?.let { BaselineShift(it) }
+                ?: textStyle.baselineShift
 
-        val lineHeight = document.lineHeight.sp
+            val lineHeight = document.lineHeight.sp
 
-        val fontFamily = checkNotNull(painterProperties?.composition?.fonts)
-            .get(document.fontFamily)
+            val fontFamily = checkNotNull(painterProperties?.composition?.fonts)
+                .get(document.fontFamily)
 
-        if (
-            textStyle.fontSize != fontSize ||
-            textStyle.baselineShift != baselineShift ||
-            textStyle.lineHeight != lineHeight ||
-            textStyle.fontFamily != fontFamily
-        ) {
-            textStyle = textStyle.copy(
-                baselineShift = baselineShift,
-                fontSize = fontSize,
-                lineHeight = lineHeight,
-                fontFamily = fontFamily,
-                color = Color.Red
-            )
+            val letterSpacing = textAnimation?.style?.letterSpacing
+                ?.interpolated(animationState)?.toSp()
+                ?: textStyle.letterSpacing
+
+            if (
+                textStyle.fontSize != fontSize ||
+                textStyle.baselineShift != baselineShift ||
+                textStyle.lineHeight != lineHeight ||
+                textStyle.fontFamily != fontFamily ||
+                textStyle.letterSpacing != letterSpacing
+            ) {
+                textStyle = textStyle.copy(
+                    baselineShift = baselineShift,
+                    fontSize = fontSize,
+                    lineHeight = lineHeight,
+                    fontFamily = fontFamily,
+                    letterSpacing = letterSpacing,
+                    color = Color.Red
+                )
+            }
         }
     }
 
@@ -398,7 +406,7 @@ internal class TextLayer(
         val position = document.wrapPosition?.toOffset()
         val size = document.wrapSize?.let { Size(it[0], it[1]) }
         val lineStartY = if (position == null) {
-            density.run { -document.lineHeight.sp.toPx() }
+            density.run { -textStyle.lineHeight.toPx()/2 }
         } else {
             document.lineHeight * density.density + position.y
         }

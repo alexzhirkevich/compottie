@@ -6,7 +6,7 @@ import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
@@ -38,7 +38,7 @@ internal class RectShape(
     val size : AnimatedVector2,
 
     @SerialName("r")
-    val roundedCorners : AnimatedValue? = null,
+    val roundedCorners : AnimatedNumber? = null,
 ) : Shape, PathContent {
 
     @Transient

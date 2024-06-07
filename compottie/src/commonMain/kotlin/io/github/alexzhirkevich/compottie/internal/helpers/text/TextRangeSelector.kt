@@ -1,6 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.helpers.text
 
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -12,13 +12,13 @@ internal class TextRangeSelector(
     val expressible : BooleanInt,
 
     @SerialName("xe")
-    val maxEase : AnimatedValue? = null,
+    val maxEase : AnimatedNumber? = null,
 
     @SerialName("ne")
-    val minEase : AnimatedValue? = null,
+    val minEase : AnimatedNumber? = null,
 
     @SerialName("a")
-    val maxAmount : AnimatedValue? = null,
+    val maxAmount : AnimatedNumber? = null,
 
     @SerialName("b")
     val basedOn : TextBased,
@@ -30,17 +30,17 @@ internal class TextRangeSelector(
     val shape : TextShape,
 
     @SerialName("o")
-    val offset : AnimatedValue? = null,
+    val offset : AnimatedNumber? = null,
 
     @SerialName("r")
     val rangeUnits : TextRangeUnits? = null,
 
     @SerialName("sm")
-    val smoothness : AnimatedValue? = null,
+    val smoothness : AnimatedNumber? = null,
 
     @SerialName("s")
-    val start : AnimatedValue? = null,
+    val start : AnimatedNumber? = null,
 
     @SerialName("e")
-    val end : AnimatedValue? = null,
+    val end : AnimatedNumber? = null,
 )

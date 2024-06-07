@@ -76,7 +76,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
     private val matteBoundsRect = MutableRect(0f, 0f, 0f, 0f)
     private val mattePaint by lazy {
         Paint().apply {
-            isAntiAlias = true
+            isAntiAlias = false
             if (matteMode?.isLuma() == true){
                 colorFilter = ColorFilter.Luma
             }
@@ -110,7 +110,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
     ) {
 
         val frame = state.frame
-
+        
         if (hidden || (inPoint ?: 0f) > frame || (outPoint ?: Float.MAX_VALUE) < frame)
             return
 
@@ -127,6 +127,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         transform.opacity?.interpolated(state)?.let {
             alpha = (alpha * (it / 100f)).coerceIn(0f, 1f)
         }
+
 
         if (matteLayer == null && !hasMask()) {
             matrix.preConcat(transform.matrix(state))

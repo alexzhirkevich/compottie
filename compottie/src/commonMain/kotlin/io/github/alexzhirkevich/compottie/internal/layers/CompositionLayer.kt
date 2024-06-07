@@ -1,7 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
 import io.github.alexzhirkevich.compottie.LottieComposition
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
@@ -15,7 +15,7 @@ internal class CompositionLayer(
 
     override val width: Float get() = composition.lottieData.width
     override val height: Float get() = composition.lottieData.height
-    override val timeRemapping: AnimatedValue? get() = null
+    override val timeRemapping: AnimatedNumber? get() = null
 
     override val masks: List<Mask>? get() = null
     override val effects: List<LayerEffect> get() = emptyList()

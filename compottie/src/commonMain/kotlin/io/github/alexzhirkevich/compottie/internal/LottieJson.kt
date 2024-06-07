@@ -2,7 +2,7 @@ package io.github.alexzhirkevich.compottie.internal
 
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
@@ -109,9 +109,9 @@ internal val LottieJson by lazy {
                 subclass(AnimatedShape.Animated::class)
             }
 
-            polymorphic(AnimatedValue::class) {
-                subclass(AnimatedValue.Default::class)
-                subclass(AnimatedValue.Animated::class)
+            polymorphic(AnimatedNumber::class) {
+                subclass(AnimatedNumber.Default::class)
+                subclass(AnimatedNumber.Animated::class)
             }
 
             polymorphic(AnimatedVector2::class) {

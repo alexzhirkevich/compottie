@@ -12,7 +12,7 @@ import kotlin.math.pow
 @Serializable
 internal class RepeaterTransform(
     @SerialName("a")
-    override val anchorPoint : AnimatedVector2? = null ,
+    override val anchorPoint : AnimatedVector2? = null,
 
     @SerialName("p")
     override val position : AnimatedVector2? = null,
@@ -21,22 +21,22 @@ internal class RepeaterTransform(
     override val scale : AnimatedVector2? = null,
 
     @SerialName("r")
-    override val rotation : AnimatedValue? = null,
+    override val rotation : AnimatedNumber? = null,
 
     @SerialName("o")
-    override val opacity : AnimatedValue? = null,
+    override val opacity : AnimatedNumber? = null,
 
     @SerialName("sk")
-    override val skew: AnimatedValue? = null,
+    override val skew: AnimatedNumber? = null,
 
     @SerialName("sa")
-    override val skewAxis: AnimatedValue? = null,
+    override val skewAxis: AnimatedNumber? = null,
 
     @SerialName("so")
-    val startOpacity : AnimatedValue? = null,
+    val startOpacity : AnimatedNumber? = null,
 
     @SerialName("eo")
-    val endOpacity : AnimatedValue? = null,
+    val endOpacity : AnimatedNumber? = null,
 ) : AnimatedTransform() {
 
     fun repeaterMatrix(state: AnimationState, amount: Float): Matrix {

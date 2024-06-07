@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.helpers.StrokeDash
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
@@ -38,10 +38,10 @@ internal class SolidStrokeShape(
     override val strokeMiter : Float = 0f,
 
     @SerialName("o")
-    override val opacity : AnimatedValue,
+    override val opacity : AnimatedNumber,
 
     @SerialName("w")
-    override val strokeWidth : AnimatedValue,
+    override val strokeWidth : AnimatedNumber,
 
     @SerialName("d")
     override val strokeDash: List<StrokeDash>? = null,

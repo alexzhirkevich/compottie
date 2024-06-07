@@ -15,7 +15,7 @@ import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
@@ -72,8 +72,8 @@ internal fun LineCap.asStrokeCap() : StrokeCap {
 
 internal abstract class BaseStrokeShape() : Shape, DrawingContent {
 
-    abstract val opacity: AnimatedValue
-    abstract val strokeWidth: AnimatedValue
+    abstract val opacity: AnimatedNumber
+    abstract val strokeWidth: AnimatedNumber
     abstract val lineCap: LineCap
     abstract val lineJoin: LineJoin
     abstract val strokeMiter: Float
@@ -328,8 +328,6 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
 
             dashPatternValues[i] = dashPatternValues[i] * scale
         }
-
-        println(scale)
 
         paint.pathEffect = PathEffect.dashPathEffect(dashPatternValues, o)
     }

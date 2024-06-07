@@ -4,19 +4,24 @@ package io.github.alexzhirkevich.compottie.internal.animation
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonClassDiscriminator
+import kotlinx.serialization.json.JsonContentPolymorphicSerializer
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
-@OptIn(ExperimentalSerializationApi::class)
-@Serializable
-@JsonClassDiscriminator("a")
+@Serializable(with = AnimatedColorSerializer::class)
 internal sealed interface AnimatedColor : KeyframeAnimation<Color>, Indexable {
 
-    @Serializable
-    @SerialName("0")
+    @Serializable()
     class Default(
         @SerialName("k")
         val value: FloatArray,
@@ -35,7 +40,6 @@ internal sealed interface AnimatedColor : KeyframeAnimation<Color>, Indexable {
     }
 
     @Serializable
-    @SerialName("1")
     class Animated(
 
         @SerialName("k")
@@ -64,4 +68,23 @@ internal fun FloatArray.toColor() = Color(
 )
 
 
+internal class AnimatedColorSerializer : JsonContentPolymorphicSerializer<AnimatedColor>(
+    baseClass = AnimatedColor::class
+) {
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedColor> {
+        val k = requireNotNull(element.jsonObject["k"]) {
+            "Animated shape must have 'k' parameter"
+        }
+
+        val animated = element.jsonObject["a"]?.jsonPrimitive?.intOrNull == 1 ||
+                k is JsonArray && k[0] is JsonObject
+
+        return if (animated) {
+            AnimatedColor.Animated.serializer()
+        } else {
+            AnimatedColor.Default.serializer()
+        }
+    }
+
+}
 

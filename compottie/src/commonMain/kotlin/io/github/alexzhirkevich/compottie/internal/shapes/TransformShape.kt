@@ -4,7 +4,7 @@ import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.ModifierContent
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -33,16 +33,16 @@ internal class TransformShape(
     override val scale : AnimatedVector2? = null,
 
     @SerialName("r")
-    override val rotation : AnimatedValue ? = null,
+    override val rotation : AnimatedNumber ? = null,
 
     @SerialName("o")
-    override val opacity : AnimatedValue? = null,
+    override val opacity : AnimatedNumber? = null,
 
     @SerialName("sk")
-    override val skew: AnimatedValue? = null,
+    override val skew: AnimatedNumber? = null,
 
     @SerialName("sa")
-    override val skewAxis: AnimatedValue? = null,
+    override val skewAxis: AnimatedNumber? = null,
 ) : AnimatedTransform(), Shape, ModifierContent {
 
     @Transient

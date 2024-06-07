@@ -17,10 +17,10 @@ internal abstract class AnimatedTransform {
     abstract val anchorPoint: AnimatedVector2?
     abstract val position: AnimatedVector2?
     abstract val scale: AnimatedVector2?
-    abstract val rotation: AnimatedValue?
-    abstract val opacity: AnimatedValue?
-    abstract val skew: AnimatedValue?
-    abstract val skewAxis: AnimatedValue?
+    abstract val rotation: AnimatedNumber?
+    abstract val opacity: AnimatedNumber?
+    abstract val skew: AnimatedNumber?
+    abstract val skewAxis: AnimatedNumber?
 
     protected val matrix: Matrix = Matrix()
 

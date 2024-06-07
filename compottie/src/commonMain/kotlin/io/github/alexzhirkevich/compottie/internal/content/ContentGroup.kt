@@ -58,6 +58,7 @@ internal class ContentGroup(
         parentAlpha: Float,
         state: AnimationState
     ) {
+
         if (hidden) {
             return
         }

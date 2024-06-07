@@ -100,6 +100,7 @@ internal class ShapeLayer(
 
     override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
         contentGroup.draw(drawScope, parentMatrix, parentAlpha, state)
+
     }
 
     override fun getBounds(

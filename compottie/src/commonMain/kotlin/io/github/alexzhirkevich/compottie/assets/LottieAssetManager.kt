@@ -40,6 +40,6 @@ fun rememberLottieAssetsManager(
     return remember { LottieAssetsManager(fetch) }
 }
 
-internal val NoOpAssetsFetcher = LottieAssetsManager { _, _, _ -> null }
+internal val NoOpAssetsManager = LottieAssetsManager { _, _, _ -> null }
 
 

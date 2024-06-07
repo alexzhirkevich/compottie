@@ -47,6 +47,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(project(":compottie"))
+            implementation(project(":compottie-dot"))
             implementation(compose.ui)
             implementation(compose.runtime)
             implementation(compose.material3)

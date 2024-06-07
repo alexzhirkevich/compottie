@@ -9,7 +9,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.GradientColors
 import io.github.alexzhirkevich.compottie.internal.animation.GradientType
@@ -40,7 +40,7 @@ internal class GradientFillShape(
     override val hidden : Boolean = false,
 
     @SerialName("o")
-    val opacity : AnimatedValue? = null,
+    val opacity : AnimatedNumber? = null,
 
     @SerialName("s")
     val startPoint : AnimatedVector2,
@@ -55,13 +55,13 @@ internal class GradientFillShape(
      * Gradient Highlight Length. Only if type is Radial
      * */
     @SerialName("h")
-    val highlightLength : AnimatedValue? = null,
+    val highlightLength : AnimatedNumber? = null,
 
     /**
      * Highlight Angle. Only if type is Radial
      * */
     @SerialName("a")
-    val highlightAngle : AnimatedValue? = null,
+    val highlightAngle : AnimatedNumber? = null,
 
     @SerialName("g")
     val colors : GradientColors,

@@ -1,7 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.helpers.text
 
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedValue
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -9,44 +9,44 @@ import kotlinx.serialization.Serializable
 internal class TextStyle(
 
     @SerialName("sw")
-    val strokeWidth : AnimatedValue? = null,
+    val strokeWidth : AnimatedNumber? = null,
 
     @SerialName("sc")
     val strokeColor : AnimatedColor? = null,
 
     @SerialName("sh")
-    val strokeHue : AnimatedValue? = null,
+    val strokeHue : AnimatedNumber? = null,
 
     @SerialName("ss")
-    val strokeSaturation : AnimatedValue? = null,
+    val strokeSaturation : AnimatedNumber? = null,
 
     @SerialName("sb")
-    val strokeBrightness : AnimatedValue? = null,
+    val strokeBrightness : AnimatedNumber? = null,
 
     @SerialName("o")
-    val strokeOpacity : AnimatedValue? = null,
+    val strokeOpacity : AnimatedNumber? = null,
 
     @SerialName("fc")
     val fillColor : AnimatedColor? = null,
 
     @SerialName("fh")
-    val fillHue : AnimatedValue? = null,
+    val fillHue : AnimatedNumber? = null,
 
     @SerialName("fs")
-    val fillSaturation : AnimatedValue? = null,
+    val fillSaturation : AnimatedNumber? = null,
 
     @SerialName("fb")
-    val fillBrightness : AnimatedValue? = null,
+    val fillBrightness : AnimatedNumber? = null,
 
     @SerialName("fo")
-    val fillOpacity : AnimatedValue? = null,
+    val fillOpacity : AnimatedNumber? = null,
 
     @SerialName("t")
-    val letterSpacing : AnimatedValue? = null,
+    val letterSpacing : AnimatedNumber? = null,
 
     @SerialName("ls")
-    val lineSpacing : AnimatedValue? = null,
+    val lineSpacing : AnimatedNumber? = null,
 
     @SerialName("bl")
-    val blur : AnimatedValue? = null,
+    val blur : AnimatedNumber? = null,
 )
