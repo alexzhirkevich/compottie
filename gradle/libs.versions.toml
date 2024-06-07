@@ -7,12 +7,19 @@ androidGradlePlugin = "8.1.1"
 lottie-android="6.4.0"
 okio = "3.9.0"
 serialization="1.6.2"
+ktor="2.3.11"
+atomicfu="0.23.1"
 
 [libraries]
 lottie-android = { module ="com.airbnb.android:lottie-compose", version.ref = "lottie-android" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 okio-fakefilesystem = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okio" }
 serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
+ktor-client-ios = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+gp-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu-gradle-plugin", version.ref = "atomicfu" }
 
 [plugins]
 compose = { id = "org.jetbrains.compose", version.ref = "compose" }

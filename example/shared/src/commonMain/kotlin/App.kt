@@ -8,6 +8,10 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.group
+import androidx.compose.ui.graphics.vector.path
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import compottie.example.shared.generated.resources.Res
@@ -19,6 +23,7 @@ import io.github.alexzhirkevich.compottie.assets.rememberLottieAssetsManager
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.MissingResourceException
 
 private val GRADIENT_ELLIPSE = "gradient_ellipse.json"
 private val TEST = "test.json"
@@ -43,21 +48,26 @@ private val TEXT = "text.json"
 private val IMAGE_ASSET = "image_asset.json"
 private val IMAGE_ASSET_EMBEDDED = "image_asset_embedded.json"
 
+private val DOT = "dotlottie/dot.lottie"
+private val DOT_WITH_IMAGE = "dotlottie/dot_with_image.lottie"
+
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun App() {
 
     val composition = rememberLottieComposition(
-        spec = LottieCompositionSpec.DotLottie {
-            Res.readBytes("files/dotlottie/dot.lottie")
-        },
-//        spec = LottieCompositionSpec.Resource(ROBOT),
-        assetsManager =  rememberResourcesAssetsManager()
+//        spec = LottieCompositionSpec.DotLottie {
+//            Res.readBytes("files/$DOT_WITH_IMAGE")
+//        },
+        spec = LottieCompositionSpec.Resource(ROBOT),
+//        spec = LottieCompositionSpec.Url("https://assets-v2.lottiefiles.com/a/e3b38514-1150-11ee-9dde-3789514b5871/ZNdbOpdPyr.lottie"),
+        assetsManager = rememberResourcesAssetsManager()
     )
 
     LaunchedEffect(composition) {
         composition.await()
     }
+
 
     Image(
         modifier = Modifier
@@ -65,8 +75,7 @@ fun App() {
             .opacityGrid(),
         painter = rememberLottiePainter(
             composition = composition.value,
-            iterations = LottieConstants.IterateForever,
-            onLoadError = { throw it },
+            iterations = LottieConstants.IterateForever
         ),
         contentDescription = null
     )
@@ -100,22 +109,25 @@ private fun rememberResourcesAssetsManager(
     relativeTo : String = "files",
     readBytes : suspend (path : String) -> ByteArray = Res::readBytes,
 ) =
-    rememberLottieAssetsManager { _, path, name ->
-        val trimPath = path
-            .removePrefix("/")
-            .removeSuffix("/")
-            .takeIf(String::isNotEmpty)
+    rememberLottieAssetsManager { asset ->
+        try {
+            val trimPath = asset.path
+                .removePrefix("/")
+                .removeSuffix("/")
+                .takeIf(String::isNotEmpty)
 
-        val trimName = name
-            .removePrefix("/")
-            .removeSuffix("/")
-            .takeIf(String::isNotEmpty)
+            val trimName = asset.name
+                .removePrefix("/")
+                .removeSuffix("/")
+                .takeIf(String::isNotEmpty)
 
-        val fullPath = listOf(relativeTo.takeIf(String::isNotEmpty), trimPath, trimName)
-            .filterNotNull()
-            .joinToString("/")
+            val fullPath = listOfNotNull(relativeTo.takeIf(String::isNotEmpty), trimPath, trimName)
+                .joinToString("/")
 
-        readBytes(fullPath)
+            readBytes(fullPath)
+        } catch (x: MissingResourceException) {
+            null
+        }
     }
 
 private val DarkOpacity = Color(0xff7f7f7f)

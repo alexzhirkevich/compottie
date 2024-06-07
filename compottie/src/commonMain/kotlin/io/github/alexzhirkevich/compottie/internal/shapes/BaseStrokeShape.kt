@@ -21,16 +21,16 @@ import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.helpers.DashType
 import io.github.alexzhirkevich.compottie.internal.helpers.StrokeDash
+import io.github.alexzhirkevich.compottie.internal.helpers.applyTrimPath
 import io.github.alexzhirkevich.compottie.internal.platform.ExtendedPathMeasure
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
-import io.github.alexzhirkevich.compottie.internal.platform.applyTrimPath
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import io.github.alexzhirkevich.compottie.internal.utils.scale
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlin.jvm.JvmInline
 import kotlin.math.min
-
 
 @Serializable
 @JvmInline
@@ -39,6 +39,15 @@ internal value class LineCap(val type : Byte) {
         val Butt = LineCap(1)
         val Round = LineCap(2)
         val Square = LineCap(3)
+    }
+
+    fun asStrokeCap(): StrokeCap {
+        return when (this) {
+            Butt -> StrokeCap.Butt
+            Round -> StrokeCap.Round
+            Square -> StrokeCap.Square
+            else -> error("Unknown line cap: $this")
+        }
     }
 }
 
@@ -50,25 +59,17 @@ internal value class LineJoin(val type : Byte) {
         val Round = LineJoin(2)
         val Bevel = LineJoin(3)
     }
-}
 
-internal fun LineJoin.asStrokeJoin() : StrokeJoin {
-    return when(this){
-        LineJoin.Miter -> StrokeJoin.Miter
-        LineJoin.Round -> StrokeJoin.Round
-        LineJoin.Bevel -> StrokeJoin.Bevel
-        else -> StrokeJoin.Round// error("Unknown line join: $this")
+    fun asStrokeJoin() : StrokeJoin {
+        return when(this){
+            Miter -> StrokeJoin.Miter
+            Round -> StrokeJoin.Round
+            Bevel -> StrokeJoin.Bevel
+            else -> error("Unknown line join: $this")
+        }
     }
 }
 
-internal fun LineCap.asStrokeCap() : StrokeCap {
-    return when(this){
-        LineCap.Butt -> StrokeCap.Butt
-        LineCap.Round -> StrokeCap.Round
-        LineCap.Square -> StrokeCap.Square
-        else -> StrokeCap.Round //error("Unknown line cap: $this")
-    }
-}
 
 internal abstract class BaseStrokeShape() : Shape, DrawingContent {
 
@@ -81,15 +82,16 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
 
     private val pathGroups = mutableListOf<PathGroup>()
 
-
     private val trimPathPath = Path()
     private val path = Path()
     private val rect = MutableRect(0f, 0f, 0f, 0f)
-    protected val paint = Paint().apply {
-        isAntiAlias = true
-        strokeMiterLimit = strokeMiter
-        strokeCap = lineCap.asStrokeCap()
-        strokeJoin = lineJoin.asStrokeJoin()
+    protected val paint by lazy {
+        Paint().apply {
+            isAntiAlias = true
+            strokeMiterLimit = strokeMiter
+            strokeCap = lineCap.asStrokeCap()
+            strokeJoin = lineJoin.asStrokeJoin()
+        }
     }
     private val pm = ExtendedPathMeasure()
 

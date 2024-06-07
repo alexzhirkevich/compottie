@@ -3,7 +3,6 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.compose")
     alias(libs.plugins.composeCompiler)
-
 }
 
 val _jvmTarget = findProperty("jvmTarget") as String
@@ -48,12 +47,33 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":compottie"))
             implementation(project(":compottie-dot"))
+            implementation(project(":compottie-network"))
             implementation(compose.ui)
             implementation(compose.runtime)
             implementation(compose.material3)
             implementation(compose.foundation)
             @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
             implementation(compose.components.resources)
+        }
+        androidMain.dependencies {
+            implementation(libs.ktor.client.okhttp)
+        }
+
+        iosMain.dependencies {
+            implementation(libs.ktor.client.ios)
+        }
+
+        val desktopMain by getting {
+            dependencies {
+                implementation(libs.ktor.client.okhttp)
+            }
+        }
+
+        jsMain.dependencies {
+            implementation(libs.ktor.client.js)
+        }
+        wasmJsMain.dependencies {
+            implementation(libs.ktor.client.js)
         }
     }
 }
@@ -73,5 +93,15 @@ android {
 
     defaultConfig {
         minSdk = 24
+    }
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group.startsWith("io.ktor") &&
+            requested.name.startsWith("ktor-client-")
+        ) {
+            useVersion("3.0.0-wasm2")
+        }
     }
 }

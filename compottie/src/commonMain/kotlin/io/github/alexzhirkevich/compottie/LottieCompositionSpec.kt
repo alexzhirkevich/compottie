@@ -2,7 +2,7 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import androidx.compose.ui.text.font.FontFamily
+import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import kotlin.jvm.JvmInline
 
 @Stable
@@ -18,7 +18,7 @@ interface LottieCompositionSpec {
         */
         @Stable
         @Deprecated(
-            "Use overload with lazy loading instead",
+            "Use overload with lazy loading and assets manager instead",
             replaceWith = ReplaceWith(
                 "JsonString { jsonString }"
             )
@@ -32,10 +32,12 @@ interface LottieCompositionSpec {
          *
          * Lambda should be stable. Otherwise this spec must be remembered if created in composition
          * */
+        @OptIn(InternalCompottieApi::class)
         @Stable
         fun JsonString(
-            jsonString: suspend () -> String
-        ): LottieCompositionSpec = LazyJsonString(jsonString)
+            assetsManager: LottieAssetsManager = LottieAssetsManager,
+            jsonString: suspend () -> String,
+        ): LottieCompositionSpec = LazyJsonString(jsonString, assetsManager)
     }
 }
 
@@ -57,7 +59,8 @@ private value class JsonStringImpl(
 
 @Immutable
 private class LazyJsonString(
-    private val jsonString : suspend () -> String
+    private val jsonString : suspend () -> String,
+    private val assetsManager: LottieAssetsManager,
 ) : LottieCompositionSpec {
 
     override suspend fun load(): LottieComposition {
@@ -69,11 +72,14 @@ private class LazyJsonString(
     }
 
     override fun equals(other: Any?): Boolean {
-        return (other as? LazyJsonString)?.jsonString == jsonString
+        return (other as? LazyJsonString)?.let {
+            it.jsonString == jsonString &&
+            it.assetsManager == assetsManager
+        } == true
     }
 
     override fun hashCode(): Int {
-        return jsonString.hashCode()
+        return 31 * jsonString.hashCode() + assetsManager.hashCode()
     }
 
 

@@ -20,8 +20,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.IntSize
-import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
-import io.github.alexzhirkevich.compottie.assets.NoOpAssetsManager
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.layers.BaseCompositionLayer
@@ -30,6 +28,7 @@ import io.github.alexzhirkevich.compottie.internal.layers.PainterProperties
 import kotlin.math.roundToInt
 import kotlin.time.measureTime
 
+@OptIn(InternalCompottieApi::class)
 @Composable
 fun rememberLottiePainter(
     composition : LottieComposition?,
@@ -37,12 +36,11 @@ fun rememberLottiePainter(
     restartOnPlay: Boolean = true,
     reverseOnRepeat: Boolean = false,
     clipSpec: LottieClipSpec? = null,
-    speed: Float = 1f,
-    iterations: Int = 1,
+    speed: Float = composition?.speed ?: 1f,
+    iterations: Int = composition?.iterations ?: 1,
     cancellationBehavior: LottieCancellationBehavior = LottieCancellationBehavior.Immediately,
     useCompositionFrameRate: Boolean = false,
     maintainOriginalImageBounds: Boolean = false,
-    onLoadError : (Throwable) -> Painter =  { EmptyPainter },
 ) : Painter {
 
     val progress = animateLottieCompositionAsState(
@@ -61,7 +59,6 @@ fun rememberLottiePainter(
         composition = composition,
         progress = { progress.value },
         maintainOriginalImageBounds = maintainOriginalImageBounds,
-        onLoadError = onLoadError
     )
 }
 
@@ -70,8 +67,7 @@ fun rememberLottiePainter(
     composition : LottieComposition?,
     progress : () -> Float,
     maintainOriginalImageBounds: Boolean = false,
-    clipTextToBoundingBoxes: Boolean = false,
-    onLoadError : (Throwable) -> Painter =  { EmptyPainter },
+    clipTextToBoundingBoxes: Boolean = false
 ) : Painter {
 
     val fontFamilyResolver = LocalFontFamilyResolver.current

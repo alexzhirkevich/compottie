@@ -4,5 +4,5 @@ import okio.FileSystem
 import okio.Path
 
 internal expect class ZipFileSystem(encoded : ByteArray, parent : FileSystem, path : Path) {
-    suspend fun read(entry: ZipEntry) : ByteArray
+    suspend fun read(path: Path) : ByteArray
 }

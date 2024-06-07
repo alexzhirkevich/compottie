@@ -32,6 +32,7 @@ private class AndroidExtendedPathMeasure(
 ) : ExtendedPathMeasure {
 
     override fun nextContour(): Boolean {
+
         return internalPathMeasure.nextContour()
     }
 
@@ -67,7 +68,6 @@ private class AndroidExtendedPathMeasure(
     override fun getPosition(
         distance: Float
     ): Offset {
-
         val result = internalPathMeasure.getPosTan(distance, positionArray, tangentArray)
         return if (result) {
             Offset(positionArray[0], positionArray[1])

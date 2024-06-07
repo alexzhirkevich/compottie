@@ -8,6 +8,13 @@ plugins {
     alias(libs.plugins.serialization).apply(false)
 }
 
+buildscript {
+    dependencies {
+        classpath(libs.gp.atomicfu)
+
+    }
+}
+
 //tasks.register("clean", Delete::class) {
 //    delete(rootProject.buildDir)
 //}

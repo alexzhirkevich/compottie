@@ -1,4 +1,4 @@
-@file:Suppress("DSL_SCOPE_VIOLATION")
+    @file:Suppress("DSL_SCOPE_VIOLATION")
 
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import java.util.Base64
@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.dokka)
     alias(libs.plugins.serialization)
+    id("kotlinx-atomicfu")
     id("maven-publish")
     id("signing")
 }
@@ -74,22 +75,9 @@ kotlin {
             implementation(compose.runtime)
             implementation(libs.serialization)
             implementation(libs.okio)
-            implementation(libs.okio.fakefilesystem)
+            api(libs.ktor.client.core)
             implementation(project(":compottie"))
-
-        }
-
-        val desktopMain by getting
-
-        val webMain by getting {
-            dependencies {
-                implementation(npm("pako","2.1.0"))
-            }
-        }
-
-        jsMain. dependencies {
-//            implementation(npm("pako","2.1.0"))
-            implementation(npm("browserify-zlib","0.2.0"))
+            implementation(project(":compottie-dot"))
         }
     }
 }
@@ -141,7 +129,7 @@ publishing {
     publications.withType<MavenPublication> {
         artifact(javadocJar)
         pom {
-            name.set("Compottie")
+            name.set("compottie-network")
             description.set("Compose Multiplatform lottie animation")
             url.set("https://github.com/alexzhirkevich/compottie")
 
@@ -174,5 +162,16 @@ if (System.getenv("GPG_KEY") != null) {
             System.getenv("GPG_KEY_PWD"),
         )
         sign(publishing.publications)
+    }
+}
+
+
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group.startsWith("io.ktor") &&
+            requested.name.startsWith("ktor-client-")
+        ) {
+            useVersion("3.0.0-wasm2")
+        }
     }
 }

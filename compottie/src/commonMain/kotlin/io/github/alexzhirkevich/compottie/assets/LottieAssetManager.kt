@@ -1,8 +1,11 @@
 package io.github.alexzhirkevich.compottie.assets
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.InternalComposeApi
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
+import io.github.alexzhirkevich.compottie.InternalCompottieApi
 
 /**
  * Used to fetch lottie assets that are not embedded to the animation JSON file
@@ -21,25 +24,19 @@ fun interface LottieAssetsManager {
      *
      * @param name asset name and extension (for example image.png)
      * */
-    suspend fun fetch(id: String, path: String, name: String): ByteArray?
+    suspend fun fetch(asset: LottieAsset): ByteArray?
 
-    companion object {
-        fun Compound(
-            networkFetcher: LottieAssetsManager,
-            localFetcher: LottieAssetsManager,
-            cache: LottieAssetsCache
-        ): LottieAssetsManager = CompoundLottieAssetsFetcher(networkFetcher, localFetcher, cache)
+    companion object : LottieAssetsManager {
+
+        override suspend fun fetch(asset: LottieAsset): ByteArray? = null
     }
 }
 
 
 @Composable
 fun rememberLottieAssetsManager(
-    fetch : suspend (id: String, path: String, name: String) -> ByteArray
+    fetch : suspend (LottieAsset) -> ByteArray?
 ) : LottieAssetsManager {
     return remember { LottieAssetsManager(fetch) }
 }
-
-internal val NoOpAssetsManager = LottieAssetsManager { _, _, _ -> null }
-
 

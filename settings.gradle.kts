@@ -13,13 +13,14 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
-
+        maven("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental")
     }
 }
 
 rootProject.name = "compottie"
 include(":compottie")
 include(":compottie-dot")
+include(":compottie-network")
 include(":example:desktopApp")
 include(":example:webApp")
 include(":example:androidapp")

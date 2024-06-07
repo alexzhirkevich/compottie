@@ -11,6 +11,7 @@ import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 
 @Serializable
 @SerialName("st")
@@ -59,3 +60,4 @@ internal class SolidStrokeShape(
         super.draw(drawScope, parentMatrix, parentAlpha, state)
     }
 }
+
