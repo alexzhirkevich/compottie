@@ -137,7 +137,7 @@ internal fun FileSystem.listZipEntries(
         }
 
         // Organize the entries into a tree.
-        return  buildIndex(entries)
+        return  entries.associateBy { it.canonicalPath }
     }
 }
 
@@ -145,44 +145,51 @@ internal fun FileSystem.listZipEntries(
  * Returns a map containing all of [entries], plus parent entries required so that all entries
  * (other than the file system root `/`) have a parent.
  */
-private fun buildIndex(entries: List<ZipEntry>): Map<Path, ZipEntry> {
-    val root = "/".toPath()
-    val result = mutableMapOf(
-        root to ZipEntry(canonicalPath = root, isDirectory = true),
-    )
-
-    // Iterate in sorted order so each path is preceded by its parent.
-    for (entry in entries.sortedBy { it.canonicalPath }) {
-        // Note that this may clobber an existing element in the map. For consistency with java.util.zip
-        // and java.nio.file.FileSystem, this prefers the last-encountered element.
-        val replaced = result.put(entry.canonicalPath, entry)
-        if (replaced != null) continue
-
-        // Make sure this parent directories exist all the way up to the file system root.
-        var child = entry
-        while (true) {
-            val parentPath = child.canonicalPath.parent ?: break // child is '/'.
-            var parentEntry = result[parentPath]
-
-            // We've found a parent that already exists! Add the child; we're done.
-            if (parentEntry != null) {
-                parentEntry.children += child
-                break
-            }
-
-            // A parent is missing! Synthesize one.
-            parentEntry = ZipEntry(
-                canonicalPath = parentPath,
-                isDirectory = true,
-            )
-            result[parentPath] = parentEntry
-            parentEntry.children += child
-            child = parentEntry
-        }
-    }
-
-    return result
-}
+//private fun buildIndex(entries: List<ZipEntry>): Map<Path, ZipEntry> {
+//    val root = "/".toPath()
+//    val result = mutableMapOf(
+//        root to ZipEntry(
+//            canonicalPath = root,
+//            isDirectory = true,
+//            extraSize = extraSize,
+//            nameSize = nameSize
+//        ),
+//    )
+//
+//    // Iterate in sorted order so each path is preceded by its parent.
+//    for (entry in entries.sortedBy { it.canonicalPath }) {
+//        // Note that this may clobber an existing element in the map. For consistency with java.util.zip
+//        // and java.nio.file.FileSystem, this prefers the last-encountered element.
+//        val replaced = result.put(entry.canonicalPath, entry)
+//        if (replaced != null) continue
+//
+//        // Make sure this parent directories exist all the way up to the file system root.
+//        var child = entry
+//        while (true) {
+//            val parentPath = child.canonicalPath.parent ?: break // child is '/'.
+//            var parentEntry = result[parentPath]
+//
+//            // We've found a parent that already exists! Add the child; we're done.
+//            if (parentEntry != null) {
+//                parentEntry.children += child
+//                break
+//            }
+//
+//            // A parent is missing! Synthesize one.
+//            parentEntry = ZipEntry(
+//                canonicalPath = parentPath,
+//                isDirectory = true,
+//                extraSize = extraSize,
+//                nameSize = nameSize,
+//            )
+//            result[parentPath] = parentEntry
+//            parentEntry.children += child
+//            child = parentEntry
+//        }
+//    }
+//
+//    return result
+//}
 
 /** When this returns, [this] will be positioned at the start of the next entry. */
 @Throws(IOException::class)
@@ -292,6 +299,8 @@ internal fun BufferedSource.readCentralDirectoryZipEntry(): ZipEntry {
         crc = crc,
         compressedSize = compressedSize,
         size = size,
+        nameSize = nameSize,
+        extraSize = extraSize,
         compressionMethod = compressionMethod,
         offset = offset,
         dosLastModifiedAtDate = dosLastModifiedDate,

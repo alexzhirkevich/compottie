@@ -44,7 +44,9 @@ private class DotLottieCompositionSpec(
             write(bytes)
         }
 
-        val zipSystem = ZipFileSystem(bytes, fileSystem, path)
+        val entries = fileSystem.listZipEntries(path)
+
+        val zipSystem = ZipFileSystem(fileSystem, entries, path)
 
         val manifest = DotLottieJson.decodeFromString<DotLottieManifest>(
             zipSystem.read("manifest.json".toPath()).decodeToString()
@@ -55,7 +57,6 @@ private class DotLottieCompositionSpec(
         val anim = zipSystem.read("animations/${animation.id}.json".toPath())
 
         return LottieComposition.parse(anim.decodeToString()).apply {
-
             speed = animation.speed
             if (animation.loop) {
                 iterations = LottieConstants.IterateForever

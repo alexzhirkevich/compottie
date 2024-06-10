@@ -86,6 +86,8 @@ internal data class ZipEntry(
     val extendedLastModifiedAtSeconds: Int? = null,
     val extendedLastAccessedAtSeconds: Int? = null,
     val extendedCreatedAtSeconds: Int? = null,
+    val extraSize: Int,
+    val nameSize: Int,
 ) {
     val children = mutableListOf<ZipEntry>()
 
@@ -110,6 +112,8 @@ internal data class ZipEntry(
         extendedLastModifiedAtSeconds = extendedLastModifiedAtSeconds,
         extendedLastAccessedAtSeconds = extendedLastAccessedAtSeconds,
         extendedCreatedAtSeconds = extendedCreatedAtSeconds,
+        extraSize = extraSize,
+        nameSize = nameSize,
     )
 
     internal val lastAccessedAtMillis: Long?

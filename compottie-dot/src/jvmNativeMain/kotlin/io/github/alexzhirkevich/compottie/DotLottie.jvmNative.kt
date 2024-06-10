@@ -5,8 +5,8 @@ import okio.Path
 import okio.openZip
 
 internal actual class ZipFileSystem actual constructor(
-    encoded : ByteArray,
     parent : FileSystem,
+    entries: Map<Path, ZipEntry>,
     path : Path
 ) {
 
