@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.isIdentity
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
+import io.github.alexzhirkevich.compottie.L
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
@@ -109,78 +110,80 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         state: AnimationState,
     ) {
 
-        val frame = state.frame
-        
-        if (hidden || (inPoint ?: 0f) > frame || (outPoint ?: Float.MAX_VALUE) < frame)
-            return
+        try {
 
-        buildParentLayerListIfNeeded()
-        matrix.reset()
+            val frame = state.frame
 
-        matrix.setFrom(parentMatrix)
-        parentLayers?.fastForEachReversed {
-            matrix.preConcat(it.transform.matrix(state))
-        }
+            if (hidden || (inPoint ?: 0f) > frame || (outPoint ?: Float.MAX_VALUE) < frame)
+                return
 
-        var alpha = parentAlpha
+            buildParentLayerListIfNeeded()
+            matrix.reset()
 
-        transform.opacity?.interpolated(state)?.let {
-            alpha = (alpha * (it / 100f)).coerceIn(0f, 1f)
-        }
-
-
-        if (matteLayer == null && !hasMask()) {
-            matrix.preConcat(transform.matrix(state))
-            drawLayer(drawScope, matrix, alpha, state)
-            return
-        }
-
-        getBounds(drawScope, matrix, false, state, rect)
-
-        intersectBoundsWithMatte(drawScope, rect, matrix, state)
-
-        matrix.preConcat(transform.matrix(state))
-        intersectBoundsWithMask(rect, matrix, state)
-
-        // Intersect the mask and matte rect with the canvas bounds.
-        // If the canvas has a transform, then we need to transform its bounds by its matrix
-        // so that we know the coordinate space that the canvas is showing.
-        canvasBounds.set(0f, 0f, drawScope.size.width, drawScope.size.height)
-        drawScope.drawIntoCanvas { canvas ->
-            canvas.getMatrix(canvasMatrix)
-
-            //TODO: fix mask canvas mapping
-            if (!canvasMatrix.isIdentity()) {
-                canvasMatrix.invert()
-                canvasMatrix.map(canvasBounds)
+            matrix.setFrom(parentMatrix)
+            parentLayers?.fastForEachReversed {
+                matrix.preConcat(it.transform.matrix(state))
             }
 
-            rect.intersectOrReset(canvasBounds)
+            var alpha = parentAlpha
 
-            // Ensure that what we are drawing is >=1px of width and height.
-            // On older devices, drawing to an offscreen buffer of <1px would draw back as a black bar.
-            // https://github.com/airbnb/lottie-android/issues/1625
-            if (rect.width >= 1f && rect.height >= 1f) {
-                contentPaint.alpha = 1f
-                canvas.saveLayer(rect, contentPaint)
+            transform.opacity?.interpolated(state)?.let {
+                alpha = (alpha * (it / 100f)).coerceIn(0f, 1f)
+            }
 
-                // Clear the off screen buffer. This is necessary for some phones.
-                clearCanvas(canvas)
+
+            if (matteLayer == null && !hasMask()) {
+                matrix.preConcat(transform.matrix(state))
                 drawLayer(drawScope, matrix, alpha, state)
+                return
+            }
 
-                if (hasMask()) {
-                    applyMasks(canvas, matrix, state)
+            getBounds(drawScope, matrix, false, state, rect)
+
+            intersectBoundsWithMatte(drawScope, rect, matrix, state)
+
+            matrix.preConcat(transform.matrix(state))
+            intersectBoundsWithMask(rect, matrix, state)
+
+            // Intersect the mask and matte rect with the canvas bounds.
+            // If the canvas has a transform, then we need to transform its bounds by its matrix
+            // so that we know the coordinate space that the canvas is showing.
+            canvasBounds.set(0f, 0f, drawScope.size.width, drawScope.size.height)
+            drawScope.drawIntoCanvas { canvas ->
+                canvas.getMatrix(canvasMatrix)
+
+                //TODO: fix mask canvas mapping
+                if (!canvasMatrix.isIdentity()) {
+                    canvasMatrix.invert()
+                    canvasMatrix.map(canvasBounds)
                 }
 
-                matteLayer?.let {
-                    canvas.saveLayer(rect, mattePaint, SAVE_FLAGS)
+                rect.intersectOrReset(canvasBounds)
+
+                // Ensure that what we are drawing is >=1px of width and height.
+                // On older devices, drawing to an offscreen buffer of <1px would draw back as a black bar.
+                // https://github.com/airbnb/lottie-android/issues/1625
+                if (rect.width >= 1f && rect.height >= 1f) {
+                    contentPaint.alpha = 1f
+                    canvas.saveLayer(rect, contentPaint)
+
+                    // Clear the off screen buffer. This is necessary for some phones.
                     clearCanvas(canvas)
-                    it.draw(drawScope, parentMatrix, alpha, state)
+                    drawLayer(drawScope, matrix, alpha, state)
+
+                    if (hasMask()) {
+                        applyMasks(canvas, matrix, state)
+                    }
+
+                    matteLayer?.let {
+                        canvas.saveLayer(rect, mattePaint, SAVE_FLAGS)
+                        clearCanvas(canvas)
+                        it.draw(drawScope, parentMatrix, alpha, state)
+                        canvas.restore()
+                    }
+
                     canvas.restore()
                 }
-
-                canvas.restore()
-            }
 
 //            if (outlineMasksAndMattes && outlineMasksAndMattesPaint != null) {
 //                outlineMasksAndMattesPaint.setStyle(android.graphics.Paint.Style.STROKE)
@@ -191,6 +194,9 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
 //                outlineMasksAndMattesPaint.setColor(0x50EBEBEB)
 //                canvas.drawRect(rect, outlineMasksAndMattesPaint)
 //            }
+            }
+        } catch (t: Throwable) {
+            L.logger.error("Lottie crashed in draw :(", t)
         }
     }
 

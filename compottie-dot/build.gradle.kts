@@ -75,8 +75,8 @@ kotlin {
             implementation(libs.serialization)
             implementation(libs.okio)
             implementation(libs.okio.fakefilesystem)
+            implementation(libs.coroutines.core)
             implementation(project(":compottie"))
-
         }
 
         val desktopMain by getting

@@ -11,7 +11,6 @@ import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.NetworkAssetsManager
 import io.github.alexzhirkevich.compottie.NetworkRequest
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
-import io.github.alexzhirkevich.compottie.rememberNetworkAssetsManager
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.statement.bodyAsChannel
@@ -25,19 +24,17 @@ import io.ktor.util.toByteArray
  * [LottieComposition] from web [url]
  *
  * @param client Ktor http client to use
- * @param assetsManager lottie assets manager. By default no-op manager is used.
- * Use [NetworkAssetsManager] if assets use web URLs too
- *
- * @see rememberNetworkAssetsManager
+ * @param assetsManager manager for assets that not embedded to the animation JSON or dotLottie archive.
+ * [NetworkAssetsManager] is used by default
  * */
 @Stable
 fun LottieCompositionSpec.Companion.Url(
     url : String,
-    format: LottieAnimationFormat = LottieAnimationFormat.Unknown,
+    format: LottieAnimationFormat = LottieAnimationFormat.Undefined,
     client: HttpClient = DefaultHttpClient,
-    assetsManager: LottieAssetsManager = LottieAssetsManager,
-    cacheStrategy: LottieCacheStrategy = DiskCacheStrategy(),
     request : NetworkRequest = GetRequest,
+    cacheStrategy: LottieCacheStrategy = DiskCacheStrategy(),
+    assetsManager: LottieAssetsManager = NetworkAssetsManager(client,cacheStrategy, request),
 ) : LottieCompositionSpec = NetworkCompositionSpec(
     url = url,
     format = format,

@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.font.FontFamily
@@ -92,13 +93,14 @@ class LottieComposition internal constructor(
 }
 
 /**
- * Load and prepare [LottieComposition] for displaying
+ * Load and prepare [LottieComposition].
+ *
+ * [spec] should be remembered
  * */
 @Composable
 @Stable
 fun rememberLottieComposition(
     spec : LottieCompositionSpec,
-    assetsManager: LottieAssetsManager = LottieAssetsManager,
 ) : LottieCompositionResult {
 
     val result = remember(spec) {
@@ -106,9 +108,9 @@ fun rememberLottieComposition(
     }
 
     LaunchedEffect(result) {
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IODispatcher) {
             try {
-                result.complete(spec.load().apply { prepare(assetsManager) })
+                result.complete(spec.load())
             } catch (c: CancellationException) {
                 throw c
             } catch (t: Throwable) {
@@ -120,20 +122,35 @@ fun rememberLottieComposition(
     return result
 }
 
+/**
+ * Load and prepare [LottieComposition] for displaying.
+ *
+ * Instance produces by [spec] will be remembered until [keys] are changed
+ * */
+@Composable
+@Stable
+fun rememberLottieComposition(
+    vararg keys : Any?,
+    spec : suspend () -> LottieCompositionSpec,
+) : LottieCompositionResult {
 
+    val updatedSpec by rememberUpdatedState(spec)
 
-
-@Immutable
-@JvmInline
-internal value class JsonStringCompositionSpec(
-    private val jsonString: String
-) : LottieCompositionSpec {
-
-    override suspend fun load(): LottieComposition {
-        return LottieComposition.parse(jsonString)
+    val result = remember(*keys) {
+        LottieCompositionResultImpl()
     }
 
-    override fun toString(): String {
-        return "JsonString(jsonString='$jsonString')"
+    LaunchedEffect(result) {
+        withContext(Dispatchers.IODispatcher) {
+            try {
+                result.complete(updatedSpec().load())
+            } catch (c: CancellationException) {
+                throw c
+            } catch (t: Throwable) {
+                result.completeExceptionally(t)
+            }
+        }
     }
+
+    return result
 }

@@ -166,12 +166,14 @@ if (System.getenv("GPG_KEY") != null) {
 }
 
 
-configurations.all {
-    resolutionStrategy.eachDependency {
-        if (requested.group.startsWith("io.ktor") &&
-            requested.name.startsWith("ktor-client-")
-        ) {
-            useVersion("3.0.0-wasm2")
+configurations
+    .filter { it.name.contains("wasmJs") }
+    .onEach {
+        it.resolutionStrategy.eachDependency {
+            if (requested.group.startsWith("io.ktor") &&
+                requested.name.startsWith("ktor-client-")
+            ) {
+                useVersion("3.0.0-wasm2")
+            }
         }
     }
-}

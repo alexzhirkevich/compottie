@@ -1,5 +1,8 @@
 package io.github.alexzhirkevich.compottie
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 import okio.FileSystem
 import okio.Path
 import okio.openZip
@@ -13,8 +16,10 @@ internal actual class ZipFileSystem actual constructor(
     private val zipFileSystem = parent.openZip(path)
 
     actual suspend fun read(path: Path): ByteArray {
-        return zipFileSystem.read(path) {
-            readByteArray()
+        return withContext(Dispatchers.IO) {
+            zipFileSystem.read(path) {
+                readByteArray()
+            }
         }
     }
 }

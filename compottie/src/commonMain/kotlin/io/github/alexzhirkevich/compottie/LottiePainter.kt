@@ -134,7 +134,7 @@ private class LottiePainter(
         p.coerceAtLeast(0f)
     }
 
-    val compositionLayer: BaseCompositionLayer =  composition.lottieData
+    val compositionLayer: BaseCompositionLayer = composition.lottieData
         .layers
         .takeIf {
             it.size == 1                     // don't create extra composition layer
@@ -186,20 +186,9 @@ private class LottiePainter(
 
         matrix.reset()
 
-        measureTime {
-            scale(scale.scaleX, scale.scaleY) {
-                translate(offset.x.toFloat(), offset.y.toFloat()) {
-                    try {
-                        compositionLayer.draw(this, matrix, alpha, AnimationState(frame))
-                    } catch (t: Throwable) {
-                        println("Lottie crashed in draw :(")
-                        t.printStackTrace()
-                    }
-                }
-            }
-        }.let {
-            if (it.inWholeMilliseconds > 0) {
-//                println(it.inWholeMilliseconds)
+        scale(scale.scaleX, scale.scaleY) {
+            translate(offset.x.toFloat(), offset.y.toFloat()) {
+                compositionLayer.draw(this, matrix, alpha, AnimationState(frame))
             }
         }
     }

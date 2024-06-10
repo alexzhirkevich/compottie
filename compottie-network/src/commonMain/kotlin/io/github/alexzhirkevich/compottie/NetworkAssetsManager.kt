@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -12,25 +13,36 @@ import io.ktor.http.URLParserException
 import io.ktor.http.Url
 import io.ktor.util.toByteArray
 
-@Composable
-fun rememberNetworkAssetsManager(
+//@Composable
+//@Stable
+//fun rememberNetworkAssetsManager(
+//    client: HttpClient = DefaultHttpClient,
+//    cacheStrategy: LottieCacheStrategy = rememberDiskCacheStrategy(),
+//    request : NetworkRequest = GetRequest,
+//) : NetworkAssetsManager {
+//    val updatedRequest by rememberUpdatedState(request)
+//
+//    return remember(client, cacheStrategy) {
+//        NetworkAssetsManager(client, cacheStrategy) { c, u ->
+//            updatedRequest.invoke(c, u)
+//        }
+//    }
+//}
+
+fun NetworkAssetsManager(
     client: HttpClient = DefaultHttpClient,
-    cacheStrategy: LottieCacheStrategy = rememberDiskCacheStrategy(),
+    cacheStrategy: LottieCacheStrategy = DiskCacheStrategy(),
     request : NetworkRequest = GetRequest,
-) {
-    val updatedRequest by rememberUpdatedState(request)
+) : LottieAssetsManager = NetworkAssetsManagerImpl(
+    client = client,
+    cacheStrategy = cacheStrategy,
+    request = request
+)
 
-    return remember(client, cacheStrategy) {
-        NetworkAssetsManager(client, cacheStrategy) { c, u ->
-            updatedRequest.invoke(c, u)
-        }
-    }
-}
-
-class NetworkAssetsManager(
-    private val client: HttpClient,
-    private val cacheStrategy: LottieCacheStrategy,
-    private val request : NetworkRequest,
+private class NetworkAssetsManagerImpl(
+    private val client: HttpClient = DefaultHttpClient,
+    private val cacheStrategy: LottieCacheStrategy = DiskCacheStrategy(),
+    private val request : NetworkRequest = GetRequest,
 ) : LottieAssetsManager {
 
     override suspend fun fetch(asset: LottieAsset): ByteArray? {

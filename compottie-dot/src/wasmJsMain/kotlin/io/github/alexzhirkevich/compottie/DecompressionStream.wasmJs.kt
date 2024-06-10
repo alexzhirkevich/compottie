@@ -2,35 +2,12 @@ package io.github.alexzhirkevich.compottie
 
 import org.khronos.webgl.ArrayBufferView
 import org.khronos.webgl.Int8Array
-import org.khronos.webgl.set
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import kotlin.js.Promise
 
 external class DecompressionStream(alg : String)
-
-//external interface UnderlyingSource : JsAny {
-//    fun start(controller: SourceController)
-//}
-//
-//interface SourceController {
-//    fun enqueue(data : ByteArray)
-//
-//    fun close()
-//}
-
-fun createSource(data : Int8Array) : JsAny = js("""
-({
-   start(c){ 
-     console.log(data)
-     c.enqueue(data)
-     c.close()
-   }
-})
-""")
-
-
 
 external class ReadableStream(
     source: JsAny

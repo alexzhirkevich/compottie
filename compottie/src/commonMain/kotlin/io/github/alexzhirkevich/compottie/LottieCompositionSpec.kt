@@ -32,7 +32,6 @@ interface LottieCompositionSpec {
          *
          * Lambda should be stable. Otherwise this spec must be remembered if created in composition
          * */
-        @OptIn(InternalCompottieApi::class)
         @Stable
         fun JsonString(
             assetsManager: LottieAssetsManager = LottieAssetsManager,
@@ -64,7 +63,9 @@ private class LazyJsonString(
 ) : LottieCompositionSpec {
 
     override suspend fun load(): LottieComposition {
-        return LottieComposition.parse(jsonString())
+        return LottieComposition.parse(jsonString()).apply {
+            prepare(assetsManager)
+        }
     }
 
     override fun toString(): String {
@@ -81,8 +82,6 @@ private class LazyJsonString(
     override fun hashCode(): Int {
         return 31 * jsonString.hashCode() + assetsManager.hashCode()
     }
-
-
 }
 
 

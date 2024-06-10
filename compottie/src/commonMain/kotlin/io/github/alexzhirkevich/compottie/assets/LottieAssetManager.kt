@@ -26,17 +26,9 @@ fun interface LottieAssetsManager {
      * */
     suspend fun fetch(asset: LottieAsset): ByteArray?
 
+    @Stable
     companion object : LottieAssetsManager {
 
         override suspend fun fetch(asset: LottieAsset): ByteArray? = null
     }
 }
-
-
-@Composable
-fun rememberLottieAssetsManager(
-    fetch : suspend (LottieAsset) -> ByteArray?
-) : LottieAssetsManager {
-    return remember { LottieAssetsManager(fetch) }
-}
-

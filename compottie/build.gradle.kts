@@ -1,5 +1,6 @@
 @file:Suppress("DSL_SCOPE_VIOLATION")
 
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import java.util.Base64
 
 plugins {
@@ -20,7 +21,21 @@ val _jvmTarget = findProperty("jvmTarget") as String
 
 kotlin {
 
-    applyDefaultHierarchyTemplate()
+    applyDefaultHierarchyTemplate{
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        common {
+            group("jvmNative") {
+                withAndroidTarget()
+                withJvm()
+                withIos()
+                withMacos()
+            }
+            group("web"){
+                withJs()
+                withWasmJs()
+            }
+        }
+    }
 
     androidTarget{
         publishLibraryVariants("release")
