@@ -71,7 +71,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(compose.runtime)
+            implementation(compose.ui)
             implementation(libs.serialization)
             implementation(libs.okio)
             implementation(libs.okio.fakefilesystem)

@@ -26,11 +26,11 @@ val Matrix.scale: Float get() {
 
 fun Matrix.preTranslate(x : Float, y : Float) {
 
-    preConcat(tempMatrixTransform.apply {
-        reset()
-        translate(x, y)
-    })
-//    return translate(x, y)
+//    preConcat(tempMatrixTransform.apply {
+//        reset()
+//        translate(x, y)
+//    })
+    return translate(x, y)
 }
 
 fun Matrix.preConcat(other : Matrix) {
@@ -53,22 +53,22 @@ fun Matrix.setValues(values : FloatArray){
 }
 
 fun Matrix.preRotate(degree : Float) {
-    preConcat(tempMatrixTransform.apply {
-        reset()
-        rotateZ(degree)
-    })
-
-//    return rotateZ(degree)
+//    preConcat(tempMatrixTransform.apply {
+//        reset()
+//        rotateZ(degree)
+//    })
+//
+    return rotateZ(degree)
 }
 
 
 
 
 fun Matrix.preScale(x : Float, y : Float) {
-    preConcat(tempMatrixTransform.apply {
-        reset()
-        scale(x, y)
-    })
-//    return scale(x,y)
+//    preConcat(tempMatrixTransform.apply {
+//        reset()
+//        scale(x, y)
+//    })
+    return scale(x,y)
 }
 

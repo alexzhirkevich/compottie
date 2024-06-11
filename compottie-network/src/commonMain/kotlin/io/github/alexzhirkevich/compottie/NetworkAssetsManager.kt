@@ -1,34 +1,25 @@
 package io.github.alexzhirkevich.compottie
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
-import io.github.alexzhirkevich.compottie.assets.LottieAsset
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.platform.Font
+import io.github.alexzhirkevich.compottie.assets.ImageRepresentable
+import io.github.alexzhirkevich.compottie.assets.LottieImage
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
+import io.github.alexzhirkevich.compottie.assets.LottieFont
 import io.ktor.client.HttpClient
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.URLParserException
 import io.ktor.http.Url
 import io.ktor.util.toByteArray
 
-//@Composable
-//@Stable
-//fun rememberNetworkAssetsManager(
-//    client: HttpClient = DefaultHttpClient,
-//    cacheStrategy: LottieCacheStrategy = rememberDiskCacheStrategy(),
-//    request : NetworkRequest = GetRequest,
-//) : NetworkAssetsManager {
-//    val updatedRequest by rememberUpdatedState(request)
-//
-//    return remember(client, cacheStrategy) {
-//        NetworkAssetsManager(client, cacheStrategy) { c, u ->
-//            updatedRequest.invoke(c, u)
-//        }
-//    }
-//}
-
+/**
+ * Asset manager that load images from web.
+ *
+ * It can't be used to download fonts. Combine it with other font-loading manager
+ * using [LottieAssetsManager.combine] if needed
+ * */
 fun NetworkAssetsManager(
     client: HttpClient = DefaultHttpClient,
     cacheStrategy: LottieCacheStrategy = DiskCacheStrategy(),
@@ -36,35 +27,37 @@ fun NetworkAssetsManager(
 ) : LottieAssetsManager = NetworkAssetsManagerImpl(
     client = client,
     cacheStrategy = cacheStrategy,
-    request = request
+    request = request,
 )
 
 private class NetworkAssetsManagerImpl(
-    private val client: HttpClient = DefaultHttpClient,
-    private val cacheStrategy: LottieCacheStrategy = DiskCacheStrategy(),
-    private val request : NetworkRequest = GetRequest,
+    private val client: HttpClient,
+    private val cacheStrategy: LottieCacheStrategy,
+    private val request : NetworkRequest,
 ) : LottieAssetsManager {
 
-    override suspend fun fetch(asset: LottieAsset): ByteArray? {
+    override suspend fun image(image: LottieImage): ImageRepresentable? {
         return try {
-            val path = asset.path + asset.name
+            val path = image.path + image.name
 
             val url = try {
                 Url(path)
             } catch (t: URLParserException) {
-                L.logger.error("Failed to load lottie asset ${asset.id} - incorrect url", t)
+                L.logger.error("Failed to load lottie asset ${image.id} - incorrect url", t)
                 return null
             }
 
             cacheStrategy.load(path)?.let {
-                return it
+                return ImageRepresentable.Bytes(it)
             }
 
-            request(client, url).bodyAsChannel().toByteArray().also {
-                cacheStrategy.save(path, it)
-            }
+            val bytes = request(client, url).bodyAsChannel().toByteArray()
+            cacheStrategy.save(path, bytes)
+            ImageRepresentable.Bytes(bytes)
         } catch (t: Throwable) {
             null
         }
     }
+
+    override suspend fun font(font: LottieFont): Font? = null
 }

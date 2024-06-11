@@ -39,8 +39,7 @@ fun rememberLottiePainter(
     speed: Float = composition?.speed ?: 1f,
     iterations: Int = composition?.iterations ?: 1,
     cancellationBehavior: LottieCancellationBehavior = LottieCancellationBehavior.Immediately,
-    useCompositionFrameRate: Boolean = false,
-    maintainOriginalImageBounds: Boolean = false,
+    useCompositionFrameRate: Boolean = false
 ) : Painter {
 
     val progress = animateLottieCompositionAsState(
@@ -58,7 +57,6 @@ fun rememberLottiePainter(
     return rememberLottiePainter(
         composition = composition,
         progress = { progress.value },
-        maintainOriginalImageBounds = maintainOriginalImageBounds,
     )
 }
 
@@ -66,7 +64,6 @@ fun rememberLottiePainter(
 fun rememberLottiePainter(
     composition : LottieComposition?,
     progress : () -> Float,
-    maintainOriginalImageBounds: Boolean = false,
     clipTextToBoundingBoxes: Boolean = false
 ) : Painter {
 
@@ -75,7 +72,6 @@ fun rememberLottiePainter(
     val painter by produceState<Painter>(
         EmptyPainter,
         composition,
-        maintainOriginalImageBounds,
         clipTextToBoundingBoxes,
         fontFamilyResolver
     ) {
@@ -83,7 +79,6 @@ fun rememberLottiePainter(
         if (composition != null) {
             value = LottiePainter(
                 composition = composition,
-                maintainOriginalImageBounds = maintainOriginalImageBounds,
                 clipTextToBoundingBoxes = clipTextToBoundingBoxes,
                 fontFamilyResolver = fontFamilyResolver
             )
@@ -113,7 +108,6 @@ private object EmptyPainter : Painter() {
 private class LottiePainter(
     private val composition: LottieComposition,
     private val fontFamilyResolver : FontFamily.Resolver,
-    private val maintainOriginalImageBounds : Boolean,
     private val clipTextToBoundingBoxes : Boolean,
 ) : Painter() {
 
@@ -146,7 +140,6 @@ private class LottiePainter(
         compositionLayer.painterProperties = PainterProperties(
             assets = composition.lottieData.assets.associateBy(LottieAsset::id),
             composition = composition,
-            maintainOriginalImageBounds = maintainOriginalImageBounds,
             clipTextToBoundingBoxes = clipTextToBoundingBoxes,
             fontFamilyResolver = fontFamilyResolver
         )
@@ -188,7 +181,11 @@ private class LottiePainter(
 
         scale(scale.scaleX, scale.scaleY) {
             translate(offset.x.toFloat(), offset.y.toFloat()) {
-                compositionLayer.draw(this, matrix, alpha, AnimationState(frame))
+                measureTime {
+                    compositionLayer.draw(this, matrix, alpha, AnimationState(frame))
+                }.also {
+                    println(it.inWholeMilliseconds)
+                }
             }
         }
     }

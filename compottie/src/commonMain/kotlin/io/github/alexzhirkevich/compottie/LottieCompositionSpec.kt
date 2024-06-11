@@ -34,7 +34,7 @@ interface LottieCompositionSpec {
          * */
         @Stable
         fun JsonString(
-            assetsManager: LottieAssetsManager = LottieAssetsManager,
+            assetsManager: LottieAssetsManager = LottieAssetsManager.Empty,
             jsonString: suspend () -> String,
         ): LottieCompositionSpec = LazyJsonString(jsonString, assetsManager)
     }

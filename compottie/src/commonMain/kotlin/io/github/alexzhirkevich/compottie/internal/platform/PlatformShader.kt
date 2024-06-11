@@ -157,20 +157,9 @@ internal expect fun Paint.setBlurMaskFilter(radius: Float, isImage : Boolean = f
 
 
 internal val ColorFilter.Companion.Luma : ColorFilter
-    get() = org.jetbrains.skia.ColorFilter.luma.asComposeColorFilter()
+    get() = LumaColorFilter//org.jetbrains.skia.ColorFilter.luma.asComposeColorFilter()
 
 
-fun foo(){
-    ColorFilter
-    ColorMatrix(
-        floatArrayOf(
-            0f, 0f, 0f, 0f, 0f,
-            0f, 0f, 0f, 0f, 0f,
-            0f, 0f, 0f, 0f, 0f,
-            0.2126f, 0.7152f, 0.0722f, 0f, 0f
-        )
-    )
-}
 private val LumaColorFilter by lazy {
     ColorFilter.colorMatrix(
         ColorMatrix(

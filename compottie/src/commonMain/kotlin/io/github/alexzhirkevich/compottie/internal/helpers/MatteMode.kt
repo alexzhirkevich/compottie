@@ -18,7 +18,8 @@ value class MatteMode(val mode : Byte) {
 fun MatteMode.isInvert() : Boolean  = this == MatteMode.Invert || this == MatteMode.InvertedLuma
 fun MatteMode.isLuma() : Boolean  = this == MatteMode.Luma || this == MatteMode.InvertedLuma
 
-fun MatteMode.isSupported() = this == MatteMode.Add ||
-            this == MatteMode.Invert ||
-            this == MatteMode.Luma ||
-            this == MatteMode.InvertedLuma
+fun MatteMode.isSupported() =
+    this == MatteMode.Add
+    || this == MatteMode.Invert
+//    || this == MatteMode.Luma
+//    || this == MatteMode.InvertedLuma

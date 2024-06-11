@@ -1,20 +1,17 @@
 package io.github.alexzhirkevich.compottie.assets
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.InternalComposeApi
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.remember
-import io.github.alexzhirkevich.compottie.InternalCompottieApi
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 
 /**
  * Used to fetch lottie assets that are not embedded to the animation JSON file
  * */
 @Stable
-fun interface LottieAssetsManager {
+interface LottieAssetsManager {
 
     /**
-     * Fetch asset
+     * Load image asset
      *
      * @param id unique asset id that is used for referring from animation layers
      * @param path relative system path or web URL excluding file name. For example:
@@ -24,11 +21,47 @@ fun interface LottieAssetsManager {
      *
      * @param name asset name and extension (for example image.png)
      * */
-    suspend fun fetch(asset: LottieAsset): ByteArray?
+    suspend fun image(image: LottieImage): ImageRepresentable?
 
-    @Stable
-    companion object : LottieAssetsManager {
+    /**
+     * Load font asset
+     *
+     * @param id unique asset id that is used for referring from animation layers
+     * @param path relative system path or web URL excluding file name. For example:
+     *
+     * - /path/to/images/
+     * - https://example.com/images/
+     *
+     * @param name asset name and extension (for example image.png)
+     * */
+    suspend fun font(font: LottieFont): Font?
 
-        override suspend fun fetch(asset: LottieAsset): ByteArray? = null
+    companion object {
+
+        /**
+         * Combine asset managers.
+         *
+         * Asset will be loaded by all managers one-by-one until non-null
+         * asset will is received
+         * */
+        fun combine(
+            vararg managers: LottieAssetsManager
+        ) = object : LottieAssetsManager {
+            override suspend fun image(image: LottieImage): ImageRepresentable? {
+                return managers.firstNotNullOfOrNull { it.image(image) }
+            }
+
+            override suspend fun font(font: LottieFont): Font? {
+                return managers.firstNotNullOfOrNull { it.font(font) }
+            }
+        }
+
+        val Empty = object : LottieAssetsManager {
+
+            override suspend fun image(image: LottieImage): ImageRepresentable? = null
+
+            override suspend fun font(font: LottieFont): Font? = null
+        }
     }
 }
+

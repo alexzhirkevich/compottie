@@ -11,6 +11,8 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import compottie.example.shared.generated.resources.Res
@@ -18,7 +20,11 @@ import io.github.alexzhirkevich.compottie.DotLottie
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.LottieConstants
+import io.github.alexzhirkevich.compottie.NetworkAssetsManager
+import io.github.alexzhirkevich.compottie.assets.ImageRepresentable
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
+import io.github.alexzhirkevich.compottie.assets.LottieFont
+import io.github.alexzhirkevich.compottie.assets.LottieImage
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import org.jetbrains.compose.resources.ExperimentalResourceApi
@@ -36,6 +42,7 @@ private val ROBOT = "robot.json"
 private val ROBOT_404 = "robot_404.json"
 private val ASTRONAUT = "astronaut.json"
 private val CONFETTI = "confetti.json"
+private val WONDERS = "wonders.json"
 private val PRECOMP_WITH_REMAPPING = "precomp_with_remapping.json"
 private val MASK_ADD = "mask_add.json"
 private val MATTE_LUMA = "luma_matte.json"
@@ -55,18 +62,17 @@ private val DOT_WITH_IMAGE = "dotlottie/dot_with_image.lottie"
 @Composable
 fun App() {
 
-
     val composition = rememberLottieComposition {
 
-        LottieCompositionSpec.DotLottie(ResourcesAssetsManager()) {
-            Res.readBytes("files/$DOT")
-        }
-//        LottieCompositionSpec.Resource(ROBOT)
+//        LottieCompositionSpec.DotLottie(ResourcesAssetsManager()) {
+//            Res.readBytes("files/$DOT_WITH_IMAGE")
+//        }
+        LottieCompositionSpec.Resource(WONDERS)
 
 //        LottieCompositionSpec.Resource(IMAGE_ASSET)
 
 //        LottieCompositionSpec.Url(
-//            url = "https://assets-v2.lottiefiles.com/a/e3b38514-1150-11ee-9dde-3789514b5871/ZNdbOpdPyr.lottie",
+//            url = "https://assets-v2.lottiefiles.com/a/e25360fe-1150-11ee-9d43-2f8655b815bb/xSk6HtgPaN.lottie",
 //            assetsManager = NetworkAssetsManager()
 //        )
     }
@@ -74,7 +80,6 @@ fun App() {
     LaunchedEffect(composition) {
         composition.await()
     }
-
 
     Box(contentAlignment = Alignment.Center) {
         Image(
@@ -118,28 +123,35 @@ fun LottieCompositionSpec.Companion.Resource(
  * - path="", name="images/image.png"
  * */
 @OptIn(ExperimentalResourceApi::class)
-private fun ResourcesAssetsManager(
-    relativeTo : String = "files",
-    readBytes : suspend (path : String) -> ByteArray = Res::readBytes,
-) = LottieAssetsManager { asset ->
-    try {
-        val trimPath = asset.path
-            .removePrefix("/")
-            .removeSuffix("/")
-            .takeIf(String::isNotEmpty)
+private class ResourcesAssetsManager(
+    private val relativeTo : String = "files",
+    private val readBytes : suspend (path : String) -> ByteArray = Res::readBytes,
+) : LottieAssetsManager {
+    override suspend fun image(image: LottieImage): ImageRepresentable? {
+        return try {
+            val trimPath = image.path
+                .removePrefix("/")
+                .removeSuffix("/")
+                .takeIf(String::isNotEmpty)
 
-        val trimName = asset.name
-            .removePrefix("/")
-            .removeSuffix("/")
-            .takeIf(String::isNotEmpty)
+            val trimName = image.name
+                .removePrefix("/")
+                .removeSuffix("/")
+                .takeIf(String::isNotEmpty)
 
-        val fullPath = listOfNotNull(relativeTo.takeIf(String::isNotEmpty), trimPath, trimName)
-            .joinToString("/")
+            val fullPath = listOfNotNull(
+                relativeTo.takeIf(String::isNotEmpty),
+                trimPath,
+                trimName
+            ).joinToString("/")
 
-        readBytes(fullPath)
-    } catch (x: MissingResourceException) {
-        null
+            ImageRepresentable.Bytes(readBytes(fullPath))
+        } catch (x: MissingResourceException) {
+            null
+        }
     }
+
+    override suspend fun font(font: LottieFont): Font? = null
 }
 
 

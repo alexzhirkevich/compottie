@@ -1,7 +1,6 @@
 package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -12,26 +11,30 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.font.FontFamily
-import io.github.alexzhirkevich.compottie.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.assets.LottieImage
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
+import io.github.alexzhirkevich.compottie.assets.LottieFont
 import io.github.alexzhirkevich.compottie.internal.LottieData
 import io.github.alexzhirkevich.compottie.internal.LottieJson
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.durationMillis
 import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlin.jvm.JvmInline
 
 
 @Stable
 class LottieComposition internal constructor(
     internal val lottieData: LottieData,
-    internal val fonts : Map<String, FontFamily> = emptyMap(),
 ) {
     val startFrame: Float get() = lottieData.inPoint
 
@@ -42,10 +45,14 @@ class LottieComposition internal constructor(
     val frameRate: Float get() = lottieData.frameRate
 
     @InternalCompottieApi
-    var iterations : Int by mutableStateOf(1)
+    var iterations: Int by mutableStateOf(1)
 
     @InternalCompottieApi
-    var speed : Float by mutableFloatStateOf(1f)
+    var speed: Float by mutableFloatStateOf(1f)
+
+    internal var fonts: Map<String, FontFamily> = emptyMap()
+
+    private val fontMutex = Mutex()
 
     /**
      * Preload assets for instant animation displaying.
@@ -57,28 +64,71 @@ class LottieComposition internal constructor(
         assetsManager: LottieAssetsManager
     ) {
         coroutineScope {
-            lottieData.assets.map { asset ->
-                launch(Dispatchers.Default) {
-                    when (asset) {
-                        is ImageAsset -> {
-                            if (asset.bitmap == null) {
-                                assetsManager.fetch(
-                                    LottieAsset(
+            launch {
+                loadAssets(assetsManager)
+            }
+            launch {
+                loadFonts(assetsManager)
+            }
+        }
+    }
+
+    private suspend fun loadAssets(assetsManager: LottieAssetsManager) {
+        coroutineScope {
+            lottieData.assets.mapNotNull { asset ->
+                when (asset) {
+                    is ImageAsset -> {
+                        if (asset.bitmap == null) {
+                            launch(Dispatchers.Default) {
+                                assetsManager.image(
+                                    LottieImage(
                                         id = asset.id,
-                                        type = LottieAsset.AssetType.Image,
                                         path = asset.path,
                                         name = asset.fileName
                                     )
                                 )?.let {
-                                    asset.setBitmap(ImageBitmap.fromBytes(it))
+                                    asset.setBitmap(it.toBitmap(asset.width, asset.height))
                                 }
                             }
-                        }
-
-                        else -> {}
+                        } else null
                     }
+
+                    else -> null
                 }
             }.joinAll()
+        }
+    }
+
+
+    private suspend fun loadFonts(assetsManager: LottieAssetsManager) {
+        fontMutex.withLock {
+            coroutineScope {
+                fonts = lottieData.fonts
+                    ?.map {
+                        async {
+                            val f = it.font ?: assetsManager.font(
+                                LottieFont(
+                                    family = it.family,
+                                    name = it.name,
+                                    style = it.fontStyle,
+                                    weight = it.weight,
+                                    path = it.path
+                                )
+                            )
+
+                            it.font = f
+                            if (f == null)
+                                null
+                            else it.family to f
+                        }
+                    }
+                    ?.awaitAll()
+                    ?.filterNotNull()
+                    ?.groupBy { it.first }
+                    ?.filterValues { it.isNotEmpty() }
+                    ?.mapValues { FontFamily(it.value.map { it.second }) }
+                    .orEmpty()
+            }
         }
     }
 

@@ -72,7 +72,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(compose.runtime)
+            implementation(compose.ui)
             implementation(libs.serialization)
             implementation(libs.okio)
             api(libs.ktor.client.core)

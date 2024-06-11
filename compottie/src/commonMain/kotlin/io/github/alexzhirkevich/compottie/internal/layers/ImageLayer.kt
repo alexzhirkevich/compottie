@@ -1,10 +1,12 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
 import androidx.compose.ui.geometry.MutableRect
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.unit.IntSize
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
@@ -84,12 +86,6 @@ internal class ImageLayer(
 ) : BaseLayer() {
 
     @Transient
-    private val src = MutableRect(0f,0f,0f,0f)
-
-    @Transient
-    private val dst = MutableRect(0f,0f,0f,0f)
-
-    @Transient
     private val paint = Paint()
 
     private val asset : ImageAsset? by lazy {
@@ -106,38 +102,17 @@ internal class ImageLayer(
 
         lastBlurRadius = applyBlurEffectIfNeeded(paint, state, lastBlurRadius)
 
-        val canvas = drawScope.drawContext.canvas
+        drawScope.drawIntoCanvas { canvas ->
+            canvas.save()
+            canvas.concat(parentMatrix)
 
-        canvas.save()
-        canvas.concat(parentMatrix)
-        src.set(0f, 0f, bitmap.width.toFloat(), bitmap.height.toFloat())
-
-        val maintainOriginalImageBounds = painterProperties?.maintainOriginalImageBounds == true
-
-        val dstSize = if (maintainOriginalImageBounds) {
-            IntSize(
-                (mAsset.width * drawScope.density).roundToInt(),
-                (mAsset.height * drawScope.density).roundToInt()
+            canvas.drawImage(
+                image = bitmap,
+                topLeftOffset = Offset.Zero,
+                paint = paint
             )
-        } else {
-            IntSize(
-                (bitmap.width * drawScope.density).roundToInt(),
-                (bitmap.height * drawScope.density).roundToInt()
-            )
+            canvas.restore()
         }
-
-        val srcSize = IntSize(
-            (bitmap.width * drawScope.density).toInt(),
-            (bitmap.height * drawScope.density).toInt()
-        )
-
-        canvas.drawImageRect(
-            bitmap,
-            srcSize = srcSize,
-            dstSize = dstSize,
-            paint = paint
-        )
-        canvas.restore()
     }
 
     override fun getBounds(
@@ -153,8 +128,8 @@ internal class ImageLayer(
             outBounds.set(
                 left = 0f,
                 top = 0f,
-                right = it.width * drawScope.density,
-                bottom = it.height * drawScope.density
+                right = it.width.toFloat(),
+                bottom = it.height.toFloat()
             )
             boundsMatrix.map(outBounds)
         }

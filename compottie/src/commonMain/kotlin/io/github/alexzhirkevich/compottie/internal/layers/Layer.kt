@@ -68,8 +68,6 @@ internal class PainterProperties(
 
     val assets: Map<String, LottieAsset> = emptyMap(),
 
-    val maintainOriginalImageBounds: Boolean = false,
-
     val clipTextToBoundingBoxes : Boolean = false,
 
     val fontFamilyResolver: FontFamily.Resolver? = null

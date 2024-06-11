@@ -34,7 +34,7 @@ fun LottieCompositionSpec.Companion.Url(
     client: HttpClient = DefaultHttpClient,
     request : NetworkRequest = GetRequest,
     cacheStrategy: LottieCacheStrategy = DiskCacheStrategy(),
-    assetsManager: LottieAssetsManager = NetworkAssetsManager(client,cacheStrategy, request),
+    assetsManager: LottieAssetsManager = NetworkAssetsManager(client, cacheStrategy, request),
 ) : LottieCompositionSpec = NetworkCompositionSpec(
     url = url,
     format = format,

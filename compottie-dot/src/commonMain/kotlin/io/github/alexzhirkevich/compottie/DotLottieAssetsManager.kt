@@ -1,8 +1,11 @@
 package io.github.alexzhirkevich.compottie
 
-import io.github.alexzhirkevich.compottie.assets.LottieAsset
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import io.github.alexzhirkevich.compottie.assets.ImageRepresentable
+import io.github.alexzhirkevich.compottie.assets.LottieImage
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
-import okio.FileNotFoundException
+import io.github.alexzhirkevich.compottie.assets.LottieFont
 import okio.IOException
 import okio.Path.Companion.toPath
 
@@ -10,28 +13,28 @@ internal class DotLottieAssetsManager(
     private val zipFileSystem: ZipFileSystem,
 ) : LottieAssetsManager {
 
-    override suspend fun fetch(asset: LottieAsset): ByteArray? {
+    override suspend fun image(image: LottieImage): ImageRepresentable? {
 
-        val trimPath = asset.path
+        val trimPath = image.path
             .removePrefix("/")
             .removeSuffix("/")
             .takeIf(String::isNotEmpty)
 
-        val trimName = asset.name
+        val trimName = image.name
             .removePrefix("/")
             .removeSuffix("/")
             .takeIf(String::isNotEmpty)
 
         load(null, trimPath, trimName)?.let {
-            return it
+            return ImageRepresentable.Bytes(it)
         }
 
-        val dir = when (asset.type) {
-            LottieAsset.AssetType.Image -> "/images"
+        return load("/images", trimPath, trimName)?.let {
+            ImageRepresentable.Bytes(it)
         }
-
-        return load(dir, trimPath, trimName)
     }
+
+    override suspend fun font(font: LottieFont): Font? = null
 
     private suspend fun load(root: String?, trimPath: String?, trimName: String?): ByteArray? {
         val fullPath = listOfNotNull(root, trimPath, trimName)

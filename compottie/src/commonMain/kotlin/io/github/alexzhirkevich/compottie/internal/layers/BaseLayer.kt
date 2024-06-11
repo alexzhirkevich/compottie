@@ -86,7 +86,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
             } else BlendMode.DstIn
         }
     }
-    protected val rect = MutableRect(0f, 0f, 0f, 0f)
+    private val rect = MutableRect(0f, 0f, 0f, 0f)
     private var parentLayers: MutableList<BaseLayer>? = null
 
     private var parentLayer: BaseLayer? = null
@@ -166,6 +166,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
                 if (rect.width >= 1f && rect.height >= 1f) {
                     contentPaint.alpha = 1f
                     canvas.saveLayer(rect, contentPaint)
+                    canvas.save()
 
                     // Clear the off screen buffer. This is necessary for some phones.
                     clearCanvas(canvas)
@@ -212,9 +213,12 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         boundsMatrix.setFrom(parentMatrix)
 
         if (applyParents) {
-            parentLayers?.fastForEachReversed {
-                boundsMatrix.preConcat(it.transform.matrix(state))
-            } ?: run {
+            val p = parentLayers
+            if (p != null){
+                p.fastForEachReversed {
+                    boundsMatrix.preConcat(it.transform.matrix(state))
+                }
+            } else {
                 parentLayer?.transform?.matrix(state)?.let {
                     boundsMatrix.preConcat(it)
                 }

@@ -23,6 +23,8 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
 
     abstract val timeRemapping : AnimatedNumber?
 
+    private val rect = MutableRect(0f, 0f, 0f, 0f)
+
     @Transient
     private val newClipRect = MutableRect(0f, 0f, 0f, 0f)
 
@@ -139,6 +141,7 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         outBounds: MutableRect
     ) {
         super.getBounds(drawScope, parentMatrix, applyParents, state, outBounds)
+
         layers.fastForEachReversed {
             rect.set(0f, 0f, 0f, 0f)
             it.getBounds(drawScope, boundsMatrix, true, state, rect)

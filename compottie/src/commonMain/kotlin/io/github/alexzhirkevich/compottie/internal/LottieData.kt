@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie.internal
 
 import io.github.alexzhirkevich.compottie.internal.helpers.Marker
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.assets.LottieFontAsset
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -33,6 +34,8 @@ internal data class LottieData(
     val layers: List<Layer> = emptyList(),
 
     val assets : List<LottieAsset> = emptyList(),
+
+    val fonts : List<LottieFontAsset>? = null,
 
     val markers : List<Marker> = emptyList()
 )

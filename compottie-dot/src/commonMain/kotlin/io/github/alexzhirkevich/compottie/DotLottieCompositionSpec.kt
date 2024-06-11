@@ -24,11 +24,12 @@ var L.useStableWasmMemoryManagement by ::_useStableWasmMemoryManagement
  * [LottieComposition] from a dotLottie zip archive.
  *
  * @param archive archive bytes supplier
- * @param assetsManager required only if animation contains assets that are not included to the archive
+ * @param assetsManager required only if animation contains assets that are not included in the archive
+ * (like fonts, resource images, etc.)
  * */
 @Stable
 fun LottieCompositionSpec.Companion.DotLottie(
-    assetsManager: LottieAssetsManager = LottieAssetsManager,
+    assetsManager: LottieAssetsManager = LottieAssetsManager.Empty,
     archive: suspend () -> ByteArray,
 ) : LottieCompositionSpec = DotLottieCompositionSpec(archive, assetsManager)
 

@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie.internal.assets
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.IntSize
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
@@ -23,7 +24,6 @@ internal class ImageAsset(
 
     @SerialName("u")
     override val path: String ="",
-
 
     @SerialName("sid")
     override val slotId: String? = null,
@@ -73,6 +73,9 @@ private val String.isBase64Data : Boolean get() =
 
 private val emptyPaint = Paint()
 internal fun ImageBitmap.resize(w : Int, h : Int) : ImageBitmap {
+    if (width == w && h == h){
+        return this
+    }
     val bitmap = ImageBitmap(w, h)
 
     Canvas(bitmap).apply {
@@ -85,3 +88,4 @@ internal fun ImageBitmap.resize(w : Int, h : Int) : ImageBitmap {
 
     return bitmap
 }
+

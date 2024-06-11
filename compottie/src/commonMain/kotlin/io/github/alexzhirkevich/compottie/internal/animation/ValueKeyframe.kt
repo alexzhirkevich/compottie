@@ -30,4 +30,3 @@ internal class ValueKeyframe(
     override val outValue : BezierInterpolation? = null,
 ) : Keyframe<FloatArray>()
 
-

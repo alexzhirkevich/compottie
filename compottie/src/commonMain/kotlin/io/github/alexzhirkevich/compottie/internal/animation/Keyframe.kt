@@ -1,11 +1,13 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
-import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
+import kotlin.math.abs
+import kotlin.math.absoluteValue
 
-internal abstract class Keyframe<out T> {
+internal abstract class Keyframe<out T>() {
     abstract val start: T?
     abstract val end: T?
     abstract val time: Float
@@ -16,46 +18,91 @@ internal abstract class Keyframe<out T> {
     val endHold get() = if (hold == BooleanInt.Yes) start else end
 
     val easingX: Easing by lazy {
-        if (hold == BooleanInt.Yes) {
+        val i = inValue
+        val o = outValue
+
+        if (hold == BooleanInt.Yes || i == null || o == null) {
             LinearEasing
         } else {
-            val i = inValue
-            val o = outValue
-
-            if (!i?.x.isNullOrEmpty() &&
-                !i?.y.isNullOrEmpty() &&
-                !o?.x.isNullOrEmpty() && !o?.y.isNullOrEmpty()
+            if (i.x.isNotEmpty() &&
+                i.y.isNotEmpty() &&
+                o.x.isNotEmpty() &&
+                o.y.isNotEmpty()
             ) {
-                CubicBezierEasing(
-                    o!!.x[0].normalize(),
-                    o.y[0]  .normalize(),
-                    i!!.x[0].normalize(),
-                    i.y[0]  .normalize()
+                PreciseCubicBezier(
+                    o.x[0].clampX(),
+                    o.y[0].clampY(),
+                    i.x[0].clampX(),
+                    i.y[0].clampY()
                 )
             } else LinearEasing
         }
     }
 
     val easingY by lazy {
-        if (hold == BooleanInt.Yes) {
-            LinearEasing
-        } else {
-            val i = inValue
-            val o = outValue
 
-            if (i?.x?.size == 2 && i.y.size == 2 && o?.x?.size == 2 && o.y.size == 2) {
-                CubicBezierEasing(
-                    o.x[1].normalize(),
-                    o.y[1].normalize(),
-                    i.x[1].normalize(),
-                    i.y[1].normalize()
-                )
-            } else {
-                easingX
+        val i = inValue
+        val o = outValue
+
+        if (hold == BooleanInt.Yes || i == null || o == null) {
+            return@lazy LinearEasing
+        }
+
+        if (i.x.size < 2 || i.y.size < 2 || o.x.size < 2 || o.y.size == 2) {
+            return@lazy easingX
+        }
+
+        PreciseCubicBezier(
+            o.x[1].clampX(),
+            o.y[1].clampY(),
+            i.x[1].clampX(),
+            i.y[1].clampY()
+        )
+    }
+}
+
+private fun Float.clampX() =  coerceIn(-1f,1f)
+private fun Float.clampY() =  coerceIn(-100f,100f)
+
+private class PreciseCubicBezier(
+    private val a: Float,
+    private val b: Float,
+    private val c: Float,
+    private val d: Float
+) : Easing {
+
+    private val isLinear = (abs(a - b) < CubicErrorBound && abs(c-d) < CubicErrorBound)
+
+    private fun evaluateCubic(a: Float, b: Float, m: Float): Float {
+        return 3 * a * (1 - m) * (1 - m) * m +
+                3 * b * (1 - m) * /*    */ m * m +
+                /*                      */ m * m * m
+    }
+
+    override fun transform(fraction: Float): Float {
+
+        if (isLinear)
+            return fraction
+
+        if (fraction > 0f && fraction < 1f) {
+            var start = 0.0f
+            var end = 1.0f
+            while (true) {
+                val midpoint = (start + end) / 2
+                val estimate = evaluateCubic(a, c, midpoint)
+                if ((fraction - estimate).absoluteValue < CubicErrorBound)
+                    return evaluateCubic(b, d, midpoint)
+                if (estimate < fraction)
+                    start = midpoint
+                else
+                    end = midpoint
             }
+        } else {
+            return fraction
         }
     }
 }
 
-private fun Float.normalize() = coerceIn(0f,1f)
+private const val CubicErrorBound: Float = 0.0001f
+
 
