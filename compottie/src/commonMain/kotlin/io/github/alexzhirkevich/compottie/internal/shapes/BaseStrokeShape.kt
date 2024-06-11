@@ -19,6 +19,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
+import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsState
 import io.github.alexzhirkevich.compottie.internal.helpers.DashType
 import io.github.alexzhirkevich.compottie.internal.helpers.StrokeDash
 import io.github.alexzhirkevich.compottie.internal.helpers.applyTrimPath
@@ -116,7 +117,9 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
 
     private var roundShape : RoundShape? = null
 
-    private var lastBlurRadius : Float? = null
+    private val effectsState by lazy {
+        LayerEffectsState()
+    }
 
     override fun draw(
         drawScope: DrawScope,
@@ -139,7 +142,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
 
         applyDashPatternIfNeeded(parentMatrix, state)
 
-        lastBlurRadius = layer.applyBlurEffectIfNeeded(paint, state, lastBlurRadius)
+        layer.effectsApplier.applyTo(paint, state, effectsState)
 
         roundShape?.applyTo(paint, state)
 

@@ -19,6 +19,7 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.effects.BlurEffect
+import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsApplier
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MaskMode
 import io.github.alexzhirkevich.compottie.internal.helpers.isInvert
@@ -94,6 +95,10 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
 
     private val blurEffect by lazy {
         effects.fastFirstOrNull { it is BlurEffect } as? BlurEffect
+    }
+
+    override val effectsApplier by lazy {
+        LayerEffectsApplier(this)
     }
 
     abstract fun drawLayer(
@@ -238,18 +243,6 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
 
     fun setMatteLayer(layer: BaseLayer) {
         this.matteLayer = layer
-    }
-
-    override fun applyBlurEffectIfNeeded(paint: Paint, state: AnimationState, lastBlurRadius : Float?) : Float {
-
-        return blurEffect?.let {
-            val radius = it.radius?.interpolated(state) ?: return@let null
-
-            if (radius != lastBlurRadius) {
-                paint.setBlurMaskFilter(radius, isImage = this is ImageLayer)
-            }
-            return radius
-        } ?: 0f
     }
 
     private fun buildParentLayerListIfNeeded() {

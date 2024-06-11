@@ -14,6 +14,7 @@ import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
+import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsState
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.FillRule
 import io.github.alexzhirkevich.compottie.internal.helpers.asComposeBlendMode
@@ -77,8 +78,9 @@ internal class FillShape(
     @Transient
     private var roundShape : RoundShape? = null
 
-    private var lastBlurRadius : Float? = null
-
+    private val effectsState by lazy {
+        LayerEffectsState()
+    }
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
 
         if (hidden) {
@@ -93,8 +95,7 @@ internal class FillShape(
 
         roundShape?.applyTo(paint, state)
 
-        lastBlurRadius = layer.applyBlurEffectIfNeeded(paint, state, lastBlurRadius)
-
+        layer.effectsApplier.applyTo(paint, state, effectsState)
         path.reset()
 
         paths.fastForEach {

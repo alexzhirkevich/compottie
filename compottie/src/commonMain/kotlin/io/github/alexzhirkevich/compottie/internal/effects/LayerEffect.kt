@@ -9,6 +9,11 @@ import kotlinx.serialization.json.JsonClassDiscriminator
 @JsonClassDiscriminator("ty")
 internal sealed interface LayerEffect {
 
+    val values : List<EffectValue<*>>
+
     @Serializable
-    data object UnsupportedEffect : LayerEffect
+    data object UnsupportedEffect : LayerEffect {
+        override val values: List<EffectValue<*>>
+            get() = emptyList()
+    }
 }

@@ -181,11 +181,7 @@ private class LottiePainter(
 
         scale(scale.scaleX, scale.scaleY) {
             translate(offset.x.toFloat(), offset.y.toFloat()) {
-                measureTime {
-                    compositionLayer.draw(this, matrix, alpha, AnimationState(frame))
-                }.also {
-                    println(it.inWholeMilliseconds)
-                }
+                compositionLayer.draw(this, matrix, alpha, AnimationState(frame))
             }
         }
     }

@@ -2,6 +2,9 @@ package io.github.alexzhirkevich.compottie.internal.layers
 
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -15,6 +18,7 @@ import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
+import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsState
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -86,13 +90,16 @@ internal class ImageLayer(
 ) : BaseLayer() {
 
     @Transient
-    private val paint = Paint()
+    private val paint = Paint().apply {
+    }
 
     private val asset : ImageAsset? by lazy {
         painterProperties?.assets?.get(refId) as? ImageAsset
     }
 
-    private var lastBlurRadius : Float? = null
+    private val effectState by lazy {
+        LayerEffectsState()
+    }
 
     override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
         val mAsset = asset ?: return
@@ -100,17 +107,24 @@ internal class ImageLayer(
 
         paint.alpha = parentAlpha
 
-        lastBlurRadius = applyBlurEffectIfNeeded(paint, state, lastBlurRadius)
+        effectsApplier.applyTo(paint, state, effectState)
+
 
         drawScope.drawIntoCanvas { canvas ->
             canvas.save()
             canvas.concat(parentMatrix)
 
-            canvas.drawImage(
+
+            drawScope.drawImage(
                 image = bitmap,
-                topLeftOffset = Offset.Zero,
-                paint = paint
+                alpha = parentAlpha,
+                colorFilter = paint.colorFilter
             )
+//            canvas.drawImage(
+//                image = bitmap,
+//                topLeftOffset = Offset.Zero,
+//                paint = paint
+//            )
             canvas.restore()
         }
     }

@@ -16,6 +16,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.GradientType
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
+import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsState
 import io.github.alexzhirkevich.compottie.internal.helpers.FillRule
 import io.github.alexzhirkevich.compottie.internal.helpers.asPathFillType
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
@@ -94,8 +95,9 @@ internal class GradientFillShape(
     @Transient
     private var roundShape : RoundShape? = null
 
-    private var lastBlurRadius : Float? = null
-
+    private val effectsState by lazy {
+        LayerEffectsState()
+    }
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
 
         if (hidden){
@@ -119,7 +121,7 @@ internal class GradientFillShape(
             parentAlpha
         }
 
-        lastBlurRadius = layer.applyBlurEffectIfNeeded(paint, state, lastBlurRadius)
+        layer.effectsApplier.applyTo(paint, state, effectsState)
 
 
         path.reset()

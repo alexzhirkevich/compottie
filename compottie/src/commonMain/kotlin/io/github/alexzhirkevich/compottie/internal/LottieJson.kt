@@ -8,7 +8,11 @@ import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.assets.PrecompositionAsset
 import io.github.alexzhirkevich.compottie.internal.effects.BlurEffect
+import io.github.alexzhirkevich.compottie.internal.effects.DropShadowEffect
+import io.github.alexzhirkevich.compottie.internal.effects.EffectValue
+import io.github.alexzhirkevich.compottie.internal.effects.FillEffect
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
+import io.github.alexzhirkevich.compottie.internal.effects.TintEffect
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.layers.NullLayer
 import io.github.alexzhirkevich.compottie.internal.layers.ShapeLayer
@@ -90,9 +94,23 @@ internal val LottieJson by lazy {
 
             polymorphic(LayerEffect::class){
                 subclass(BlurEffect::class)
+                subclass(FillEffect::class)
+                subclass(TintEffect::class)
+                subclass(DropShadowEffect::class)
 
                 defaultDeserializer {
                     LayerEffect.UnsupportedEffect.serializer()
+                }
+            }
+
+            polymorphic(EffectValue::class){
+                subclass(EffectValue.Slider::class)
+                subclass(EffectValue.CheckBox::class)
+                subclass(EffectValue.Color::class)
+                subclass(EffectValue.Angle::class)
+
+                defaultDeserializer {
+                    EffectValue.Unsupported.serializer()
                 }
             }
 

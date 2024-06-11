@@ -69,4 +69,4 @@ internal actual fun Paint.setBlurMaskFilter(radius: Float, isImage : Boolean) {
     }
 }
 
-private val BlurSigmaScale = .5f
+internal val BlurSigmaScale = .5f

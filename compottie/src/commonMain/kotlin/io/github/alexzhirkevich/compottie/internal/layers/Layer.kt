@@ -6,6 +6,7 @@ import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
+import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsApplier
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
@@ -58,7 +59,8 @@ internal sealed interface Layer {
 
     val effects: List<LayerEffect>
 
-    fun applyBlurEffectIfNeeded(paint: Paint, state: AnimationState, lastBlurRadius : Float?) : Float
+
+    val effectsApplier : LayerEffectsApplier
 }
 
 internal val Layer.isContainerLayer get()   =  name == "__container"
