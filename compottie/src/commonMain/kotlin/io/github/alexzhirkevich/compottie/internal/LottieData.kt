@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal
 
+import io.github.alexzhirkevich.compottie.internal.assets.FontList
 import io.github.alexzhirkevich.compottie.internal.helpers.Marker
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.assets.LottieFontAsset
@@ -35,10 +36,11 @@ internal data class LottieData(
 
     val assets : List<LottieAsset> = emptyList(),
 
-    val fonts : List<LottieFontAsset>? = null,
+    val fonts : FontList? = null,
 
     val markers : List<Marker> = emptyList()
 )
+
 
 internal val LottieData.durationMillis
     get() = (outPoint - inPoint) / frameRate * 1000

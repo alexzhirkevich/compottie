@@ -3,16 +3,10 @@ package io.github.alexzhirkevich.compottie.internal.animation
 import androidx.compose.ui.graphics.Path
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.helpers.Bezier
-import io.github.alexzhirkevich.compottie.internal.helpers.ShapeData
-import io.github.alexzhirkevich.compottie.internal.helpers.mapPath
-import io.github.alexzhirkevich.compottie.internal.helpers.toShapeData
 import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonClassDiscriminator
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -35,22 +29,15 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
         val bezier: Bezier,
     ) : AnimatedShape {
 
-        private val unmodifiedPath by lazy {
-            Path().also {
-                bezier.toShapeData().mapPath(it)
-            }
-        }
-
-        private val shapeData by lazy {
-            bezier.toShapeData()
-        }
-
         @Transient
         private val tmpPath = Path()
+
         override fun interpolated(state: AnimationState): Path {
-            tmpPath.reset()
-            shapeData.mapPath(tmpPath)
-            return tmpPath
+//            bezier.mapPath(tmpPath)
+//            return tmpPath
+            return  Path().apply {
+                bezier.mapPath(this)
+            }
         }
     }
 
@@ -70,17 +57,20 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
         private val tmpPath = Path()
 
         @Transient
-        private val tmpShapeData = ShapeData()
+        private val tmpBezier = Bezier()
 
         @Transient
-        private var delegate =  BaseKeyframeAnimation(
+        private var delegate = BaseKeyframeAnimation(
             expression = expression,
-            keyframes = keyframes.map { it.toShapeKeyframe() },
+            keyframes = keyframes,
             emptyValue = tmpPath,
-            map = { s, e, p->
-                tmpShapeData.interpolateBetween(s, e, easingX.transform(p))
-                tmpShapeData.mapPath(tmpPath)
-                tmpPath
+            map = { s, e, p ->
+//                tmpBezier.interpolateBetween(s, e, easingX.transform(p))
+//                tmpBezier.mapPath(tmpPath)
+//                tmpPath
+                Path().apply {
+                    tmpBezier.mapPath(this)
+                }
             }
         )
 

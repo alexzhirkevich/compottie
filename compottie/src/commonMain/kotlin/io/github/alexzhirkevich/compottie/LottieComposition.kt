@@ -9,7 +9,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.font.FontFamily
 import io.github.alexzhirkevich.compottie.assets.LottieImage
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
@@ -18,9 +17,7 @@ import io.github.alexzhirkevich.compottie.internal.LottieData
 import io.github.alexzhirkevich.compottie.internal.LottieJson
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.durationMillis
-import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -50,7 +47,7 @@ class LottieComposition internal constructor(
     @InternalCompottieApi
     var speed: Float by mutableFloatStateOf(1f)
 
-    internal var fonts: Map<String, FontFamily> = emptyMap()
+    internal var fontsByFamily: Map<String, FontFamily> = emptyMap()
 
     private val fontMutex = Mutex()
 
@@ -103,7 +100,7 @@ class LottieComposition internal constructor(
     private suspend fun loadFonts(assetsManager: LottieAssetsManager) {
         fontMutex.withLock {
             coroutineScope {
-                fonts = lottieData.fonts
+                fontsByFamily = lottieData.fonts?.list
                     ?.map {
                         async {
                             val f = it.font ?: assetsManager.font(

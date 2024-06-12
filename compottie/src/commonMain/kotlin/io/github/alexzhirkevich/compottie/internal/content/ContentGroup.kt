@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
+import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.union
@@ -28,11 +29,11 @@ internal class ContentGroup(
     }
     private val matrix = Matrix()
     private val path = Path()
-    private val boundsRect = MutableRect(0f, 0f, 0f, 0f)
+//    private val boundsRect = MutableRect(0f, 0f, 0f, 0f)
 
     private val mContents by lazy {
-        contents.filter {
-            !(it is ContentGroupBase && it.pathContents.isEmpty())
+        contents.filterNot {
+            it is ContentGroupBase && it.pathContents.isEmpty()
         }.toMutableList()
     }
 
@@ -48,7 +49,7 @@ internal class ContentGroup(
         val greedyContents = contents.filterIsInstance<GreedyContent>().reversed()
 
         greedyContents.fastForEachReversed {
-            it.absorbContent(this.mContents.listIterator(this.mContents.size))
+            it.absorbContent(mContents)
         }
     }
 
@@ -69,9 +70,9 @@ internal class ContentGroup(
 
         if (transform != null) {
             matrix.preConcat(transform.matrix(state))
-            transform.opacity?.interpolated(state)?.let {
+            transform.opacity?.interpolatedNorm(state)?.let {
 
-                layerAlpha = (layerAlpha * it / 100f).coerceIn(0f, 1f)
+                layerAlpha = (layerAlpha * it).coerceIn(0f, 1f)
             }
         }
 

@@ -2,13 +2,13 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
-import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
+import io.github.alexzhirkevich.compottie.internal.helpers.CompoundSimultaneousTrimPath
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -34,7 +34,7 @@ internal class PathShape(
     override lateinit var layer: Layer
 
     @Transient
-    private val trimPaths: CompoundTrimPath = CompoundTrimPath()
+    private var trimPaths : CompoundTrimPath? = null
 
     private val path = Path()
 
@@ -47,17 +47,11 @@ internal class PathShape(
         path.set(shape.interpolated(state))
         path.fillType = PathFillType.EvenOdd
 
-        trimPaths.apply(path, state)
+        trimPaths?.apply(path, state)
         return path
     }
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
-
-        contentsBefore.fastForEach { content ->
-            if (content.isSimultaneousTrimPath()) {
-                // Trim path individually will be handled by the stroke where paths are combined.
-                trimPaths.addTrimPath(content)
-            }
-        }
+        trimPaths = CompoundSimultaneousTrimPath(contentsBefore)
     }
 }

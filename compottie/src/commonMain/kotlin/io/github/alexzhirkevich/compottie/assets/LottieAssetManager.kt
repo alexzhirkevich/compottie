@@ -1,8 +1,8 @@
 package io.github.alexzhirkevich.compottie.assets
 
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 
 /**
  * Used to fetch lottie assets that are not embedded to the animation JSON file

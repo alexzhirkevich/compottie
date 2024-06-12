@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.ColorMatrixColorFilter
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.layers.BaseLayer
 import io.github.alexzhirkevich.compottie.internal.platform.effects.PlatformDropShadowEffect
 import io.github.alexzhirkevich.compottie.internal.platform.effects.applyNativeDropShadowEffect
@@ -73,7 +74,7 @@ private fun Paint.applyFillEffect(
     effectState: LayerEffectsState
 ) {
     val color = effect.color?.interpolated(animationState)?.let {
-        it.copy(
+        it.copy(                              // don't divide by 100
             alpha = it.alpha * (effect.opacity?.interpolated(animationState)?.coerceIn(0f, 1f) ?: 1f)
         )
     }
@@ -94,18 +95,14 @@ private fun Paint.applyTintEffect(
     animationState: AnimationState,
     effectState: LayerEffectsState
 ) {
-    val intensity =
-        effect.intensity?.interpolated(animationState)?.div(100f)?.coerceIn(0f, 1f) ?: 1f
+    val intensity = effect.intensity?.interpolatedNorm(animationState)
+        ?.coerceIn(0f, 1f) ?: 1f
 
     val black = effect.black?.interpolated(animationState)?.let {
-        it.copy(
-            alpha = it.alpha * intensity
-        )
+        it.copy(alpha = it.alpha * intensity)
     }
     val white = effect.white?.interpolated(animationState)?.let {
-        it.copy(
-            alpha = it.alpha * intensity
-        )
+        it.copy(alpha = it.alpha * intensity)
     }
 
     if (black != Color.Black)

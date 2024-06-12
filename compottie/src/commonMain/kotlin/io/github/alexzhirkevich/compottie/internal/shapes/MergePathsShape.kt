@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.util.fastForEach
+import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
@@ -15,6 +16,19 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlin.jvm.JvmInline
+
+
+@Serializable
+@JvmInline
+internal value class MergeMode(val mode : Byte) {
+    companion object {
+        val Normal = MergeMode(1)
+        val Add = MergeMode(2)
+        val Subtract = MergeMode(3)
+        val Intersect = MergeMode(4)
+        val ExcludeIntersections = MergeMode(5)
+    }
+}
 
 @Serializable
 @SerialName("mm")
@@ -46,7 +60,7 @@ internal class MergePathsShape(
     private val firstPath = Path()
 
     @Transient
-    private val pathContents = mutableListOf<PathContent>()
+    private var pathContents = emptyList<PathContent>()
 
     override fun getPath(state: AnimationState): Path {
 
@@ -57,7 +71,9 @@ internal class MergePathsShape(
         }
 
         when (mode) {
-            MergeMode.Normal -> addPaths(state)
+            MergeMode.Normal -> pathContents.fastForEach {
+                path.addPath(it.getPath(state))
+            }
             MergeMode.Add -> opFirstPathWithRest(PathOperation.Union, state)
             MergeMode.Subtract -> opFirstPathWithRest(PathOperation.Difference, state)
             MergeMode.Intersect -> opFirstPathWithRest(PathOperation.Intersect, state)
@@ -73,24 +89,19 @@ internal class MergePathsShape(
         }
     }
 
-    override fun absorbContent(contents: MutableListIterator<Content>) {
+    override fun absorbContent(contents: MutableList<Content>) {
 
-        // Fast forward the iterator until after this content.
-        @Suppress("ControlFlowWithEmptyBody")
-        while (contents.hasPrevious() && contents.previous() !== this) {
-        }
-        while (contents.hasPrevious()) {
-            val content = contents.previous()
-            if (content is PathContent) {
-                pathContents.add(content)
-                contents.remove()
-            }
-        }
-    }
+        val thisIndex = contents.indexOf(this).takeIf { it > 0 } ?: return
 
-    private fun addPaths(state: AnimationState) {
-        pathContents.fastForEach {
-            path.addPath(it.getPath(state))
+        pathContents = contents
+            .take(thisIndex)
+            .filterIsInstance<PathContent>()
+            .reversed()
+
+        if (pathContents.size < 2) {
+            contents.removeAt(thisIndex)
+        } else {
+            contents.removeAll(pathContents)
         }
     }
 
@@ -105,9 +116,7 @@ internal class MergePathsShape(
             if (content is ContentGroupBase) {
                 content.pathContents.fastForEachReversed { path ->
                     val p = path.getPath(state)
-                    content.transform?.matrix(state)?.let {
-                        p.transform(it)
-                    }
+                    content.transform?.matrix(state)?.let(p::transform)
                     remainderPath.addPath(p)
                 }
             } else {
@@ -118,31 +127,17 @@ internal class MergePathsShape(
         val lastContent = pathContents[0]
         if (lastContent is ContentGroupBase) {
             lastContent.pathContents.fastForEach {
-                val path = it.getPath(state)
-                lastContent.transform?.matrix(state)?.let(path::transform)
-                firstPath.addPath(path)
+                val p = it.getPath(state)
+//                lastContent.transform?.matrix(state)?.let(p::transform)
+                firstPath.addPath(p)
             }
         } else {
             firstPath.set(lastContent.getPath(state))
         }
 
-        if (pathContents.size == 1) {
-            path.addPath(firstPath)
-            return
-        }
 
+//        firstPath.reset()
+//        firstPath.addRect(bounds)
         path.op(firstPath, remainderPath, op)
-    }
-}
-
-@Serializable
-@JvmInline
-internal value class MergeMode(val mode : Byte) {
-    companion object {
-        val Normal = MergeMode(1)
-        val Add = MergeMode(2)
-        val Subtract = MergeMode(3)
-        val Intersect = MergeMode(4)
-        val ExcludeIntersections = MergeMode(5)
     }
 }

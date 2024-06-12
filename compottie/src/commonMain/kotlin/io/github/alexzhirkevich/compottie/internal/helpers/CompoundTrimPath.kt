@@ -3,18 +3,18 @@ package io.github.alexzhirkevich.compottie.internal.helpers
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
+import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.platform.ExtendedPathMeasure
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import io.github.alexzhirkevich.compottie.internal.shapes.TrimPathShape
+import io.github.alexzhirkevich.compottie.internal.shapes.isSimultaneousTrimPath
 import io.github.alexzhirkevich.compottie.internal.utils.floorMod
 import kotlin.math.abs
 
-internal class CompoundTrimPath {
-    private val contents: MutableList<TrimPathShape> = mutableListOf()
-
-    fun addTrimPath(trimPath: TrimPathShape) {
-        contents.add(trimPath)
-    }
+internal class CompoundTrimPath(
+    private val contents : List<TrimPathShape>
+) {
 
     fun apply(path: Path, state: AnimationState) {
         contents.fastForEachReversed {
@@ -23,17 +23,25 @@ internal class CompoundTrimPath {
     }
 }
 
+internal fun CompoundSimultaneousTrimPath(contents: List<Content>) : CompoundTrimPath? {
+    return contents
+        .filterIsInstance<TrimPathShape>()
+        .filter(Content::isSimultaneousTrimPath)
+        .takeIf(List<*>::isNotEmpty)
+        ?.let { CompoundTrimPath(it) }
+}
+
 internal fun Path.applyTrimPath(trimPath: TrimPathShape, state: AnimationState) {
     if (trimPath.hidden) {
         return
     }
-    val start: Float = trimPath.start.interpolated(state)
-    val end: Float = trimPath.end.interpolated(state)
+    val start: Float = trimPath.start.interpolatedNorm(state)
+    val end: Float = trimPath.end.interpolatedNorm(state)
     val offset: Float = trimPath.offset.interpolated(state)
 
     applyTrimPath(
-        startValue = start / 100f,
-        endValue = end / 100f,
+        startValue = start,
+        endValue = end,
         offsetValue = offset / 360f
     )
 }

@@ -16,6 +16,7 @@ import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
+import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
@@ -133,7 +134,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         }
 
         paint.style = PaintingStyle.Stroke
-        paint.alpha = parentAlpha * (opacity.interpolated(state) / 100f).coerceIn(0f, 1f)
+        paint.alpha = parentAlpha * opacity.interpolatedNorm(state).coerceIn(0f, 1f)
         paint.strokeWidth = strokeWidth.interpolated(state)
 
         if (paint.strokeWidth <= 0) {
@@ -239,8 +240,8 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         pathGroup.paths.fastForEachReversed {
             path.addPath(it.getPath(state).apply { transform(parentMatrix) })
         }
-        val animStartValue: Float = pathGroup.trimPath.start.interpolated(state) / 100f
-        val animEndValue: Float = pathGroup.trimPath.end.interpolated(state) / 100f
+        val animStartValue: Float = pathGroup.trimPath.start.interpolatedNorm(state)
+        val animEndValue: Float = pathGroup.trimPath.end.interpolatedNorm(state)
         val animOffsetValue: Float = pathGroup.trimPath.offset.interpolated(state) / 360f
 
         // If the start-end is ~100, consider it to be the full path.

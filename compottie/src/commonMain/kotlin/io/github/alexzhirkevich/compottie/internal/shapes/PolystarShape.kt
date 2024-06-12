@@ -3,13 +3,14 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
-import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
+import io.github.alexzhirkevich.compottie.internal.helpers.CompoundSimultaneousTrimPath
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.utils.Math
 import kotlinx.serialization.SerialName
@@ -87,7 +88,7 @@ internal class PolystarShape(
     private val lastSegmentPathMeasure = PathMeasure()
 
     @Transient
-    private val trimPaths = CompoundTrimPath()
+    private var trimPaths : CompoundTrimPath? = null
 
     override fun getPath(state: AnimationState): Path {
 
@@ -98,17 +99,13 @@ internal class PolystarShape(
             StarType.Polygon -> createPolygonPath(state)
         }
 
-        trimPaths.apply(path, state)
+        trimPaths?.apply(path, state)
 
         return path
     }
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
-        contentsBefore.fastForEach {
-            if (it.isSimultaneousTrimPath()) {
-                trimPaths.addTrimPath(it)
-            }
-        }
+        trimPaths = CompoundSimultaneousTrimPath(contentsBefore)
     }
 
     private fun createStarPath(state: AnimationState) {
@@ -129,8 +126,8 @@ internal class PolystarShape(
         val outerRadius = outerRadius?.interpolated(state) ?: 0f
         val innerRadius = innerRadius?.interpolated(state) ?: 0f
 
-        val innerRoundedness = innerRoundness?.interpolated(state)?.div(100f) ?: 0f
-        val outerRoundedness = outerRoundness?.interpolated(state)?.div(100f) ?: 0f
+        val innerRoundedness = innerRoundness?.interpolatedNorm(state) ?: 0f
+        val outerRoundedness = outerRoundness?.interpolatedNorm(state) ?: 0f
 
         var x: Float
         var y: Float
@@ -232,7 +229,7 @@ internal class PolystarShape(
         // adjust current angle for partial points
         val anglePerPoint = (TwoPI / points).toFloat()
 
-        val roundedness = outerRoundness?.interpolated(state)?.div(100f) ?: 0f
+        val roundedness = outerRoundness?.interpolatedNorm(state) ?: 0f
         val radius = outerRadius?.interpolated(state) ?: 0f
         var x: Float
         var y: Float

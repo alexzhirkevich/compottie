@@ -13,6 +13,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.GradientColors
 import io.github.alexzhirkevich.compottie.internal.animation.GradientType
+import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
@@ -115,7 +116,7 @@ internal class GradientFillShape(
         )
 
         paint.alpha = if (opacity != null) {
-            (parentAlpha * opacity.interpolated(state) / 100f).coerceIn(0f, 1f)
+            (parentAlpha * opacity.interpolatedNorm(state)).coerceIn(0f, 1f)
         }
         else {
             parentAlpha

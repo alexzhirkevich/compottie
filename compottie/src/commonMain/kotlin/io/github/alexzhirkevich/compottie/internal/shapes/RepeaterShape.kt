@@ -8,6 +8,7 @@ import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.RepeaterTransform
+import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
@@ -64,8 +65,8 @@ internal class RepeaterShape(
         contentGroup?.let { contentGroup ->
             val copies = copies.interpolated(state)
             val offset = offset?.interpolated(state) ?: 0f
-            val startOpacity = transform.startOpacity?.interpolated(state)?.div(100f) ?: 1f
-            val endOpacity = transform.endOpacity?.interpolated(state)?.div(100f) ?: 1f
+            val startOpacity = transform.startOpacity?.interpolatedNorm(state) ?: 1f
+            val endOpacity = transform.endOpacity?.interpolatedNorm(state) ?: 1f
 
             for (i in copies.toInt() - 1 downTo 0) {
                 matrix.setFrom(parentMatrix)
@@ -105,7 +106,7 @@ internal class RepeaterShape(
 
     }
 
-    override fun absorbContent(contents: MutableListIterator<Content>) {
+    override fun absorbContent(contents: MutableList<Content>) {
 
         // This check prevents a repeater from getting added twice.
         // This can happen in the following situation:
@@ -123,19 +124,13 @@ internal class RepeaterShape(
         if (contentGroup != null) {
             return
         }
+        val thisIndex = contents.indexOf(this).takeIf { it > 0 } ?: return
 
-        // Fast forward the iterator until after this content.
-        @Suppress("ControlFlowWithEmptyBody")
-        while (contents.hasPrevious() && contents.previous() !== this) {
+        val contentsList = contents.take(thisIndex)
+
+        repeat(thisIndex){
+            contents.removeFirst()
         }
-
-        val contentsList = mutableListOf<Content>()
-
-        while (contents.hasPrevious()) {
-            contentsList.add(contents.previous())
-            contents.remove()
-        }
-        contentsList.reverse()
 
         contentGroup = ContentGroup(name, hidden, contentsList, null)
     }

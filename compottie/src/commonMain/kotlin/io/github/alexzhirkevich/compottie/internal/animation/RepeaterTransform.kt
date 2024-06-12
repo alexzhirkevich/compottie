@@ -49,10 +49,12 @@ internal class RepeaterTransform(
             )
         }
 
-        scale?.interpolated(state)?.let {
+        scale?.interpolatedNorm(state)?.takeIf {
+            it.x != 1f || it.y != 1f
+        }?.let {
             matrix.preScale(
-                it.x.div(100f).pow(amount),
-                it.y.div(100f).pow(amount)
+                it.x.pow(amount),
+                it.y.pow(amount)
             )
         }
 

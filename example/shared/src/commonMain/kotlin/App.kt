@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.createFontFamilyResolver
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import compottie.example.shared.generated.resources.Res
@@ -70,7 +71,7 @@ fun App() {
 //        LottieCompositionSpec.DotLottie(ResourcesAssetsManager()) {
 //            Res.readBytes("files/$DOT_WITH_IMAGE")
 //        }
-        LottieCompositionSpec.Resource(ROBOT)
+        LottieCompositionSpec.Resource(TEST)
 
 //        LottieCompositionSpec.Resource(IMAGE_ASSET)
 
@@ -129,7 +130,7 @@ fun LottieCompositionSpec.Companion.Resource(
 private class ResourcesAssetsManager(
     private val relativeTo : String = "files",
     private val readBytes : suspend (path : String) -> ByteArray = Res::readBytes,
-) : LottieAssetsManager {
+) : LottieAssetsManager by LottieAssetsManager.Empty {
     override suspend fun image(image: LottieImage): ImageRepresentable? {
         return try {
             val trimPath = image.path
@@ -153,8 +154,6 @@ private class ResourcesAssetsManager(
             null
         }
     }
-
-    override suspend fun font(font: LottieFont): Font? = null
 }
 
 

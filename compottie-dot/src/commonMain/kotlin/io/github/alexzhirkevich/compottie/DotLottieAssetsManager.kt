@@ -11,7 +11,7 @@ import okio.Path.Companion.toPath
 
 internal class DotLottieAssetsManager(
     private val zipFileSystem: ZipFileSystem,
-) : LottieAssetsManager {
+) : LottieAssetsManager by LottieAssetsManager.Empty {
 
     override suspend fun image(image: LottieImage): ImageRepresentable? {
 
@@ -33,8 +33,6 @@ internal class DotLottieAssetsManager(
             ImageRepresentable.Bytes(it)
         }
     }
-
-    override suspend fun font(font: LottieFont): Font? = null
 
     private suspend fun load(root: String?, trimPath: String?, trimName: String?): ByteArray? {
         val fullPath = listOfNotNull(root, trimPath, trimName)

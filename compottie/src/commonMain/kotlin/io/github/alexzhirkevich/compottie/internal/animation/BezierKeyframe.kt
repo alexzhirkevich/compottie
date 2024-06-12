@@ -2,8 +2,6 @@ package io.github.alexzhirkevich.compottie.internal.animation
 
 import io.github.alexzhirkevich.compottie.internal.helpers.Bezier
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
-import io.github.alexzhirkevich.compottie.internal.helpers.ShapeData
-import io.github.alexzhirkevich.compottie.internal.helpers.toShapeData
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonArray
@@ -33,35 +31,6 @@ internal class BezierKeyframe(
     @SerialName("o")
     override val outValue : BezierInterpolation? = null,
 ) : Keyframe<Bezier>()
-
-
-internal fun BezierKeyframe.toShapeKeyframe(
-
-) = ShapeKeyframe(
-    start = start?.toShapeData(),
-    end = end?.toShapeData(),
-    time = time,
-    inValue = inValue,
-    outValue = outValue,
-    hold = hold
-)
-
-internal class ShapeKeyframe(
-
-    override val start: ShapeData? = null,
-
-    override val end: ShapeData? = null,
-
-    override val time: Float,
-
-    override val hold: BooleanInt = BooleanInt.No,
-
-    override val inValue : BezierInterpolation? = null,
-
-    override val outValue : BezierInterpolation? = null,
-
-) : Keyframe<ShapeData>()
-
 
 internal class BezierSerializer : JsonTransformingSerializer<Bezier>(Bezier.serializer()) {
     override fun transformDeserialize(element: JsonElement): JsonElement {

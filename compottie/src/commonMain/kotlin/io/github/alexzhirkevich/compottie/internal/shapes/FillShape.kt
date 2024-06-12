@@ -14,6 +14,7 @@ import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
+import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsState
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.FillRule
@@ -89,8 +90,8 @@ internal class FillShape(
 
         paint.color = color.interpolated(state)
 
-        paint.alpha = opacity?.interpolated(state)?.let {
-            (parentAlpha * it / 100f).coerceIn(0f, 1f)
+        paint.alpha = opacity?.interpolatedNorm(state)?.let {
+            (parentAlpha * it).coerceIn(0f, 1f)
         } ?: parentAlpha
 
         roundShape?.applyTo(paint, state)

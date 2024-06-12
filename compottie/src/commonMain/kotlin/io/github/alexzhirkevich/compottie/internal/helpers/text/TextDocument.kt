@@ -10,7 +10,7 @@ internal class TextDocument(
     var fontFamily : String? = null,
 
     @SerialName("fc")
-    var fillColor : FloatArray = floatArrayOf(0f, 0f, 0f),
+    var fillColor : FloatArray? = null,
 
     @SerialName("sc")
     var strokeColor : FloatArray? = null,

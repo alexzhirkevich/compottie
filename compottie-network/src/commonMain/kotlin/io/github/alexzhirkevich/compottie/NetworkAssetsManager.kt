@@ -1,9 +1,6 @@
 package io.github.alexzhirkevich.compottie
 
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.platform.Font
 import io.github.alexzhirkevich.compottie.assets.ImageRepresentable
 import io.github.alexzhirkevich.compottie.assets.LottieImage
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager

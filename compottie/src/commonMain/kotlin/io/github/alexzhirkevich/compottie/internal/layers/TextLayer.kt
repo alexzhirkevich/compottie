@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEachIndexed
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.animation.toColor
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
@@ -171,27 +172,48 @@ internal class TextLayer(
 
     private fun configurePaint(document: TextDocument, parentAlpha: Float, state: AnimationState) {
 
-        fillPaint.color = textAnimation?.style?.fillColor?.interpolated(state)
-            ?: document.fillColor.toColor()
+        val transformOpacity = transform.opacity?.interpolatedNorm(state) ?: 1f
+
+        val fillOpacity = textAnimation?.style?.fillOpacity?.interpolatedNorm(state) ?: 1f
+
+        val strokeOpacity = textAnimation?.style?.strokeOpacity?.interpolatedNorm(state) ?: 1f
+
+        val fillH = textAnimation?.style?.fillHue?.interpolated(state)?.coerceIn(0f,360f)
+        val fillS = textAnimation?.style?.fillSaturation?.interpolated(state)?.coerceIn(0f,1f)
+        val fillB = textAnimation?.style?.fillBrightness?.interpolated(state)?.coerceIn(0f,1f)
+
+        fillPaint.color = if (fillH != null && fillS != null && fillB != null){
+             Color.hsl(fillH, fillS, fillB)
+        } else {
+            textAnimation?.style?.fillColor?.interpolated(state)
+                ?: document.fillColor?.toColor() ?: Color.Transparent
+        }
+
+        fillPaint.alpha = (parentAlpha * transformOpacity * fillOpacity).coerceIn(0f,1f)
+
+
+        val strokeH = textAnimation?.style?.strokeHue?.interpolated(state)?.coerceIn(0f,360f)
+        val strokeS = textAnimation?.style?.strokeSaturation?.interpolated(state)?.coerceIn(0f,1f)
+        val strokeB = textAnimation?.style?.strokeBrightness?.interpolated(state)?.coerceIn(0f,1f)
+
+        strokePaint.color = if (strokeH != null && strokeS != null && strokeB != null){
+            Color.hsl(strokeH, strokeS, strokeB)
+        } else {
+            textAnimation?.style?.strokeColor?.interpolated(state)
+                ?: document.strokeColor?.toColor() ?: Color.Transparent
+        }
 
         strokePaint.color = textAnimation?.style?.strokeColor?.interpolated(state)
             ?: document.strokeColor?.toColor() ?: Color.Transparent
 
-        fillPaint.alpha = transform.opacity?.interpolated(state)
-            ?.div(100f)?.times(parentAlpha)
-            ?: parentAlpha
 
-        if (strokePaint.color != Color.Transparent) {
-            strokePaint.alpha = fillPaint.alpha
-        }
+        strokePaint.alpha = (parentAlpha * transformOpacity * strokeOpacity).coerceIn(0f,1f)
 
         val strokeWidth = textAnimation?.style?.strokeWidth?.interpolated(state)
             ?: document.strokeWidth
 
         if (strokePaint.style.width != strokeWidth){
-            strokePaint.style = Stroke(
-                width = strokeWidth
-            )
+            strokePaint.style = Stroke(width = strokeWidth)
         }
     }
 
@@ -203,14 +225,17 @@ internal class TextLayer(
                 ?.let { BaselineShift(it) }
                 ?: textStyle.baselineShift
 
-            val lineHeight = document.lineHeight.sp
-
-            val fontFamily = checkNotNull(painterProperties?.composition?.fonts)
+            val fontFamily = checkNotNull(painterProperties?.composition?.fontsByFamily)
                 .get(document.fontFamily)
 
             val letterSpacing = textAnimation?.style?.letterSpacing
-                ?.interpolated(animationState)?.toSp()
+                ?.interpolated(animationState)?.sp
                 ?: textStyle.letterSpacing
+
+            val lineSpacing = textAnimation?.style?.lineSpacing
+                ?.interpolated(animationState) ?: 0f
+
+            val  lineHeight = (document.lineHeight + lineSpacing).sp
 
             if (
                 textStyle.fontSize != fontSize ||
@@ -406,10 +431,10 @@ internal class TextLayer(
         val position = document.wrapPosition?.toOffset()
         val size = document.wrapSize?.let { Size(it[0], it[1]) }
         val lineStartY = if (position == null) {
-            density.run { -textStyle.lineHeight.toPx()/2 }
+            0f
         } else {
             document.lineHeight * density.density + position.y
-        }
+        } - density.run { textStyle.lineHeight.toPx() }
 
         val lineOffset: Float = (lineIndex * document.lineHeight * density.density) + lineStartY
 

@@ -94,10 +94,10 @@ internal abstract class AnimatedTransform {
                 matrix.preConcat(skewMatrix3)
             }
 
-        scale?.interpolated(state)
-            ?.takeIf { it.x != 100f || it.y != 100f }
+        scale?.interpolatedNorm(state)
+            ?.takeIf { it.x != 1f || it.y != 1f }
             ?.let {
-                matrix.preScale(it.x / 100f, it.y / 100f)
+                matrix.preScale(it.x, it.y)
             }
 
 

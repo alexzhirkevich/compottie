@@ -1,122 +1,139 @@
 package io.github.alexzhirkevich.compottie.internal.helpers
 
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.lerp
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.util.fastForEach
+import androidx.compose.ui.util.fastForEachIndexed
 import io.github.alexzhirkevich.compottie.internal.util.toOffset
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlin.math.min
 
 @Serializable
 internal class Bezier(
-
     @SerialName("c")
     var isClosed : Boolean = false,
 
     @SerialName("i")
-    var inTangents : List<FloatArray> = emptyList(),
+    val inTangents : List<FloatArray> = emptyList(),
 
     @SerialName("o")
-    var outTangents : List<FloatArray> = emptyList(),
+    val outTangents : List<FloatArray> = emptyList(),
 
     @SerialName("v")
-    var vertices : List<FloatArray> = emptyList(),
+    val vertices : List<FloatArray> = emptyList(),
 ) {
+    @Transient
+    var curves: MutableList<CubicCurveData>  = ArrayList(vertices.size)
+
+    @Transient
+    var initialPoint: Offset = Offset.Zero
+
     init {
-        require(vertices.size == inTangents.size && vertices.size == outTangents.size){
+        require(vertices.size == inTangents.size && vertices.size == outTangents.size) {
             "Invalid bezier curve. Control points count must be the same as vertices count"
         }
-    }
-}
 
-internal fun Bezier.lerp(from: Bezier, to: Bezier, fraction : Float) {
-    isClosed = from.isClosed || to.isClosed
+        if (vertices.isNotEmpty()) {
+            initialPoint = vertices.first().toOffset()
 
-    val size = min(from.vertices.size, to.vertices.size)
+            for (i in 1..vertices.lastIndex) {
 
-    if (inTangents !is MutableList<*>) {
-        inTangents = ArrayList(size)
-    }
+                val prevVertex = vertices[i - 1]
+                val cp1 = outTangents[i - 1]
+                val cp2 = inTangents[i]
+                val vertex = vertices[i]
 
-    if (outTangents !is MutableList<*>) {
-        outTangents = ArrayList(size)
-    }
+                val shapeCp1 = Offset(prevVertex[0] + cp1[0], prevVertex[1] + cp1[1])
+                val shapeCp2 = Offset(vertex[0] + cp2[0], vertex[1] + cp2[1])
+                curves.add(CubicCurveData(shapeCp1, shapeCp2, vertex.toOffset()))
+            }
 
-    if (vertices !is MutableList<*>) {
-        vertices = ArrayList(size)
-    }
+            if (isClosed) {
+                val vertex = vertices[0]
+                val prevVertex = vertices.last()
+                val cp1 = outTangents[vertices.lastIndex]
+                val cp2 = inTangents[0]
 
-    val i = inTangents as MutableList<FloatArray>
-    val o = outTangents as MutableList<FloatArray>
-    val v = vertices as MutableList<FloatArray>
+                val shapeCp1 = Offset(prevVertex[0] + cp1[0], prevVertex[1] + cp1[1])
+                val shapeCp2 = Offset(vertex[0] + cp2[0], vertex[1] + cp2[1])
 
-    if(v.size > size){
-        v.dropLast(v.size-size)
-        o.dropLast(v.size-size)
-        i.dropLast(v.size-size)
-    }
-
-    if (v.size < size){
-        repeat(size - v.size){
-            v.add(floatArrayOf(0f,0f))
-            o.add(floatArrayOf(0f,0f))
-            i.add(floatArrayOf(0f,0f))
+                curves.add(CubicCurveData(shapeCp1, shapeCp2, vertex.toOffset()))
+            }
         }
     }
 
-    repeat(size) {
+    fun interpolateBetween(
+        a: Bezier,
+        b: Bezier,
+        percentage: Float,
+    ) {
 
-        val cp11 = from.inTangents[it].toOffset()
-        val cp21 = from.outTangents[it].toOffset()
-        val vertex1 = from.vertices[it].toOffset()
+        isClosed = a.isClosed || b.isClosed
 
-        val cp12 = to.inTangents[it].toOffset()
-        val cp22 = to.outTangents[it].toOffset()
-        val vertex2 = to.vertices[it].toOffset()
+        val points = min(a.curves.size, b.curves.size)
 
-        i[it][0] = androidx.compose.ui.util.lerp(cp11.x, cp12.x, fraction)
-        i[it][1] = androidx.compose.ui.util.lerp(cp11.y, cp12.y, fraction)
+        if (curves.size < points) {
+            repeat(curves.size - points) {
+                curves.add(CubicCurveData())
+            }
+        }
+        if (curves.size > points) {
+            repeat(points - curves.size) {
+                curves.removeLast()
+            }
+        }
 
-        o[it][0] = androidx.compose.ui.util.lerp(cp21.x, cp22.x, fraction)
-        o[it][1] = androidx.compose.ui.util.lerp(cp21.y, cp22.y, fraction)
+        initialPoint = lerp(a.initialPoint, b.initialPoint, percentage)
 
-        v[it][0] = androidx.compose.ui.util.lerp(vertex1.x, vertex2.x, fraction)
-        v[it][1] = androidx.compose.ui.util.lerp(vertex1.y, vertex2.y, fraction)
+        curves.fastForEachIndexed { i, curve ->
+            val curve1 = a.curves[i]
+            val curve2 = b.curves[i]
+
+            curve.controlPoint1 = lerp(curve1.controlPoint1, curve2.controlPoint1, percentage)
+            curve.controlPoint2 = lerp(curve1.controlPoint2, curve2.controlPoint2, percentage)
+            curve.vertex = lerp(curve1.vertex, curve2.vertex, percentage)
+        }
+    }
+
+    fun mapPath(outPath : Path) {
+        outPath.reset()
+        outPath.moveTo(initialPoint.x, initialPoint.y)
+
+        var pathFromDataCurrentPoint = initialPoint
+
+        curves.fastForEach { curve ->
+            if (curve.controlPoint1 == pathFromDataCurrentPoint && curve.controlPoint2 == curve.vertex) {
+                // On some phones like Samsung phones, zero valued control points can cause artifacting.
+                // https://github.com/airbnb/lottie-android/issues/275
+                //
+                // This does its best to add a tiny value to the vertex without affecting the final
+                // animation as much as possible.
+//            outPath.relativeMoveTo(0.01f, 0.01f);
+                outPath.lineTo(curve.vertex.x, curve.vertex.y)
+            } else {
+                outPath.cubicTo(
+                    curve.controlPoint1.x,
+                    curve.controlPoint1.y,
+                    curve.controlPoint2.x,
+                    curve.controlPoint2.y,
+                    curve.vertex.x,
+                    curve.vertex.y
+                )
+            }
+            pathFromDataCurrentPoint = curve.vertex
+        }
+        if (isClosed) {
+            outPath.close()
+        }
     }
 }
 
-internal fun Bezier.toShapeData() : ShapeData {
+internal class CubicCurveData(
+    var controlPoint1: Offset = Offset.Zero,
+    var controlPoint2: Offset = Offset.Zero,
+    var vertex: Offset = Offset.Zero
+)
 
-    val initialPoint = vertices.first()
-
-    val curves = mutableListOf<CubicCurveData>()
-
-    for (i in 1..vertices.lastIndex) {
-
-        val prevVertex = vertices[i - 1]
-        val cp1 = outTangents[i - 1]
-        val cp2 = inTangents[i]
-        val vertex = vertices[i]
-
-        val shapeCp1 = floatArrayOf(prevVertex[0] + cp1[0], prevVertex[1] + cp1[1])
-        val shapeCp2 = floatArrayOf(vertex[0] + cp2[0], vertex[1] + cp2[1])
-        curves.add(CubicCurveData(shapeCp1.toOffset(), shapeCp2.toOffset(), vertex.toOffset()))
-    }
-
-    if (isClosed) {
-        val vertex = vertices[0]
-        val prevVertex = vertices.last()
-        val cp1 = outTangents[vertices.lastIndex]
-        val cp2 = inTangents[0]
-
-        val shapeCp1 = floatArrayOf(prevVertex[0] + cp1[0], prevVertex[1] + cp1[1])
-        val shapeCp2 = floatArrayOf(vertex[0] + cp2[0], vertex[1] + cp2[1])
-
-        curves.add(CubicCurveData(shapeCp1.toOffset(), shapeCp2.toOffset(), vertex.toOffset()))
-    }
-
-    return ShapeData(
-        curves = curves,
-        initialPoint = initialPoint.toOffset(),
-        isClosed = isClosed
-    )
-}

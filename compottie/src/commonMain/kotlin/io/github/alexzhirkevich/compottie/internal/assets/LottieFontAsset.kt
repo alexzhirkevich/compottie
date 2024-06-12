@@ -8,6 +8,11 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
 @Serializable
+internal class FontList(
+    val list : List<LottieFontAsset>
+)
+
+@Serializable
 internal class LottieFontAsset(
 
     @SerialName("fFamily")

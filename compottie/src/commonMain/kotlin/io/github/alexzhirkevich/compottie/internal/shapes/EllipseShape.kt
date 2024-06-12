@@ -1,12 +1,12 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
+import io.github.alexzhirkevich.compottie.internal.helpers.CompoundSimultaneousTrimPath
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -42,7 +42,7 @@ internal class EllipseShape(
     private val path = Path()
 
     @Transient
-    private val trimPaths = CompoundTrimPath()
+    private var trimPaths: CompoundTrimPath? = null
 
     override fun getPath(state: AnimationState): Path {
 
@@ -67,11 +67,11 @@ internal class EllipseShape(
 //            path.cubicTo(0 + cpW, halfHeight, halfWidth, 0 + cpH, halfWidth, 0f)
 //            path.cubicTo(halfWidth, 0 - cpH, 0 + cpW, -halfHeight, 0f, -halfHeight)
 //        } else {
-            path.moveTo(0f, -halfHeight)
-            path.cubicTo(0 + cpW, -halfHeight, halfWidth, 0 - cpH, halfWidth, 0f)
-            path.cubicTo(halfWidth, 0 + cpH, 0 + cpW, halfHeight, 0f, halfHeight)
-            path.cubicTo(0 - cpW, halfHeight, -halfWidth, 0 + cpH, -halfWidth, 0f)
-            path.cubicTo(-halfWidth, 0 - cpH, 0 - cpW, -halfHeight, 0f, -halfHeight)
+        path.moveTo(0f, -halfHeight)
+        path.cubicTo(0 + cpW, -halfHeight, halfWidth, 0 - cpH, halfWidth, 0f)
+        path.cubicTo(halfWidth, 0 + cpH, 0 + cpW, halfHeight, 0f, halfHeight)
+        path.cubicTo(0 - cpW, halfHeight, -halfWidth, 0 + cpH, -halfWidth, 0f)
+        path.cubicTo(-halfWidth, 0 - cpH, 0 - cpW, -halfHeight, 0f, -halfHeight)
 //        }
 
         val position = position.interpolated(state)
@@ -80,17 +80,13 @@ internal class EllipseShape(
 
         path.close()
 
-        trimPaths.apply(path, state)
+        trimPaths?.apply(path, state)
 
         return path
     }
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
-        contentsBefore.fastForEach {
-            if (it.isSimultaneousTrimPath()) {
-                trimPaths.addTrimPath(it)
-            }
-        }
+        trimPaths = CompoundSimultaneousTrimPath(contentsBefore)
     }
 }
 private const val ELLIPSE_CONTROL_POINT_PERCENTAGE = 0.55228f
