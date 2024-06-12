@@ -11,6 +11,8 @@ import io.github.alexzhirkevich.compottie.internal.shapes.TrimPathShape
 import io.github.alexzhirkevich.compottie.internal.shapes.isSimultaneousTrimPath
 import io.github.alexzhirkevich.compottie.internal.utils.floorMod
 import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 
 internal class CompoundTrimPath(
     private val contents : List<TrimPathShape>
@@ -50,8 +52,8 @@ internal fun Path.applyTrimPath(trimPath: TrimPathShape, state: AnimationState) 
 private val pathMeasure by lazy {
     ExtendedPathMeasure()
 }
-
 private val tempPath = Path()
+private val tempPath2 = Path()
 
 internal fun Path.applyTrimPath(
     startValue: Float,
@@ -60,36 +62,74 @@ internal fun Path.applyTrimPath(
 ) {
     pathMeasure.setPath(this, false)
 
-    val length = pathMeasure.length
+    val length: Float = pathMeasure.length
     if (startValue == 1f && endValue == 0f) {
         return
     }
     if (length < 1f || abs((endValue - startValue - 1)) < .01f) {
         return
     }
+    val start = length * startValue
+    val end = length * endValue
 
-    var start = (length * ((startValue + offsetValue) % 1f))
-    var end = (length * ((endValue + offsetValue) % 1f))
+    var newStart = min(start, end)
+    var newEnd = max(start, end)
 
-    if (start >= length && end >= length) {
-        start = floorMod(start, length).toFloat()
-        end = floorMod(end, length).toFloat()
+    val offset = offsetValue * length
+    newStart += offset
+    newEnd += offset
+
+    // If the trim path has rotated around the path, we need to shift it back.
+    if (newStart >= length && newEnd >= length) {
+        newStart = floorMod(newStart, length).toFloat()
+        newEnd = floorMod(newEnd, length).toFloat()
     }
 
-    if (start < 0) {
-        start = floorMod(start, length).toFloat()
+    if (newStart < 0) {
+        newStart = floorMod(newStart, length).toFloat()
     }
-    if (end < 0) {
-        end = floorMod(end, length).toFloat()
+    if (newEnd < 0) {
+        newEnd = floorMod(newEnd, length).toFloat()
     }
+
+    // If the start and end are equals, return an empty path.
+    if (newStart == newEnd) {
+        reset()
+        return
+    }
+
+    if (newStart >= newEnd) {
+        newStart -= length
+    }
+
+
     tempPath.reset()
+    pathMeasure.getSegment(
+        startDistance = newStart,
+        stopDistance = newEnd,
+        destination = tempPath,
+        startWithMoveTo = true
+    )
 
-    if (start > end) {
-        pathMeasure.getSegment(start, length, tempPath, true)
-        pathMeasure.getSegment(0f, end, tempPath, true)
-    } else {
-        pathMeasure.getSegment(start, end, tempPath, true)
+    if (newEnd > length) {
+        tempPath2.reset()
+        pathMeasure.getSegment(
+            startDistance = 0f,
+            stopDistance = newEnd % length,
+            destination = tempPath2,
+            startWithMoveTo = true
+        )
+        tempPath.addPath(tempPath2)
+    } else if (newStart < 0) {
+        tempPath2.reset()
+        pathMeasure.getSegment(
+            startDistance = length + newStart,
+            stopDistance = length,
+            destination = tempPath2,
+            startWithMoveTo = true
+        )
+        tempPath.addPath(tempPath2)
     }
+
     set(tempPath)
 }
-

@@ -71,7 +71,7 @@ fun App() {
 //        LottieCompositionSpec.DotLottie(ResourcesAssetsManager()) {
 //            Res.readBytes("files/$DOT_WITH_IMAGE")
 //        }
-        LottieCompositionSpec.Resource(CHECKMARK)
+        LottieCompositionSpec.Resource(ROBOT)
 
 //        LottieCompositionSpec.Resource(IMAGE_ASSET)
 
