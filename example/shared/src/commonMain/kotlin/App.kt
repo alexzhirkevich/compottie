@@ -92,7 +92,7 @@ fun App() {
                 .opacityGrid(),
             painter = rememberLottiePainter(
                 composition = composition.value,
-                iterations = LottieConstants.IterateForever
+                iterations = LottieConstants.IterateForever,
             ),
             contentDescription = null
         )
@@ -113,7 +113,9 @@ fun LottieCompositionSpec.Companion.Resource(
     dir : String = "files",
     assetsManager: LottieAssetsManager = ResourcesAssetsManager(),
     readBytes: suspend (path: String) -> ByteArray = Res::readBytes
-) : LottieCompositionSpec = JsonString(assetsManager) { readBytes("$dir/$path").decodeToString() }
+) : LottieCompositionSpec = JsonString(assetsManager) {
+    readBytes("$dir/$path").decodeToString()
+}
 
 /**
  * Compose resources asset manager.

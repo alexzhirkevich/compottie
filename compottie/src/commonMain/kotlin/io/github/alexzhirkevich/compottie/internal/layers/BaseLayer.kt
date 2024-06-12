@@ -11,7 +11,9 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.isIdentity
+import androidx.compose.ui.graphics.withSave
 import androidx.compose.ui.util.fastFirstOrNull
+import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.L
@@ -151,12 +153,12 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
             // so that we know the coordinate space that the canvas is showing.
             canvasBounds.set(0f, 0f, drawScope.size.width, drawScope.size.height)
             drawScope.drawIntoCanvas { canvas ->
-                canvas.getMatrix(canvasMatrix)
 
-                if (!canvasMatrix.isIdentity()) {
-                    canvasMatrix.invert()
-                    canvasMatrix.map(canvasBounds)
-                }
+//                canvas.getMatrix(canvasMatrix)
+//                if (!canvasMatrix.isIdentity()) {
+//                    canvasMatrix.invert()
+//                    canvasMatrix.map(canvasBounds)
+//                }
 
                 rect.intersectOrReset(canvasBounds)
 
@@ -276,9 +278,9 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
             return
         }
 
-        masks?.fastForEachIndexed { i, mask ->
+        masks?.fastForEach { mask ->
 
-            val maskPath = mask.shape?.interpolated(state) ?: return@fastForEachIndexed
+            val maskPath = mask.shape?.interpolatedRaw(state) ?: return@fastForEach
             path.set(maskPath)
             path.transform(matrix)
 
@@ -293,6 +295,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
                     if (mask.isInverted) {
                         return
                     }
+                    val b = path.getBounds()
                     maskBoundsRect.union(path.getBounds())
                 }
             }
@@ -317,7 +320,6 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         }
         matteBoundsRect.set(0f, 0f, 0f, 0f)
         matteLayer.getBounds(drawScope, matrix, true, state, matteBoundsRect)
-
 
         rect.intersectOrReset(matteBoundsRect)
     }
@@ -392,7 +394,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         mask: Mask,
         state: AnimationState,
     ) {
-        val maskPath = mask.shape?.interpolated(state) ?: return
+        val maskPath = mask.shape?.interpolatedRaw(state) ?: return
         path.set(maskPath)
         path.transform(matrix)
         contentPaint.alpha = mask.opacity?.interpolatedNorm(state)?.coerceIn(0f, 1f) ?: 1f

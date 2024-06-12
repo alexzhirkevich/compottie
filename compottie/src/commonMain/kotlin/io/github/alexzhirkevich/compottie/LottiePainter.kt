@@ -26,7 +26,6 @@ import io.github.alexzhirkevich.compottie.internal.layers.BaseCompositionLayer
 import io.github.alexzhirkevich.compottie.internal.layers.CompositionLayer
 import io.github.alexzhirkevich.compottie.internal.layers.PainterProperties
 import kotlin.math.roundToInt
-import kotlin.time.measureTime
 
 @OptIn(InternalCompottieApi::class)
 @Composable
@@ -79,6 +78,7 @@ fun rememberLottiePainter(
         if (composition != null) {
             value = LottiePainter(
                 composition = composition,
+                initialProgress = progress(),
                 clipTextToBoundingBoxes = clipTextToBoundingBoxes,
                 fontFamilyResolver = fontFamilyResolver
             )
@@ -107,6 +107,7 @@ private object EmptyPainter : Painter() {
 
 private class LottiePainter(
     private val composition: LottieComposition,
+    private val initialProgress : Float,
     private val fontFamilyResolver : FontFamily.Resolver,
     private val clipTextToBoundingBoxes : Boolean,
 ) : Painter() {
@@ -116,7 +117,7 @@ private class LottiePainter(
         composition.lottieData.height
     )
 
-    var progress: Float by mutableStateOf(0f)
+    var progress: Float by mutableStateOf(initialProgress)
 
     private val matrix = Matrix()
 

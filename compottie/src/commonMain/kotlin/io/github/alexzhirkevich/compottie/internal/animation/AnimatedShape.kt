@@ -17,6 +17,8 @@ import kotlinx.serialization.json.jsonPrimitive
 @Serializable(with = AnimatedShapeSerializer::class)
 internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
 
+    fun interpolatedRaw(state: AnimationState): Path
+
     @Serializable
     class Default(
         @SerialName("x")
@@ -37,6 +39,13 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
             bezier.mapPath(tmpPath)
             return tmpPath
         }
+
+        override fun interpolatedRaw(state: AnimationState): Path {
+//            return Path().apply {
+//                bezier.mapPath(this)
+//            }
+            return interpolated(state)
+        }
     }
 
     @Serializable
@@ -55,19 +64,37 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
         private val tmpPath = Path()
 
         @Transient
-        private val tmpShapeData = Bezier()
+        private val tmpBezier = Bezier()
 
         @Transient
-        private var delegate =  BaseKeyframeAnimation(
+        private var delegate = BaseKeyframeAnimation(
             expression = expression,
             keyframes = keyframes,
             emptyValue = tmpPath,
-            map = { s, e, p->
-                tmpShapeData.interpolateBetween(s, e, easingX.transform(p))
-                tmpShapeData.mapPath(tmpPath)
+            map = { s, e, p ->
+                tmpBezier.interpolateBetween(s, e, easingX.transform(p))
+                tmpBezier.mapPath(tmpPath)
                 tmpPath
             }
         )
+
+        @Transient
+        private var rawDelegate = BaseKeyframeAnimation(
+            expression = expression,
+            keyframes = keyframes,
+            emptyValue = tmpPath,
+            map = { s, e, p ->
+                tmpBezier.interpolateBetween(s, e, easingX.transform(p))
+
+                Path().apply {
+                    tmpBezier.mapPath(this)
+                }
+            }
+        )
+
+        override fun interpolatedRaw(state: AnimationState): Path {
+            return rawDelegate.interpolated(state)
+        }
 
         override fun interpolated(state: AnimationState): Path {
             return delegate.interpolated(state)

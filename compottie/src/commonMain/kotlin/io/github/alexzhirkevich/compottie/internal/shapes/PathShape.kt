@@ -44,7 +44,7 @@ internal class PathShape(
         if (hidden) {
             return path
         }
-        path.set(shape.interpolated(state))
+        path.set(shape.interpolatedRaw(state))
         path.fillType = PathFillType.EvenOdd
 
         trimPaths?.apply(path, state)
