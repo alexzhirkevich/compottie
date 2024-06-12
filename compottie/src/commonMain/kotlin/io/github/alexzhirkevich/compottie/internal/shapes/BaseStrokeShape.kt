@@ -135,7 +135,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
 
         paint.style = PaintingStyle.Stroke
         paint.alpha = parentAlpha * opacity.interpolatedNorm(state).coerceIn(0f, 1f)
-        paint.strokeWidth = strokeWidth.interpolated(state)
+        paint.strokeWidth = strokeWidth.interpolated(state) * parentMatrix.scale
 
         if (paint.strokeWidth <= 0) {
             return

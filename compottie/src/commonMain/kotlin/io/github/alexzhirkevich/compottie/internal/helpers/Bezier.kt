@@ -70,7 +70,6 @@ internal class Bezier(
         b: Bezier,
         percentage: Float,
     ) {
-
         isClosed = a.isClosed || b.isClosed
 
         val points = min(a.curves.size, b.curves.size)

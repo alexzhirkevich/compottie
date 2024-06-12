@@ -65,7 +65,8 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
             keyframes = keyframes,
             emptyValue = tmpPath,
             map = { s, e, p ->
-//                tmpBezier.interpolateBetween(s, e, easingX.transform(p))
+                tmpBezier.interpolateBetween(s, e, easingX.transform(p))
+
 //                tmpBezier.mapPath(tmpPath)
 //                tmpPath
                 Path().apply {
