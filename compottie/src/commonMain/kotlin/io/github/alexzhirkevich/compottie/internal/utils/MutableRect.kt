@@ -36,14 +36,29 @@ internal fun MutableRect.union(other : MutableRect) {
     }
 
     if ((left < right) && (top < bottom)) {
-
         left = min(left, other.left)
         top = min(top, other.top)
-        right = max(right, other.top)
-        bottom = max(right, other.bottom)
+        right = max(right, other.right)
+        bottom = max(bottom, other.bottom)
+    } else {
+        set(other)
+    }
+}
+
+internal fun MutableRect.union(other : Rect) {
+
+    if ((other.left >= other.right) || (other.top >= other.bottom)) {
         return
     }
-    set(other)
+
+    if ((left < right) && (top < bottom)) {
+        left = min(left, other.left)
+        top = min(top, other.top)
+        right = max(right, other.right)
+        bottom = max(bottom, other.bottom)
+    } else {
+        set(other)
+    }
 }
 
 internal fun MutableRect.set(other : MutableRect){

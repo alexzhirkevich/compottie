@@ -48,6 +48,7 @@ internal sealed interface AnimatedNumber : KeyframeAnimation<Float>, Indexable {
     )
 }
 
+internal fun AnimatedNumber.interpolatedNorm(state: AnimationState) = interpolated(state) / 100f
 internal class AnimatedNumberSerializer : JsonContentPolymorphicSerializer<AnimatedNumber>(AnimatedNumber::class){
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedNumber> {
 

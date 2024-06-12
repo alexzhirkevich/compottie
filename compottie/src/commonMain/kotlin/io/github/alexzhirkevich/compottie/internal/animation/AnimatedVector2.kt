@@ -118,6 +118,8 @@ internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
     }
 }
 
+internal fun AnimatedVector2.interpolatedNorm(state: AnimationState) = interpolated(state) / 100f
+
 
 internal class AnimatedVector2Serializer : JsonContentPolymorphicSerializer<AnimatedVector2>(AnimatedVector2::class) {
 

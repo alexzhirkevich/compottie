@@ -16,6 +16,7 @@ import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.L
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.effects.BlurEffect
@@ -30,12 +31,9 @@ import io.github.alexzhirkevich.compottie.internal.platform.getMatrix
 import io.github.alexzhirkevich.compottie.internal.platform.isAndroidAtMost
 import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
 import io.github.alexzhirkevich.compottie.internal.platform.set
-import io.github.alexzhirkevich.compottie.internal.platform.setBlurMaskFilter
 import io.github.alexzhirkevich.compottie.internal.utils.intersectOrReset
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
-import io.github.alexzhirkevich.compottie.internal.utils.set
-import kotlin.math.max
-import kotlin.math.min
+import io.github.alexzhirkevich.compottie.internal.utils.union
 
 internal abstract class BaseLayer() : Layer, DrawingContent {
 
@@ -117,9 +115,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
 
         try {
 
-            val frame = state.frame
-
-            if (hidden || (inPoint ?: 0f) > frame || (outPoint ?: Float.MAX_VALUE) < frame)
+            if (hidden || (inPoint ?: 0f) > state.frame || (outPoint ?: Float.MAX_VALUE) < state.frame)
                 return
 
             buildParentLayerListIfNeeded()
@@ -132,8 +128,8 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
 
             var alpha = parentAlpha
 
-            transform.opacity?.interpolated(state)?.let {
-                alpha = (alpha * (it / 100f)).coerceIn(0f, 1f)
+            transform.opacity?.interpolatedNorm(state)?.let {
+                alpha = (alpha * it).coerceIn(0f, 1f)
             }
 
 
@@ -157,7 +153,6 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
             drawScope.drawIntoCanvas { canvas ->
                 canvas.getMatrix(canvasMatrix)
 
-                //TODO: fix mask canvas mapping
                 if (!canvasMatrix.isIdentity()) {
                     canvasMatrix.invert()
                     canvasMatrix.map(canvasBounds)
@@ -171,7 +166,6 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
                 if (rect.width >= 1f && rect.height >= 1f) {
                     contentPaint.alpha = 1f
                     canvas.saveLayer(rect, contentPaint)
-                    canvas.save()
 
                     // Clear the off screen buffer. This is necessary for some phones.
                     clearCanvas(canvas)
@@ -285,7 +279,6 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         masks?.fastForEachIndexed { i, mask ->
 
             val maskPath = mask.shape?.interpolated(state) ?: return@fastForEachIndexed
-
             path.set(maskPath)
             path.transform(matrix)
 
@@ -296,39 +289,11 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
                     // canvas so we can't use the mask bounds.
                     return
 
-                MaskMode.Intersect,
-                MaskMode.Add -> {
+                else -> {
                     if (mask.isInverted) {
                         return
                     }
-                    val tempMaskBoundsRect = path.getBounds()
-                    // As we iterate through the masks, we want to calculate the union region of the masks.
-                    // We initialize the rect with the first mask. If we don't call set() on the first call,
-                    // the rect will always extend to (0,0).
-                    if (i == 0) {
-                        maskBoundsRect.set(tempMaskBoundsRect)
-                    } else {
-                        maskBoundsRect.set(
-                            min(maskBoundsRect.left, tempMaskBoundsRect.left),
-                            min(maskBoundsRect.top, tempMaskBoundsRect.top),
-                            max(maskBoundsRect.right, tempMaskBoundsRect.right),
-                            max(maskBoundsRect.bottom, tempMaskBoundsRect.bottom)
-                        )
-                    }
-                }
-
-                else -> {
-                    val tempMaskBoundsRect = path.getBounds()
-                    if (i == 0) {
-                        maskBoundsRect.set(tempMaskBoundsRect)
-                    } else {
-                        maskBoundsRect.set(
-                            min(maskBoundsRect.left, tempMaskBoundsRect.left),
-                            min(maskBoundsRect.top, tempMaskBoundsRect.top),
-                            max(maskBoundsRect.right, tempMaskBoundsRect.right),
-                            max(maskBoundsRect.bottom, tempMaskBoundsRect.bottom)
-                        )
-                    }
+                    maskBoundsRect.union(path.getBounds())
                 }
             }
         }
@@ -416,7 +381,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         val maskPath = mask.shape?.interpolated(state) ?: return
         path.set(maskPath)
         path.transform(matrix)
-        contentPaint.alpha = mask.opacity?.interpolated(state)?.div(100f)?.coerceIn(0f, 1f) ?: 1f
+        contentPaint.alpha = mask.opacity?.interpolatedNorm(state)?.coerceIn(0f, 1f) ?: 1f
         canvas.drawPath(path, dstOutPaint)
         canvas.restore()
     }
@@ -430,7 +395,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         val maskPath = mask.shape?.interpolated(state) ?: return
         path.set(maskPath)
         path.transform(matrix)
-        contentPaint.alpha = mask.opacity?.interpolated(state)?.div(100f)?.coerceIn(0f, 1f) ?: 1f
+        contentPaint.alpha = mask.opacity?.interpolatedNorm(state)?.coerceIn(0f, 1f) ?: 1f
         canvas.drawPath(path, contentPaint)
     }
 
@@ -454,8 +419,8 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
     ) {
         canvas.saveLayer(rect, dstOutPaint)
         canvas.drawRect(rect, contentPaint)
-        dstOutPaint.alpha = mask.opacity?.interpolated(state)
-            ?.div(100f)?.coerceIn(0f, 1f) ?: 1f
+        dstOutPaint.alpha = mask.opacity?.interpolatedNorm(state)
+            ?.coerceIn(0f, 1f) ?: 1f
         val maskPath = mask.shape?.interpolated(state) ?: return
         path.set(maskPath)
         path.transform(matrix)
@@ -473,7 +438,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         val maskPath = mask.shape?.interpolated(state) ?: return
         path.set(maskPath)
         path.transform(matrix)
-        contentPaint.alpha = mask.opacity?.interpolated(state)?.div(100f)?.coerceIn(0f, 1f) ?: 1f
+        contentPaint.alpha = mask.opacity?.interpolatedNorm(state)?.coerceIn(0f, 1f) ?: 1f
         canvas.drawPath(path, contentPaint)
         canvas.restore()
     }
@@ -486,7 +451,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
     ) {
         canvas.saveLayer(rect, dstInPaint)
         canvas.drawRect(rect, contentPaint)
-        dstOutPaint.alpha = mask.opacity?.interpolated(state)?.div(100f)?.coerceIn(0f, 1f) ?: 1f
+        dstOutPaint.alpha = mask.opacity?.interpolatedNorm(state)?.coerceIn(0f, 1f) ?: 1f
         val maskPath = mask.shape?.interpolated(state) ?: return
         path.set(maskPath)
         path.transform(matrix)
