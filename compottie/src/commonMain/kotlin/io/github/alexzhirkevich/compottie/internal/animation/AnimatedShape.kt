@@ -33,11 +33,9 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
         private val tmpPath = Path()
 
         override fun interpolated(state: AnimationState): Path {
-//            bezier.mapPath(tmpPath)
-//            return tmpPath
-            return  Path().apply {
-                bezier.mapPath(this)
-            }
+            tmpPath.reset()
+            bezier.mapPath(tmpPath)
+            return tmpPath
         }
     }
 
@@ -57,21 +55,17 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
         private val tmpPath = Path()
 
         @Transient
-        private val tmpBezier = Bezier()
+        private val tmpShapeData = Bezier()
 
         @Transient
-        private var delegate = BaseKeyframeAnimation(
+        private var delegate =  BaseKeyframeAnimation(
             expression = expression,
             keyframes = keyframes,
             emptyValue = tmpPath,
-            map = { s, e, p ->
-                tmpBezier.interpolateBetween(s, e, easingX.transform(p))
-
-//                tmpBezier.mapPath(tmpPath)
-//                tmpPath
-                Path().apply {
-                    tmpBezier.mapPath(this)
-                }
+            map = { s, e, p->
+                tmpShapeData.interpolateBetween(s, e, easingX.transform(p))
+                tmpShapeData.mapPath(tmpPath)
+                tmpPath
             }
         )
 
@@ -97,5 +91,4 @@ internal class AnimatedShapeSerializer : JsonContentPolymorphicSerializer<Animat
     }
 
 }
-
 
