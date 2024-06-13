@@ -1,9 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.text.font.FontFamily
 import io.github.alexzhirkevich.compottie.LottieComposition
-import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsApplier

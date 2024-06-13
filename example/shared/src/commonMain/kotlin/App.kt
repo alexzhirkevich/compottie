@@ -11,9 +11,14 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.NativeKeyEvent
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import compottie.example.shared.generated.resources.Res
+import io.github.alexzhirkevich.compottie.CompottieException
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.LottieConstants
@@ -60,12 +65,25 @@ fun App() {
 
 
     val composition = rememberLottieComposition {
+        shapeLayer("Fucking Slave") {
+            transform {
+                opacity { source, state -> source / 2 }
+            }
+
+            fill("Pizdec"){
+
+            }
+        }
+
+        Modifier.onKeyEvent {
+            it.key == Key.Spacebar
+        }
+
+        LottieCompositionSpec.Resource(ROBOT)
 
 //        LottieCompositionSpec.DotLottie(ResourcesAssetsManager()) {
 //            Res.readBytes("files/$DOT_WITH_IMAGE")
 //        }
-        LottieCompositionSpec.Resource(ROBOT)
-
 //        LottieCompositionSpec.Resource(IMAGE_ASSET)
 
 //        LottieCompositionSpec.Url(
@@ -74,8 +92,13 @@ fun App() {
 //        )
     }
 
+    // If you want to be aware of loading errors
     LaunchedEffect(composition) {
-        composition.await()
+        try {
+            composition.await()
+        } catch (t : CompottieException){
+            t.printStackTrace()
+        }
     }
 
     Box(
@@ -112,7 +135,6 @@ fun LottieCompositionSpec.Companion.Resource(
     assetsManager: LottieAssetsManager = ResourcesAssetsManager(),
     readBytes: suspend (path: String) -> ByteArray = Res::readBytes
 ) : LottieCompositionSpec = JsonString(assetsManager) {
-
     readBytes("$dir/$path").decodeToString()
 }
 

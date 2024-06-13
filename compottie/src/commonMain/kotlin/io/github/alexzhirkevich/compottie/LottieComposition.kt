@@ -13,6 +13,8 @@ import androidx.compose.ui.text.font.FontFamily
 import io.github.alexzhirkevich.compottie.assets.LottieImage
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.LottieFont
+import io.github.alexzhirkevich.compottie.dynamic.DynamicComposition
+import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionImpl
 import io.github.alexzhirkevich.compottie.internal.LottieData
 import io.github.alexzhirkevich.compottie.internal.LottieJson
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
@@ -56,6 +58,16 @@ class LottieComposition internal constructor(
     val frameRate: Float get() = lottieData.frameRate
 
     /**
+     * Animation intrinsic width
+     * */
+    val width : Float get() = lottieData.width
+
+    /**
+     * Animation intrinsic height
+     * */
+    val height : Float get() = lottieData.height
+
+    /**
      * Some animations may contain predefined number of interactions.
      * It will be used as a default value for the LottiePainter
      * */
@@ -72,6 +84,8 @@ class LottieComposition internal constructor(
         set
 
     internal var fontsByFamily: Map<String, FontFamily> = emptyMap()
+
+    internal var dynamicComposition : DynamicCompositionImpl? = null
 
     private val fontMutex = Mutex()
 
@@ -167,9 +181,11 @@ class LottieComposition internal constructor(
 
 /**
  * Load and prepare [LottieComposition].
- *
- * [spec] should be remembered
  * */
+@Deprecated(
+    "Use overload with lambda instead",
+    ReplaceWith("rememberLottieComposition { spec }")
+)
 @OptIn(InternalCompottieApi::class)
 @Composable
 @Stable
@@ -206,25 +222,31 @@ fun rememberLottieComposition(
 @Stable
 fun rememberLottieComposition(
     vararg keys : Any?,
-    spec : suspend (LottieContext) -> LottieCompositionSpec,
+    spec : suspend DynamicComposition.(LottieContext) -> LottieCompositionSpec,
 ) : LottieCompositionResult {
 
     val updatedSpec by rememberUpdatedState(spec)
 
     val context = currentLottieContext()
 
-    val result = remember(*keys,context) {
+    val result = remember(*keys, context) {
         LottieCompositionResultImpl()
     }
 
     LaunchedEffect(result) {
         withContext(Dispatchers.IODispatcher) {
             try {
-                result.complete(updatedSpec(context).load())
+                DynamicCompositionImpl().run {
+                    val composition = updatedSpec(context).load().apply {
+                        dynamicComposition = this@run
+                    }
+                    result.complete(composition)
+                }
             } catch (c: CancellationException) {
+                result.completeExceptionally(c)
                 throw c
             } catch (t: Throwable) {
-                result.completeExceptionally(t)
+                result.completeExceptionally(CompottieException("Composition failed to load", t))
             }
         }
     }

@@ -60,7 +60,10 @@ internal abstract class AnimatedTransform {
                 // 1) Find the next position value.
                 // 2) Create a vector from the current position to the next position.
                 // 3) Find the angle of that vector to the X axis (0 degrees).
-                val nextPosition = position!!.interpolated(state.shift(0.001f))
+                val nextPosition = state.remapped(state.frame + 0.001f) {
+                    position!!.interpolated(it)
+                }
+
                 val rotationValue= Math.toDegree(
                     atan2(
                         (nextPosition.y - startY),

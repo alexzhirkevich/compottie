@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
+import io.github.alexzhirkevich.compottie.dynamic.DynamicComposition
 import kotlin.jvm.JvmInline
 
 @Stable
@@ -60,6 +61,7 @@ private value class JsonStringImpl(
 private class LazyJsonString(
     private val jsonString : suspend () -> String,
     private val assetsManager: LottieAssetsManager,
+    private val dynamic : DynamicComposition.() -> Unit = {}
 ) : LottieCompositionSpec {
 
     override suspend fun load(): LottieComposition {

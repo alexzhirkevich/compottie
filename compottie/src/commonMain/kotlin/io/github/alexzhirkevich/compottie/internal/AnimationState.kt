@@ -1,14 +1,24 @@
 package io.github.alexzhirkevich.compottie.internal
 
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import io.github.alexzhirkevich.compottie.LottieComposition
-import kotlin.jvm.JvmField
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.jvm.JvmInline
 
 @JvmInline
-value class AnimationState(val frame : Float) {
-    fun shift(frame: Float) = AnimationState(frame + this.frame)
+value class AnimationState @PublishedApi internal constructor(val frame : Float) {
+
+    /**
+     * Remaps current state to requested [frame] and performs [block] on it.
+     * State is restored after the [block] call
+     * */
+    @OptIn(ExperimentalContracts::class)
+    inline fun <R> remapped(frame: Float, block : (AnimationState) -> R) : R {
+        contract {
+            callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+        }
+        return block(AnimationState(frame))
+    }
 }
 
 //internal interface AnimationState {

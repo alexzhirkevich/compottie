@@ -1,20 +1,8 @@
 package io.github.alexzhirkevich.compottie
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.remember
 import okio.Buffer
 import okio.FileSystem
-
-
-@Composable
-fun rememberDiskCacheStrategy() : LottieCacheStrategy {
-    return remember {
-        DiskCacheStrategy()
-    }
-
-
-}
 
 @Stable
 class DiskCacheStrategy : LottieCacheStrategy {

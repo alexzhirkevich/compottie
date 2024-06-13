@@ -8,7 +8,6 @@ import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
-import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.isSupported
 import io.github.alexzhirkevich.compottie.internal.platform.clipRect
@@ -18,11 +17,11 @@ import kotlinx.serialization.Transient
 
 internal abstract class BaseCompositionLayer: BaseLayer() {
 
-    abstract val width : Float
+    abstract val width: Float
 
-    abstract val height : Float
+    abstract val height: Float
 
-    abstract val timeRemapping : AnimatedNumber?
+    abstract val timeRemapping: AnimatedNumber?
 
     private val rect = MutableRect(0f, 0f, 0f, 0f)
 
@@ -41,7 +40,7 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
 //    }
 
 
-    abstract fun loadLayers() : List<Layer>
+    abstract fun loadLayers(): List<Layer>
 
     private val layers by lazy {
         val layers = loadLayers().filterIsInstance<BaseLayer>()
@@ -115,20 +114,19 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
 
         val childAlpha = if (isDrawingWithOffScreen) 1f else parentAlpha
 
-        layers.fastForEachReversed { layer ->
-            // Only clip precomps. This mimics the way After Effects renders animations.
-            val ignoreClipOnThisLayer = isContainerLayer || painterProperties?.clipToDrawBounds == false
+        state.remapped(getRemappedFrame(state)) { remappedState ->
+            layers.fastForEachReversed { layer ->
+                // Only clip precomps. This mimics the way After Effects renders animations.
+                val ignoreClipOnThisLayer =
+                    isContainerLayer || painterProperties?.clipToDrawBounds == false
 
-            if (!ignoreClipOnThisLayer && !newClipRect.isEmpty) {
-                canvas.clipRect(newClipRect)
+                if (!ignoreClipOnThisLayer && !newClipRect.isEmpty) {
+                    canvas.clipRect(newClipRect)
+                }
+
+
+                layer.draw(drawScope, parentMatrix, childAlpha, remappedState)
             }
-
-            layer.draw(
-                drawScope,
-                parentMatrix,
-                childAlpha,
-                AnimationState(remappedFrame(state))
-            )
         }
 
         canvas.restore()
@@ -150,17 +148,18 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         }
     }
 
-    private fun remappedFrame(state: AnimationState): Float {
+    private fun getRemappedFrame(state: AnimationState): Float {
 
-        val tr = timeRemapping ?: return state.frame
-
-        val f = if (timeStretch != 0f && !isContainerLayer) {
+        val f = if (timeStretch != 0f && timeStretch != 1f && !isContainerLayer) {
             state.frame / timeStretch
         } else state.frame
 
+        val tr = timeRemapping ?: return f
+
         val composition = checkNotNull(painterProperties?.composition)
 
-        return tr.interpolated(state) *
-                composition.frameRate - composition.startFrame
+        return state.remapped(f) {
+            tr.interpolated(it) * composition.frameRate - composition.startFrame
+        }
     }
 }

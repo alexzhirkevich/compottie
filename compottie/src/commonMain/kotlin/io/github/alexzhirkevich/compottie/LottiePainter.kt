@@ -26,6 +26,39 @@ import io.github.alexzhirkevich.compottie.internal.layers.CompositionLayer
 import io.github.alexzhirkevich.compottie.internal.layers.PainterProperties
 import kotlin.math.roundToInt
 
+/**
+ * Create and remember Lottie painter.
+ * Shortcut that combines [rememberLottiePainter] (with progress arg)
+ * and [animateLottieCompositionAsState]
+ *
+ * @param composition [LottieComposition] usually created by [rememberLottieComposition]
+ * @param composition The composition to render. This should be retrieved with [rememberLottieComposition].
+ * @param isPlaying Whether or not the animation is currently playing. Note that the internal
+ * animation may end due to reaching the target iterations count. If that happens, the animation may
+ * stop even if this is still true. You can observe the returned [LottieAnimationState.isPlaying]
+ * to determine whether the underlying animation is still playing.
+ * @param restartOnPlay If isPlaying switches from false to true, restartOnPlay determines whether
+ * the progress and iteration gets reset.
+ * @param reverseOnRepeat Defines what this animation should do when it reaches the end. This setting
+ * is applied only when [iterations] is either greater than 0 or [LottieConstants.IterateForever].
+ * Defaults to `false`.
+ * @param clipSpec A [LottieClipSpec] that specifies the bound the animation playback
+ * should be clipped to.
+ * @param speed The speed the animation should play at. Numbers larger than one will speed it up.
+ * Numbers between 0 and 1 will slow it down. Numbers less than 0 will play it backwards.
+ * @param iterations The number of times the animation should repeat before stopping. It must be
+ * a positive number. [LottieConstants.IterateForever] can be used to repeat forever.
+ * @param cancellationBehavior The behavior that this animation should have when cancelled.
+ * In most cases, you will want it to cancel immediately. However, if you have a state based
+ * transition and you want an animation to finish playing before moving on to the next one then you
+ * may want to set this to [LottieCancellationBehavior.OnIterationFinish].
+ * @param useCompositionFrameRate Use frame rate declared in animation instead of screen refresh rate.
+ * Animation may seem junky if parameter is set to true and composition frame rate is less than screen
+ * refresh rate
+ * @param clipToCompositionBounds if animation should be clipped to the
+ *  [composition].width x [composition].height
+ * @param clipTextToBoundingBoxes if text should be clipped to its bounding boxes (if provided in animation)
+ * */
 @Composable
 fun rememberLottiePainter(
     composition : LottieComposition?,
@@ -61,12 +94,21 @@ fun rememberLottiePainter(
     )
 }
 
+/**
+ * Create and remember Lottie painter
+ *
+ * @param composition [LottieComposition] usually created by [rememberLottieComposition]
+ * @param progress animation progress from 0 to 1 usually derived from [animateLottieCompositionAsState]
+ * @param clipToCompositionBounds if drawing should be clipped to the
+ *  [composition].width x [composition].height
+ * @param clipTextToBoundingBoxes if text should be clipped to its bounding boxes (if provided in animation)
+ * */
 @Composable
 fun rememberLottiePainter(
     composition : LottieComposition?,
     progress : () -> Float,
+    clipToCompositionBounds : Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
-    clipToCompositionBounds : Boolean = true
 ) : Painter {
 
     val fontFamilyResolver = LocalFontFamilyResolver.current
@@ -91,10 +133,12 @@ fun rememberLottiePainter(
     }
 
     LaunchedEffect(painter) {
-        snapshotFlow {
-            progress()
-        }.collect {
-            (painter as? LottiePainter)?.progress = it
+        (painter as? LottiePainter)?.let { lp ->
+            snapshotFlow {
+                progress()
+            }.collect {
+                lp.progress = it
+            }
         }
     }
 
@@ -104,7 +148,7 @@ fun rememberLottiePainter(
 private object EmptyPainter : Painter() {
 
 
-    override val intrinsicSize: Size = Size(1f,1f)
+    override val intrinsicSize: Size = Size.Unspecified
 
     override fun DrawScope.onDraw() {
     }
@@ -112,10 +156,10 @@ private object EmptyPainter : Painter() {
 
 private class LottiePainter(
     private val composition: LottieComposition,
-    private val initialProgress : Float,
-    private val fontFamilyResolver : FontFamily.Resolver,
-    private val clipTextToBoundingBoxes : Boolean,
-    private val clipToCompositionBounds : Boolean,
+    initialProgress : Float,
+    fontFamilyResolver : FontFamily.Resolver,
+    clipTextToBoundingBoxes : Boolean,
+    clipToCompositionBounds : Boolean,
 ) : Painter() {
 
     override val intrinsicSize: Size = Size(
@@ -129,19 +173,12 @@ private class LottiePainter(
 
     private var alpha by mutableStateOf(1f)
 
-    private val currentFrame by derivedStateOf {
-        val p = composition.lottieData.outPoint * progress.coerceIn(0f, 1f) -
-                composition.lottieData.inPoint
-        p.coerceAtLeast(0f)
-    }
-
-    val compositionLayer: BaseCompositionLayer = composition.lottieData
+    private val compositionLayer: BaseCompositionLayer = composition.lottieData
         .layers
         .takeIf {
             it.size == 1                     // don't create extra composition layer
         }?.first() as? BaseCompositionLayer  // if Precomposition is the only layer
         ?: CompositionLayer(composition)
-
 
     init {
         compositionLayer.painterProperties = PainterProperties(
