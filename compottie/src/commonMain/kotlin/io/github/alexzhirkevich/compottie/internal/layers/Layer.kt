@@ -59,7 +59,6 @@ internal sealed interface Layer {
 
     val effects: List<LayerEffect>
 
-
     val effectsApplier : LayerEffectsApplier
 }
 
@@ -67,12 +66,10 @@ internal val Layer.isContainerLayer get()   =  name == "__container"
 
 internal class PainterProperties(
     val composition : LottieComposition,
-
     val assets: Map<String, LottieAsset> = emptyMap(),
-
+    val fontFamilyResolver: FontFamily.Resolver? = null,
     val clipTextToBoundingBoxes : Boolean = false,
-
-    val fontFamilyResolver: FontFamily.Resolver? = null
+    val clipToDrawBounds : Boolean = true,
 )
 
 

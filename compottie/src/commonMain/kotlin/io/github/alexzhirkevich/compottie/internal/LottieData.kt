@@ -40,7 +40,3 @@ internal data class LottieData(
 
     val markers : List<Marker> = emptyList()
 )
-
-
-internal val LottieData.durationMillis
-    get() = (outPoint - inPoint) / frameRate * 1000

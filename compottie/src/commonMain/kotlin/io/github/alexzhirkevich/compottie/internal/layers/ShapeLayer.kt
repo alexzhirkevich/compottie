@@ -93,7 +93,9 @@ internal class ShapeLayer(
         name = name,
         hidden = hidden,
         contents = shapes,
-        transform = shapes.findTransform()
+        transform = shapes.findTransform()?.apply {
+            autoOrient = this@ShapeLayer.autoOrient == BooleanInt.Yes
+        }
     ).apply {
         setContents(emptyList(), emptyList())
     }

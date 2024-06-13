@@ -22,7 +22,7 @@ sealed class LottieClipSpec {
      * should play the max frame or stop one frame before it.
      */
     @Immutable
-    class Frame constructor(
+    class Frame(
         val min: Int?,
         val max: Int?,
         val maxInclusive: Boolean,
@@ -80,7 +80,7 @@ sealed class LottieClipSpec {
      */
 
     @Immutable
-    class Progress constructor(
+    class Progress(
         val min: Float,
         val max: Float,
     ) : LottieClipSpec() {
@@ -122,7 +122,7 @@ sealed class LottieClipSpec {
      * it to false to stop the animation at the frame before maxMarker.
      */
     @Immutable
-    class Markers constructor(
+    class Markers(
         val min: String?,
         val max: String?,
         val maxInclusive: Boolean

@@ -10,6 +10,7 @@ import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroupBase
 import io.github.alexzhirkevich.compottie.internal.content.GreedyContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
+import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import kotlinx.serialization.SerialName
@@ -116,7 +117,8 @@ internal class MergePathsShape(
             if (content is ContentGroupBase) {
                 content.pathContents.fastForEachReversed { path ->
                     val p = path.getPath(state)
-                    content.transform?.matrix(state)?.let(p::transform)
+                    content.transform?.matrix(state)
+                        ?.let(p::transform)
                     remainderPath.addPath(p)
                 }
             } else {

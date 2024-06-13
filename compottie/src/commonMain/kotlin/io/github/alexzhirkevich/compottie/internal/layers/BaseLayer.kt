@@ -23,6 +23,7 @@ import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.effects.BlurEffect
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsApplier
+import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MaskMode
 import io.github.alexzhirkevich.compottie.internal.helpers.isInvert
@@ -116,6 +117,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
     ) {
 
         try {
+            transform.autoOrient = autoOrient == BooleanInt.Yes
 
             if (hidden || (inPoint ?: 0f) > state.frame || (outPoint ?: Float.MAX_VALUE) < state.frame)
                 return
@@ -229,8 +231,8 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         boundsMatrix.preConcat(transform.matrix(state))
     }
 
-    override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
-        //do nothing
+
+    final override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
     }
 
     fun setParentLayer(layer: BaseLayer) {

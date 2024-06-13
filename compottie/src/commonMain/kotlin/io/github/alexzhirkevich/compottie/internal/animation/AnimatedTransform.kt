@@ -8,6 +8,7 @@ import io.github.alexzhirkevich.compottie.internal.utils.preRotate
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
 import io.github.alexzhirkevich.compottie.internal.utils.setValues
+import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.tan
@@ -21,6 +22,8 @@ internal abstract class AnimatedTransform {
     abstract val opacity: AnimatedNumber?
     abstract val skew: AnimatedNumber?
     abstract val skewAxis: AnimatedNumber?
+
+    var autoOrient = false
 
     protected val matrix: Matrix = Matrix()
 
@@ -43,15 +46,34 @@ internal abstract class AnimatedTransform {
     fun matrix(state: AnimationState): Matrix {
         matrix.reset()
 
-        position?.interpolated(state)
+        val interpolatedPosition = position?.interpolated(state)
             ?.takeIf { it.x != 0f || it.y != 0f }
-            ?.let {
+            ?.also {
                 matrix.preTranslate(it.x, it.y)
             }
 
-        rotation?.interpolated(state)
-            ?.takeIf { it != 0f }
-            ?.let(matrix::preRotate)
+        if (autoOrient){
+            if (interpolatedPosition != null) {
+                // Store the start X and Y values because the pointF will be overwritten by the next getValue call.
+                val startX = interpolatedPosition.x
+                val startY = interpolatedPosition.y
+                // 1) Find the next position value.
+                // 2) Create a vector from the current position to the next position.
+                // 3) Find the angle of that vector to the X axis (0 degrees).
+                val nextPosition = position!!.interpolated(state.shift(0.001f))
+                val rotationValue= Math.toDegree(
+                    atan2(
+                        (nextPosition.y - startY),
+                        (nextPosition.x - startX)
+                    )
+                )
+                matrix.preRotate(rotationValue.toFloat())
+            }
+        } else {
+            rotation?.interpolated(state)
+                ?.takeIf { it != 0f }
+                ?.let(matrix::preRotate)
+        }
 
         skew?.interpolated(state)
             ?.takeIf { it != 0f }

@@ -299,7 +299,7 @@ private class LottieAnimatableImpl : LottieAnimatable {
         val minProgress = clipSpec?.getMinProgress(composition) ?: 0f
         val maxProgress = clipSpec?.getMaxProgress(composition) ?: 1f
 
-        val dProgress = dNanos / 1_000_000f / composition.duration * frameSpeed
+        val dProgress = dNanos / 1_000_000f / composition.duration.inWholeMilliseconds * frameSpeed
         val progressPastEndOfIteration = when {
             frameSpeed < 0 -> minProgress - (progressRaw + dProgress)
             else -> progressRaw + dProgress - maxProgress

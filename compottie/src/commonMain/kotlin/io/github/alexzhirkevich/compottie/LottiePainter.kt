@@ -6,7 +6,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -27,7 +26,6 @@ import io.github.alexzhirkevich.compottie.internal.layers.CompositionLayer
 import io.github.alexzhirkevich.compottie.internal.layers.PainterProperties
 import kotlin.math.roundToInt
 
-@OptIn(InternalCompottieApi::class)
 @Composable
 fun rememberLottiePainter(
     composition : LottieComposition?,
@@ -38,7 +36,9 @@ fun rememberLottiePainter(
     speed: Float = composition?.speed ?: 1f,
     iterations: Int = composition?.iterations ?: 1,
     cancellationBehavior: LottieCancellationBehavior = LottieCancellationBehavior.Immediately,
-    useCompositionFrameRate: Boolean = false
+    useCompositionFrameRate: Boolean = false,
+    clipTextToBoundingBoxes: Boolean = false,
+    clipToCompositionBounds: Boolean = true
 ) : Painter {
 
     val progress = animateLottieCompositionAsState(
@@ -56,6 +56,8 @@ fun rememberLottiePainter(
     return rememberLottiePainter(
         composition = composition,
         progress = { progress.value },
+        clipToCompositionBounds = clipToCompositionBounds,
+        clipTextToBoundingBoxes = clipTextToBoundingBoxes
     )
 }
 
@@ -63,7 +65,8 @@ fun rememberLottiePainter(
 fun rememberLottiePainter(
     composition : LottieComposition?,
     progress : () -> Float,
-    clipTextToBoundingBoxes: Boolean = false
+    clipTextToBoundingBoxes: Boolean = false,
+    clipToCompositionBounds : Boolean = true
 ) : Painter {
 
     val fontFamilyResolver = LocalFontFamilyResolver.current
@@ -72,7 +75,8 @@ fun rememberLottiePainter(
         EmptyPainter,
         composition,
         clipTextToBoundingBoxes,
-        fontFamilyResolver
+        clipToCompositionBounds,
+        fontFamilyResolver,
     ) {
 
         if (composition != null) {
@@ -80,7 +84,8 @@ fun rememberLottiePainter(
                 composition = composition,
                 initialProgress = progress(),
                 clipTextToBoundingBoxes = clipTextToBoundingBoxes,
-                fontFamilyResolver = fontFamilyResolver
+                fontFamilyResolver = fontFamilyResolver,
+                clipToCompositionBounds = clipToCompositionBounds
             )
         }
     }
@@ -110,6 +115,7 @@ private class LottiePainter(
     private val initialProgress : Float,
     private val fontFamilyResolver : FontFamily.Resolver,
     private val clipTextToBoundingBoxes : Boolean,
+    private val clipToCompositionBounds : Boolean,
 ) : Painter() {
 
     override val intrinsicSize: Size = Size(
@@ -142,7 +148,8 @@ private class LottiePainter(
             assets = composition.lottieData.assets.associateBy(LottieAsset::id),
             composition = composition,
             clipTextToBoundingBoxes = clipTextToBoundingBoxes,
-            fontFamilyResolver = fontFamilyResolver
+            fontFamilyResolver = fontFamilyResolver,
+            clipToDrawBounds = clipToCompositionBounds
         )
     }
 

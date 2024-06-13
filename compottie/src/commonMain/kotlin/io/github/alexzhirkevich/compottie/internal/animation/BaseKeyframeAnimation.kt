@@ -55,7 +55,7 @@ internal class BaseKeyframeAnimation<T, K, out KF : Keyframe<K>>(
                     InvalidKeyframeError
                 ),
                 requireNotNull(
-                    preLast?.endHold ?: start,
+                    start ?: preLast?.end ?: preLast?.start,
                     InvalidKeyframeError
                 ),
                 1f,

@@ -9,8 +9,8 @@ import androidx.compose.ui.layout.ContentScale
 
 @Composable
 @Deprecated(
-    "Use Image with rememberLottiePainter(...) instead",
-    replaceWith = ReplaceWith(
+    "Use Image with rememberLottiePainter(...) instead. Will be removed in 2.0",
+    ReplaceWith(
         "Image(rememberLottiePainter(composition,progress),null,modifier,alignment,contentScale)",
         "androidx.compose.foundation.Image",
         "io.github.alexzhirkevich.compottie.rememberLottiePainter"
@@ -34,12 +34,12 @@ fun LottieAnimation(
 }
 
 @Deprecated(
-    "Use Image with rememberLottiePainter(...) instead",
-    replaceWith = ReplaceWith(
+    "Use Image with rememberLottiePainter(...) instead.Will be removed in 2.0",
+    ReplaceWith(
         "Image(rememberLottiePainter(composition,isPlaying,restartOnPlay,reverseOnRepeat,clipSpec,speed,iterations),null,modifier,alignment,contentScale)",
         "androidx.compose.foundation.Image",
         "io.github.alexzhirkevich.compottie.rememberLottiePainter"
-    )
+    ),
 )
 @Composable
 fun LottieAnimation(
@@ -48,8 +48,8 @@ fun LottieAnimation(
     isPlaying: Boolean = true,
     restartOnPlay: Boolean = true,
     clipSpec: LottieClipSpec? = null,
-    speed: Float = 1f,
-    iterations: Int = 1,
+    speed: Float = composition?.speed ?: 1f,
+    iterations: Int = composition?.iterations ?: 1,
     reverseOnRepeat: Boolean = false,
     alignment: Alignment = Alignment.Center,
     contentScale: ContentScale = ContentScale.Fit,
@@ -63,7 +63,8 @@ fun LottieAnimation(
             reverseOnRepeat = reverseOnRepeat,
             clipSpec = clipSpec,
             speed = speed,
-            iterations = iterations
+            iterations = iterations,
+            clipToCompositionBounds = clipToCompositionBounds
         ),
         contentDescription = null,
         modifier = modifier,

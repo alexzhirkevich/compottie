@@ -7,7 +7,9 @@ import kotlin.jvm.JvmField
 import kotlin.jvm.JvmInline
 
 @JvmInline
-value class AnimationState(val frame : Float)
+value class AnimationState(val frame : Float) {
+    fun shift(frame: Float) = AnimationState(frame + this.frame)
+}
 
 //internal interface AnimationState {
 //

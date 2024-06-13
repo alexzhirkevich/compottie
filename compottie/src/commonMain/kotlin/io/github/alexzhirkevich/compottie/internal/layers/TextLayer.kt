@@ -191,7 +191,6 @@ internal class TextLayer(
 
         fillPaint.alpha = (parentAlpha * transformOpacity * fillOpacity).coerceIn(0f,1f)
 
-
         val strokeH = textAnimation?.style?.strokeHue?.interpolated(state)?.coerceIn(0f,360f)
         val strokeS = textAnimation?.style?.strokeSaturation?.interpolated(state)?.coerceIn(0f,1f)
         val strokeB = textAnimation?.style?.strokeBrightness?.interpolated(state)?.coerceIn(0f,1f)
@@ -220,7 +219,7 @@ internal class TextLayer(
     private fun configureTextStyle(drawScope: DrawScope, document: TextDocument, animationState: AnimationState) {
 
         drawScope.run {
-            val fontSize = document.fontSize.sp
+            val fontSize = document.fontSize.toSp()
             val baselineShift = document.baselineShift
                 ?.let { BaselineShift(it) }
                 ?: textStyle.baselineShift
@@ -229,13 +228,13 @@ internal class TextLayer(
                 .get(document.fontFamily)
 
             val letterSpacing = textAnimation?.style?.letterSpacing
-                ?.interpolated(animationState)?.sp
+                ?.interpolated(animationState)?.toSp()
                 ?: textStyle.letterSpacing
 
             val lineSpacing = textAnimation?.style?.lineSpacing
                 ?.interpolated(animationState) ?: 0f
 
-            val  lineHeight = (document.lineHeight + lineSpacing).sp
+            val  lineHeight = (document.lineHeight + lineSpacing).toSp()
 
             if (
                 textStyle.fontSize != fontSize ||

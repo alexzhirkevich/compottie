@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroupBase
+import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.layers.NullLayer
 import kotlinx.serialization.SerialName
@@ -33,6 +34,7 @@ internal class GroupShape(
     contents = items,
     transform = items.findTransform()
 ){
+
     @Transient
     override var layer: Layer = NullLayer()
         set(value) {
@@ -40,5 +42,7 @@ internal class GroupShape(
             items.forEach {
                 it.layer = value
             }
+
+            transform?.autoOrient = value.autoOrient == BooleanInt.Yes
         }
 }

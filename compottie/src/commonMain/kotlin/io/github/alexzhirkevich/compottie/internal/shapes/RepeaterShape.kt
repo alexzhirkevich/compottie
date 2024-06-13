@@ -14,6 +14,7 @@ import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.GreedyContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
+import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
@@ -103,7 +104,6 @@ internal class RepeaterShape(
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
         contentGroup?.setContents(contentsBefore, contentsAfter)
-
     }
 
     override fun absorbContent(contents: MutableList<Content>) {
@@ -132,6 +132,11 @@ internal class RepeaterShape(
             contents.removeFirst()
         }
 
-        contentGroup = ContentGroup(name, hidden, contentsList, null)
+        contentGroup = ContentGroup(
+            name = name,
+            hidden = hidden,
+            contents = contentsList,
+            transform = null,
+        )
     }
 }

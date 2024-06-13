@@ -46,8 +46,8 @@ fun animateLottieCompositionAsState(
     restartOnPlay: Boolean = true,
     reverseOnRepeat: Boolean = false,
     clipSpec: LottieClipSpec? = null,
-    speed: Float = 1f,
-    iterations: Int = 1,
+    speed: Float = composition?.speed ?: 1f,
+    iterations: Int = composition?.iterations ?: 1,
     cancellationBehavior: LottieCancellationBehavior = LottieCancellationBehavior.Immediately,
     useCompositionFrameRate: Boolean = false,
 ): LottieAnimationState {

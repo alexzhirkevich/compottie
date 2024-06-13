@@ -22,6 +22,7 @@ internal class ContentGroup(
     override val transform: AnimatedTransform?,
 ) : ContentGroupBase {
 
+
     private val rect = MutableRect(0f, 0f, 0f, 0f)
     private val offscreenRect = MutableRect(0f, 0f, 0f, 0f)
     private val offscreenPaint = Paint().apply {

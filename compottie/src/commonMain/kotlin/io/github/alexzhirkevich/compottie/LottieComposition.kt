@@ -16,7 +16,6 @@ import io.github.alexzhirkevich.compottie.assets.LottieFont
 import io.github.alexzhirkevich.compottie.internal.LottieData
 import io.github.alexzhirkevich.compottie.internal.LottieJson
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
-import io.github.alexzhirkevich.compottie.internal.durationMillis
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -27,25 +26,50 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 
 @Stable
 class LottieComposition internal constructor(
     internal val lottieData: LottieData,
 ) {
+
+    /**
+     * Frame when animation becomes visible
+     * */
     val startFrame: Float get() = lottieData.inPoint
 
+    /**
+     * Frame when animation becomes no longer visible
+     * */
     val endFrame: Float get() = lottieData.outPoint
 
-    val duration: Float get() = lottieData.durationMillis
+    /**
+     * Animation duration
+     * */
+    val duration: Duration = ((endFrame - startFrame) / frameRate * 1000).toInt().milliseconds
 
+    /**
+     * Animation frame rate
+     * */
     val frameRate: Float get() = lottieData.frameRate
 
-    @InternalCompottieApi
+    /**
+     * Some animations may contain predefined number of interactions.
+     * It will be used as a default value for the LottiePainter
+     * */
     var iterations: Int by mutableStateOf(1)
+        @InternalCompottieApi
+        set
 
-    @InternalCompottieApi
+    /**
+     * Some animations may contain predefined speed multiplier.
+     * It will be used as a default value for the LottiePainter
+     * */
     var speed: Float by mutableFloatStateOf(1f)
+        @InternalCompottieApi
+        set
 
     internal var fontsByFamily: Map<String, FontFamily> = emptyMap()
 
@@ -133,9 +157,11 @@ class LottieComposition internal constructor(
         lottieData.markers.firstOrNull { it.name == name }
 
     companion object {
-        fun parse(json: String) = LottieComposition(
-            lottieData = LottieJson.decodeFromString(json),
-        )
+        fun parse(json: String) : LottieComposition {
+            return LottieComposition(
+                lottieData = LottieJson.decodeFromString(json),
+            )
+        }
     }
 }
 
@@ -144,6 +170,7 @@ class LottieComposition internal constructor(
  *
  * [spec] should be remembered
  * */
+@OptIn(InternalCompottieApi::class)
 @Composable
 @Stable
 fun rememberLottieComposition(
@@ -174,23 +201,26 @@ fun rememberLottieComposition(
  *
  * Instance produces by [spec] will be remembered until [keys] are changed
  * */
+@OptIn(InternalCompottieApi::class)
 @Composable
 @Stable
 fun rememberLottieComposition(
     vararg keys : Any?,
-    spec : suspend () -> LottieCompositionSpec,
+    spec : suspend (LottieContext) -> LottieCompositionSpec,
 ) : LottieCompositionResult {
 
     val updatedSpec by rememberUpdatedState(spec)
 
-    val result = remember(*keys) {
+    val context = currentLottieContext()
+
+    val result = remember(*keys,context) {
         LottieCompositionResultImpl()
     }
 
     LaunchedEffect(result) {
         withContext(Dispatchers.IODispatcher) {
             try {
-                result.complete(updatedSpec().load())
+                result.complete(updatedSpec(context).load())
             } catch (c: CancellationException) {
                 throw c
             } catch (t: Throwable) {

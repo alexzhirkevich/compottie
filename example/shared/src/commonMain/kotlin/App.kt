@@ -1,4 +1,3 @@
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,22 +11,14 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.createFontFamilyResolver
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import compottie.example.shared.generated.resources.Res
-import io.github.alexzhirkevich.compottie.DotLottie
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.LottieConstants
-import io.github.alexzhirkevich.compottie.NetworkAssetsManager
 import io.github.alexzhirkevich.compottie.assets.ImageRepresentable
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
-import io.github.alexzhirkevich.compottie.assets.LottieFont
 import io.github.alexzhirkevich.compottie.assets.LottieImage
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
@@ -45,6 +36,7 @@ private val ROUND_RECT = "roundrect.json"
 private val ROBOT = "robot.json"
 private val ROBOT_404 = "robot_404.json"
 private val ASTRONAUT = "astronaut.json"
+private val ANGEL = "angel.json"
 private val CONFETTI = "confetti.json"
 private val WONDERS = "wonders.json"
 private val PRECOMP_WITH_REMAPPING = "precomp_with_remapping.json"
@@ -53,6 +45,7 @@ private val MATTE_LUMA = "luma_matte.json"
 private val DASH = "dash.json"
 private val ROUNDING_CORENERS = "rounding_corners.json"
 private val REPEATER = "repeater.json"
+private val AUTOORIENT = "autoorient.json"
 private val TEXT_WITH_PATH = "text_with_path.json"
 private val TEXT = "text.json"
 private val IMAGE_ASSET = "image_asset.json"
@@ -61,10 +54,10 @@ private val IMAGE_ASSET_EMBEDDED = "image_asset_embedded.json"
 private val DOT = "dotlottie/dot.lottie"
 private val DOT_WITH_IMAGE = "dotlottie/dot_with_image.lottie"
 
-
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun App() {
+
 
     val composition = rememberLottieComposition {
 
@@ -85,15 +78,20 @@ fun App() {
         composition.await()
     }
 
-    Box(contentAlignment = Alignment.Center) {
+    Box(
+        Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+
+        val painter  = rememberLottiePainter(
+            composition = composition.value,
+            iterations = LottieConstants.IterateForever
+        )
         Image(
             modifier = Modifier
                 .fillMaxSize()
                 .opacityGrid(),
-            painter = rememberLottiePainter(
-                composition = composition.value,
-                iterations = LottieConstants.IterateForever,
-            ),
+            painter = painter,
             contentDescription = null
         )
 
@@ -114,6 +112,7 @@ fun LottieCompositionSpec.Companion.Resource(
     assetsManager: LottieAssetsManager = ResourcesAssetsManager(),
     readBytes: suspend (path: String) -> ByteArray = Res::readBytes
 ) : LottieCompositionSpec = JsonString(assetsManager) {
+
     readBytes("$dir/$path").decodeToString()
 }
 
