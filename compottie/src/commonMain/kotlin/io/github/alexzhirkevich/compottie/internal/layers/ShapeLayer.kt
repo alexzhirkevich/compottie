@@ -3,6 +3,10 @@ package io.github.alexzhirkevich.compottie.internal.layers
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.util.fastForEach
+import io.github.alexzhirkevich.compottie.LottieComposition
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
+import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
@@ -52,7 +56,7 @@ internal class ShapeLayer(
     override val name: String? = null,
 
     @SerialName("ef")
-    override val effects: List<LayerEffect> = emptyList(),
+    override var effects: List<LayerEffect> = emptyList(),
 
     @SerialName("sr")
     override val timeStretch: Float = 1f,
@@ -100,9 +104,21 @@ internal class ShapeLayer(
         setContents(emptyList(), emptyList())
     }
 
+    override fun onStart(composition: LottieComposition) {
+        super.onStart(composition)
+
+        if (name != null) {
+            (composition.dynamic?.get(layerPath(namePath, name)) as? DynamicShapeLayerProvider)?.let { dp ->
+                shapes.fastForEach {
+                    it.setDynamicProperties(null, dp)
+                }
+            }
+        }
+    }
+
+
     override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
         contentGroup.draw(drawScope, parentMatrix, parentAlpha, state)
-
     }
 
     override fun getBounds(

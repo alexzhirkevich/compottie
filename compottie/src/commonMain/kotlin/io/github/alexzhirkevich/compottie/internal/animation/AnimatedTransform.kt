@@ -1,6 +1,13 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.layout.ScaleFactor
+import io.github.alexzhirkevich.compottie.dynamic.DynamicTransformProvider
+import io.github.alexzhirkevich.compottie.dynamic.Identity
+import io.github.alexzhirkevich.compottie.dynamic.derive
+import io.github.alexzhirkevich.compottie.dynamic.toScaleFactor
+import io.github.alexzhirkevich.compottie.dynamic.toVec2
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.utils.Math
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
@@ -24,6 +31,7 @@ internal abstract class AnimatedTransform {
     abstract val skewAxis: AnimatedNumber?
 
     var autoOrient = false
+    var dynamic : DynamicTransformProvider? = null
 
     protected val matrix: Matrix = Matrix()
 
@@ -44,19 +52,24 @@ internal abstract class AnimatedTransform {
     }
 
     fun matrix(state: AnimationState): Matrix {
+
         matrix.reset()
 
-        val interpolatedPosition = position?.interpolated(state)
+        var interpolatedPosition = position?.interpolated(state)
             ?.takeIf { it.x != 0f || it.y != 0f }
             ?.also {
                 matrix.preTranslate(it.x, it.y)
             }
 
+        dynamic?.offset?.let {
+            interpolatedPosition = it.derive(interpolatedPosition ?: Offset.Zero, state)
+        }
+
         if (autoOrient){
             if (interpolatedPosition != null) {
                 // Store the start X and Y values because the pointF will be overwritten by the next getValue call.
-                val startX = interpolatedPosition.x
-                val startY = interpolatedPosition.y
+                val startX = interpolatedPosition!!.x
+                val startY = interpolatedPosition!!.y
                 // 1) Find the next position value.
                 // 2) Create a vector from the current position to the next position.
                 // 3) Find the angle of that vector to the X axis (0 degrees).
@@ -64,66 +77,90 @@ internal abstract class AnimatedTransform {
                     position!!.interpolated(it)
                 }
 
-                val rotationValue= Math.toDegree(
+                var rotationValue= Math.toDegree(
                     atan2(
                         (nextPosition.y - startY),
                         (nextPosition.x - startX)
                     )
                 )
-                matrix.preRotate(rotationValue.toFloat())
+
+                dynamic?.rotation?.let {
+                    rotationValue = it.derive(rotationValue, state)
+                }
+
+                matrix.preRotate(rotationValue)
             }
         } else {
-            rotation?.interpolated(state)
+            var rotation = rotation?.interpolated(state)
                 ?.takeIf { it != 0f }
-                ?.let(matrix::preRotate)
+
+            dynamic?.rotation?.let {
+                rotation = it.derive(rotation ?: 0f, state)
+            }
+
+            rotation?.let(matrix::preRotate)
         }
 
-        skew?.interpolated(state)
+        var skew = skew?.interpolated(state)
             ?.takeIf { it != 0f }
-            ?.let { sk ->
-                val skewAngle = skewAxis?.interpolated(state)
 
-                val mCos = if (skewAngle == null)
-                    0f
-                else cos(Math.toRadians(-skewAngle + 90))
+        dynamic?.skew?.let {
+            skew = it.derive(skew ?: 0f, state)
+        }
 
-                val mSin = if (skewAngle == null)
-                    1f
-                else sin(Math.toRadians(-skewAngle + 90))
+        skew?.let { sk ->
+            var skewAngle = skewAxis?.interpolated(state)
 
-                val aTan = tan(Math.toRadians(sk))
-
-                clearSkewValues()
-                skewValues[0] = mCos
-                skewValues[1] = mSin
-                skewValues[3] = -mSin
-                skewValues[4] = mCos
-                skewValues[8] = 1f
-                skewMatrix1.setValues(skewValues)
-                clearSkewValues()
-                skewValues[0] = 1f
-                skewValues[3] = aTan
-                skewValues[4] = 1f
-                skewValues[8] = 1f
-                skewMatrix2.setValues(skewValues)
-                clearSkewValues()
-                skewValues[0] = mCos
-                skewValues[1] = -mSin
-                skewValues[3] = mSin
-                skewValues[4] = mCos
-                skewValues[8] = 1f
-
-                skewMatrix3.setValues(skewValues)
-                skewMatrix2.preConcat(skewMatrix1)
-                skewMatrix3.preConcat(skewMatrix2)
-                matrix.preConcat(skewMatrix3)
+            dynamic?.skewAxis?.let {
+                skewAngle = it.derive(skewAngle ?: 0f, state)
             }
 
-        scale?.interpolatedNorm(state)
+            val mCos = if (skewAngle == null)
+                0f
+            else cos(Math.toRadians(-skewAngle!! + 90))
+
+            val mSin = if (skewAngle == null)
+                1f
+            else sin(Math.toRadians(-skewAngle!! + 90))
+
+            val aTan = tan(Math.toRadians(sk))
+
+            clearSkewValues()
+            skewValues[0] = mCos
+            skewValues[1] = mSin
+            skewValues[3] = -mSin
+            skewValues[4] = mCos
+            skewValues[8] = 1f
+            skewMatrix1.setValues(skewValues)
+            clearSkewValues()
+            skewValues[0] = 1f
+            skewValues[3] = aTan
+            skewValues[4] = 1f
+            skewValues[8] = 1f
+            skewMatrix2.setValues(skewValues)
+            clearSkewValues()
+            skewValues[0] = mCos
+            skewValues[1] = -mSin
+            skewValues[3] = mSin
+            skewValues[4] = mCos
+            skewValues[8] = 1f
+
+            skewMatrix3.setValues(skewValues)
+            skewMatrix2.preConcat(skewMatrix1)
+            skewMatrix3.preConcat(skewMatrix2)
+            matrix.preConcat(skewMatrix3)
+        }
+
+        var scale = scale?.interpolatedNorm(state)
             ?.takeIf { it.x != 1f || it.y != 1f }
-            ?.let {
-                matrix.preScale(it.x, it.y)
-            }
+
+        dynamic?.scale?.let {
+            scale = it.derive(scale?.toScaleFactor() ?: ScaleFactor.Identity, state).toVec2()
+        }
+
+        scale?.let {
+            matrix.preScale(it.x, it.y)
+        }
 
 
         anchorPoint?.interpolated(state)

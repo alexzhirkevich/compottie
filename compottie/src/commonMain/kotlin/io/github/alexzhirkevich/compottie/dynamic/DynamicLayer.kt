@@ -6,12 +6,10 @@ sealed interface DynamicLayer {
 
     sealed interface Shape : DynamicLayer {
 
-        fun fill(name: String, builder: DynamicFill.() -> Unit)
+        fun group(name : String, shape: Shape.() -> Unit)
 
-        fun stroke(name: String, builder: DynamicFill.() -> Unit)
-    }
+        fun fill(vararg path: String, builder: DynamicFill.() -> Unit)
 
-    sealed interface Text : DynamicLayer {
-
+        fun stroke(vararg path: String, builder: DynamicFill.() -> Unit)
     }
 }

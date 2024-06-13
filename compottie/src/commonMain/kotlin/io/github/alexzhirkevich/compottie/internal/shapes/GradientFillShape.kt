@@ -19,6 +19,7 @@ import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsState
 import io.github.alexzhirkevich.compottie.internal.helpers.FillRule
+import io.github.alexzhirkevich.compottie.internal.helpers.asComposeBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.asPathFillType
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
@@ -85,9 +86,11 @@ internal class GradientFillShape(
     @Transient
     private var paths: List<PathContent> = emptyList()
 
-    @Transient
-    private val paint = Paint().apply {
-        isAntiAlias = true
+    private val paint by lazy {
+        Paint().apply {
+            isAntiAlias = true
+            blendMode = layer.blendMode.asComposeBlendMode()
+        }
     }
 
     @Transient

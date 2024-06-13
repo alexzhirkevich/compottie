@@ -21,6 +21,8 @@ import kotlin.math.hypot
 
 internal typealias Vec2 = Offset
 
+internal fun Vec2(x : Float, y : Float) : Vec2 = Offset(x,y)
+
 @Serializable(with = AnimatedVector2Serializer::class)
 internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
 

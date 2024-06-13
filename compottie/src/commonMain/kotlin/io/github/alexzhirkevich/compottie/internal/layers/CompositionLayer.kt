@@ -18,7 +18,7 @@ internal class CompositionLayer(
     override val timeRemapping: AnimatedNumber? get() = null
 
     override val masks: List<Mask>? get() = null
-    override val effects: List<LayerEffect> get() = emptyList()
+    override var effects: List<LayerEffect> = emptyList()
 
     override val transform: Transform = Transform()
     override val autoOrient: BooleanInt get() = BooleanInt.No

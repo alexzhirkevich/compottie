@@ -24,6 +24,7 @@ import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsState
 import io.github.alexzhirkevich.compottie.internal.helpers.DashType
 import io.github.alexzhirkevich.compottie.internal.helpers.StrokeDash
 import io.github.alexzhirkevich.compottie.internal.helpers.applyTrimPath
+import io.github.alexzhirkevich.compottie.internal.helpers.asComposeBlendMode
 import io.github.alexzhirkevich.compottie.internal.platform.ExtendedPathMeasure
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.platform.set
@@ -93,6 +94,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
             strokeMiterLimit = strokeMiter
             strokeCap = lineCap.asStrokeCap()
             strokeJoin = lineJoin.asStrokeJoin()
+            blendMode = layer.blendMode.asComposeBlendMode()
         }
     }
     private val pm = ExtendedPathMeasure()

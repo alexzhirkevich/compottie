@@ -14,7 +14,7 @@ import io.github.alexzhirkevich.compottie.assets.LottieImage
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.LottieFont
 import io.github.alexzhirkevich.compottie.dynamic.DynamicComposition
-import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionImpl
+import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.internal.LottieData
 import io.github.alexzhirkevich.compottie.internal.LottieJson
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
@@ -85,8 +85,12 @@ class LottieComposition internal constructor(
 
     internal var fontsByFamily: Map<String, FontFamily> = emptyMap()
 
-    internal var dynamicComposition : DynamicCompositionImpl? = null
-
+    internal var dynamic : DynamicCompositionProvider? = null
+        set(value) {
+            if (value == null || value.size > 0) {
+                field = value
+            }
+        }
     private val fontMutex = Mutex()
 
     /**
@@ -215,14 +219,17 @@ fun rememberLottieComposition(
 /**
  * Load and prepare [LottieComposition] for displaying.
  *
- * Instance produces by [spec] will be remembered until [keys] are changed
+ * Instance produces by [spec] will be remembered until [keys] are changed.
+ *
+ * You can configure various dynamic animation properties in the [dynamic] block.
  * */
 @OptIn(InternalCompottieApi::class)
 @Composable
 @Stable
 fun rememberLottieComposition(
     vararg keys : Any?,
-    spec : suspend DynamicComposition.(LottieContext) -> LottieCompositionSpec,
+    dynamic : DynamicComposition.() -> Unit = {},
+    spec : suspend (LottieContext) -> LottieCompositionSpec,
 ) : LottieCompositionResult {
 
     val updatedSpec by rememberUpdatedState(spec)
@@ -236,12 +243,10 @@ fun rememberLottieComposition(
     LaunchedEffect(result) {
         withContext(Dispatchers.IODispatcher) {
             try {
-                DynamicCompositionImpl().run {
-                    val composition = updatedSpec(context).load().apply {
-                        dynamicComposition = this@run
-                    }
-                    result.complete(composition)
+                val composition = updatedSpec(context).load().apply {
+                    this.dynamic = DynamicCompositionProvider().apply(dynamic)
                 }
+                result.complete(composition)
             } catch (c: CancellationException) {
                 result.completeExceptionally(c)
                 throw c

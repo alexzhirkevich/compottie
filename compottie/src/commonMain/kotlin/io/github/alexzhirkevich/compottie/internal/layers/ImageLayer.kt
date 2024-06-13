@@ -1,29 +1,23 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
 import androidx.compose.ui.geometry.MutableRect
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.unit.IntSize
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
-import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
-import io.github.alexzhirkevich.compottie.internal.helpers.Transform
-import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
-import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsState
+import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
+import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
+import io.github.alexzhirkevich.compottie.internal.helpers.Transform
+import io.github.alexzhirkevich.compottie.internal.helpers.asComposeBlendMode
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlin.math.roundToInt
 
 @Serializable
 @SerialName("2")
@@ -83,7 +77,7 @@ internal class ImageLayer(
     override val masks: List<Mask>? = null,
 
     @SerialName("ef")
-    override val effects: List<LayerEffect> = emptyList(),
+    override var effects: List<LayerEffect> = emptyList(),
 
     @SerialName("refId")
     val refId : String,
@@ -91,6 +85,7 @@ internal class ImageLayer(
 
     @Transient
     private val paint = Paint().apply {
+        blendMode = this@ImageLayer.blendMode.asComposeBlendMode()
     }
 
     private val asset : ImageAsset? by lazy {
@@ -108,7 +103,6 @@ internal class ImageLayer(
         paint.alpha = parentAlpha
 
         effectsApplier.applyTo(paint, state, effectState)
-
 
         drawScope.drawIntoCanvas { canvas ->
             canvas.save()

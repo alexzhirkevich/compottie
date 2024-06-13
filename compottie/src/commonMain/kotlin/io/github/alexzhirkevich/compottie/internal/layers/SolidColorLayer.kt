@@ -88,7 +88,7 @@ internal class SolidColorLayer(
     val colorHex : String,
 
     @SerialName("ef")
-    override val effects: List<LayerEffect> = emptyList()
+    override var effects: List<LayerEffect> = emptyList()
 ) : BaseLayer() {
 
     private val color: Color by lazy {
@@ -127,8 +127,7 @@ internal class SolidColorLayer(
         }
         paint.color = color
 
-        paint.alpha = (color.alpha * parentAlpha *
-                (transform.opacity?.interpolatedNorm(state)?: 1f)).coerceIn(0f, 1f)
+        paint.alpha = (parentAlpha * (transform.opacity?.interpolatedNorm(state)?: 1f)).coerceIn(0f, 1f)
 
         if (paint.alpha == 0f) {
             return

@@ -181,13 +181,14 @@ private class LottiePainter(
         ?: CompositionLayer(composition)
 
     init {
-        compositionLayer.painterProperties = PainterProperties(
+        val painterProperties = PainterProperties(
             assets = composition.lottieData.assets.associateBy(LottieAsset::id),
-            composition = composition,
-            clipTextToBoundingBoxes = clipTextToBoundingBoxes,
             fontFamilyResolver = fontFamilyResolver,
-            clipToDrawBounds = clipToCompositionBounds
+            clipToDrawBounds = clipToCompositionBounds,
+            clipTextToBoundingBoxes = clipTextToBoundingBoxes,
         )
+        compositionLayer.painterProperties = painterProperties
+        compositionLayer.onStart(composition)
     }
 
     private val frame: Float by derivedStateOf {
@@ -203,6 +204,8 @@ private class LottiePainter(
         this.alpha = alpha
         return true
     }
+
+    private val animationState = AnimationState(frame, composition)
 
     override fun DrawScope.onDraw() {
 
@@ -226,7 +229,9 @@ private class LottiePainter(
 
         scale(scale.scaleX, scale.scaleY) {
             translate(offset.x.toFloat(), offset.y.toFloat()) {
-                compositionLayer.draw(this, matrix, alpha, AnimationState(frame))
+                animationState.remapped(frame) {
+                    compositionLayer.draw(this, matrix, alpha, it)
+                }
             }
         }
     }

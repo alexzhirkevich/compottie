@@ -1,5 +1,8 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
+import io.github.alexzhirkevich.compottie.dynamic.LayerPathSeparator
+import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroupBase
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
@@ -33,7 +36,7 @@ internal class GroupShape(
     hidden = hidden,
     contents = items,
     transform = items.findTransform()
-){
+) {
 
     @Transient
     override var layer: Layer = NullLayer()
@@ -45,4 +48,14 @@ internal class GroupShape(
 
             transform?.autoOrient = value.autoOrient == BooleanInt.Yes
         }
+
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+        super.setDynamicProperties(basePath, properties)
+        if (name != null) {
+            items.forEach {
+                it.setDynamicProperties(layerPath(basePath, name), properties)
+            }
+        }
+    }
 }
+

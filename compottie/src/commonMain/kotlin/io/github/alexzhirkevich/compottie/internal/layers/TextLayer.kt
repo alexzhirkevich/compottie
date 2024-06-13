@@ -75,7 +75,7 @@ internal class TextLayer(
     override val masks: List<Mask>? = null,
 
     @SerialName("ef")
-    override val effects: List<LayerEffect> = emptyList(),
+    override var effects: List<LayerEffect> = emptyList(),
 
     @SerialName("t")
     private val textData: TextData,
@@ -165,7 +165,7 @@ internal class TextLayer(
     ) {
         super.getBounds(drawScope, parentMatrix, applyParents, state, outBounds)
 
-        val composition = checkNotNull(painterProperties?.composition)
+        val composition = state.composition
 
         outBounds.set(0f, 0f, composition.lottieData.width, composition.lottieData.height)
     }
@@ -224,8 +224,7 @@ internal class TextLayer(
                 ?.let { BaselineShift(it) }
                 ?: textStyle.baselineShift
 
-            val fontFamily = checkNotNull(painterProperties?.composition?.fontsByFamily)
-                .get(document.fontFamily)
+            val fontFamily = animationState.composition.fontsByFamily[document.fontFamily]
 
             val letterSpacing = textAnimation?.style?.letterSpacing
                 ?.interpolated(animationState)?.toSp()

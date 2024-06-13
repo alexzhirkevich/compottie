@@ -8,10 +8,17 @@ sealed interface DynamicComposition {
     /**
      * Layer dynamic properties builder.
      * */
-    fun shapeLayer(name: String, builder: DynamicLayer.Shape.() -> Unit)
+    fun shapeLayer(vararg path: String, builder: DynamicLayer.Shape.() -> Unit)
 
     /**
      * Layer dynamic properties builder.
      * */
-    fun layer(name: String, builder: DynamicLayer.() -> Unit)
+    fun layer(vararg path: String, builder: DynamicLayer.() -> Unit)
 }
+
+internal const val LayerPathSeparator = "/"
+
+internal fun layerPath(base : String?, name : String) : String = listOfNotNull(base, name)
+    .joinToString(LayerPathSeparator)
+
+

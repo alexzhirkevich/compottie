@@ -10,17 +10,17 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.isIdentity
-import androidx.compose.ui.graphics.withSave
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.L
+import io.github.alexzhirkevich.compottie.LottieComposition
+import io.github.alexzhirkevich.compottie.dynamic.derive
+import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.content.Content
-import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.effects.BlurEffect
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsApplier
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
@@ -30,7 +30,6 @@ import io.github.alexzhirkevich.compottie.internal.helpers.isInvert
 import io.github.alexzhirkevich.compottie.internal.helpers.isLuma
 import io.github.alexzhirkevich.compottie.internal.platform.Luma
 import io.github.alexzhirkevich.compottie.internal.platform.drawRect
-import io.github.alexzhirkevich.compottie.internal.platform.getMatrix
 import io.github.alexzhirkevich.compottie.internal.platform.isAndroidAtMost
 import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
 import io.github.alexzhirkevich.compottie.internal.platform.set
@@ -38,9 +37,11 @@ import io.github.alexzhirkevich.compottie.internal.utils.intersectOrReset
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.union
 
-internal abstract class BaseLayer() : Layer, DrawingContent {
+internal abstract class BaseLayer() : Layer {
 
     override var painterProperties: PainterProperties? = null
+
+    override var namePath: String? = null
 
     protected val boundsMatrix = Matrix()
     private val path = Path()
@@ -94,12 +95,18 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
     private var parentLayer: BaseLayer? = null
     private var matteLayer: BaseLayer? = null
 
-    private val blurEffect by lazy {
-        effects.fastFirstOrNull { it is BlurEffect } as? BlurEffect
-    }
-
     override val effectsApplier by lazy {
         LayerEffectsApplier(this)
+    }
+
+    override fun onStart(composition: LottieComposition) {
+        super.onStart(composition)
+        transform.autoOrient = autoOrient == BooleanInt.Yes
+
+        if (name != null) {
+            transform.dynamic = composition
+                .dynamic?.get(layerPath(namePath, name!!))?.transform
+        }
     }
 
     abstract fun drawLayer(
@@ -115,9 +122,7 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
         parentAlpha: Float,
         state: AnimationState,
     ) {
-
         try {
-            transform.autoOrient = autoOrient == BooleanInt.Yes
 
             if (hidden || (inPoint ?: 0f) > state.frame || (outPoint ?: Float.MAX_VALUE) < state.frame)
                 return
@@ -130,12 +135,15 @@ internal abstract class BaseLayer() : Layer, DrawingContent {
                 matrix.preConcat(it.transform.matrix(state))
             }
 
-            var alpha = parentAlpha
+            var alpha = 1f
 
             transform.opacity?.interpolatedNorm(state)?.let {
                 alpha = (alpha * it).coerceIn(0f, 1f)
             }
 
+            alpha = transform.dynamic?.opacity.derive(alpha, state)
+
+            alpha = (alpha * parentAlpha.coerceIn(0f,1f))
 
             if (matteLayer == null && !hasMask()) {
                 matrix.preConcat(transform.matrix(state))

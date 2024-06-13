@@ -53,7 +53,7 @@ internal class PrecompositionLayer(
     override val masks: List<Mask>? = null,
 
     @SerialName("ef")
-    override val effects: List<LayerEffect> = emptyList(),
+    override var effects: List<LayerEffect> = emptyList(),
 
     @SerialName("ks")
     override val transform: Transform = Transform(),

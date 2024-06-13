@@ -11,10 +11,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.NativeKeyEvent
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.layout.ScaleFactor
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import compottie.example.shared.generated.resources.Res
@@ -29,6 +26,7 @@ import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.MissingResourceException
+import kotlin.random.Random
 
 private val GRADIENT_ELLIPSE = "gradient_ellipse.json"
 private val TEST = "test.json"
@@ -64,23 +62,22 @@ private val DOT_WITH_IMAGE = "dotlottie/dot_with_image.lottie"
 fun App() {
 
 
-    val composition = rememberLottieComposition {
-        shapeLayer("Fucking Slave") {
-            transform {
-                opacity { source, state -> source / 2 }
+    val composition = rememberLottieComposition(
+        dynamic = {
+            layer("Pre-comp 1", "Head Layer") {
+                transform {
+                    scale {
+                        val p = progress
+                        val scale = if (p > .5f)
+                            (1f - p) / .5f else p / .5f
+                        ScaleFactor(1f - scale/1.5f,1f - scale/1.5f)
+                    }
+                }
             }
 
-            fill("Pizdec"){
-
-            }
         }
-
-        Modifier.onKeyEvent {
-            it.key == Key.Spacebar
-        }
-
+    ) {
         LottieCompositionSpec.Resource(ROBOT)
-
 //        LottieCompositionSpec.DotLottie(ResourcesAssetsManager()) {
 //            Res.readBytes("files/$DOT_WITH_IMAGE")
 //        }

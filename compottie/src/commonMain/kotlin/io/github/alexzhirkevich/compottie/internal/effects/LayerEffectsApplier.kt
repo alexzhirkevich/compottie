@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.effects
 
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -25,7 +26,6 @@ internal class LayerEffectsApplier(
 ) {
     fun applyTo(paint: Paint, animationState: AnimationState, effectState : LayerEffectsState) {
 
-        paint.resetEffects()
         layer.effects.fastForEachReversed {
             when (it){
                 is BlurEffect -> paint.applyBlurEffect(it, animationState, effectState)
@@ -53,6 +53,9 @@ internal class LayerEffectsState {
 
     var dropShadowHash : Int? = null
     var dropShadowEffect : PlatformDropShadowEffect? = null
+
+    var tintHash : Int? = null
+    var tintColorFiter : ColorFilter? = null
 }
 
 private fun Paint.applyBlurEffect(
@@ -100,17 +103,29 @@ private fun Paint.applyTintEffect(
 
     val black = effect.black?.interpolated(animationState)?.let {
         it.copy(alpha = it.alpha * intensity)
-    }
+    } ?: Color.Black
     val white = effect.white?.interpolated(animationState)?.let {
         it.copy(alpha = it.alpha * intensity)
     }
 
-    if (black != Color.Black)
-        return
+    if (black.red != 0f || black.green != 0f || black.blue != 0f)
+        return //unsupported
 
+    val hash = white.hashCode()
+
+    if (this === effectState.lastPaint &&
+        hash == effectState.tintHash &&
+        effectState.tintColorFiter != null
+    ){
+        colorFilter = effectState.tintColorFiter
+        return
+    }
     colorFilter = if (white != null) {
         ColorFilter.tint(white, BlendMode.Modulate)
     } else null
+
+    effectState.tintHash = hash
+    effectState.tintColorFiter = colorFilter
 }
 
 internal fun Paint.applyDropShadowEffect(

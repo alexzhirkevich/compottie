@@ -7,6 +7,11 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
+import io.github.alexzhirkevich.compottie.dynamic.DynamicFillProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
+import io.github.alexzhirkevich.compottie.dynamic.derive
+import io.github.alexzhirkevich.compottie.dynamic.layerPath
+import io.github.alexzhirkevich.compottie.dynamic.requireShape
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
@@ -69,12 +74,12 @@ internal class FillShape(
     @Transient
     private var paths: List<PathContent> = emptyList()
 
-    private val paint by lazy {
-        Paint().apply {
-            isAntiAlias = true
-            layer.blendMode.asComposeBlendMode()
-        }
+    private val paint = Paint().apply {
+        isAntiAlias = true
     }
+
+    @Transient
+    private var dynamic : DynamicFillProvider? = null
 
     @Transient
     private var roundShape : RoundShape? = null
@@ -82,17 +87,35 @@ internal class FillShape(
     private val effectsState by lazy {
         LayerEffectsState()
     }
+
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
 
         if (hidden) {
             return
         }
 
-        paint.color = color.interpolated(state)
+        var c = color.interpolated(state)
 
-        paint.alpha = opacity?.interpolatedNorm(state)?.let {
-            (parentAlpha * it).coerceIn(0f, 1f)
-        } ?: parentAlpha
+        dynamic?.color?.let {
+            c = it.derive(c, state)
+        }
+
+        paint.color = c
+
+        var alpha = 1f
+
+        opacity?.interpolatedNorm(state)?.let {
+            alpha = (alpha * it).coerceIn(0f,1f)
+        }
+        dynamic?.opacity?.let {
+            alpha = it.derive(alpha, state).coerceIn(0f,1f)
+        }
+
+        paint.alpha = (alpha * parentAlpha).coerceIn(0f,1f)
+
+        paint.colorFilter = dynamic?.colorFilter.derive(paint.colorFilter, state)
+
+        paint.blendMode = dynamic?.blendMode.derive(layer.blendMode.asComposeBlendMode(), state)
 
         roundShape?.applyTo(paint, state)
 
@@ -102,7 +125,6 @@ internal class FillShape(
         paths.fastForEach {
             path.addPath(it.getPath(state), parentMatrix)
         }
-
 
         drawScope.drawIntoCanvas { canvas ->
             canvas.drawPath(path, paint)
@@ -129,6 +151,14 @@ internal class FillShape(
             outBounds.right + 1,
             outBounds.bottom + 1
         )
+    }
+
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+        super.setDynamicProperties(basePath, properties)
+        if (name != null) {
+            val p = layerPath(basePath, name)
+            dynamic = properties.get(p)?.requireShape<DynamicFillProvider>(p)
+        }
     }
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {

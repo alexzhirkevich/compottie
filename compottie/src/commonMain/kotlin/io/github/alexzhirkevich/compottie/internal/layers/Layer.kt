@@ -2,7 +2,9 @@ package io.github.alexzhirkevich.compottie.internal.layers
 
 import androidx.compose.ui.text.font.FontFamily
 import io.github.alexzhirkevich.compottie.LottieComposition
+import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsApplier
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
@@ -15,7 +17,7 @@ import kotlinx.serialization.json.JsonClassDiscriminator
 
 @OptIn(ExperimentalSerializationApi::class)
 @JsonClassDiscriminator("ty")
-internal sealed interface Layer {
+internal sealed interface Layer : DrawingContent {
 
     val is3d: BooleanInt
 
@@ -30,10 +32,6 @@ internal sealed interface Layer {
     val inPoint : Float?
 
     val outPoint : Float?
-
-    val name : String?
-
-    var painterProperties : PainterProperties?
 
     val blendMode : LottieBlendMode
 
@@ -55,19 +53,24 @@ internal sealed interface Layer {
 
     val masks : List<Mask>?
 
-    val effects: List<LayerEffect>
+    var effects: List<LayerEffect>
 
     val effectsApplier : LayerEffectsApplier
+
+    var painterProperties : PainterProperties?
+
+    var namePath : String?
+
+    fun onStart(composition: LottieComposition) {}
 }
 
 internal val Layer.isContainerLayer get()   =  name == "__container"
 
 internal class PainterProperties(
-    val composition : LottieComposition,
     val assets: Map<String, LottieAsset> = emptyMap(),
     val fontFamilyResolver: FontFamily.Resolver? = null,
-    val clipTextToBoundingBoxes : Boolean = false,
     val clipToDrawBounds : Boolean = true,
+    val clipTextToBoundingBoxes : Boolean = false,
 )
 
 

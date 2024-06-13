@@ -71,7 +71,7 @@ internal class NullLayer(
     override val masks: List<Mask>? = null,
 
     @SerialName("ef")
-    override val effects: List<LayerEffect> = emptyList(),
+    override var effects: List<LayerEffect> = emptyList(),
 ) : BaseLayer() {
 
     override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
