@@ -53,6 +53,3 @@ internal class TransformShape(
     }
 }
 
-internal fun Iterable<Shape>.findTransform() : TransformShape? {
-    return firstOrNull { it is TransformShape } as TransformShape?
-}

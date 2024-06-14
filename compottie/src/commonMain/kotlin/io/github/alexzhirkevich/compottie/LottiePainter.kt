@@ -148,7 +148,7 @@ fun rememberLottiePainter(
 private object EmptyPainter : Painter() {
 
 
-    override val intrinsicSize: Size = Size.Unspecified
+    override val intrinsicSize: Size = Size(1f,1f)
 
     override fun DrawScope.onDraw() {
     }
@@ -188,7 +188,7 @@ private class LottiePainter(
             clipTextToBoundingBoxes = clipTextToBoundingBoxes,
         )
         compositionLayer.painterProperties = painterProperties
-        compositionLayer.onStart(composition)
+        compositionLayer.onCreate(composition)
     }
 
     private val frame: Float by derivedStateOf {

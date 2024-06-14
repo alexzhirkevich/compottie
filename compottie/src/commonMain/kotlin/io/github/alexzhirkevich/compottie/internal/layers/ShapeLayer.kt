@@ -16,7 +16,8 @@ import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.shapes.Shape
-import io.github.alexzhirkevich.compottie.internal.shapes.findTransform
+import io.github.alexzhirkevich.compottie.internal.shapes.TransformShape
+import io.github.alexzhirkevich.compottie.internal.utils.firstInstanceOf
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -97,15 +98,15 @@ internal class ShapeLayer(
         name = name,
         hidden = hidden,
         contents = shapes,
-        transform = shapes.findTransform()?.apply {
+        transform = shapes.firstInstanceOf<TransformShape>()?.apply {
             autoOrient = this@ShapeLayer.autoOrient == BooleanInt.Yes
         }
     ).apply {
         setContents(emptyList(), emptyList())
     }
 
-    override fun onStart(composition: LottieComposition) {
-        super.onStart(composition)
+    override fun onCreate(composition: LottieComposition) {
+        super.onCreate(composition)
 
         if (name != null) {
             (composition.dynamic?.get(layerPath(namePath, name)) as? DynamicShapeLayerProvider)?.let { dp ->

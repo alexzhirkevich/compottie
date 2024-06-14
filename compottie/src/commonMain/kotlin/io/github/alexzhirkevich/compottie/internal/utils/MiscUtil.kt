@@ -30,3 +30,11 @@ private fun hslToRgbComponent(n: Int, h: Float, s: Float, l: Float): Float {
     val a = s * min(l, 1f - l)
     return l - a * max(-1f, minOf(k - 3, 9 - k, 1f))
 }
+
+internal inline fun <reified R> List<*>.firstInstanceOf() : R? {
+    return firstOrNull { it is R } as? R
+}
+
+internal inline fun <reified R> List<*>.getAs(index : Int) : R? {
+    return getOrNull(index) as? R
+}

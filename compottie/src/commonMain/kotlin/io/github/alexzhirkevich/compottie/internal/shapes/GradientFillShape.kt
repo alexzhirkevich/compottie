@@ -8,6 +8,12 @@ import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
+import io.github.alexzhirkevich.compottie.dynamic.DynamicFillProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicGradientDrawProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicSolidDrawProvider
+import io.github.alexzhirkevich.compottie.dynamic.derive
+import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
@@ -24,6 +30,7 @@ import io.github.alexzhirkevich.compottie.internal.helpers.asPathFillType
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
+import io.github.alexzhirkevich.compottie.internal.utils.firstInstanceOf
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -84,6 +91,9 @@ internal class GradientFillShape(
     }
 
     @Transient
+    private val boundsRect = MutableRect(0f,0f,0f,0f)
+
+    @Transient
     private var paths: List<PathContent> = emptyList()
 
     private val paint by lazy {
@@ -92,6 +102,9 @@ internal class GradientFillShape(
             blendMode = layer.blendMode.asComposeBlendMode()
         }
     }
+
+    @Transient
+    private var dynamic : DynamicFillProvider? = null
 
     @Transient
     private val gradientCache = LinkedHashMap<Int, Shader>()
@@ -108,25 +121,40 @@ internal class GradientFillShape(
             return
         }
 
-        paint.shader = GradientShader(
-            type = type,
-            startPoint = startPoint,
-            endPoint = endPoint,
-            colors = colors,
-            state = state,
-            matrix = parentMatrix,
-            cache = gradientCache
-        )
+        val dynamicGradient = (dynamic as? DynamicGradientDrawProvider)?.gradient
 
-        paint.alpha = if (opacity != null) {
-            (parentAlpha * opacity.interpolatedNorm(state)).coerceIn(0f, 1f)
+        paint.shader = if (dynamicGradient == null) {
+            GradientShader(
+                type = type,
+                startPoint = startPoint,
+                endPoint = endPoint,
+                colors = colors,
+                state = state,
+                matrix = parentMatrix,
+                cache = gradientCache
+            )
+        } else {
+            getBounds(drawScope, parentMatrix, false, state, boundsRect)
+            GradientShader(
+                gradient = dynamicGradient.invoke(boundsRect.size, state),
+                matrix = parentMatrix,
+                cache = gradientCache
+            )
         }
-        else {
-            parentAlpha
+
+        var alpha = 1f
+
+        opacity?.interpolatedNorm(state)?.let {
+            alpha = (alpha * it).coerceIn(0f,1f)
         }
+        dynamic?.opacity?.let {
+            alpha = it.derive(alpha, state).coerceIn(0f,1f)
+        }
+        paint.alpha = (alpha * parentAlpha).coerceIn(0f,1f)
+        paint.colorFilter = dynamic?.colorFilter.derive(paint.colorFilter, state)
+        paint.blendMode = dynamic?.blendMode.derive(paint.blendMode, state)
 
         layer.effectsApplier.applyTo(paint, state, effectsState)
-
 
         path.reset()
 
@@ -162,9 +190,17 @@ internal class GradientFillShape(
         )
     }
 
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+        super.setDynamicProperties(basePath, properties)
+        if (name != null) {
+            dynamic = properties[layerPath(basePath, name)]
+        }
+    }
+
+
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
         paths = contentsAfter.filterIsInstance<PathContent>()
-        roundShape = contentsBefore.find { it is RoundShape } as? RoundShape
+        roundShape = contentsBefore.firstInstanceOf()
     }
 }
 

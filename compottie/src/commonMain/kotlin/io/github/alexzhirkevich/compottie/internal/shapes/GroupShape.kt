@@ -8,6 +8,7 @@ import io.github.alexzhirkevich.compottie.internal.content.ContentGroupBase
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.layers.NullLayer
+import io.github.alexzhirkevich.compottie.internal.utils.firstInstanceOf
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -35,7 +36,7 @@ internal class GroupShape(
     name = name,
     hidden = hidden,
     contents = items,
-    transform = items.findTransform()
+    transform = items.firstInstanceOf()
 ) {
 
     @Transient

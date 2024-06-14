@@ -2,7 +2,6 @@ package io.github.alexzhirkevich.compottie.internal.layers
 
 import androidx.compose.ui.text.font.FontFamily
 import io.github.alexzhirkevich.compottie.LottieComposition
-import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
@@ -61,7 +60,7 @@ internal sealed interface Layer : DrawingContent {
 
     var namePath : String?
 
-    fun onStart(composition: LottieComposition) {}
+    fun onCreate(composition: LottieComposition) {}
 }
 
 internal val Layer.isContainerLayer get()   =  name == "__container"

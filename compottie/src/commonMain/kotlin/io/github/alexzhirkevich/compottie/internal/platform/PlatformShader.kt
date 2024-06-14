@@ -8,7 +8,8 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.graphics.asComposeColorFilter
+import androidx.compose.ui.util.fastMap
+import io.github.alexzhirkevich.compottie.dynamic.LottieGradient
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.GradientColors
@@ -17,6 +18,37 @@ import kotlin.math.hypot
 
 private val CACHE_LIMIT = 15
 
+typealias GradientCache =  LinkedHashMap<Int, Shader>
+
+internal fun GradientShader(
+    gradient: LottieGradient,
+    matrix: Matrix,
+    cache: GradientCache
+): Shader {
+    return when (gradient){
+        is LottieGradient.Linear -> {
+            CachedLinearGradient(
+                from = gradient.start,
+                to = gradient.end,
+                colors = gradient.colorStops.fastMap { it.second },
+                colorStops = gradient.colorStops.fastMap { it.first },
+                matrix = matrix,
+                cache = cache
+            )
+        }
+        is LottieGradient.Radial ->  {
+            CachedRadialGradient(
+                center = gradient.center,
+                radius = gradient.radius,
+                colors = gradient.colorStops.fastMap { it.second },
+                colorStops = gradient.colorStops.fastMap { it.first },
+                matrix = matrix,
+                cache = cache
+            )
+        }
+    }
+}
+
 internal fun GradientShader(
     type: GradientType,
     startPoint: AnimatedVector2,
@@ -24,7 +56,7 @@ internal fun GradientShader(
     colors: GradientColors,
     state: AnimationState,
     matrix: Matrix,
-    cache: LinkedHashMap<Int, Shader>
+    cache: GradientCache
 ) : Shader {
     val start = startPoint.interpolated(state)
     val end = endPoint.interpolated(state)
@@ -65,7 +97,7 @@ private fun CachedLinearGradient(
     colorStops: List<Float>,
     tileMode: TileMode = TileMode.Clamp,
     matrix: Matrix,
-    cache : LinkedHashMap<Int, Shader>,
+    cache : GradientCache,
 ) : Shader {
 
     var hash = from.hashCode()
@@ -102,7 +134,7 @@ private fun CachedRadialGradient(
     colorStops: List<Float>,
     tileMode: TileMode = TileMode.Clamp,
     matrix: Matrix,
-    cache : LinkedHashMap<Int, Shader>,
+    cache : GradientCache,
 ) : Shader {
 
     var hash = center.hashCode()

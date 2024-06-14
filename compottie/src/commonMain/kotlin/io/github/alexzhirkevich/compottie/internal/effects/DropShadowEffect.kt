@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.effects
 
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
+import io.github.alexzhirkevich.compottie.internal.utils.getAs
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -12,9 +13,9 @@ internal class DropShadowEffect(
     override val values : List<EffectValue<@Contextual Any?>>
 ) : LayerEffect {
 
-    val color  get() = (values.getOrNull(0) as? EffectValue.Color)?.value
-    val opacity  get() = (values.getOrNull(1) as? EffectValue.Slider)?.value
-    val angle  get() = (values.getOrNull(2) as? EffectValue.Angle)?.value
-    val distance  get() = (values.getOrNull(3) as? EffectValue.Slider)?.value
-    val blur  get() = (values.getOrNull(4) as? EffectValue.Slider)?.value
+    val color  get() = values.getAs<EffectValue.Color>(0)?.value
+    val opacity  get() = values.getAs<EffectValue.Slider>(1)?.value
+    val angle  get() = values.getAs<EffectValue.Angle>(2)?.value
+    val distance  get() = values.getAs<EffectValue.Slider>(3)?.value
+    val blur  get() = values.getAs<EffectValue.Slider>(4)?.value
 }

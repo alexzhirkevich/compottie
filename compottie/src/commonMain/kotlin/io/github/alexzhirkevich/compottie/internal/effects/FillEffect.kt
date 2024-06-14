@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.effects
 
+import io.github.alexzhirkevich.compottie.internal.utils.getAs
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -11,8 +12,8 @@ internal class FillEffect(
     override val values : List<EffectValue<@Contextual Any?>>
 ) : LayerEffect {
 
-    val color get() = (values.getOrNull(2) as? EffectValue.Color)?.value
+    val color get() = values.getAs<EffectValue.Color>(2)?.value
 
-    val opacity get() = (values.getOrNull(6) as? EffectValue.Slider)?.value
+    val opacity get() = values.getAs<EffectValue.Slider>(6)?.value
 
 }

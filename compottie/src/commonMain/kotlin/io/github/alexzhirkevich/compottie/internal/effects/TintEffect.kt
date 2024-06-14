@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.effects
 
+import io.github.alexzhirkevich.compottie.internal.utils.getAs
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -12,14 +13,14 @@ internal class TintEffect(
 ) : LayerEffect {
 
     val black by lazy {
-        (values.getOrNull(0) as? EffectValue.Color)?.value
+        values.getAs<EffectValue.Color>(0)?.value
     }
 
     val white by lazy {
-        (values.getOrNull(1) as? EffectValue.Color)?.value
+        values.getAs<EffectValue.Color>(1)?.value
     }
 
     val intensity by lazy {
-        (values.getOrNull(2) as? EffectValue.Slider)?.value
+        values.getAs<EffectValue.Slider>(2)?.value
     }
 }

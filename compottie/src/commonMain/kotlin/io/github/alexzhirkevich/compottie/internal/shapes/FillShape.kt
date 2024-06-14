@@ -9,9 +9,9 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.dynamic.DynamicFillProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicSolidDrawProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.dynamic.layerPath
-import io.github.alexzhirkevich.compottie.dynamic.requireShape
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
@@ -96,7 +96,7 @@ internal class FillShape(
 
         var c = color.interpolated(state)
 
-        dynamic?.color?.let {
+        (dynamic as? DynamicSolidDrawProvider)?.color?.let {
             c = it.derive(c, state)
         }
 
@@ -112,10 +112,8 @@ internal class FillShape(
         }
 
         paint.alpha = (alpha * parentAlpha).coerceIn(0f,1f)
-
         paint.colorFilter = dynamic?.colorFilter.derive(paint.colorFilter, state)
-
-        paint.blendMode = dynamic?.blendMode.derive(layer.blendMode.asComposeBlendMode(), state)
+        paint.blendMode = dynamic?.blendMode.derive(paint.blendMode, state)
 
         roundShape?.applyTo(paint, state)
 
@@ -156,14 +154,13 @@ internal class FillShape(
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
         super.setDynamicProperties(basePath, properties)
         if (name != null) {
-            val p = layerPath(basePath, name)
-            dynamic = properties.get(p)?.requireShape<DynamicFillProvider>(p)
+            dynamic = properties[layerPath(basePath, name)]
         }
     }
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
         paths = contentsAfter.filterIsInstance<PathContent>()
 
-        roundShape = contentsBefore?.find { it is RoundShape } as? RoundShape
+        roundShape = contentsBefore.find { it is RoundShape } as? RoundShape
     }
 }

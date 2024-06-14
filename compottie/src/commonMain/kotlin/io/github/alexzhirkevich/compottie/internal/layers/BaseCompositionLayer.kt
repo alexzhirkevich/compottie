@@ -7,7 +7,6 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.LottieComposition
-import io.github.alexzhirkevich.compottie.dynamic.LayerPathSeparator
 import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
@@ -36,8 +35,8 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         isAntiAlias = true
     }
 
-    override fun onStart(composition: LottieComposition) {
-        layers.forEach { it.onStart(composition) }
+    override fun onCreate(composition: LottieComposition) {
+        layers.forEach { it.onCreate(composition) }
     }
 
 //    private val remappedState  by lazy {

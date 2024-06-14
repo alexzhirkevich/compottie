@@ -10,7 +10,6 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
@@ -21,7 +20,6 @@ import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.content.Content
-import io.github.alexzhirkevich.compottie.internal.effects.BlurEffect
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsApplier
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
@@ -99,8 +97,8 @@ internal abstract class BaseLayer() : Layer {
         LayerEffectsApplier(this)
     }
 
-    override fun onStart(composition: LottieComposition) {
-        super.onStart(composition)
+    override fun onCreate(composition: LottieComposition) {
+        super.onCreate(composition)
         transform.autoOrient = autoOrient == BooleanInt.Yes
 
         if (name != null) {
