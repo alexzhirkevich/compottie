@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -35,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ScaleFactor
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,6 +46,7 @@ import io.github.alexzhirkevich.compottie.CompottieException
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.LottieConstants
+import io.github.alexzhirkevich.compottie.NetworkAssetsManager
 import io.github.alexzhirkevich.compottie.assets.ImageRepresentable
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.LottieImage
@@ -51,6 +55,8 @@ import io.github.alexzhirkevich.compottie.dynamic.stroke
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.MissingResourceException
 
@@ -83,7 +89,6 @@ private val IMAGE_ASSET_EMBEDDED = "image_asset_embedded.json"
 private val DOT = "dotlottie/dot.lottie"
 private val DOT_WITH_IMAGE = "dotlottie/dot_with_image.lottie"
 
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun App() {
 
@@ -91,7 +96,8 @@ fun App() {
 
     val composition = rememberLottieComposition(
         assetsManager = remember {
-            ResourcesAssetsManager()
+//            ResourcesAssetsManager()
+             NetworkAssetsManager()
         },
         dynamic = {
             layer("Pre-comp 1", "Head Layer") {
@@ -114,12 +120,11 @@ fun App() {
 //        LottieCompositionSpec.DotLottie(ResourcesAssetsManager()) {
 //            Res.readBytes("files/$DOT_WITH_IMAGE")
 //        }
-        LottieCompositionSpec.Resource(CHECKMARK)
+//        LottieCompositionSpec.Resource(CHECKMARK)
 
-//        LottieCompositionSpec.Url(
-//            url = "https://assets-v2.lottiefiles.com/a/e25360fe-1150-11ee-9d43-2f8655b815bb/xSk6HtgPaN.lottie",
-//            assetsManager = NetworkAssetsManager()
-//        )
+        LottieCompositionSpec.Url(
+            url = "https://assets-v2.lottiefiles.com/a/e25360fe-1150-11ee-9d43-2f8655b815bb/xSk6HtgPaN.lottie",
+        )
     }
 
     // If you want to be aware of loading errors
@@ -157,6 +162,7 @@ fun App() {
 
 private val ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ':, \n"
 
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun LottieFontExample() {
@@ -169,19 +175,19 @@ fun LottieFontExample() {
 
     LaunchedEffect(0) {
 //        while (true) {
-            listOf(add1).forEach { line ->
-                line.forEach {
+        listOf(add1).forEach { line ->
+            line.forEach {
 //                if (it == ' ') {
 //                    delay(200)
 //                } else {
-                    delay(30)
+                delay(30)
 //                }
-                    text += it
-                }
-                delay(500)
+                text += it
             }
-            delay(1000)
-            text = ""
+            delay(500)
+        }
+//            delay(1000)
+//            text = ""
 //        }
     }
 
@@ -194,17 +200,23 @@ fun LottieFontExample() {
         focus.requestFocus()
     }
 
+    val mutex = remember {
+        Mutex()
+    }
+
     Box(
         modifier = Modifier.fillMaxSize()
             .focusRequester(focus),
 //            .focusable(interactionSource = interactionSource),
         contentAlignment = Alignment.Center
     ) {
+
+
         BasicTextField(
             modifier = Modifier.fillMaxSize(),
             value = text,
             onValueChange = {
-                text = it.uppercase().filter { it in ALPHABET }
+                text = it
             },
             decorationBox = {
                 Box(
@@ -215,44 +227,48 @@ fun LottieFontExample() {
                         modifier = Modifier
                             .animateContentSize()
                             .padding(100.dp),
-                        horizontalArrangement = Arrangement.spacedBy(
-                            space = -fontSize / 3,
-                            alignment = Alignment.CenterHorizontally
-                        ),
+                        horizontalArrangement = Arrangement.Center,
                         verticalArrangement = Arrangement.Center
-                    ) {
-                        text.forEach { c ->
-                            val anim = when (c) {
-                                ' ' -> {
-                                    Spacer(
-                                        modifier = Modifier
-                                            .width(fontSize * 2 / 3)
-                                            .height(fontSize)
-                                    )
-                                    return@forEach
-                                }
-                                ':' -> "Colon"
-                                ',' -> "Comma"
-                                '\'' -> "Apostrophe"
-                                else -> c.toString().uppercase()
-                            }
-                            Image(
-                                modifier = Modifier
-                                    .height(fontSize)
-                                    .width(fontSize * 3 / 4f),
-                                painter = rememberLottiePainter(
-                                    rememberLottieComposition {
-                                        LottieCompositionSpec.Resource("mobilo/$anim.json")
-                                    }.value
+                    ){
+                        text.split(" ").forEach { word ->
+                            Row(
+                                modifier = Modifier,
+                                horizontalArrangement = Arrangement.spacedBy(
+                                    space = -fontSize / 3,
+                                    alignment = Alignment.CenterHorizontally
                                 ),
-                                contentDescription = anim
-                            )
+                            ) {
+                                word.forEach { c ->
+                                    val anim = when (c) {
+
+                                        ':' -> "Colon"
+                                        ',' -> "Comma"
+                                        '\'' -> "Apostrophe"
+                                        else -> c.toString().uppercase()
+                                    }
+                                    Image(
+                                        modifier = Modifier
+                                            .height(fontSize)
+                                            .width(fontSize * 3 / 4f),
+                                        painter = rememberLottiePainter(
+                                            rememberLottieComposition {
+                                                // sometimes cmp resources freeze on simultaneous resources access
+                                                mutex.withLock {
+                                                    LottieCompositionSpec.Resource("mobilo/$anim.json")
+                                                }
+                                            }.value
+                                        ),
+                                        contentDescription = anim
+                                    )
+                                }
+                            }
                         }
 
                         Image(
                             modifier = Modifier
                                 .height(fontSize)
-                                .padding(fontSize / 4),
+                                .padding(fontSize / 4)
+                                .offset(x = -fontSize / 3),
                             painter = rememberLottiePainter(
                                 composition = rememberLottieComposition {
                                     LottieCompositionSpec.Resource("mobilo/BlinkingCursor.json")

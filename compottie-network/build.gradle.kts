@@ -75,7 +75,6 @@ kotlin {
             implementation(compose.ui)
             implementation(libs.serialization)
             implementation(libs.okio)
-            implementation(libs.okio.fakefilesystem)
             api(libs.ktor.client.core)
             implementation(project(":compottie"))
             implementation(project(":compottie-dot"))

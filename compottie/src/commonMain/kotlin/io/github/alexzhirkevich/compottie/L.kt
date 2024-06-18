@@ -14,7 +14,7 @@ object L {
      * Warmup JSON parser. The first animation parsing will be much faster
      * */
     fun warmup() {
-//        LottieJson.decodeFromString<LottieData>(warmupAnim)
+        LottieJson.decodeFromString<LottieData>(warmupAnim)
     }
 }
 

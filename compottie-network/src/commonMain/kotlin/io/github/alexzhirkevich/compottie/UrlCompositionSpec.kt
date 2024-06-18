@@ -63,6 +63,7 @@ private class NetworkCompositionSpec(
             return delegate.load()
         }
 
+
         val resp = request(this.client, Url(url))
 
         if (!resp.status.isSuccess()) {

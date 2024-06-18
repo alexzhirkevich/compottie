@@ -110,10 +110,14 @@ interface DiskCache {
 
 }
 
+internal val SharedDiskCache by lazy {
+    DiskCache()
+}
+
 @OptIn(InternalCompottieApi::class)
 @JsName("LottieDiskCache")
 fun DiskCache(
-    directory: Path = "compottie".toPath(),
+    directory: Path = FileSystem.SYSTEM_TEMPORARY_DIRECTORY.resolve("compottie_disc_cache".toPath()),
     fileSystem : FileSystem = defaultFileSystem(),
     maxSizeBytes : Long = MB_250,
     cleanupDispatcher : CoroutineDispatcher = Dispatchers.IODispatcher
@@ -125,6 +129,7 @@ fun DiskCache(
         cleanupDispatcher = cleanupDispatcher
     )
 }
+
 
 
 private const val MB_250 = 250L * 1024 * 1024
