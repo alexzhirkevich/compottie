@@ -1,4 +1,4 @@
-# Compottie 
+# Compottie
 
 ![badge-Android](https://img.shields.io/badge/Platform-Android-brightgreen)
 ![badge-iOS](https://img.shields.io/badge/Platform-iOS-lightgray)
@@ -15,11 +15,242 @@ Compose Multiplatform port of [airbnb/lottie-compose](https://github.com/airbnb/
 
 
 dependencies {
-    implementation("io.github.alexzhirkevich:compottie:<version>")    
+    implementation("io.github.alexzhirkevich:compottie:<version>")
+
+    // The rest modules are only supported by Compottie 2.x
+
+    // For dotLottie (zip) animations
+    implementation("io.github.alexzhirkevich:compottie-dot:<2x_version>")
+
+    // For Url animation and resources loading
+    implementation("io.github.alexzhirkevich:compottie-network:<2x_version>")   
 }
 ```
 
 # Usage
+> [!TIP]
+> The following docs describe the Compottie 2.x usage.
+> For Compottie 1.x docs please refer to the [airbnb docs](https://github.com/airbnb/lottie/blob/master/android-compose.md#basic-usage).
 
-Basically the same as described in [airbnb docs](https://github.com/airbnb/lottie/blob/master/android-compose.md#basic-usage)
+- [Basic Usage](#basic-usage)
+- [LottieComposition](#lottiecomposition)
+- [Animating/Updating Progress](#animatingupdating-progress)
+- [LottieAnimatable](#lottieanimatable)
+- [dotLottie](#dotlottie)
+- [Images](#images)
+- [URL loading](#url-loading)
+- [Dynamic Properties](#dynamic-properties)
+
+
+## Basic Usage
+```kotlin
+@Composable
+fun Loader() {
+    val composition by rememberLottieComposition {
+        LottieCompositionSpec.JsonString(
+            Res.readBytes("files/anim.json").decodeToString()
+        )
+    }
+    val progress by animateLottieCompositionAsState(composition)
+    
+    Image(
+        painter = rememberLottiePainter(
+            composition = composition,
+            progress = { progress },
+        ),
+        contentDescription = "Lottie animation"
+    )
+}
+```
+Or with the `rememberLottiePainter` overload that merges `rememberLottiePainter` and `animateLottieCompositionsState()`
+```kotlin
+@Composable
+fun Loader() {
+    val composition by rememberLottieComposition {
+        LottieCompositionSpec.JsonString(Res.readBytes("files/anim.json").decodeToString())
+    }
+
+    Image(
+        painter = rememberLottiePainter(
+            composition = composition,
+            progress = { progress },
+        ),
+        contentDescription = "Lottie animation"
+    )
+}
+```
+
+## LottieComposition
+`LottieComposition` is the parsed version of your Lottie json file. It is stateless and can be cached/reused freely.
+To create a `LottieComposition`:
+* Use `rememberLottieComposition(spec)`
+* Pass in a `LottieCompositionSpec`. `LottieCompositionSpec` is an open interface that lets you select the source (assets, string, network, etc.).
+
+For example:
+```kotlin
+val composition1 by rememberLottieComposition {
+    LottieCompositionSpec.JsonString(Res.readBytes("files/anim.json").decodeToString())
+}
+val composition2 by rememberLottieComposition {
+    LottieCompositionSpec.Url("https://...")
+}
+val composition3 by rememberLottieComposition {
+    LottieCompositionSpec.DotLottie(Res.readBytes("files/anim.lottie"))
+}
+```
+
+The type returned from `rememberLottieComposition` is
+```kotlin
+interface LottieCompositionResult : State<LottieComposition?>
+```
+This allows you to use it in two ways:
+```kotlin
+val composition: LottieComposition? by rememberLottieComposition(spec)
+```
+This will return null until the composition is parsed and then will return the `LottieComposition` object.
+Use this version in most cases, especially if you don't need any of the extra functionality on `LottieCompositionResult`.
+
+```kotlin
+val compositionResult: LottieCompositionResult = rememberLottieComposition(spec)
+```
+`LottieCompositionResult` lets you:
+1. Access the composition via `compositionResult.value`
+2. Access `error`, `isLoading`, `isComplete`, `isFailure`, and `isSuccess` properties.
+3. Call `await()` to await the parsed composition from a coroutine.
+
+## Animating/Updating Progress
+
+You have the option of handling progress entirely yourself. If you choose to do that, just pass in `progress` to your `LottieAnimation` composable.
+
+In most cases, you will want to use either `animateLottieCompositionAsState()` or `LottieAnimatable`. These APIs were designed to be analogous to the standard Jetpack Compose APIs. `animateLottieCompositionAsState` is analogous to [animate*AsState](https://developer.android.com/jetpack/compose/animation#animatable) and `LottieAnimatable` is analogous to [Animatable](https://developer.android.com/jetpack/compose/animation#animatable).
+
+The decision for whether to use one over the other is similar as well:
+* If your animation is very simple or a function of other state properties, use `animateLottieCompositionAsState()`.
+* If you need to imperatively call `animate` or `snapTo` from something like a `LaunchedEffect` then use `LottieAnimatable`.
+
+`animateLottieCompositionAsState()` returns and `LottieAnimatable` implements:
+```kotlin
+interface LottieAnimationState : State<Float>
+```
+
+### animateLottieCompositionAsState()
+```kotlin
+val progress by animateLottieCompositionAsState(composition)
+```
+```kotlin
+val progress by animateLottieCompositionAsState(
+    composition,
+    iterations = LottieConstants.IterateForever,
+)
+```
+```kotlin
+val progress by animateLottieCompositionAsState(
+    composition,
+    clipSpec = LottieClipSpec.Progress(0.5f, 0.75f),
+)
+```
+
+### LottieAnimatable
+```kotlin
+@Stable
+class MyHoistedState {
+    val lottieAnimatable = LottieAnimatable()
+    val somethingElse by mutableStateOf(0f)
+}
+```
+```kotlin
+val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.animation))
+val lottieAnimatable = rememberLottieAnimatable()
+LaunchedEffect(Unit) {
+    lottieAnimatable.animate(
+        composition,
+        iterations = LottieConstants.IterateForever,
+        clipSpec = LottieClipSpec.Progress(0.5f, 0.75f),
+    )
+}
+```
+
+## dotLottie
+
+[dotLottie ](https://dotlottie.io/) is an open-source file format that aggregates one or more Lottie files and their associated resources into a single file. They are ZIP archives compressed with the Deflate compression method and carry the file extension of ".lottie".
+
+dotLottie animations are up to 10x smaller in size and can have auto-linked bundled assets (as well as external assets ofc).
+
+`compottie-dot` module is required to use dotLottie animations in your app. It brings the new type of composition spec - `LottieCompositionSpec.DotLottie`.
+
+## Images
+
+Images should be avoided whenever possible. They are much larger, less performant, and can lead to pixelation. Whenever possible, try and make your animation consist solely of vectors. However, Lottie does support images in one of 4 ways:
+1. Baked into the Lottie json file. This is done via an option in the exporter (such as teh Bodymovin After Effects plugin). When done, images are encoded as a base64 string and embedded directly in the json file. This is the simplest way to use images because everything is contained in a single file and no additional work is necessary to make them work.
+2. Zipped with the json file in a single zip file. When parsing the animation, Lottie will unzip the animation and automatically link any images in zip file to the composition. These zip files can be stored in assets and loaded via `LottieCompositionSpec.DotLottie` (requires `compottie-dot` module) or downloaded via the internet and loaded via `LottieCompositionSpec.Url`.
+3. Via dynamic properties.
+
+## URL loading
+To load images remotely `compottie-network` module should be added as a dependensy. This module brings an additional composition spec called `LottieCompositionSpec.Url`
+```kotlin
+fun LottieCompositionSpec.Companion.Url(
+    url : String,
+    format: LottieAnimationFormat = LottieAnimationFormat.Undefined,
+    client: HttpClient = DefaultHttpClient,
+    request : NetworkRequest = GetRequest,
+    cacheStrategy: LottieCacheStrategy = DiskCacheStrategy(),
+)
+```
+that can be used to load JSON and dotLottie animations from the Internet.
+
+`LottieAnimationFormat` is used to determine wheither animation is a JSON or dotLottie. If you left it `Undefined`, composition spec will automatically detect is this a JSON or dotLottie file.
+
+Ktor HTTP client can be overrided with `client` parameter. `request` is a lambda that takes url and client and returns a HTTP responce. By default it is a GET request.
+
+Caching strategy can be set with `cacheStrategy` parameter. By default animations are cached in the device temp directory.
+
+The network module also brings the `NetworkAssetsManager` that have similar parameters and can be used to load image assets. This manager can't load fonts from the Internet, so if the animation have both URL images and fonts, you have to create combined assets manager with `LottieAssetsManager.combine`
+
+Complete usage example:
+
+```kotlin
+val composition by rememberLottieComposition(
+    assetsManager = remember { NetworkAssetsManager() }
+) {
+    LottieCompositionSpec.Url("https://example.com/animation.json")
+}
+```
+
+## Dynamic Properties
+
+Lottie allows you to update Lottie animation properties at runtime. Some reasons you may want to do this are:
+1. Change colors for day/night or other app theme.
+2. Change the progress of a specific layer to show download progress.
+3. Change the size and position of something in response to a gesture.
+
+Dynamic properties are created with `rememberLottieComposition`
+
+```kotlin
+val composition by rememberLottieComposition(
+    dynamic = {
+        shapeLayer("Precomposition 1", "Shape Layer 4") {
+            transform {
+                rotation { current -> current * progress }
+            }
+            fill("Group 1", "Fill 4") {
+                color { Color.Red }
+                alpha { .5f }
+            }
+            group("Group 4") {
+                ellipse("Ellipse 1") {
+                    // configure size, position of the ellipse named "Ellipse 1"
+                }
+                stroke("Ellipse 1 Stroke") {
+                    // configure stroke named "Ellipse 1 Stroke" in the same group
+                }
+            }
+        }
+    }
+) {
+    // composition spec goes here
+)
+```
+
+Note, that final property building blocks (such as rotations, color, alpha) are called on EACH ANIMATION FRAME and should be cached if they don't rely on progress and have allocations or hard computations.
+
 
