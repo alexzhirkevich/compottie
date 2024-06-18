@@ -18,26 +18,9 @@ interface LottieCompositionSpec {
         *  [LottieComposition] from a [jsonString]
         */
         @Stable
-        @Deprecated(
-            "Use overload with lazy loading and assets manager instead",
-            replaceWith = ReplaceWith(
-                "JsonString { jsonString }"
-            )
-        )
         fun JsonString(
             jsonString: String
         ): LottieCompositionSpec = JsonStringImpl(jsonString)
-
-        /**
-         * [LottieComposition] from a lazy [jsonString]
-         *
-         * Lambda should be stable. Otherwise this spec must be remembered if created in composition
-         * */
-        @Stable
-        fun JsonString(
-            assetsManager: LottieAssetsManager = LottieAssetsManager.Empty,
-            jsonString: suspend () -> String,
-        ): LottieCompositionSpec = LazyJsonString(jsonString, assetsManager)
     }
 }
 
@@ -56,34 +39,4 @@ private value class JsonStringImpl(
         return "JsonString(jsonString='$jsonString')"
     }
 }
-
-@Immutable
-private class LazyJsonString(
-    private val jsonString : suspend () -> String,
-    private val assetsManager: LottieAssetsManager,
-    private val dynamic : DynamicComposition.() -> Unit = {}
-) : LottieCompositionSpec {
-
-    override suspend fun load(): LottieComposition {
-        return LottieComposition.parse(jsonString()).apply {
-            prepare(assetsManager)
-        }
-    }
-
-    override fun toString(): String {
-        return "LazyJsonString(jsonString='$jsonString')"
-    }
-
-    override fun equals(other: Any?): Boolean {
-        return (other as? LazyJsonString)?.let {
-            it.jsonString == jsonString &&
-            it.assetsManager == assetsManager
-        } == true
-    }
-
-    override fun hashCode(): Int {
-        return 31 * jsonString.hashCode() + assetsManager.hashCode()
-    }
-}
-
 

@@ -34,12 +34,10 @@ fun LottieCompositionSpec.Companion.Url(
     client: HttpClient = DefaultHttpClient,
     request : NetworkRequest = GetRequest,
     cacheStrategy: LottieCacheStrategy = DiskCacheStrategy(),
-    assetsManager: LottieAssetsManager = NetworkAssetsManager(client, cacheStrategy, request),
 ) : LottieCompositionSpec = NetworkCompositionSpec(
     url = url,
     format = format,
     client = client,
-    assetsManager = assetsManager,
     cacheStrategy = cacheStrategy,
     request = request
 )
@@ -49,7 +47,6 @@ private class NetworkCompositionSpec(
     private val url : String,
     private val format: LottieAnimationFormat,
     private val client : HttpClient,
-    private val assetsManager: LottieAssetsManager,
     private val cacheStrategy: LottieCacheStrategy = DiskCacheStrategy(),
     private val request : NetworkRequest,
 ) : LottieCompositionSpec {
@@ -58,9 +55,9 @@ private class NetworkCompositionSpec(
 
         cacheStrategy.load(url)?.let {
             val delegate = if (byteArrayOf(it[0]).decodeToString() == "{") {
-                LottieCompositionSpec.JsonString(assetsManager) { it.decodeToString() }
+                LottieCompositionSpec.JsonString(it.decodeToString())
             } else {
-                LottieCompositionSpec.DotLottie(assetsManager) { it }
+                LottieCompositionSpec.DotLottie(it)
             }
 
             return delegate.load()
@@ -82,9 +79,9 @@ private class NetworkCompositionSpec(
         val bytes = resp.bodyAsChannel().toByteArray()
 
         val delegate = if (isJson) {
-            LottieCompositionSpec.JsonString(assetsManager) { bytes.decodeToString() }
+            LottieCompositionSpec.JsonString(bytes.decodeToString())
         } else {
-            LottieCompositionSpec.DotLottie(assetsManager) { bytes }
+            LottieCompositionSpec.DotLottie(bytes)
         }
 
         val composition = delegate.load()
@@ -106,7 +103,6 @@ private class NetworkCompositionSpec(
         if (url != other.url) return false
         if (format != other.format) return false
         if (client != other.client) return false
-        if (assetsManager != other.assetsManager) return false
         if (cacheStrategy != other.cacheStrategy) return false
         if (request != other.request) return false
 
@@ -117,7 +113,6 @@ private class NetworkCompositionSpec(
         var result = url.hashCode()
         result = 31 * result + format.hashCode()
         result = 31 * result + client.hashCode()
-        result = 31 * result + assetsManager.hashCode()
         result = 31 * result + cacheStrategy.hashCode()
         result = 31 * result + request.hashCode()
         return result

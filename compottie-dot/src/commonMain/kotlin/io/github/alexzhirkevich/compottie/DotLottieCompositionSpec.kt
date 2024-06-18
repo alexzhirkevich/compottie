@@ -29,9 +29,8 @@ var L.useStableWasmMemoryManagement by ::_useStableWasmMemoryManagement
  * */
 @Stable
 fun LottieCompositionSpec.Companion.DotLottie(
-    assetsManager: LottieAssetsManager = LottieAssetsManager.Empty,
-    archive: suspend () -> ByteArray,
-) : LottieCompositionSpec = DotLottieCompositionSpec(archive, assetsManager)
+    archive: ByteArray,
+) : LottieCompositionSpec = DotLottieCompositionSpec(archive)
 
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -42,8 +41,7 @@ private val DotLottieJson = Json {
 }
 
 private class DotLottieCompositionSpec(
-    private val archive : suspend () -> ByteArray,
-    private val assetsManager: LottieAssetsManager
+    private val archive : ByteArray,
 ) : LottieCompositionSpec {
 
     @OptIn(InternalCompottieApi::class)
@@ -52,10 +50,8 @@ private class DotLottieCompositionSpec(
         val fileSystem = FakeFileSystem()
         val path = "anim".toPath()
 
-        val bytes = archive()
-
         fileSystem.write(path) {
-            write(bytes)
+            write(archive)
         }
 
         val entries = fileSystem.listZipEntries(path)
@@ -76,18 +72,16 @@ private class DotLottieCompositionSpec(
                 iterations = LottieConstants.IterateForever
             }
             prepare(DotLottieAssetsManager(zipSystem))
-            prepare(assetsManager)
         }
     }
 
     override fun hashCode(): Int {
-        return 31 * archive.hashCode() + assetsManager.hashCode()
+        return 31 * archive.contentHashCode()
     }
 
     override fun equals(other: Any?): Boolean {
         return (other as? DotLottieCompositionSpec)?.let {
-            it.archive == archive &&
-                    it.assetsManager == assetsManager
+            it.archive.contentEquals(archive)
         } == true
     }
 }

@@ -87,9 +87,12 @@ private val DOT_WITH_IMAGE = "dotlottie/dot_with_image.lottie"
 @Composable
 fun App() {
 
-    return LottieFontExample()
+//    return LottieFontExample()
 
     val composition = rememberLottieComposition(
+        assetsManager = remember {
+            ResourcesAssetsManager()
+        },
         dynamic = {
             layer("Pre-comp 1", "Head Layer") {
                 transform {
@@ -108,11 +111,10 @@ fun App() {
             }
         }
     ) {
-        LottieCompositionSpec.Resource("mobilo/A.json")
 //        LottieCompositionSpec.DotLottie(ResourcesAssetsManager()) {
 //            Res.readBytes("files/$DOT_WITH_IMAGE")
 //        }
-//        LottieCompositionSpec.Resource(IMAGE_ASSET)
+        LottieCompositionSpec.Resource(CHECKMARK)
 
 //        LottieCompositionSpec.Url(
 //            url = "https://assets-v2.lottiefiles.com/a/e25360fe-1150-11ee-9d43-2f8655b815bb/xSk6HtgPaN.lottie",
@@ -166,7 +168,7 @@ fun LottieFontExample() {
     val add1 = "COMPOTTIE NOW HAS IT'S OWN  COMPOSE MULTIPLATFORM LOTTIE RENDERING ENGINE"
 
     LaunchedEffect(0) {
-        while (true) {
+//        while (true) {
             listOf(add1).forEach { line ->
                 line.forEach {
 //                if (it == ' ') {
@@ -180,7 +182,7 @@ fun LottieFontExample() {
             }
             delay(1000)
             text = ""
-        }
+//        }
     }
 
     val fontSize = 90.dp
@@ -271,14 +273,11 @@ fun LottieFontExample() {
  * */
 @OptIn(ExperimentalResourceApi::class)
 @Stable
-fun LottieCompositionSpec.Companion.Resource(
+suspend fun LottieCompositionSpec.Companion.Resource(
     path : String,
     dir : String = "files",
-    assetsManager: LottieAssetsManager = ResourcesAssetsManager(),
-    readBytes: suspend (path: String) -> ByteArray = Res::readBytes
-) : LottieCompositionSpec = JsonString(assetsManager) {
-    readBytes("$dir/$path").decodeToString()
-}
+    readBytes: suspend (path: String) -> ByteArray = { Res.readBytes(it) }
+) : LottieCompositionSpec = JsonString(readBytes("$dir/$path").decodeToString())
 
 /**
  * Compose resources asset manager.

@@ -228,24 +228,24 @@ fun rememberLottieComposition(
 @Stable
 fun rememberLottieComposition(
     vararg keys : Any?,
+    assetsManager: LottieAssetsManager = LottieAssetsManager.Empty,
     dynamic : DynamicComposition.() -> Unit = {},
-    spec : suspend (LottieContext) -> LottieCompositionSpec,
+    spec : suspend () -> LottieCompositionSpec,
 ) : LottieCompositionResult {
 
     val updatedSpec by rememberUpdatedState(spec)
 
-    val context = currentLottieContext()
-
-    val result = remember(*keys, context) {
+    val result = remember(*keys,assetsManager) {
         LottieCompositionResultImpl()
     }
 
     LaunchedEffect(result) {
         withContext(Dispatchers.IODispatcher) {
             try {
-                val composition = updatedSpec(context).load().apply {
+                val composition = updatedSpec().load().apply {
                     this.dynamic = DynamicCompositionProvider().apply(dynamic)
                 }
+                composition.prepare(assetsManager)
                 result.complete(composition)
             } catch (c: CancellationException) {
                 result.completeExceptionally(c)
