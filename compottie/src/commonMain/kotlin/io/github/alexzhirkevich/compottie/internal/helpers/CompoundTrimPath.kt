@@ -34,7 +34,7 @@ internal fun CompoundSimultaneousTrimPath(contents: List<Content>) : CompoundTri
 }
 
 internal fun Path.applyTrimPath(trimPath: TrimPathShape, state: AnimationState) {
-    if (trimPath.hidden) {
+    if (trimPath.isHidden(state)) {
         return
     }
     val start: Float = trimPath.start.interpolatedNorm(state)

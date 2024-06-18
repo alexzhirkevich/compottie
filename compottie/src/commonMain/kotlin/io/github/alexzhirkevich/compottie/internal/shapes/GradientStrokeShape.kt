@@ -1,8 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
-import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Matrix
-import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
@@ -75,25 +73,20 @@ internal class GradientStrokeShape(
     @Transient
     override lateinit var layer: Layer
 
-    @Transient
-    private val boundsRect = MutableRect(0f,0f,0f,0f)
-
-    @Transient
-    private val gradientCache = LinkedHashMap<Int, Shader>()
-
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
 
-        getBounds(drawScope, parentMatrix, false, state, boundsRect)
+        if (dynamicStroke?.gradient == null) {
+            paint.shader = GradientShader(
+                type = type,
+                startPoint = startPoint,
+                endPoint = endPoint,
+                colors = colors,
+                state = state,
+                matrix = parentMatrix,
+                cache = gradientCache
+            )
+        }
 
-        paint.shader = GradientShader(
-            type = type,
-            startPoint = startPoint,
-            endPoint = endPoint,
-            colors = colors,
-            state = state,
-            matrix = parentMatrix,
-            cache = gradientCache
-        )
         super.draw(drawScope, parentMatrix, parentAlpha, state)
     }
 }

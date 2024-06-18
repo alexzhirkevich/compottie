@@ -2,11 +2,20 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Path
+import io.github.alexzhirkevich.compottie.dynamic.DynamicEllipseProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicRectProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
+import io.github.alexzhirkevich.compottie.dynamic.derive
+import io.github.alexzhirkevich.compottie.dynamic.layerPath
+import io.github.alexzhirkevich.compottie.dynamic.toSize
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.animation.dynamicOffset
+import io.github.alexzhirkevich.compottie.internal.animation.dynamicSize
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundSimultaneousTrimPath
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
@@ -50,21 +59,25 @@ internal class RectShape(
     @Transient
     private var trimPaths : CompoundTrimPath? = null
 
+    @Transient
+    private var dynamicShape : DynamicShapeProvider? = null
+
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
         trimPaths = CompoundSimultaneousTrimPath(contentsBefore)
     }
 
     override fun getPath(state: AnimationState): Path {
 
-        if (hidden) {
+        if (dynamicShape?.hidden.derive(hidden, state)) {
             path.rewind()
             return path
         }
+
         path.rewind()
 
         val position = position.interpolated(state)
         val size = size.interpolated(state)
-        var radius = roundedCorners?.interpolated(state) ?: 0F
+        var radius =  roundedCorners?.interpolated(state) ?: 0f
 
         val halfWidth = size.x / 2f
         val halfHeight = size.y / 2f
@@ -134,5 +147,18 @@ internal class RectShape(
         trimPaths?.apply(path, state)
 
         return path
+    }
+
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+        super.setDynamicProperties(basePath, properties)
+
+        if (name != null) {
+            dynamicShape = properties[layerPath(basePath, name)]
+            val dynamicRect = dynamicShape as? DynamicRectProvider?
+
+            position.dynamicOffset(dynamicRect?.position)
+            size.dynamicSize(dynamicRect?.size)
+            roundedCorners?.dynamic(dynamicRect?.roundCorners)
+        }
     }
 }

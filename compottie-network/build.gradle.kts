@@ -74,7 +74,7 @@ kotlin {
         commonMain.dependencies {
             implementation(compose.ui)
             implementation(libs.serialization)
-            implementation(libs.okio)
+            api(libs.okio)
             api(libs.ktor.client.core)
             implementation(project(":compottie"))
             implementation(project(":compottie-dot"))

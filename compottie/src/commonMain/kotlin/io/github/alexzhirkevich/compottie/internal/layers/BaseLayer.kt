@@ -139,8 +139,6 @@ internal abstract class BaseLayer() : Layer {
                 alpha = (alpha * it).coerceIn(0f, 1f)
             }
 
-            alpha = transform.dynamic?.opacity.derive(alpha, state)
-
             alpha = (alpha * parentAlpha.coerceIn(0f,1f))
 
             if (matteLayer == null && !hasMask()) {

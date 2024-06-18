@@ -20,7 +20,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.tan
 
-internal abstract class AnimatedTransform {
+internal abstract class AnimatedTransform{
 
     abstract val anchorPoint: AnimatedVector2?
     abstract val position: AnimatedVector2?
@@ -31,7 +31,19 @@ internal abstract class AnimatedTransform {
     abstract val skewAxis: AnimatedNumber?
 
     var autoOrient = false
+
     var dynamic : DynamicTransformProvider? = null
+        set(value) {
+            field = value
+            position?.dynamicOffset(value?.offset)
+            scale?.dynamicScale(value?.scale)
+            rotation?.dynamic(value?.rotation)
+            opacity?.dynamic(value?.opacity)
+            skew?.dynamic(value?.skew)
+            skewAxis?.dynamic(value?.skewAxis)
+        }
+
+    open fun isHidden(state: AnimationState) : Boolean = false
 
     protected val matrix: Matrix = Matrix()
 
@@ -55,21 +67,21 @@ internal abstract class AnimatedTransform {
 
         matrix.reset()
 
-        var interpolatedPosition = position?.interpolated(state)
+        if (isHidden(state)){
+            return matrix
+        }
+
+        val interpolatedPosition = position?.interpolated(state)
             ?.takeIf { it.x != 0f || it.y != 0f }
             ?.also {
                 matrix.preTranslate(it.x, it.y)
             }
 
-        dynamic?.offset?.let {
-            interpolatedPosition = it.derive(interpolatedPosition ?: Offset.Zero, state)
-        }
-
         if (autoOrient){
             if (interpolatedPosition != null) {
                 // Store the start X and Y values because the pointF will be overwritten by the next getValue call.
-                val startX = interpolatedPosition!!.x
-                val startY = interpolatedPosition!!.y
+                val startX = interpolatedPosition.x
+                val startY = interpolatedPosition.y
                 // 1) Find the next position value.
                 // 2) Create a vector from the current position to the next position.
                 // 3) Find the angle of that vector to the X axis (0 degrees).
@@ -77,43 +89,28 @@ internal abstract class AnimatedTransform {
                     position!!.interpolated(it)
                 }
 
-                var rotationValue= Math.toDegree(
+                val rotationValue= Math.toDegree(
                     atan2(
                         (nextPosition.y - startY),
                         (nextPosition.x - startX)
                     )
                 )
 
-                dynamic?.rotation?.let {
-                    rotationValue = it.derive(rotationValue, state)
-                }
 
                 matrix.preRotate(rotationValue)
             }
         } else {
-            var rotation = rotation?.interpolated(state)
+            val rotation = rotation?.interpolated(state)
                 ?.takeIf { it != 0f }
-
-            dynamic?.rotation?.let {
-                rotation = it.derive(rotation ?: 0f, state)
-            }
 
             rotation?.let(matrix::preRotate)
         }
 
-        var skew = skew?.interpolated(state)
+        val skew = skew?.interpolated(state)
             ?.takeIf { it != 0f }
 
-        dynamic?.skew?.let {
-            skew = it.derive(skew ?: 0f, state)
-        }
-
         skew?.let { sk ->
-            var skewAngle = skewAxis?.interpolated(state)
-
-            dynamic?.skewAxis?.let {
-                skewAngle = it.derive(skewAngle ?: 0f, state)
-            }
+            val skewAngle = skewAxis?.interpolated(state)
 
             val mCos = if (skewAngle == null)
                 0f
@@ -151,17 +148,12 @@ internal abstract class AnimatedTransform {
             matrix.preConcat(skewMatrix3)
         }
 
-        var scale = scale?.interpolatedNorm(state)
+        val scale = scale?.interpolatedNorm(state)
             ?.takeIf { it.x != 1f || it.y != 1f }
-
-        dynamic?.scale?.let {
-            scale = it.derive(scale?.toScaleFactor() ?: ScaleFactor.Identity, state).toVec2()
-        }
 
         scale?.let {
             matrix.preScale(it.x, it.y)
         }
-
 
         anchorPoint?.interpolated(state)
             ?.takeIf { it.x != 0f || it.y != 0f }

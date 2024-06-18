@@ -3,11 +3,19 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
+import io.github.alexzhirkevich.compottie.dynamic.DynamicEllipseProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicPolystarProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
+import io.github.alexzhirkevich.compottie.dynamic.derive
+import io.github.alexzhirkevich.compottie.dynamic.layerPath
+import io.github.alexzhirkevich.compottie.dynamic.toOffset
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.animation.dynamicOffset
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundSimultaneousTrimPath
@@ -72,8 +80,7 @@ internal class PolystarShape(
 
     @SerialName("sy")
     val starType : StarType,
-
-    ) : Shape, PathContent {
+) : Shape, PathContent {
 
     @Transient
     override lateinit var layer: Layer
@@ -90,9 +97,17 @@ internal class PolystarShape(
     @Transient
     private var trimPaths : CompoundTrimPath? = null
 
+    @Transient
+    private var dynamicShape : DynamicShapeProvider? = null
+
+
     override fun getPath(state: AnimationState): Path {
 
         path.rewind()
+
+        if (dynamicShape?.hidden.derive(hidden, state)){
+            return path
+        }
 
         when (starType) {
             StarType.Star -> createStarPath(state)
@@ -107,6 +122,24 @@ internal class PolystarShape(
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
         trimPaths = CompoundSimultaneousTrimPath(contentsBefore)
     }
+
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+        super.setDynamicProperties(basePath, properties)
+
+        if (name != null) {
+            dynamicShape = properties[layerPath(basePath, name)]
+            val dynamicPolystar = dynamicShape as? DynamicPolystarProvider?
+
+            position?.dynamicOffset(dynamicPolystar?.position)
+            points.dynamic(dynamicPolystar?.points)
+            rotation?.dynamic(dynamicPolystar?.rotation)
+            innerRadius?.dynamic(dynamicPolystar?.innerRadius)
+            innerRoundness?.dynamic(dynamicPolystar?.innerRoundness)
+            outerRadius?.dynamic(dynamicPolystar?.outerRadius)
+            outerRoundness?.dynamic(dynamicPolystar?.outerRoundness)
+        }
+    }
+
 
     private fun createStarPath(state: AnimationState) {
         val points = points.interpolated(state = state)
@@ -213,7 +246,6 @@ internal class PolystarShape(
             currentAngle += dTheta
             longSegment = !longSegment
         }
-
 
         position?.interpolated(state)?.let {
             path.translate(it)

@@ -1,22 +1,17 @@
 package io.github.alexzhirkevich.compottie.dynamic
 
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.graphics.Paint
+import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
+import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
+import io.github.alexzhirkevich.compottie.internal.platform.GradientCache
+import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
+import io.github.alexzhirkevich.compottie.internal.utils.scale
 import kotlin.js.JsName
 
-internal interface DynamicStrokeProvider : DynamicStroke, DynamicDrawProvider
-
-@JsName("MakeDynamicStrokeProvider")
-@PublishedApi
-internal fun DynamicStrokeProvider() : DynamicStrokeProvider = DynamicStrokeProviderImpl()
-
-@PublishedApi
-internal class DynamicSolidStrokeProvider : DynamicStroke.Solid,
-    DynamicSolidDrawProvider by DynamicSolidDrawProvider()
-
-@PublishedApi
-internal class DynamicGradientStrokeProvider : DynamicStroke.Gradient,
-    DynamicGradientDrawProvider by DynamicGradientDrawProvider()
-
-private class DynamicStrokeProviderImpl: BaseDynamicDrawProvider(), DynamicStrokeProvider {
+internal class DynamicStrokeProvider: BaseDynamicDrawProvider(), DynamicStroke {
 
     var width: PropertyProvider<Float>? = null
         private set
@@ -25,3 +20,29 @@ private class DynamicStrokeProviderImpl: BaseDynamicDrawProvider(), DynamicStrok
         this.width = provider
     }
 }
+
+internal fun DynamicStrokeProvider?.applyToPaint(
+    paint: Paint,
+    state: AnimationState,
+    parentAlpha: Float,
+    parentMatrix : Matrix,
+    opacity : AnimatedNumber?,
+    strokeWidth : AnimatedNumber,
+    size: Size,
+    gradientCache: GradientCache
+) {
+    applyToPaint(
+        paint = paint,
+        state = state,
+        parentAlpha = parentAlpha,
+        parentMatrix = parentMatrix,
+        opacity = opacity,
+        size = size,
+        gradientCache = gradientCache
+    )
+
+    paint.strokeWidth = strokeWidth.interpolated(state)
+    paint.strokeWidth = this?.width.derive(paint.strokeWidth, state)
+    paint.strokeWidth *= parentMatrix.scale
+}
+

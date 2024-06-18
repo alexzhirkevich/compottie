@@ -5,7 +5,9 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.LottieComposition
+import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
+import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
@@ -85,7 +87,7 @@ internal class ShapeLayer(
 
     @SerialName("shapes")
     val shapes: List<Shape> = emptyList(),
-) : BaseLayer()  {
+) : BaseLayer() {
 
     init {
         shapes.forEach {
@@ -94,9 +96,12 @@ internal class ShapeLayer(
     }
 
     @Transient
+    private var dynamicLayer : DynamicLayerProvider? = null
+
+    @Transient
     private val contentGroup = ContentGroup(
         name = name,
-        hidden = hidden,
+        hidden = { dynamicLayer?.hidden.derive(hidden, it) },
         contents = shapes,
         transform = shapes.firstInstanceOf<TransformShape>()?.apply {
             autoOrient = this@ShapeLayer.autoOrient == BooleanInt.Yes
@@ -109,7 +114,8 @@ internal class ShapeLayer(
         super.onCreate(composition)
 
         if (name != null) {
-            (composition.dynamic?.get(layerPath(namePath, name)) as? DynamicShapeLayerProvider)?.let { dp ->
+            dynamicLayer = composition.dynamic?.get(layerPath(namePath, name))
+            (dynamicLayer as? DynamicShapeLayerProvider?)?.let { dp ->
                 shapes.fastForEach {
                     it.setDynamicProperties(null, dp)
                 }

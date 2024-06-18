@@ -4,51 +4,45 @@ package io.github.alexzhirkevich.compottie.dynamic
 internal class DynamicShapeLayerProvider(
     private val basePath : String? = null,
     private val root : DynamicShapeLayerProvider? = null
-) : DynamicLayerProvider(), DynamicLayer.Shape {
+) : DynamicLayerProvider(), DynamicShapeLayer {
 
     private val nRoot get() = root ?: this
 
     @PublishedApi
     internal val shapes = mutableMapOf<String, DynamicShape>()
 
-    override fun group(name: String, shape: DynamicLayer.Shape.() -> Unit) {
+    override fun shape(vararg path: String, builder: DynamicShape.() -> Unit) {
+        shapes[path.joinToString(LayerPathSeparator)] =
+            DynamicShapeProvider().apply(builder)
+    }
+
+    override fun group(name: String, builder: DynamicShapeLayer.() -> Unit) {
         DynamicShapeLayerProvider(
             basePath = layerPath(basePath, name),
             root = nRoot
-        ).apply(shape)
+        ).apply(builder)
     }
 
     internal inline operator fun <reified S : DynamicShape> get(path: String): S? =
         shapes[path] as? S
-}
 
-@PublishedApi
-internal inline fun <reified T : DynamicStroke> DynamicLayer.Shape.strokeImpl(
-    vararg path: String,
-    builder: T.() -> Unit
-) {
-    check(this is DynamicShapeLayerProvider)
-
-    shapes[path.joinToString(LayerPathSeparator)] = when (T::class){
-        DynamicStroke.Solid::class -> (DynamicSolidStrokeProvider() as T).apply(builder)
-        DynamicStroke.Gradient::class -> (DynamicGradientStrokeProvider() as T).apply(builder)
-        DynamicStroke::class -> (DynamicStrokeProvider() as T).apply(builder)
-        else -> error("Invalid stroke type. Must be either DynamicStroke.Solid or DynamicStroke.Gradient")
+    override fun fill(vararg path: String, builder: DynamicFill.() -> Unit) {
+        shapes[path.joinToString(LayerPathSeparator)] =
+            DynamicFillProvider().apply(builder)
     }
-}
 
+    override fun stroke(vararg path: String, builder: DynamicStroke.() -> Unit) {
+        shapes[path.joinToString(LayerPathSeparator)] =
+            DynamicStrokeProvider().apply(builder)
+    }
 
-@PublishedApi
-internal inline fun <reified T : DynamicFill> DynamicLayer.Shape.fillImpl(
-    vararg path: String,
-    builder: T.() -> Unit
-) {
-    check(this is DynamicShapeLayerProvider)
+    override fun ellipse(vararg path: String, builder: DynamicEllipse.() -> Unit) {
+        shapes[path.joinToString(LayerPathSeparator)] =
+            DynamicEllipseProvider().apply(builder)
+    }
 
-    shapes[path.joinToString(LayerPathSeparator)] = when (T::class) {
-        DynamicFill.Solid::class -> (DynamicSolidFillProvider() as T).apply(builder)
-        DynamicFill.Gradient::class -> (DynamicGradientFillProvider() as T).apply(builder)
-        DynamicFill::class -> (DynamicFillProvider() as T).apply(builder)
-        else -> error("Invalid stroke type. Must be either DynamicStroke.Solid or DynamicStroke.Gradient")
+    override fun rect(vararg path: String, builder: DynamicRect.() -> Unit) {
+        shapes[path.joinToString(LayerPathSeparator)] =
+            DynamicRectProvider().apply(builder)
     }
 }

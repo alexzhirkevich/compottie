@@ -17,9 +17,7 @@ internal sealed interface Shape : Content {
 
     var layer : Layer
 
-    fun setDynamicProperties(basePath: String?, properties : DynamicShapeLayerProvider){
-
-    }
+    fun setDynamicProperties(basePath: String?, properties : DynamicShapeLayerProvider) {}
 
     @Serializable
     data object UnsupportedShape : Shape {
@@ -31,8 +29,7 @@ internal sealed interface Shape : Content {
             get() = error("Unsupported shape doesn't have layer")
             set(value) {}
 
-        override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
-        }
+        override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {}
     }
 }
 

@@ -5,6 +5,11 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.util.lerp
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
+import io.github.alexzhirkevich.compottie.dynamic.PropertyProvider
+import io.github.alexzhirkevich.compottie.dynamic.derive
+import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.RepeaterTransform
@@ -56,6 +61,9 @@ internal class RepeaterShape(
 
     @Transient
     private val matrix = Matrix()
+
+    @Transient
+    private var dynamicHidden : DynamicShapeProvider? = null
 
     override fun draw(
         drawScope: DrawScope,
@@ -128,15 +136,22 @@ internal class RepeaterShape(
 
         val contentsList = contents.take(thisIndex)
 
-        repeat(thisIndex){
+        repeat(thisIndex) {
             contents.removeFirst()
         }
 
         contentGroup = ContentGroup(
             name = name,
-            hidden = hidden,
+            hidden = { dynamicHidden?.hidden.derive(hidden, it) },
             contents = contentsList,
             transform = null,
         )
+    }
+
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+        super.setDynamicProperties(basePath, properties)
+        if (name != null) {
+            dynamicHidden = properties[layerPath(basePath, name)]
+        }
     }
 }

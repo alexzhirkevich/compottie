@@ -1,10 +1,21 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.graphics.Path
+import io.github.alexzhirkevich.compottie.dynamic.DynamicEllipse
+import io.github.alexzhirkevich.compottie.dynamic.DynamicEllipseProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
+import io.github.alexzhirkevich.compottie.dynamic.derive
+import io.github.alexzhirkevich.compottie.dynamic.layerPath
+import io.github.alexzhirkevich.compottie.dynamic.toOffset
+import io.github.alexzhirkevich.compottie.dynamic.toScaleFactor
+import io.github.alexzhirkevich.compottie.dynamic.toSize
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.animation.dynamicOffset
+import io.github.alexzhirkevich.compottie.internal.animation.dynamicSize
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundSimultaneousTrimPath
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
@@ -44,16 +55,20 @@ internal class EllipseShape(
     @Transient
     private var trimPaths: CompoundTrimPath? = null
 
+    @Transient
+    private var dynamicShape : DynamicShapeProvider? = null
+
     override fun getPath(state: AnimationState): Path {
 
-        if (hidden) {
+        if (dynamicShape?.hidden.derive(hidden, state)) {
             path.rewind()
             return path
         }
 
-        val size = size.interpolated(state)
-        val halfWidth = size.x / 2f
-        val halfHeight = size.y / 2f
+        val size = size.interpolated(state).toSize()
+
+        val halfWidth = size.width / 2f
+        val halfHeight = size.height / 2f
 
         // TODO: handle bounds
         val cpW = halfWidth * ELLIPSE_CONTROL_POINT_PERCENTAGE
@@ -74,7 +89,7 @@ internal class EllipseShape(
         path.cubicTo(-halfWidth, 0 - cpH, 0 - cpW, -halfHeight, 0f, -halfHeight)
 //        }
 
-        val position = position.interpolated(state)
+        val position = position.interpolated(state).toOffset()
 
         path.translate(position)
 
@@ -83,6 +98,17 @@ internal class EllipseShape(
         trimPaths?.apply(path, state)
 
         return path
+    }
+
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+        super.setDynamicProperties(basePath, properties)
+
+        if (name != null) {
+            dynamicShape = properties[layerPath(basePath, name)]
+            val dynamicEllipse = dynamicShape as? DynamicEllipseProvider?
+            size.dynamicSize(dynamicEllipse?.size)
+            position.dynamicOffset(dynamicEllipse?.position)
+        }
     }
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {

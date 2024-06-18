@@ -1,5 +1,11 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShape
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
+import io.github.alexzhirkevich.compottie.dynamic.derive
+import io.github.alexzhirkevich.compottie.dynamic.layerPath
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.helpers.TrimPathType
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
@@ -39,8 +45,21 @@ internal class TrimPathShape(
     @Transient
     override lateinit var layer: Layer
 
+    @Transient
+    private var dynamicShape : DynamicShapeProvider? = null
+    fun isHidden(state : AnimationState) : Boolean {
+        return dynamicShape?.hidden.derive(hidden, state)
+    }
+
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
 
+    }
+
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+        super.setDynamicProperties(basePath, properties)
+        if (name != null) {
+            dynamicShape = properties[layerPath(basePath, name)]
+        }
     }
 }
 

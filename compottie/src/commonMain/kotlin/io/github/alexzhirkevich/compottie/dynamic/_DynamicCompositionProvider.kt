@@ -7,7 +7,7 @@ internal class DynamicCompositionProvider : DynamicComposition {
     val size: Int
         get() = layers.size
 
-    override fun shapeLayer(vararg path: String, builder: DynamicLayer.Shape.() -> Unit) {
+    override fun shapeLayer(vararg path: String, builder: DynamicShapeLayer.() -> Unit) {
         val p = path.joinToString(LayerPathSeparator)
 
         val provider = when(val existent = layers[p]) {
@@ -22,6 +22,10 @@ internal class DynamicCompositionProvider : DynamicComposition {
         provider.apply(builder)
 
         layers[p] = provider
+    }
+
+    override fun imageLayer(vararg path: String, builder: DynamicImageLayer.() -> Unit) {
+        layers[path.joinToString(LayerPathSeparator)] = DynamicImageLayerProvider().apply(builder)
     }
 
     override fun layer(vararg path: String, builder: DynamicLayer.() -> Unit) {

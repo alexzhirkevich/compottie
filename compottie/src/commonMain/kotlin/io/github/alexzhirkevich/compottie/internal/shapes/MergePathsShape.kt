@@ -5,6 +5,10 @@ import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
+import io.github.alexzhirkevich.compottie.dynamic.derive
+import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroupBase
@@ -63,25 +67,36 @@ internal class MergePathsShape(
     @Transient
     private var pathContents = emptyList<PathContent>()
 
+    @Transient
+    private var dynamicShape : DynamicShapeProvider? = null
+
     override fun getPath(state: AnimationState): Path {
 
         path.reset()
 
-        if (hidden) {
-            return path
-        }
+        val hidden = dynamicShape?.hidden.derive(hidden, state)
 
-        when (mode) {
-            MergeMode.Normal -> pathContents.fastForEach {
+        if (hidden || mode == MergeMode.Add){
+            pathContents.fastForEach {
                 path.addPath(it.getPath(state))
             }
-            MergeMode.Add -> opFirstPathWithRest(PathOperation.Union, state)
-            MergeMode.Subtract -> opFirstPathWithRest(PathOperation.Difference, state)
-            MergeMode.Intersect -> opFirstPathWithRest(PathOperation.Intersect, state)
-            MergeMode.ExcludeIntersections -> opFirstPathWithRest(PathOperation.Xor, state)
+        } else {
+            when (mode) {
+                MergeMode.Subtract -> opFirstPathWithRest(PathOperation.Difference, state)
+                MergeMode.Intersect -> opFirstPathWithRest(PathOperation.Intersect, state)
+                MergeMode.ExcludeIntersections -> opFirstPathWithRest(PathOperation.Xor, state)
+            }
         }
 
         return path
+    }
+
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+        super.setDynamicProperties(basePath, properties)
+
+        if (name != null) {
+            dynamicShape = properties[layerPath(basePath, name)]
+        }
     }
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {

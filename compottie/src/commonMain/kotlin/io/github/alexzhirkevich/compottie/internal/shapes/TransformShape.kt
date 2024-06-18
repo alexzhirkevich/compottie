@@ -1,5 +1,10 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
+import io.github.alexzhirkevich.compottie.dynamic.derive
+import io.github.alexzhirkevich.compottie.dynamic.layerPath
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.ModifierContent
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
@@ -48,8 +53,23 @@ internal class TransformShape(
     @Transient
     override lateinit var layer: Layer
 
+    @Transient
+    private var dynamicShape : DynamicShapeProvider? = null
+
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
 
+    }
+
+    override fun isHidden(state: AnimationState): Boolean {
+        return dynamicShape?.hidden.derive(hidden, state)
+    }
+
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+        super.setDynamicProperties(basePath, properties)
+
+        if (name != null) {
+            dynamicShape = properties[layerPath(basePath, name)]
+        }
     }
 }
 

@@ -15,14 +15,9 @@ sealed interface DynamicDraw : DynamicShape {
 
     fun blendMode(provider: PropertyProvider<BlendMode>)
 
-    sealed interface Solid : DynamicDraw {
-        fun color(provider: PropertyProvider<Color>)
-    }
+    fun color(provider: PropertyProvider<Color>)
 
-    sealed interface Gradient : DynamicDraw {
-
-        fun gradient(provider: GradientProvider)
-    }
+    fun gradient(provider: GradientProvider)
 }
 
 typealias GradientProvider = (Size, AnimationState) -> LottieGradient

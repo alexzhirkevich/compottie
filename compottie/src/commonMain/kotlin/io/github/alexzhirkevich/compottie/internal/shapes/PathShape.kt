@@ -2,6 +2,10 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
+import io.github.alexzhirkevich.compottie.dynamic.derive
+import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
@@ -38,10 +42,13 @@ internal class PathShape(
 
     private val path = Path()
 
+    @Transient
+    private var dynamicShape : DynamicShapeProvider? = null
+
     override fun getPath(state: AnimationState): Path {
         path.reset()
 
-        if (hidden) {
+        if (dynamicShape?.hidden.derive(hidden, state)) {
             return path
         }
         path.set(shape.interpolatedRaw(state))
@@ -54,4 +61,13 @@ internal class PathShape(
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
         trimPaths = CompoundSimultaneousTrimPath(contentsBefore)
     }
+
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+        super.setDynamicProperties(basePath, properties)
+
+        if (name != null) {
+            dynamicShape = properties[layerPath(basePath, name)]
+        }
+    }
+
 }

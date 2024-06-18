@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.geometry.MutableRect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
@@ -9,23 +10,22 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.dynamic.DynamicFillProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
-import io.github.alexzhirkevich.compottie.dynamic.DynamicSolidDrawProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
+import io.github.alexzhirkevich.compottie.dynamic.applyToPaint
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
-import io.github.alexzhirkevich.compottie.internal.platform.addPath
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
-import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsState
-import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.FillRule
-import io.github.alexzhirkevich.compottie.internal.helpers.asComposeBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.asPathFillType
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
+import io.github.alexzhirkevich.compottie.internal.platform.GradientCache
+import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -43,9 +43,6 @@ internal class FillShape(
 
     @SerialName("hd")
     override val hidden : Boolean = false,
-
-    @SerialName("a")
-    val withAlpha : BooleanInt = BooleanInt.No,
 
     @SerialName("d")
     val direction : Int = 1,
@@ -79,7 +76,11 @@ internal class FillShape(
     }
 
     @Transient
-    private var dynamic : DynamicFillProvider? = null
+    private var dynamicFill : DynamicFillProvider? = null
+
+    @Transient
+    private var dynamicShape : DynamicShapeProvider? = null
+
 
     @Transient
     private var roundShape : RoundShape? = null
@@ -88,32 +89,26 @@ internal class FillShape(
         LayerEffectsState()
     }
 
+    @Transient
+    private val gradientCache = GradientCache()
+
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
 
-        if (hidden) {
+        if (dynamicShape?.hidden.derive(hidden, state)) {
             return
         }
 
-        var c = color.interpolated(state)
+        paint.color = color.interpolated(state)
 
-        (dynamic as? DynamicSolidDrawProvider)?.color?.let {
-            c = it.derive(c, state)
-        }
-
-        paint.color = c
-
-        var alpha = 1f
-
-        opacity?.interpolatedNorm(state)?.let {
-            alpha = (alpha * it).coerceIn(0f,1f)
-        }
-        dynamic?.opacity?.let {
-            alpha = it.derive(alpha, state).coerceIn(0f,1f)
-        }
-
-        paint.alpha = (alpha * parentAlpha).coerceIn(0f,1f)
-        paint.colorFilter = dynamic?.colorFilter.derive(paint.colorFilter, state)
-        paint.blendMode = dynamic?.blendMode.derive(paint.blendMode, state)
+        dynamicFill.applyToPaint(
+            paint = paint,
+            state = state,
+            parentAlpha = parentAlpha,
+            parentMatrix = parentMatrix,
+            opacity = opacity,
+            size = Size.Zero,
+            gradientCache = gradientCache
+        )
 
         roundShape?.applyTo(paint, state)
 
@@ -154,7 +149,8 @@ internal class FillShape(
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
         super.setDynamicProperties(basePath, properties)
         if (name != null) {
-            dynamic = properties[layerPath(basePath, name)]
+            dynamicFill = properties[layerPath(basePath, name)]
+            dynamicShape = properties[layerPath(basePath, name)]
         }
     }
 

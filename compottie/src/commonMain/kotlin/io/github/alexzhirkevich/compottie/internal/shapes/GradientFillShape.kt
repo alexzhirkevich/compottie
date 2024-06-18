@@ -9,9 +9,9 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.dynamic.DynamicFillProvider
-import io.github.alexzhirkevich.compottie.dynamic.DynamicGradientDrawProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
-import io.github.alexzhirkevich.compottie.dynamic.DynamicSolidDrawProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
+import io.github.alexzhirkevich.compottie.dynamic.applyToPaint
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
@@ -19,7 +19,6 @@ import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.GradientColors
 import io.github.alexzhirkevich.compottie.internal.animation.GradientType
-import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
@@ -104,7 +103,10 @@ internal class GradientFillShape(
     }
 
     @Transient
-    private var dynamic : DynamicFillProvider? = null
+    private var dynamicFill : DynamicFillProvider? = null
+    @Transient
+    private var dynamicShape : DynamicShapeProvider? = null
+
 
     @Transient
     private val gradientCache = LinkedHashMap<Int, Shader>()
@@ -117,14 +119,12 @@ internal class GradientFillShape(
     }
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
 
-        if (hidden){
+        if (dynamicShape?.hidden.derive(hidden, state)) {
             return
         }
 
-        val dynamicGradient = (dynamic as? DynamicGradientDrawProvider)?.gradient
-
-        paint.shader = if (dynamicGradient == null) {
-            GradientShader(
+        if (dynamicFill?.gradient == null) {
+            paint.shader = GradientShader(
                 type = type,
                 startPoint = startPoint,
                 endPoint = endPoint,
@@ -135,24 +135,17 @@ internal class GradientFillShape(
             )
         } else {
             getBounds(drawScope, parentMatrix, false, state, boundsRect)
-            GradientShader(
-                gradient = dynamicGradient.invoke(boundsRect.size, state),
-                matrix = parentMatrix,
-                cache = gradientCache
-            )
         }
 
-        var alpha = 1f
-
-        opacity?.interpolatedNorm(state)?.let {
-            alpha = (alpha * it).coerceIn(0f,1f)
-        }
-        dynamic?.opacity?.let {
-            alpha = it.derive(alpha, state).coerceIn(0f,1f)
-        }
-        paint.alpha = (alpha * parentAlpha).coerceIn(0f,1f)
-        paint.colorFilter = dynamic?.colorFilter.derive(paint.colorFilter, state)
-        paint.blendMode = dynamic?.blendMode.derive(paint.blendMode, state)
+        dynamicFill.applyToPaint(
+            paint = paint,
+            state = state,
+            parentAlpha = parentAlpha,
+            opacity = opacity,
+            parentMatrix = parentMatrix,
+            size = boundsRect.size,
+            gradientCache = gradientCache
+        )
 
         layer.effectsApplier.applyTo(paint, state, effectsState)
 
@@ -193,7 +186,8 @@ internal class GradientFillShape(
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
         super.setDynamicProperties(basePath, properties)
         if (name != null) {
-            dynamic = properties[layerPath(basePath, name)]
+            dynamicFill = properties[layerPath(basePath, name)]
+            dynamicShape = properties[layerPath(basePath, name)]
         }
     }
 

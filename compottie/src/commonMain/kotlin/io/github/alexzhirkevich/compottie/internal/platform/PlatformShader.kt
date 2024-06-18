@@ -18,7 +18,7 @@ import kotlin.math.hypot
 
 private val CACHE_LIMIT = 15
 
-typealias GradientCache =  LinkedHashMap<Int, Shader>
+internal typealias GradientCache =  LinkedHashMap<Int, Shader>
 
 internal fun GradientShader(
     gradient: LottieGradient,

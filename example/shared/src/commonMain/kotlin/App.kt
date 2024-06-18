@@ -1,21 +1,14 @@
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.focusable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.CircularProgressIndicator
@@ -24,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -34,13 +28,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ScaleFactor
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import compottie.example.shared.generated.resources.Res
 import io.github.alexzhirkevich.compottie.CompottieException
 import io.github.alexzhirkevich.compottie.LottieComposition
@@ -50,8 +40,7 @@ import io.github.alexzhirkevich.compottie.NetworkAssetsManager
 import io.github.alexzhirkevich.compottie.assets.ImageRepresentable
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.LottieImage
-import io.github.alexzhirkevich.compottie.dynamic.DynamicStroke
-import io.github.alexzhirkevich.compottie.dynamic.stroke
+import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import kotlinx.coroutines.delay
@@ -89,6 +78,7 @@ private val IMAGE_ASSET_EMBEDDED = "image_asset_embedded.json"
 private val DOT = "dotlottie/dot.lottie"
 private val DOT_WITH_IMAGE = "dotlottie/dot_with_image.lottie"
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun App() {
 
@@ -100,32 +90,21 @@ fun App() {
              NetworkAssetsManager()
         },
         dynamic = {
-            layer("Pre-comp 1", "Head Layer") {
-                transform {
-                    scale {
-                        val p = progress
-                        val scale = if (p > .5f)
-                            (1f - p) / .5f else p / .5f
-                        ScaleFactor(1f - scale/1.5f,1f - scale/1.5f)
-                    }
-                }
-            }
-            shapeLayer(""){
-                stroke<DynamicStroke.Gradient>("qwe"){
-
-                }
-            }
         }
     ) {
 //        LottieCompositionSpec.DotLottie(ResourcesAssetsManager()) {
 //            Res.readBytes("files/$DOT_WITH_IMAGE")
 //        }
-//        LottieCompositionSpec.Resource(CHECKMARK)
+        LottieCompositionSpec.Resource(ROBOT)
 
-        LottieCompositionSpec.Url(
-            url = "https://assets-v2.lottiefiles.com/a/e25360fe-1150-11ee-9d43-2f8655b815bb/xSk6HtgPaN.lottie",
-        )
+//        LottieCompositionSpec.Url(
+//            url = "https://assets-v2.lottiefiles.com/a/e25360fe-1150-11ee-9d43-2f8655b815bb/xSk6HtgPaN.lottie",
+//        )
     }
+
+    LottieAssetsManager.combine(
+
+    )
 
     // If you want to be aware of loading errors
     LaunchedEffect(composition) {

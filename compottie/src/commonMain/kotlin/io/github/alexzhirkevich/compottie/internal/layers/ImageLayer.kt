@@ -5,6 +5,11 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import io.github.alexzhirkevich.compottie.LottieComposition
+import io.github.alexzhirkevich.compottie.dynamic.ImageSpec
+import io.github.alexzhirkevich.compottie.dynamic.DynamicImageLayerProvider
+import io.github.alexzhirkevich.compottie.dynamic.derive
+import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
@@ -92,12 +97,41 @@ internal class ImageLayer(
         painterProperties?.assets?.get(refId) as? ImageAsset
     }
 
+    private val assetBitmap by lazy {
+        asset?.bitmap
+    }
+
+    private val imageSpec by lazy {
+        asset?.let {
+            ImageSpec(
+                id = it.id,
+                path = it.path,
+                name = it.fileName,
+                width = it.width,
+                height = it.height
+            )
+        }
+    }
+
     private val effectState by lazy {
         LayerEffectsState()
     }
 
+    @Transient
+    private var dynamic : DynamicImageLayerProvider? = null
+
+    private fun dynamicAsset(state: AnimationState) : ImageAsset? {
+
+        assetBitmap // initialize lazy property with default asset bitmap
+
+        (dynamic?.image?.invoke(state, imageSpec) ?: assetBitmap)?.let {
+            asset?.setBitmap(it)
+        }
+        return asset
+    }
+
     override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
-        val mAsset = asset ?: return
+        val mAsset = dynamicAsset(state) ?: return
         val bitmap = mAsset.bitmap ?: return
 
         paint.alpha = parentAlpha
@@ -107,7 +141,6 @@ internal class ImageLayer(
         drawScope.drawIntoCanvas { canvas ->
             canvas.save()
             canvas.concat(parentMatrix)
-
 
             drawScope.drawImage(
                 image = bitmap,
@@ -132,7 +165,7 @@ internal class ImageLayer(
     ) {
         super.getBounds(drawScope, parentMatrix, applyParents, state, outBounds)
 
-        asset?.let {
+        dynamicAsset(state)?.let {
             outBounds.set(
                 left = 0f,
                 top = 0f,
@@ -140,6 +173,14 @@ internal class ImageLayer(
                 bottom = it.height.toFloat()
             )
             boundsMatrix.map(outBounds)
+        }
+    }
+
+    override fun onCreate(composition: LottieComposition) {
+        super.onCreate(composition)
+
+        if (name != null) {
+            dynamic = composition.dynamic?.get(layerPath(namePath, name)) as? DynamicImageLayerProvider
         }
     }
 }

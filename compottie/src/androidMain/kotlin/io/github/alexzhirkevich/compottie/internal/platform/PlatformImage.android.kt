@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.font.Font
 
-internal actual fun ImageBitmap.Companion.fromBytes(bytes: ByteArray) : ImageBitmap {
+actual fun ImageBitmap.Companion.fromBytes(bytes: ByteArray) : ImageBitmap {
     return BitmapFactory
         .decodeByteArray(bytes, 0, bytes.size)
         .asImageBitmap()

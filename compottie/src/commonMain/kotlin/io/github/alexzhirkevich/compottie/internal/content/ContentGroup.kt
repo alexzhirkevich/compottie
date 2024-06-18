@@ -17,8 +17,8 @@ import io.github.alexzhirkevich.compottie.internal.utils.union
 
 internal class ContentGroup(
     override val name: String?,
-    val hidden: Boolean,
     contents: List<Content>,
+    private val hidden : (AnimationState) -> Boolean,
     override val transform: AnimatedTransform?,
 ) : ContentGroupBase {
 
@@ -30,7 +30,12 @@ internal class ContentGroup(
     }
     private val matrix = Matrix()
     private val path = Path()
+
 //    private val boundsRect = MutableRect(0f, 0f, 0f, 0f)
+
+    override fun hidden(state: AnimationState): Boolean {
+        return hidden.invoke(state)
+    }
 
     private val mContents by lazy {
         contents.filterNot {
@@ -61,7 +66,7 @@ internal class ContentGroup(
         state: AnimationState
     ) {
 
-        if (hidden) {
+        if (hidden(state)) {
             return
         }
 
@@ -101,7 +106,7 @@ internal class ContentGroup(
     override fun getPath(state: AnimationState): Path {
 
         path.reset()
-        if (hidden) {
+        if (hidden(state)) {
             return path
         }
         matrix.reset()

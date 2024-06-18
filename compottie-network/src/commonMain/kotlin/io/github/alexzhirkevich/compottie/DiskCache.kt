@@ -121,15 +121,11 @@ fun DiskCache(
     fileSystem : FileSystem = defaultFileSystem(),
     maxSizeBytes : Long = MB_250,
     cleanupDispatcher : CoroutineDispatcher = Dispatchers.IODispatcher
-) : DiskCache {
-    return RealDiskCache(
-        maxSize = maxSizeBytes,
-        directory = directory,
-        fileSystem = fileSystem,
-        cleanupDispatcher = cleanupDispatcher
-    )
-}
-
-
+) : DiskCache = RealDiskCache(
+    maxSize = maxSizeBytes,
+    directory = directory,
+    fileSystem = fileSystem,
+    cleanupDispatcher = cleanupDispatcher
+)
 
 private const val MB_250 = 250L * 1024 * 1024

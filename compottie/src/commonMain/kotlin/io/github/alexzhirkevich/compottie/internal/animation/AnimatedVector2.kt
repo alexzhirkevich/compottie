@@ -1,9 +1,18 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
+import androidx.compose.ui.layout.ScaleFactor
 import androidx.compose.ui.util.lerp
+import io.github.alexzhirkevich.compottie.dynamic.PropertyProvider
+import io.github.alexzhirkevich.compottie.dynamic.derive
+import io.github.alexzhirkevich.compottie.dynamic.map
+import io.github.alexzhirkevich.compottie.dynamic.toOffset
+import io.github.alexzhirkevich.compottie.dynamic.toScaleFactor
+import io.github.alexzhirkevich.compottie.dynamic.toSize
+import io.github.alexzhirkevich.compottie.dynamic.toVec2
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
@@ -24,7 +33,19 @@ internal typealias Vec2 = Offset
 internal fun Vec2(x : Float, y : Float) : Vec2 = Offset(x,y)
 
 @Serializable(with = AnimatedVector2Serializer::class)
-internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
+internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
+
+    protected var dynamic: PropertyProvider<Vec2>? = null
+
+    fun dynamic(provider: PropertyProvider<Vec2>?) {
+        dynamic = provider
+    }
+
+    protected abstract fun interpolatedInternal(state: AnimationState) : Vec2
+
+    final override fun interpolated(state: AnimationState): Vec2 {
+        return dynamic.derive(interpolatedInternal(state), state)
+    }
 
     @Serializable
     class Default(
@@ -36,12 +57,12 @@ internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
 
         @SerialName("ix")
         override val index: String? = null
-    ) : AnimatedVector2 {
+    ) : AnimatedVector2() {
 
         @Transient
         private val animationVector = Offset(value[0], value[1])
 
-        override fun interpolated(state: AnimationState): Vec2 = animationVector
+        override fun interpolatedInternal(state: AnimationState): Vec2 = animationVector
     }
 
     @Serializable
@@ -54,7 +75,7 @@ internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
 
         @SerialName("ix")
         override val index: String? = null,
-    ) : AnimatedVector2 {
+    ) : AnimatedVector2() {
 
         private val path by lazy {
             Path()
@@ -97,8 +118,10 @@ internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
             }
         )
 
-        override fun interpolated(state: AnimationState): Offset {
-            return delegate.interpolated(state)
+        override fun interpolatedInternal(state: AnimationState): Offset {
+            return delegate.interpolated(state).let {
+                dynamic.derive(it, state)
+            }
         }
     }
 
@@ -106,12 +129,12 @@ internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
     class Split(
         val x: AnimatedNumber,
         val y: AnimatedNumber,
-    ) : AnimatedVector2 {
+    ) : AnimatedVector2() {
 
         override val expression: String? get() = null
         override val index: String? get() = null
 
-        override fun interpolated(state: AnimationState): Vec2 {
+        override fun interpolatedInternal(state: AnimationState): Vec2 {
             return Offset(
                 x.interpolated(state),
                 y.interpolated(state)
@@ -120,8 +143,28 @@ internal sealed interface AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
     }
 }
 
+
 internal fun AnimatedVector2.interpolatedNorm(state: AnimationState) = interpolated(state) / 100f
 
+internal fun AnimatedVector2.dynamicOffset(
+    provider: PropertyProvider<Offset>?
+) {
+    dynamic(provider?.map(from = Offset::toVec2, to = Vec2::toOffset))
+
+}
+
+internal fun AnimatedVector2.dynamicSize(
+    provider: PropertyProvider<Size>?
+) {
+    dynamic(provider?.map(from = Size::toVec2, to = Vec2::toSize))
+
+}
+
+internal fun AnimatedVector2.dynamicScale(
+    provider: PropertyProvider<ScaleFactor>?
+) {
+    dynamic(provider?.map(from = ScaleFactor::toVec2, to = Vec2::toScaleFactor))
+}
 
 internal class AnimatedVector2Serializer : JsonContentPolymorphicSerializer<AnimatedVector2>(AnimatedVector2::class) {
 
@@ -143,6 +186,7 @@ internal class AnimatedVector2Serializer : JsonContentPolymorphicSerializer<Anim
         }
     }
 }
+
 
 private fun Path.createPath(
     startPoint : FloatArray,

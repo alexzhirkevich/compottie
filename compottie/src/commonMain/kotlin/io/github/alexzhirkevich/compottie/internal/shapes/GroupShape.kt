@@ -1,8 +1,12 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
+import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
 import io.github.alexzhirkevich.compottie.dynamic.LayerPathSeparator
+import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.dynamic.layerPath
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroupBase
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
@@ -26,19 +30,15 @@ internal class GroupShape(
     @SerialName("hd")
     override val hidden : Boolean = false,
 
-    @SerialName("np")
-    val numberOfProperties : Int = 0,
-
     @SerialName("it")
     val items : List<Shape> = emptyList(),
 
 ) : Shape, ContentGroupBase by ContentGroup(
     name = name,
-    hidden = hidden,
+    hidden = { hidden },
     contents = items,
     transform = items.firstInstanceOf()
 ) {
-
     @Transient
     override var layer: Layer = NullLayer()
         set(value) {
@@ -50,11 +50,20 @@ internal class GroupShape(
             transform?.autoOrient = value.autoOrient == BooleanInt.Yes
         }
 
+    @Transient
+    private var dynamicShape : DynamicShapeProvider? = null
+
+    override fun hidden(state: AnimationState): Boolean {
+        return dynamicShape?.hidden.derive(hidden, state)
+    }
+
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
         super.setDynamicProperties(basePath, properties)
         if (name != null) {
+            val path = layerPath(basePath, name)
+            dynamicShape = properties[path]
             items.forEach {
-                it.setDynamicProperties(layerPath(basePath, name), properties)
+                it.setDynamicProperties(path, properties)
             }
         }
     }

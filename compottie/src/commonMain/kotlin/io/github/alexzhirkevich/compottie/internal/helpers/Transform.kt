@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.helpers
 
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber

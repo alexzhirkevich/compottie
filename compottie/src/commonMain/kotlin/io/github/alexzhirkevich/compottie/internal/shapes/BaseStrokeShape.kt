@@ -14,6 +14,12 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicStrokeProvider
+import io.github.alexzhirkevich.compottie.dynamic.applyToPaint
+import io.github.alexzhirkevich.compottie.dynamic.derive
+import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
@@ -26,12 +32,12 @@ import io.github.alexzhirkevich.compottie.internal.helpers.StrokeDash
 import io.github.alexzhirkevich.compottie.internal.helpers.applyTrimPath
 import io.github.alexzhirkevich.compottie.internal.helpers.asComposeBlendMode
 import io.github.alexzhirkevich.compottie.internal.platform.ExtendedPathMeasure
+import io.github.alexzhirkevich.compottie.internal.platform.GradientCache
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import io.github.alexzhirkevich.compottie.internal.utils.scale
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import kotlin.jvm.JvmInline
 import kotlin.math.min
 
@@ -88,6 +94,8 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
     private val trimPathPath = Path()
     private val path = Path()
     private val rect = MutableRect(0f, 0f, 0f, 0f)
+    private val boundsRect = MutableRect(0f, 0f, 0f, 0f)
+
     protected val paint by lazy {
         Paint().apply {
             isAntiAlias = true
@@ -124,20 +132,36 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         LayerEffectsState()
     }
 
+    protected var dynamicStroke : DynamicStrokeProvider? = null
+
+    private var dynamicShape: DynamicShapeProvider? = null
+
+    protected var gradientCache = GradientCache()
+
     override fun draw(
         drawScope: DrawScope,
         parentMatrix: Matrix,
         parentAlpha: Float,
         state: AnimationState,
     ) {
-
-        if (hidden){
+        if (dynamicShape?.hidden.derive(hidden, state)) {
             return
         }
 
         paint.style = PaintingStyle.Stroke
-        paint.alpha = parentAlpha * opacity.interpolatedNorm(state).coerceIn(0f, 1f)
-        paint.strokeWidth = strokeWidth.interpolated(state) * parentMatrix.scale
+
+        getBounds(drawScope, parentMatrix, false, state, boundsRect)
+
+        dynamicStroke.applyToPaint(
+            paint = paint,
+            state = state,
+            parentAlpha = parentAlpha,
+            parentMatrix = parentMatrix,
+            opacity = opacity,
+            strokeWidth = strokeWidth,
+            size = boundsRect.size,
+            gradientCache = gradientCache
+        )
 
         if (paint.strokeWidth <= 0) {
             return
@@ -163,6 +187,14 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
                     canvas.drawPath(path, paint)
                 }
             }
+        }
+    }
+
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+        super.setDynamicProperties(basePath, properties)
+        name?.let {
+            dynamicStroke = properties[layerPath(basePath, it)]
+            dynamicShape = properties[layerPath(basePath, it)]
         }
     }
 
