@@ -48,6 +48,7 @@ kotlin {
             implementation(project(":compottie"))
             implementation(project(":compottie-dot"))
             implementation(project(":compottie-network"))
+            implementation(project(":compottie-resources"))
             implementation(compose.ui)
             implementation(compose.runtime)
             implementation(compose.material3)
