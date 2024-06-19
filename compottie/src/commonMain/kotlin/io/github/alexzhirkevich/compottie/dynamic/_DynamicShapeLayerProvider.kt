@@ -45,4 +45,9 @@ internal class DynamicShapeLayerProvider(
         shapes[path.joinToString(LayerPathSeparator)] =
             DynamicRectProvider().apply(builder)
     }
+
+    override fun polystar(vararg path: String, builder: DynamicPolystar.() -> Unit) {
+        shapes[path.joinToString(LayerPathSeparator)] =
+            DynamicPolystarProvider().apply(builder)
+    }
 }

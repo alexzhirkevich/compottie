@@ -147,6 +147,7 @@ internal abstract class BaseLayer() : Layer {
                 return
             }
 
+
             getBounds(drawScope, matrix, false, state, rect)
 
             intersectBoundsWithMatte(drawScope, rect, matrix, state)
@@ -157,7 +158,7 @@ internal abstract class BaseLayer() : Layer {
             // Intersect the mask and matte rect with the canvas bounds.
             // If the canvas has a transform, then we need to transform its bounds by its matrix
             // so that we know the coordinate space that the canvas is showing.
-            canvasBounds.set(0f, 0f, drawScope.size.width, drawScope.size.height)
+//            canvasBounds.set(0f, 0f, drawScope.size.width, drawScope.size.height)
             drawScope.drawIntoCanvas { canvas ->
 
 //                canvas.getMatrix(canvasMatrix)
@@ -166,7 +167,8 @@ internal abstract class BaseLayer() : Layer {
 //                    canvasMatrix.map(canvasBounds)
 //                }
 
-                rect.intersectOrReset(canvasBounds)
+
+//                rect.intersectOrReset(canvasBounds)
 
                 // Ensure that what we are drawing is >=1px of width and height.
                 // On older devices, drawing to an offscreen buffer of <1px would draw back as a black bar.
@@ -178,6 +180,7 @@ internal abstract class BaseLayer() : Layer {
                     // Clear the off screen buffer. This is necessary for some phones.
                     clearCanvas(canvas)
                     drawLayer(drawScope, matrix, alpha, state)
+
 
                     if (hasMask()) {
                         applyMasks(canvas, matrix, state)

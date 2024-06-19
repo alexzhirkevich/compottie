@@ -1,7 +1,6 @@
 package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Stable
-import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
@@ -58,20 +57,38 @@ private class DotLottieCompositionSpec(
 
         val zipSystem = ZipFileSystem(fileSystem, entries, path)
 
-        val manifest = DotLottieJson.decodeFromString<DotLottieManifest>(
-            zipSystem.read("manifest.json".toPath()).decodeToString()
-        )
+        val manifestPath = entries.keys.firstOrNull { it.name == "manifest.json" }
 
-        val animation = manifest.animations.first()
+        return if (manifestPath != null) {
 
-        val anim = zipSystem.read("animations/${animation.id}.json".toPath())
 
-        return LottieComposition.parse(anim.decodeToString()).apply {
-            speed = animation.speed
-            if (animation.loop) {
-                iterations = LottieConstants.IterateForever
+            val manifest = DotLottieJson.decodeFromString<DotLottieManifest>(
+                zipSystem.read(manifestPath).decodeToString()
+            )
+
+            val animation = manifest.animations.first()
+
+            val anim = zipSystem.read("animations/${animation.id}.json".toPath())
+
+            LottieComposition.parse(anim.decodeToString()).apply {
+                speed = animation.speed
+                if (animation.loop) {
+                    iterations = LottieConstants.IterateForever
+                }
+                prepare(DotLottieAssetsManager(zipSystem, manifestPath.parent))
             }
-            prepare(DotLottieAssetsManager(zipSystem))
+        } else {
+            val animPath = entries.keys.first { it.name.endsWith(".json", true) }
+            val anim = zipSystem.read(animPath)
+
+            LottieComposition.parse(anim.decodeToString()).apply {
+                prepare(
+                    assetsManager = DotLottieAssetsManager(
+                        zipFileSystem = zipSystem,
+                        root = animPath.parent
+                    )
+                )
+            }
         }
     }
 

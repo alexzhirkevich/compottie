@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
@@ -428,17 +429,15 @@ internal class TextLayer(
     ): Boolean {
         val position = document.wrapPosition?.toOffset()
         val size = document.wrapSize?.let { Size(it[0], it[1]) }
-        val lineStartY = if (position == null) {
-            0f
-        } else {
-            document.lineHeight * density.density + position.y
-        } - density.run { textStyle.lineHeight.toPx() }
+        val lineStartY = if (position == null)
+            0f else document.lineHeight + position.y
 
-        val lineOffset: Float = (lineIndex * document.lineHeight * density.density) + lineStartY
+        val lineOffset: Float = ((lineIndex-1) * document.lineHeight) + lineStartY
 
         val clip = painterProperties?.clipTextToBoundingBoxes == true
 
-        if (clip && size != null && position != null && lineOffset >= position.y + size.height + document.fontSize) {
+        if (clip && size != null && position != null &&
+            lineOffset >= position.y + size.height + document.fontSize) {
             return false
         }
 

@@ -40,7 +40,6 @@ private class NetworkAssetsManagerImpl(
             val url = try {
                 Url(path)
             } catch (t: URLParserException) {
-                L.logger.error("Failed to load lottie asset ${image.id} - incorrect url", t)
                 return null
             }
 
@@ -55,6 +54,4 @@ private class NetworkAssetsManagerImpl(
             null
         }
     }
-
-    override suspend fun font(font: LottieFont): Font? = null
 }

@@ -23,19 +23,6 @@ interface LottieAssetsManager {
      * */
     suspend fun image(image: LottieImage): ImageRepresentable?
 
-    /**
-     * Load font asset
-     *
-     * @param id unique asset id that is used for referring from animation layers
-     * @param path relative system path or web URL excluding file name. For example:
-     *
-     * - /path/to/images/
-     * - https://example.com/images/
-     *
-     * @param name asset name and extension (for example image.png)
-     * */
-    suspend fun font(font: LottieFont): Font?
-
     companion object {
 
         /**
@@ -50,17 +37,11 @@ interface LottieAssetsManager {
             override suspend fun image(image: LottieImage): ImageRepresentable? {
                 return managers.firstNotNullOfOrNull { it.image(image) }
             }
-
-            override suspend fun font(font: LottieFont): Font? {
-                return managers.firstNotNullOfOrNull { it.font(font) }
-            }
         }
 
         val Empty = object : LottieAssetsManager {
 
             override suspend fun image(image: LottieImage): ImageRepresentable? = null
-
-            override suspend fun font(font: LottieFont): Font? = null
         }
     }
 }

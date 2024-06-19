@@ -9,8 +9,8 @@ internal class TextRange(
     @SerialName("nm")
     val name : String? = null,
 
-    @SerialName("s")
-    val selector: TextRangeSelector? = null,
+//    @SerialName("s")
+//    val selector: TextRangeSelector? = null,
 
     @SerialName("a")
     val style : TextStyle? = null

@@ -13,6 +13,7 @@ import androidx.compose.ui.text.font.FontFamily
 import io.github.alexzhirkevich.compottie.assets.LottieImage
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.LottieFont
+import io.github.alexzhirkevich.compottie.assets.LottieFontManager
 import io.github.alexzhirkevich.compottie.dynamic.DynamicComposition
 import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.internal.LottieData
@@ -100,14 +101,15 @@ class LottieComposition internal constructor(
      * successfully loaded at prev [prepare] call) will not be loaded again
      * */
     suspend fun prepare(
-        assetsManager: LottieAssetsManager
+        assetsManager: LottieAssetsManager = LottieAssetsManager.Empty,
+        fontManager: LottieFontManager = LottieFontManager.Empty
     ) {
         coroutineScope {
             launch {
                 loadAssets(assetsManager)
             }
             launch {
-                loadFonts(assetsManager)
+                loadFonts(fontManager)
             }
         }
     }
@@ -139,7 +141,7 @@ class LottieComposition internal constructor(
     }
 
 
-    private suspend fun loadFonts(assetsManager: LottieAssetsManager) {
+    private suspend fun loadFonts(assetsManager: LottieFontManager) {
         fontMutex.withLock {
             coroutineScope {
                 fontsByFamily = lottieData.fonts?.list
@@ -156,18 +158,21 @@ class LottieComposition internal constructor(
                             )
 
                             it.font = f
+
                             if (f == null)
                                 null
-                            else it.family to f
+                            else listOf(it.family to f, it.name to f)
                         }
                     }
                     ?.awaitAll()
                     ?.filterNotNull()
+                    ?.flatten()
                     ?.groupBy { it.first }
                     ?.filterValues { it.isNotEmpty() }
                     ?.mapValues { FontFamily(it.value.map { it.second }) }
                     .orEmpty()
             }
+            println(fontsByFamily)
         }
     }
 
@@ -229,6 +234,7 @@ fun rememberLottieComposition(
 fun rememberLottieComposition(
     vararg keys : Any?,
     assetsManager: LottieAssetsManager = LottieAssetsManager.Empty,
+    fontManager: LottieFontManager = LottieFontManager.Empty,
     dynamic : DynamicComposition.() -> Unit = {},
     spec : suspend () -> LottieCompositionSpec,
 ) : LottieCompositionResult {
@@ -245,7 +251,10 @@ fun rememberLottieComposition(
                 val composition = updatedSpec().load().apply {
                     this.dynamic = DynamicCompositionProvider().apply(dynamic)
                 }
-                composition.prepare(assetsManager)
+                composition.prepare(
+                    assetsManager = assetsManager,
+                    fontManager = fontManager
+                )
                 result.complete(composition)
             } catch (c: CancellationException) {
                 result.completeExceptionally(c)

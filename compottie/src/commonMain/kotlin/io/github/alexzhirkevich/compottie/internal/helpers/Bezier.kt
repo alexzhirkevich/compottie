@@ -30,10 +30,11 @@ internal class Bezier(
 
     @Transient
     var curves: MutableList<CubicCurveData> = ArrayList(vertices.size)
+        private set
 
     @Transient
     var initialPoint: Offset = Offset.Zero
-
+        private set
 
     init {
         require(vertices.size == inTangents.size && vertices.size == outTangents.size){

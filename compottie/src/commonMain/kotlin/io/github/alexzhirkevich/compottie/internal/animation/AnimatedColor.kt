@@ -61,11 +61,20 @@ internal sealed interface AnimatedColor : KeyframeAnimation<Color>, Indexable {
 }
 
 internal fun FloatArray.toColor() = Color(
-    red = get(0),
-    green = get(1),
-    blue = get(2),
-    alpha = getOrNull(3) ?: 1f
+    red = get(0).toColorComponent(),
+    green = get(1).toColorComponent(),
+    blue = get(2).toColorComponent(),
+    alpha = getOrNull(3)?.toColorComponent() ?: 1f
 )
+
+private fun Float.toColorComponent() : Float = when (this) {
+    in COLOR_RANGE_01 -> this
+    in COLOR_RANGE_0255 -> this/255f
+    else -> this // will likely throw error of invalid color space
+}
+
+private val COLOR_RANGE_01 = 0f..1f
+private val COLOR_RANGE_0255 = 0f..255f
 
 
 internal class AnimatedColorSerializer : JsonContentPolymorphicSerializer<AnimatedColor>(

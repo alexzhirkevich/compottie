@@ -26,7 +26,7 @@ sealed interface DynamicComposition {
     fun layer(vararg path: String, builder: DynamicLayer.() -> Unit)
 
     /**
-     * Layer dynamic properties builder.
+     * Shape layer dynamic properties builder.
      *
      * Path is a chain of layers names up to the required layer.
      * All layers in the chain must have a name.
@@ -50,22 +50,10 @@ sealed interface DynamicComposition {
     fun shapeLayer(vararg path: String, builder: DynamicShapeLayer.() -> Unit)
 
     /**
-     * Layer dynamic properties builder.
+     * Image layer dynamic properties builder.
      *
      * Path is a chain of layers names up to the required layer.
      * All layers in the chain must have a name.
-     *
-     * Example:
-     *
-     * ```
-     * imageLayer("Image 1") {
-     *     image { source ->
-     *          DynamicImage(
-     *
-     *          )
-     *     }
-     * }
-     * ```
      * */
     fun imageLayer(vararg path: String, builder: DynamicImageLayer.() -> Unit)
 }

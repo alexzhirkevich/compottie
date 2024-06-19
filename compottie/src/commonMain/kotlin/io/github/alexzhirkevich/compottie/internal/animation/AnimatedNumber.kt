@@ -17,6 +17,7 @@ import kotlinx.serialization.json.jsonObject
 internal sealed class AnimatedNumber : KeyframeAnimation<Float>, Indexable {
 
     protected var dynamic: PropertyProvider<Float>? = null
+        private set
 
     fun dynamic(provider: PropertyProvider<Float>?) {
         dynamic = provider

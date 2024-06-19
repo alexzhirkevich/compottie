@@ -6,11 +6,14 @@ import io.github.alexzhirkevich.compottie.assets.ImageRepresentable
 import io.github.alexzhirkevich.compottie.assets.LottieImage
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.LottieFont
+import okio.FileSystem
 import okio.IOException
+import okio.Path
 import okio.Path.Companion.toPath
 
 internal class DotLottieAssetsManager(
     private val zipFileSystem: ZipFileSystem,
+    private val root : Path? = null
 ) : LottieAssetsManager by LottieAssetsManager.Empty {
 
     override suspend fun image(image: LottieImage): ImageRepresentable? {
@@ -39,7 +42,8 @@ internal class DotLottieAssetsManager(
             .joinToString("/")
 
         return try {
-            zipFileSystem.read(fullPath.toPath())
+            val r = this.root ?: "/".toPath()
+            zipFileSystem.read(r.resolve(fullPath.toPath(true)))
         } catch (t: IOException) {
             null
         }

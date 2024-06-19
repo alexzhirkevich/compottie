@@ -8,7 +8,6 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.compose)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.dokka)
     alias(libs.plugins.serialization)
     id("maven-publish")
     id("signing")
@@ -76,8 +75,6 @@ kotlin {
 
         val desktopMain by getting
         val wasmJsMain by getting
-
-
 
         val skikoMain by creating {
             dependsOn(commonMain.get())

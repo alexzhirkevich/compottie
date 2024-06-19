@@ -36,6 +36,7 @@ internal fun Vec2(x : Float, y : Float) : Vec2 = Offset(x,y)
 internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
 
     protected var dynamic: PropertyProvider<Vec2>? = null
+        private set
 
     fun dynamic(provider: PropertyProvider<Vec2>?) {
         dynamic = provider
@@ -170,9 +171,7 @@ internal class AnimatedVector2Serializer : JsonContentPolymorphicSerializer<Anim
 
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedVector2> {
 
-        val k = requireNotNull(element.jsonObject["k"]) {
-            "Animation vector must have 'k' property"
-        }
+        val k = element.jsonObject["k"]
 
         return when {
             element.jsonObject["s"]?.jsonPrimitive?.booleanOrNull == true ->

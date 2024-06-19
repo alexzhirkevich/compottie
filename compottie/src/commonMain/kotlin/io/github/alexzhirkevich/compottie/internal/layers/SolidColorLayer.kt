@@ -1,12 +1,12 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
+import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
@@ -16,6 +16,7 @@ import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.helpers.asComposeBlendMode
+import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -91,6 +92,9 @@ internal class SolidColorLayer(
     override var effects: List<LayerEffect> = emptyList()
 ) : BaseLayer() {
 
+    @Transient
+    private val rect = MutableRect(0f, 0f, 0f, 0f)
+
     private val color: Color by lazy {
 
         val hex = colorHex.substringAfter("#")
@@ -143,5 +147,18 @@ internal class SolidColorLayer(
         path.close()
 
         drawScope.drawContext.canvas.drawPath(path, paint)
+    }
+
+    override fun getBounds(
+        drawScope: DrawScope,
+        parentMatrix: Matrix,
+        applyParents: Boolean,
+        state: AnimationState,
+        outBounds: MutableRect
+    ) {
+        super.getBounds(drawScope, parentMatrix, applyParents, state, outBounds)
+        rect.set(0f, 0f, width, height)
+        boundsMatrix.map(rect)
+        outBounds.set(rect)
     }
 }
