@@ -76,12 +76,13 @@ internal class MergePathsShape(
 
         val hidden = dynamicShape?.hidden.derive(hidden, state)
 
-        if (hidden || mode == MergeMode.Add){
+        if (hidden || mode == MergeMode.Normal){
             pathContents.fastForEach {
                 path.addPath(it.getPath(state))
             }
         } else {
             when (mode) {
+                MergeMode.Add -> opFirstPathWithRest(PathOperation.Union, state)
                 MergeMode.Subtract -> opFirstPathWithRest(PathOperation.Difference, state)
                 MergeMode.Intersect -> opFirstPathWithRest(PathOperation.Intersect, state)
                 MergeMode.ExcludeIntersections -> opFirstPathWithRest(PathOperation.Xor, state)
