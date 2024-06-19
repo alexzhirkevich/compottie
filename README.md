@@ -204,7 +204,7 @@ Ktor HTTP client can be overrided with `client` parameter. `request` is a lambda
 
 Caching strategy can be set with `cacheStrategy` parameter. By default animations are cached in the device temp directory.
 
-The network module also brings the `NetworkAssetsManager` that have similar parameters and can be used to load image assets. This manager can't load fonts from the Internet, so if the animation have both URL images and fonts, you have to create combined assets manager with `LottieAssetsManager.combine`
+The network module also brings the `NetworkAssetsManager` that have similar parameters and can be used to load image assets
 
 Complete usage example:
 
