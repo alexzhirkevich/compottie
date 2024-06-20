@@ -21,5 +21,6 @@ internal class CharacterData(
     @SerialName("width")
     val width : Float? = null,
 
-    val data: CharacterData
+    @SerialName("data")
+    val data: CharacterPath
 )

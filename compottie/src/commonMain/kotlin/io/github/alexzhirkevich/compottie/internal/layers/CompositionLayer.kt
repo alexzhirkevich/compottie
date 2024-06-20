@@ -13,8 +13,8 @@ internal class CompositionLayer(
     private val composition: LottieComposition
 ) : BaseCompositionLayer() {
 
-    override val width: Float get() = composition.lottieData.width
-    override val height: Float get() = composition.lottieData.height
+    override val width: Float get() = composition.animation.width
+    override val height: Float get() = composition.animation.height
     override val timeRemapping: AnimatedNumber? get() = null
 
     override val masks: List<Mask>? get() = null
@@ -37,12 +37,12 @@ internal class CompositionLayer(
 
     override val blendMode: LottieBlendMode get() = LottieBlendMode.Normal
 
-    override val inPoint: Float get() = composition.lottieData.inPoint
-    override val outPoint: Float get() = composition.lottieData.outPoint
+    override val inPoint: Float get() = composition.animation.inPoint
+    override val outPoint: Float get() = composition.animation.outPoint
 
     override val name: String? = null
 
     override fun loadLayers(): List<Layer> {
-        return composition.lottieData.layers
+        return composition.animation.layers
     }
 }

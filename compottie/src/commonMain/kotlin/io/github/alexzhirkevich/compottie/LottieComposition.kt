@@ -12,12 +12,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.font.FontFamily
 import io.github.alexzhirkevich.compottie.assets.LottieImage
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
-import io.github.alexzhirkevich.compottie.assets.LottieFont
+import io.github.alexzhirkevich.compottie.assets.LottieFontSpec
 import io.github.alexzhirkevich.compottie.assets.LottieFontManager
 import io.github.alexzhirkevich.compottie.dynamic.DynamicComposition
 import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
-import io.github.alexzhirkevich.compottie.internal.LottieData
+import io.github.alexzhirkevich.compottie.internal.Animation
 import io.github.alexzhirkevich.compottie.internal.LottieJson
+import io.github.alexzhirkevich.compottie.internal.assets.CharacterData
+import io.github.alexzhirkevich.compottie.internal.assets.CharacterPath
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -35,18 +37,18 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @Stable
 class LottieComposition internal constructor(
-    internal val lottieData: LottieData,
+    internal val animation: Animation,
 ) {
 
     /**
      * Frame when animation becomes visible
      * */
-    val startFrame: Float get() = lottieData.inPoint
+    val startFrame: Float get() = animation.inPoint
 
     /**
      * Frame when animation becomes no longer visible
      * */
-    val endFrame: Float get() = lottieData.outPoint
+    val endFrame: Float get() = animation.outPoint
 
     /**
      * Animation duration
@@ -56,17 +58,17 @@ class LottieComposition internal constructor(
     /**
      * Animation frame rate
      * */
-    val frameRate: Float get() = lottieData.frameRate
+    val frameRate: Float get() = animation.frameRate
 
     /**
      * Animation intrinsic width
      * */
-    val width : Float get() = lottieData.width
+    val width : Float get() = animation.width
 
     /**
      * Animation intrinsic height
      * */
-    val height : Float get() = lottieData.height
+    val height : Float get() = animation.height
 
     /**
      * Some animations may contain predefined number of interactions.
@@ -94,6 +96,10 @@ class LottieComposition internal constructor(
         }
     private val fontMutex = Mutex()
 
+    internal val charGlyphs : Map<String, Map<String, CharacterData>> =
+        animation.chars.groupBy(CharacterData::fontFamily)
+            .mapValues { it.value.associateBy(CharacterData::character) }
+
     /**
      * Preload assets for instant animation displaying.
      *
@@ -116,7 +122,7 @@ class LottieComposition internal constructor(
 
     private suspend fun loadAssets(assetsManager: LottieAssetsManager) {
         coroutineScope {
-            lottieData.assets.mapNotNull { asset ->
+            animation.assets.mapNotNull { asset ->
                 when (asset) {
                     is ImageAsset -> {
                         if (asset.bitmap == null) {
@@ -144,11 +150,11 @@ class LottieComposition internal constructor(
     private suspend fun loadFonts(assetsManager: LottieFontManager) {
         fontMutex.withLock {
             coroutineScope {
-                fontsByFamily = lottieData.fonts?.list
+                fontsByFamily = animation.fonts?.list
                     ?.map {
                         async {
                             val f = it.font ?: assetsManager.font(
-                                LottieFont(
+                                LottieFontSpec(
                                     family = it.family,
                                     name = it.name,
                                     style = it.fontStyle,
@@ -172,17 +178,16 @@ class LottieComposition internal constructor(
                     ?.mapValues { FontFamily(it.value.map { it.second }) }
                     .orEmpty()
             }
-            println(fontsByFamily)
         }
     }
 
     internal fun marker(name: String?) =
-        lottieData.markers.firstOrNull { it.name == name }
+        animation.markers.firstOrNull { it.name == name }
 
     companion object {
         fun parse(json: String) : LottieComposition {
             return LottieComposition(
-                lottieData = LottieJson.decodeFromString(json),
+                animation = LottieJson.decodeFromString(json),
             )
         }
     }

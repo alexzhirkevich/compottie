@@ -101,8 +101,11 @@ fun App() {
         assetsManager = rememberResourcesAssetsManager(
             readBytes = Res::readBytes
         ),
-        fontManager = rememberResourcesFontManager {
-            Res.font.ComicNeue
+        fontManager = rememberResourcesFontManager { fontSpec ->
+            when (fontSpec.family) {
+                "Comic Neue" -> Res.font.ComicNeue
+                else -> Res.font.ComicNeue
+            }
         },
         dynamic = {
         }
@@ -110,9 +113,10 @@ fun App() {
 //        LottieCompositionSpec.DotLottie(ResourcesAssetsManager()) {
 //            Res.readBytes("files/$DOT_WITH_IMAGE")
 //        }
-        LottieCompositionSpec.Resource(ROBOT_404)
+        LottieCompositionSpec.Resource(ROBOT)
 //
 //        LottieCompositionSpec.Url(
+//            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/dalek.json",
 //            "https://dotlottie.io/sample_files/animation-external-image.lottie",
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/august_view_pulse.zip",
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/anim_jpg.zip",

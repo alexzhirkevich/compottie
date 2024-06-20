@@ -1,10 +1,7 @@
 package io.github.alexzhirkevich.compottie
 
-import io.github.alexzhirkevich.compottie.internal.LottieData
+import io.github.alexzhirkevich.compottie.internal.Animation
 import io.github.alexzhirkevich.compottie.internal.LottieJson
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 object L {
 
@@ -14,7 +11,7 @@ object L {
      * Warmup JSON parser. The first animation parsing will be much faster
      * */
     fun warmup() {
-        LottieJson.decodeFromString<LottieData>(warmupAnim)
+        LottieJson.decodeFromString<Animation>(warmupAnim)
     }
 }
 

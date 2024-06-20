@@ -39,12 +39,6 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         layers.forEach { it.onCreate(composition) }
     }
 
-//    private val remappedState  by lazy {
-//        RemappedAnimationState(
-//            frameRemapping = ::remappedFrame
-//        )
-//    }
-
     abstract fun loadLayers(): List<Layer>
 
     private val layers by lazy {

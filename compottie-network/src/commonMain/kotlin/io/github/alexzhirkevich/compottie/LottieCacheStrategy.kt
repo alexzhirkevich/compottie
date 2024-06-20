@@ -7,7 +7,7 @@ interface LottieCacheStrategy {
 
     suspend fun save(
         url: String,
-        byteArray: ByteArray
+        bytes: ByteArray
     )
 
     suspend fun load(

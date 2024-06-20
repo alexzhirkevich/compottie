@@ -1,12 +1,8 @@
 package io.github.alexzhirkevich.compottie
 
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import io.github.alexzhirkevich.compottie.assets.ImageRepresentable
 import io.github.alexzhirkevich.compottie.assets.LottieImage
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
-import io.github.alexzhirkevich.compottie.assets.LottieFont
-import okio.FileSystem
 import okio.IOException
 import okio.Path
 import okio.Path.Companion.toPath

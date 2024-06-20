@@ -17,10 +17,10 @@ internal class PrecompositionLayer(
     val refId : String,
 
     @SerialName("w")
-    override val width : Float,
+    override var width : Float,
 
     @SerialName("h")
-    override val height : Float,
+    override var height : Float,
 
     @SerialName("tm")
     override val timeRemapping : AnimatedNumber? = null,

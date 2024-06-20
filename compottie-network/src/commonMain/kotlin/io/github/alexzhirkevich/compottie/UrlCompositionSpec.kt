@@ -10,7 +10,6 @@ import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.NetworkAssetsManager
 import io.github.alexzhirkevich.compottie.NetworkRequest
-import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.statement.bodyAsChannel
@@ -53,14 +52,11 @@ private class NetworkCompositionSpec(
 
     override suspend fun load(): LottieComposition {
 
-        cacheStrategy.load(url)?.let {
-            val delegate = if (byteArrayOf(it[0]).decodeToString() == "{") {
-                LottieCompositionSpec.JsonString(it.decodeToString())
-            } else {
-                LottieCompositionSpec.DotLottie(it)
+        try {
+            cacheStrategy.load(url)?.let {
+                return it.decodeLottieComposition(format)
             }
-
-            return delegate.load()
+        } catch (_: Throwable) {
         }
 
         val resp = request(this.client, Url(url))
@@ -69,30 +65,18 @@ private class NetworkCompositionSpec(
             throw ClientRequestException(resp, resp.bodyAsText())
         }
 
-        val contentType = resp.headers[HttpHeaders.ContentType]?.lowercase()
-
-        val isJson = format == LottieAnimationFormat.Json ||
-                contentType == null ||
-                contentType == "application/json" ||
-                contentType.startsWith("text")
-
         val bytes = resp.bodyAsChannel().toByteArray()
 
-        val delegate = if (isJson) {
-            LottieCompositionSpec.JsonString(bytes.decodeToString())
-        } else {
-            LottieCompositionSpec.DotLottie(bytes)
-        }
-
-        val composition = delegate.load()
+        val composition = bytes.decodeLottieComposition(format)
 
         try {
             cacheStrategy.save(url, bytes)
         } catch (t: Throwable) {
-            L.logger.error("Lottie disk cache strategy error", t)
+            L.logger.error("Url composition spec failed to cache downloaded animation", t)
         }
         return composition
     }
+
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -116,5 +100,22 @@ private class NetworkCompositionSpec(
         result = 31 * result + cacheStrategy.hashCode()
         result = 31 * result + request.hashCode()
         return result
+    }
+}
+
+
+private suspend fun ByteArray.decodeLottieComposition(
+    format: LottieAnimationFormat
+) : LottieComposition {
+    return when (format) {
+        LottieAnimationFormat.Json -> LottieCompositionSpec.JsonString(decodeToString()).load()
+        LottieAnimationFormat.DotLottie -> LottieCompositionSpec.DotLottie(this).load()
+        LottieAnimationFormat.Undefined -> {
+            try {
+                decodeLottieComposition(LottieAnimationFormat.Json)
+            } catch (t: Throwable) {
+                decodeLottieComposition(LottieAnimationFormat.DotLottie)
+            }
+        }
     }
 }

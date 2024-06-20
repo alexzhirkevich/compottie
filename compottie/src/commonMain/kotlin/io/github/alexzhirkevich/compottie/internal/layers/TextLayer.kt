@@ -5,12 +5,12 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
@@ -23,6 +23,7 @@ import androidx.compose.ui.util.fastForEachIndexed
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.animation.toColor
+import io.github.alexzhirkevich.compottie.internal.assets.CharacterData
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
@@ -37,6 +38,8 @@ import io.github.alexzhirkevich.compottie.internal.platform.charCount
 import io.github.alexzhirkevich.compottie.internal.platform.codePointAt
 import io.github.alexzhirkevich.compottie.internal.platform.isModifier
 import io.github.alexzhirkevich.compottie.internal.util.toOffset
+import io.github.alexzhirkevich.compottie.internal.utils.preScale
+import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -108,10 +111,20 @@ internal class TextLayer(
     ) : BaseLayer() {
 
     @Transient
-    private val fillPaint = DrawProperties(Fill)
+    private val fillProperties = DrawProperties(Fill)
 
     @Transient
-    private val strokePaint = DrawProperties(Stroke(0f))
+    private val fillPaint  =  Paint().apply {
+        isAntiAlias = true
+    }
+
+    @Transient
+    private val strokeProperties = DrawProperties(Stroke(0f))
+
+    @Transient
+    private val strokePaint = Paint().apply {
+        isAntiAlias = true
+    }
 
     @Transient
     private val textAnimation = textData.ranges.firstOrNull()
@@ -137,6 +150,9 @@ internal class TextLayer(
     @Transient
     private val stringBuilder = StringBuilder(2)
 
+    @Transient
+    private val matrix = Matrix()
+
     override fun drawLayer(
         drawScope: DrawScope,
         parentMatrix: Matrix,
@@ -151,8 +167,11 @@ internal class TextLayer(
 
             configurePaint(document, parentAlpha, state)
             configureTextStyle(drawScope, document, state)
-            drawTextWithFonts(drawScope, document)
-
+            if (state.composition.fontsByFamily.isEmpty() && state.composition.charGlyphs.isNotEmpty()){
+                drawTextWithGlyphs(drawScope, document, state)
+            } else {
+                drawTextWithFonts(drawScope, document)
+            }
             canvas.restore()
         }
     }
@@ -168,7 +187,7 @@ internal class TextLayer(
 
         val composition = state.composition
 
-        outBounds.set(0f, 0f, composition.lottieData.width, composition.lottieData.height)
+        outBounds.set(0f, 0f, composition.animation.width, composition.animation.height)
     }
 
     private fun configurePaint(document: TextDocument, parentAlpha: Float, state: AnimationState) {
@@ -179,45 +198,56 @@ internal class TextLayer(
 
         val strokeOpacity = textAnimation?.style?.strokeOpacity?.interpolatedNorm(state) ?: 1f
 
-        val fillH = textAnimation?.style?.fillHue?.interpolated(state)?.coerceIn(0f,360f)
-        val fillS = textAnimation?.style?.fillSaturation?.interpolated(state)?.coerceIn(0f,1f)
-        val fillB = textAnimation?.style?.fillBrightness?.interpolated(state)?.coerceIn(0f,1f)
+        val fillH = textAnimation?.style?.fillHue?.interpolated(state)?.coerceIn(0f, 360f)
+        val fillS = textAnimation?.style?.fillSaturation?.interpolated(state)?.coerceIn(0f, 1f)
+        val fillB = textAnimation?.style?.fillBrightness?.interpolated(state)?.coerceIn(0f, 1f)
 
-        fillPaint.color = if (fillH != null && fillS != null && fillB != null){
-             Color.hsl(fillH, fillS, fillB)
+        fillProperties.color = if (fillH != null && fillS != null && fillB != null) {
+            Color.hsl(fillH, fillS, fillB)
         } else {
             textAnimation?.style?.fillColor?.interpolated(state)
                 ?: document.fillColor?.toColor() ?: Color.Transparent
         }
 
-        fillPaint.alpha = (parentAlpha * transformOpacity * fillOpacity).coerceIn(0f,1f)
+        fillProperties.alpha = (parentAlpha * transformOpacity * fillOpacity).coerceIn(0f, 1f)
 
-        val strokeH = textAnimation?.style?.strokeHue?.interpolated(state)?.coerceIn(0f,360f)
-        val strokeS = textAnimation?.style?.strokeSaturation?.interpolated(state)?.coerceIn(0f,1f)
-        val strokeB = textAnimation?.style?.strokeBrightness?.interpolated(state)?.coerceIn(0f,1f)
+        fillPaint.color = fillProperties.color
+        fillPaint.alpha = fillProperties.alpha
 
-        strokePaint.color = if (strokeH != null && strokeS != null && strokeB != null){
+        val strokeH = textAnimation?.style?.strokeHue?.interpolated(state)?.coerceIn(0f, 360f)
+        val strokeS = textAnimation?.style?.strokeSaturation?.interpolated(state)?.coerceIn(0f, 1f)
+        val strokeB = textAnimation?.style?.strokeBrightness?.interpolated(state)?.coerceIn(0f, 1f)
+
+        strokeProperties.color = if (strokeH != null && strokeS != null && strokeB != null) {
             Color.hsl(strokeH, strokeS, strokeB)
         } else {
             textAnimation?.style?.strokeColor?.interpolated(state)
                 ?: document.strokeColor?.toColor() ?: Color.Transparent
         }
 
-        strokePaint.color = textAnimation?.style?.strokeColor?.interpolated(state)
+        strokeProperties.color = textAnimation?.style?.strokeColor?.interpolated(state)
             ?: document.strokeColor?.toColor() ?: Color.Transparent
 
 
-        strokePaint.alpha = (parentAlpha * transformOpacity * strokeOpacity).coerceIn(0f,1f)
+        strokeProperties.alpha = (parentAlpha * transformOpacity * strokeOpacity).coerceIn(0f, 1f)
 
         val strokeWidth = textAnimation?.style?.strokeWidth?.interpolated(state)
             ?: document.strokeWidth
 
-        if (strokePaint.style.width != strokeWidth){
-            strokePaint.style = Stroke(width = strokeWidth)
+        if (strokeProperties.style.width != strokeWidth) {
+            strokeProperties.style = Stroke(width = strokeWidth)
         }
+
+        strokePaint.color = strokeProperties.color
+        strokePaint.alpha = strokeProperties.alpha
+        strokePaint.strokeWidth = strokeWidth
     }
 
-    private fun configureTextStyle(drawScope: DrawScope, document: TextDocument, animationState: AnimationState) {
+    private fun configureTextStyle(
+        drawScope: DrawScope,
+        document: TextDocument,
+        animationState: AnimationState
+    ) {
 
         drawScope.run {
             val fontSize = document.fontSize.toSp()
@@ -234,7 +264,7 @@ internal class TextLayer(
             val lineSpacing = textAnimation?.style?.lineSpacing
                 ?.interpolated(animationState) ?: 0f
 
-            val  lineHeight = (document.lineHeight + lineSpacing).toSp()
+            val lineHeight = (document.lineHeight + lineSpacing).toSp()
 
             if (
                 textStyle.fontSize != fontSize ||
@@ -315,6 +345,43 @@ internal class TextLayer(
                 }
 
                 canvas.restore()
+            }
+        }
+    }
+
+    private fun drawTextWithGlyphs(
+        drawScope: DrawScope,
+        document: TextDocument,
+        state: AnimationState
+    ) {
+        // Split full text in multiple lines
+        val textLines = getTextLines(document.text ?: return)
+        val tracking = (document.textTracking ?: 0f) / 10f
+
+        val measurer = getTextMeasurer(drawScope, drawScope.layoutDirection)
+
+        val canvas = drawScope.drawContext.canvas
+
+        textLines.fastForEachIndexed { lineIndex, line ->
+            val boxWidth = document.wrapSize?.getOrNull(0) ?: 0f
+
+            val lines = splitGlyphTextIntoLines(measurer, line, boxWidth, tracking);
+
+            lines.forEach { l ->
+                canvas.save();
+
+                if (offsetCanvas(canvas, drawScope, document, lineIndex, l.width)) {
+                    drawGlyphTextLine(
+                        text = l.text,
+                        state = state,
+                        fontScale = document.fontSize,
+                        documentData = document,
+                        drawScope = drawScope,
+                        tracking = tracking
+                    )
+                }
+
+                canvas.restore();
             }
         }
     }
@@ -432,12 +499,13 @@ internal class TextLayer(
         val lineStartY = if (position == null)
             0f else document.lineHeight + position.y
 
-        val lineOffset: Float = ((lineIndex-1) * document.lineHeight) + lineStartY
+        val lineOffset: Float = ((lineIndex - 1) * document.lineHeight) + lineStartY
 
         val clip = painterProperties?.clipTextToBoundingBoxes == true
 
         if (clip && size != null && position != null &&
-            lineOffset >= position.y + size.height + document.fontSize) {
+            lineOffset >= position.y + size.height + document.fontSize
+        ) {
             return false
         }
 
@@ -479,6 +547,39 @@ internal class TextLayer(
         }
     }
 
+    private fun drawGlyphTextLine(
+        text: String,
+        state: AnimationState,
+        documentData: TextDocument,
+        fontScale: Float,
+        drawScope: DrawScope,
+        tracking: Float
+    ) {
+        val canvas = drawScope.drawContext.canvas
+        text.forEach { c ->
+            val character = state.composition.charGlyphs
+                .get(documentData.fontFamily)
+                ?.get(c.toString()) ?: return@forEach
+
+            drawCharacterAsGlyph(drawScope, state, character, fontScale, documentData)
+            val tx = (character.width ?: 0f) * fontScale + tracking
+            canvas.translate(tx, 0f)
+        }
+    }
+
+    private fun drawCharacterAsGlyph(
+      drawScope: DrawScope,
+      state: AnimationState,
+       character : CharacterData,
+      fontScale : Float,
+      document: TextDocument,
+    ) {
+        matrix.reset();
+        matrix.preTranslate(0f, -(document.baselineShift ?: 0f))
+        matrix.preScale(fontScale, fontScale);
+        character.data.draw(drawScope, state, matrix, strokePaint, fillPaint)
+    }
+
     private fun codePointToString(text: String, startIndex: Int): String {
         val firstCodePoint: Int = text.codePointAt(startIndex)
         val firstCodePointLength: Int = charCount(firstCodePoint)
@@ -514,11 +615,11 @@ internal class TextLayer(
         drawScope: DrawScope
     ) {
         if (documentData.strokeOverFill) {
-            drawCharacter(character, fillPaint, drawScope)
-            drawCharacter(character, strokePaint, drawScope)
+            drawCharacter(character, fillProperties, drawScope)
+            drawCharacter(character, strokeProperties, drawScope)
         } else {
-            drawCharacter(character, strokePaint, drawScope)
-            drawCharacter(character, fillPaint, drawScope)
+            drawCharacter(character, strokeProperties, drawScope)
+            drawCharacter(character, fillProperties, drawScope)
         }
     }
 

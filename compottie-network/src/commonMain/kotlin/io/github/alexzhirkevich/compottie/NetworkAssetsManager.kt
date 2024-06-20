@@ -1,10 +1,8 @@
 package io.github.alexzhirkevich.compottie
 
-import androidx.compose.ui.text.font.Font
 import io.github.alexzhirkevich.compottie.assets.ImageRepresentable
 import io.github.alexzhirkevich.compottie.assets.LottieImage
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
-import io.github.alexzhirkevich.compottie.assets.LottieFont
 import io.ktor.client.HttpClient
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.URLParserException
@@ -43,12 +41,19 @@ private class NetworkAssetsManagerImpl(
                 return null
             }
 
-            cacheStrategy.load(path)?.let {
-                return ImageRepresentable.Bytes(it)
-            }
+            try {
+                cacheStrategy.load(path)?.let {
+                    return ImageRepresentable.Bytes(it)
+                }
+            } catch (_: Throwable) { }
 
             val bytes = request(client, url).bodyAsChannel().toByteArray()
-            cacheStrategy.save(path, bytes)
+
+            try {
+                cacheStrategy.save(path, bytes)
+            } catch (e: Throwable) {
+                L.logger.error("NetworkAssetsManager failed to cache downloaded asset", e)
+            }
             ImageRepresentable.Bytes(bytes)
         } catch (t: Throwable) {
             null

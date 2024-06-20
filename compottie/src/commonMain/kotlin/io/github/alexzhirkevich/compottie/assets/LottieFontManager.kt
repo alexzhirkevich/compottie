@@ -1,9 +1,6 @@
 package io.github.alexzhirkevich.compottie.assets
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.Font
 
 /**
@@ -23,12 +20,12 @@ interface LottieFontManager {
      *
      * @param name asset name and extension (for example image.png)
      * */
-    suspend fun font(font: LottieFont): Font?
+    suspend fun font(font: LottieFontSpec): Font?
 
     companion object {
 
         val Empty = object : LottieFontManager {
-            override suspend fun font(font: LottieFont): Font? = null
+            override suspend fun font(font: LottieFontSpec): Font? = null
         }
     }
 }

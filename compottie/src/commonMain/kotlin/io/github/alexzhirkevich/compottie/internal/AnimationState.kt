@@ -4,7 +4,6 @@ import io.github.alexzhirkevich.compottie.LottieComposition
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.jvm.JvmInline
 
 class AnimationState @PublishedApi internal constructor(
     frame : Float,
@@ -15,8 +14,8 @@ class AnimationState @PublishedApi internal constructor(
 
     val progress : Float
         get() {
-            val p = (frame - composition.lottieData.inPoint)/
-                    (composition.lottieData.outPoint - composition.lottieData.inPoint)
+            val p = (frame - composition.animation.inPoint)/
+                    (composition.animation.outPoint - composition.animation.inPoint)
             return p.coerceIn(0f,1f)
         }
 

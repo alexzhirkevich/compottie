@@ -2,7 +2,6 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Stable
 import okio.Buffer
-import okio.FileSystem
 import okio.use
 
 @Stable
@@ -10,33 +9,27 @@ class DiskCacheStrategy(
     private val diskCache: DiskCache = SharedDiskCache
 ) : LottieCacheStrategy {
 
-    override suspend fun save(url: String, byteArray: ByteArray) {
+    override suspend fun save(url: String, bytes: ByteArray) {
+        val editor = diskCache.openEditor(key(url)) ?: return
         try {
-            val editor = diskCache.openEditor(key(url)) ?: return
-            try {
-                diskCache.fileSystem.write(editor.data) {
-                    write(byteArray)
-                }
-            } finally {
-                editor.commit()
+            diskCache.fileSystem.write(editor.data) {
+                write(bytes)
             }
-        } catch (_: Throwable) {
+            editor.commit()
+        } catch (t: Throwable) {
+            editor.abort()
         }
     }
 
     override suspend fun load(url: String): ByteArray? {
-        try {
-            val snapshot = diskCache.openSnapshot(key(url)) ?: return null
+        val snapshot = diskCache.openSnapshot(key(url)) ?: return null
 
-            snapshot.use {
-                val bytes = diskCache.fileSystem.read(it.data) {
-                    readByteArray()
-                }
-
-                return bytes
+        snapshot.use {
+            val bytes = diskCache.fileSystem.read(it.data) {
+                readByteArray()
             }
-        } catch (t: Throwable) {
-            return null
+
+            return bytes
         }
     }
 

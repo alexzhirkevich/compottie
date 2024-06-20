@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.scale
@@ -23,6 +24,7 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.layers.BaseCompositionLayer
 import io.github.alexzhirkevich.compottie.internal.layers.CompositionLayer
+import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.layers.PainterProperties
 import kotlin.math.roundToInt
 
@@ -162,39 +164,46 @@ private class LottiePainter(
     clipToCompositionBounds : Boolean,
 ) : Painter() {
 
+    var progress: Float by mutableStateOf(initialProgress)
+
+
     override val intrinsicSize: Size = Size(
-        composition.lottieData.width,
-        composition.lottieData.height
+        composition.animation.width,
+        composition.animation.height
     )
 
-    var progress: Float by mutableStateOf(initialProgress)
+    private val intIntrinsicSize = IntSize(
+        intrinsicSize.width.roundToInt(),
+        intrinsicSize.height.roundToInt()
+    )
 
     private val matrix = Matrix()
 
     private var alpha by mutableStateOf(1f)
 
-    private val compositionLayer: BaseCompositionLayer = composition.lottieData
-        .layers
-        .takeIf {
-            it.size == 1                     // don't create extra composition layer
-        }?.first() as? BaseCompositionLayer  // if Precomposition is the only layer
-        ?: CompositionLayer(composition)
+    private val compositionLayer: Layer = CompositionLayer(composition)
+
+    private val frame: Float by derivedStateOf {
+        val p = composition.animation.inPoint +
+                (composition.animation.outPoint - composition.animation.inPoint) * progress
+        p.coerceAtLeast(0f)
+    }
+
+    private val animationState = AnimationState(frame, composition)
 
     init {
         val painterProperties = PainterProperties(
-            assets = composition.lottieData.assets.associateBy(LottieAsset::id),
+            assets = composition.animation.assets.associateBy(LottieAsset::id),
             fontFamilyResolver = fontFamilyResolver,
             clipToDrawBounds = clipToCompositionBounds,
             clipTextToBoundingBoxes = clipTextToBoundingBoxes,
         )
         compositionLayer.painterProperties = painterProperties
         compositionLayer.onCreate(composition)
-    }
 
-    private val frame: Float by derivedStateOf {
-        val p = composition.lottieData.inPoint +
-                (composition.lottieData.outPoint - composition.lottieData.inPoint) * progress
-        p.coerceAtLeast(0f)
+        composition.animation.chars.forEach {
+            it.data.onCreate(composition, painterProperties)
+        }
     }
 
     override fun applyAlpha(alpha: Float): Boolean {
@@ -205,27 +214,19 @@ private class LottiePainter(
         return true
     }
 
-    private val animationState = AnimationState(frame, composition)
-
     override fun DrawScope.onDraw() {
-
         matrix.reset()
 
         val scale = ContentScale.Fit.computeScaleFactor(intrinsicSize, size)
 
         val offset = Alignment.Center.align(
-            IntSize(
-                (intrinsicSize.width).roundToInt(),
-                (intrinsicSize.height).roundToInt()
+            size = intIntrinsicSize,
+            space = IntSize(
+                size.width.roundToInt(),
+                size.height.roundToInt()
             ),
-            IntSize(
-                (size.width).roundToInt(),
-                (size.height).roundToInt()
-            ),
-            layoutDirection
+            layoutDirection = layoutDirection
         )
-
-        matrix.reset()
 
         scale(scale.scaleX, scale.scaleY) {
             translate(offset.x.toFloat(), offset.y.toFloat()) {

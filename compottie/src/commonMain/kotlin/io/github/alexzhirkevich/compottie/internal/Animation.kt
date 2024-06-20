@@ -1,16 +1,16 @@
 package io.github.alexzhirkevich.compottie.internal
 
+import io.github.alexzhirkevich.compottie.internal.assets.CharacterData
 import io.github.alexzhirkevich.compottie.internal.assets.FontList
 import io.github.alexzhirkevich.compottie.internal.helpers.Marker
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
-import io.github.alexzhirkevich.compottie.internal.assets.LottieFontAsset
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 
 @Serializable
-internal data class LottieData(
+internal class Animation(
     @SerialName("fr")
     val frameRate : Float,
 
@@ -37,6 +37,8 @@ internal data class LottieData(
     val assets : List<LottieAsset> = emptyList(),
 
     val fonts : FontList? = null,
+
+    val chars : List<CharacterData> = emptyList(),
 
     val markers : List<Marker> = emptyList()
 )
