@@ -17,7 +17,10 @@ internal class CompositionLayer(
     override val height: Float get() = composition.animation.height
     override val timeRemapping: AnimatedNumber? get() = null
 
+    override var resolvingPath: ResolvingPath? = ResolvingPath.root
+
     override val masks: List<Mask>? get() = null
+
     override var effects: List<LayerEffect> = emptyList()
 
     override val transform: Transform = Transform()
@@ -41,6 +44,18 @@ internal class CompositionLayer(
     override val outPoint: Float get() = composition.animation.outPoint
 
     override val name: String? = null
+
+    override var painterProperties: PainterProperties?
+        get() = super.painterProperties
+        set(value) {
+            super.painterProperties = value
+
+            if (value != null) {
+                composition.animation.chars.forEach {
+                    it.data.onCreate(composition, value)
+                }
+            }
+        }
 
     override fun loadLayers(): List<Layer> {
         return composition.animation.layers

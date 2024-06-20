@@ -3,6 +3,7 @@ import io.github.alexzhirkevich.compottie.DefaultHttpClient
 import io.github.alexzhirkevich.compottie.DiskCacheStrategy
 import io.github.alexzhirkevich.compottie.DotLottie
 import io.github.alexzhirkevich.compottie.GetRequest
+import io.github.alexzhirkevich.compottie.InternalCompottieApi
 import io.github.alexzhirkevich.compottie.L
 import io.github.alexzhirkevich.compottie.LottieAnimationFormat
 import io.github.alexzhirkevich.compottie.LottieCacheStrategy
@@ -10,6 +11,7 @@ import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.NetworkAssetsManager
 import io.github.alexzhirkevich.compottie.NetworkRequest
+import io.github.alexzhirkevich.compottie.ioDispatcher
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.statement.bodyAsChannel
@@ -17,6 +19,9 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Url
 import io.ktor.http.isSuccess
 import io.ktor.util.toByteArray
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 /**
  * [LottieComposition] from web [url]
@@ -49,32 +54,45 @@ private class NetworkCompositionSpec(
     private val request : NetworkRequest,
 ) : LottieCompositionSpec {
 
+    @OptIn(InternalCompottieApi::class)
     override suspend fun load(cacheKey : Any?): LottieComposition {
+        return withContext(ioDispatcher()) {
+            mainMutex.withLock { mutexByUrl.getOrPut(url) { Mutex() } }.withLock {
+                try {
+                    LottieComposition.getOrCreate(cacheKey) {
+                        try {
+                            cacheStrategy.load(url)?.let {
+                                return@getOrCreate it.decodeLottieComposition(format)
+                            }
+                        } catch (_: Throwable) {
+                        }
 
-        return LottieComposition.getOrCreate(cacheKey) {
-            try {
-                cacheStrategy.load(url)?.let {
-                    return@getOrCreate it.decodeLottieComposition(format)
+                        val response = request(client, Url(url))
+
+                        if (!response.status.isSuccess()) {
+                            throw ClientRequestException(response, response.bodyAsText())
+                        }
+
+                        val bytes = response.bodyAsChannel().toByteArray()
+
+                        val composition = bytes.decodeLottieComposition(format)
+
+                        try {
+                            cacheStrategy.save(url, bytes)
+                        } catch (t: Throwable) {
+                            L.logger.error(
+                                "Url composition spec failed to cache downloaded animation",
+                                t
+                            )
+                        }
+                        composition
+                    }
+                } finally {
+                    mainMutex.withLock {
+                        mutexByUrl.remove(url)
+                    }
                 }
-            } catch (_: Throwable) {
             }
-
-            val resp = request(this.client, Url(url))
-
-            if (!resp.status.isSuccess()) {
-                throw ClientRequestException(resp, resp.bodyAsText())
-            }
-
-            val bytes = resp.bodyAsChannel().toByteArray()
-
-            val composition = bytes.decodeLottieComposition(format)
-
-            try {
-                cacheStrategy.save(url, bytes)
-            } catch (t: Throwable) {
-                L.logger.error("Url composition spec failed to cache downloaded animation", t)
-            }
-            composition
         }
     }
 
@@ -100,6 +118,11 @@ private class NetworkCompositionSpec(
         result = 31 * result + cacheStrategy.hashCode()
         result = 31 * result + request.hashCode()
         return result
+    }
+
+    companion object {
+        private val mainMutex = Mutex()
+        private val mutexByUrl = mutableMapOf<String, Mutex>()
     }
 }
 

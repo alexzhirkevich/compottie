@@ -1,6 +1,8 @@
 package io.github.alexzhirkevich.compottie.dynamic
 
-internal class DynamicCompositionProvider : DynamicComposition {
+import io.github.alexzhirkevich.compottie.internal.layers.ResolvingPath
+
+internal class DynamicCompositionProvider : DynamicProperties {
 
     private val layers = mutableMapOf<String, DynamicLayerProvider>()
 
@@ -32,7 +34,7 @@ internal class DynamicCompositionProvider : DynamicComposition {
         layers[path.joinToString(LayerPathSeparator)] = DynamicLayerProvider().apply(builder)
     }
 
-    operator fun get(name: String): DynamicLayerProvider? = layers[name]
+    operator fun get(path: ResolvingPath): DynamicLayerProvider? = layers[path.path]
 }
 
 @PublishedApi

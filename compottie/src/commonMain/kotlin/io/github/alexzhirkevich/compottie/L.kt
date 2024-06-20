@@ -27,6 +27,10 @@ object L {
     @ExperimentalCompottieApi
     var shaderCacheLimit : Int = 1000
 
+    @ExperimentalCompottieApi
+    var compositionCacheLimit : Int = 20
+
+
     /**
      * Warmup JSON parser. The first animation parsing will be much faster
      * */

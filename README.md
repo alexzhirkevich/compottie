@@ -272,11 +272,12 @@ Lottie allows you to update Lottie animation properties at runtime. Some reasons
 2. Change the progress of a specific layer to show download progress.
 3. Change the size and position of something in response to a gesture.
 
-Dynamic properties are created with `rememberLottieComposition`
+Dynamic properties are created with `rememberLottieDynamicProperties`
 
 ```kotlin
-val composition by rememberLottieComposition(
-    dynamic = {
+val painter = rememberLottiePainter(
+    composition = composition,
+    dynamicProperties = rememberLottieDynamicProperties {
         shapeLayer("Precomposition 1", "Shape Layer 4") {
             transform {
                 rotation { current -> current * progress }
@@ -295,9 +296,7 @@ val composition by rememberLottieComposition(
             }
         }
     }
-) {
-    // composition spec goes here
-)
+) 
 ```
 
 Note, that final property building blocks (such as rotations, color, alpha) are called on EACH ANIMATION FRAME and should be cached if they don't rely on progress and have allocations or hard computations.

@@ -8,6 +8,7 @@ import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.URLParserException
 import io.ktor.http.Url
 import io.ktor.util.toByteArray
+import kotlinx.coroutines.withContext
 
 /**
  * Asset manager that load images from web.
@@ -31,32 +32,36 @@ private class NetworkAssetsManagerImpl(
     private val request : NetworkRequest,
 ) : LottieAssetsManager {
 
+    @OptIn(InternalCompottieApi::class)
     override suspend fun image(image: LottieImage): ImageRepresentable? {
-        return try {
-            val path = image.path + image.name
-
-            val url = try {
-                Url(path)
-            } catch (t: URLParserException) {
-                return null
-            }
-
+        return withContext(ioDispatcher()) {
             try {
-                cacheStrategy.load(path)?.let {
-                    return ImageRepresentable.Bytes(it)
+                val path = image.path + image.name
+
+                val url = try {
+                    Url(path)
+                } catch (t: URLParserException) {
+                    return@withContext null
                 }
-            } catch (_: Throwable) { }
 
-            val bytes = request(client, url).bodyAsChannel().toByteArray()
+                try {
+                    cacheStrategy.load(path)?.let {
+                        return@withContext ImageRepresentable.Bytes(it)
+                    }
+                } catch (_: Throwable) {
+                }
 
-            try {
-                cacheStrategy.save(path, bytes)
-            } catch (e: Throwable) {
-                L.logger.error("NetworkAssetsManager failed to cache downloaded asset", e)
+                val bytes = request(client, url).bodyAsChannel().toByteArray()
+
+                try {
+                    cacheStrategy.save(path, bytes)
+                } catch (e: Throwable) {
+                    L.logger.error("NetworkAssetsManager failed to cache downloaded asset", e)
+                }
+                ImageRepresentable.Bytes(bytes)
+            } catch (t: Throwable) {
+                null
             }
-            ImageRepresentable.Bytes(bytes)
-        } catch (t: Throwable) {
-            null
         }
     }
 }

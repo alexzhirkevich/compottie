@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie
 
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
@@ -7,8 +8,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
 /**
  * A [LottieCompositionResult] subclass is returned from [rememberLottieComposition].
@@ -79,7 +83,7 @@ interface LottieCompositionResult : State<LottieComposition?> {
 
 
 @Stable
-internal class LottieCompositionResultImpl : LottieCompositionResult {
+internal class LottieCompositionResultImpl() : LottieCompositionResult {
 
     private var compositionDeferred = CompletableDeferred<LottieComposition>()
 
@@ -103,18 +107,20 @@ internal class LottieCompositionResultImpl : LottieCompositionResult {
 
     private val mutex = Mutex()
 
+    // MAIN THREAD!!!
     internal suspend fun complete(composition: LottieComposition) {
         mutex.withLock {
-            if (isComplete) return
+            if (isComplete) return@withLock
 
-            this.value = composition
+            value = composition
             compositionDeferred.complete(composition)
         }
     }
 
+    // MAIN THREAD!!!
     internal suspend fun completeExceptionally(error: Throwable) {
         mutex.withLock {
-            if (isComplete) return
+            if (isComplete) return@withLock
 
             this.error = error
             compositionDeferred.completeExceptionally(error)

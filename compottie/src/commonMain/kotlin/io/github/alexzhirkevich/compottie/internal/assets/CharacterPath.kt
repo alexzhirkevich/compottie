@@ -6,7 +6,6 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.layers.PainterProperties
 import io.github.alexzhirkevich.compottie.internal.layers.PrecompositionLayer
@@ -15,7 +14,6 @@ import io.github.alexzhirkevich.compottie.internal.shapes.Shape
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
@@ -91,7 +89,6 @@ internal sealed interface CharacterPath {
             painterProperties: PainterProperties
         ) {
             layer.painterProperties = painterProperties
-            layer.onCreate(composition)
         }
 
         override fun draw(

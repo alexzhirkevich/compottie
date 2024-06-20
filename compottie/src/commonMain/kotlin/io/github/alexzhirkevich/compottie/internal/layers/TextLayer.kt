@@ -170,7 +170,7 @@ internal class TextLayer(
             if (state.composition.fontsByFamily.isEmpty() && state.composition.charGlyphs.isNotEmpty()){
                 drawTextWithGlyphs(drawScope, document, state)
             } else {
-                drawTextWithFonts(drawScope, document)
+                drawTextWithFonts(state, drawScope, document)
             }
             canvas.restore()
         }
@@ -285,21 +285,17 @@ internal class TextLayer(
         }
     }
 
-    private fun getTextMeasurer(density: Density, layoutDirection: LayoutDirection): TextMeasurer {
+    private fun getTextMeasurer(state: AnimationState, density: Density, layoutDirection: LayoutDirection): TextMeasurer {
         textMeasurer?.let {
             if (lastDensity == density && lastLayoutDirection == layoutDirection) {
                 return it
             }
         }
 
-        val fontFamilyResolver = checkNotNull(
-            painterProperties?.fontFamilyResolver
-        )
-
         val tm = TextMeasurer(
             defaultDensity = density,
             defaultLayoutDirection = layoutDirection,
-            defaultFontFamilyResolver = fontFamilyResolver
+            defaultFontFamilyResolver = state.fontFamilyResolver
         )
 
         lastLayoutDirection = layoutDirection
@@ -309,8 +305,8 @@ internal class TextLayer(
         return tm
     }
 
-    private fun drawTextWithFonts(drawScope: DrawScope, document: TextDocument) {
-        val measurer = getTextMeasurer(drawScope, drawScope.layoutDirection)
+    private fun drawTextWithFonts(state: AnimationState, drawScope: DrawScope, document: TextDocument) {
+        val measurer = getTextMeasurer(state, drawScope, drawScope.layoutDirection)
 
         var tracking = document.textTracking?.div(10f) ?: 0f
 
@@ -333,7 +329,7 @@ internal class TextLayer(
             lines.fastForEachIndexed { idx, line ->
 
                 canvas.save()
-                if (offsetCanvas(canvas, drawScope, document, alLinesIdx + idx, line.width)) {
+                if (offsetCanvas(state, canvas, document, alLinesIdx + idx, line.width)) {
                     drawFontTextLine(
                         line.text,
                         measurer,
@@ -358,7 +354,7 @@ internal class TextLayer(
         val textLines = getTextLines(document.text ?: return)
         val tracking = (document.textTracking ?: 0f) / 10f
 
-        val measurer = getTextMeasurer(drawScope, drawScope.layoutDirection)
+        val measurer = getTextMeasurer(state, drawScope, drawScope.layoutDirection)
 
         val canvas = drawScope.drawContext.canvas
 
@@ -370,7 +366,7 @@ internal class TextLayer(
             lines.forEach { l ->
                 canvas.save();
 
-                if (offsetCanvas(canvas, drawScope, document, lineIndex, l.width)) {
+                if (offsetCanvas(state, canvas, document, lineIndex, l.width)) {
                     drawGlyphTextLine(
                         text = l.text,
                         state = state,
@@ -488,8 +484,8 @@ internal class TextLayer(
     }
 
     private fun offsetCanvas(
+        state: AnimationState,
         canvas: Canvas,
-        density: Density,
         document: TextDocument,
         lineIndex: Int,
         lineWidth: Float
@@ -501,9 +497,7 @@ internal class TextLayer(
 
         val lineOffset: Float = ((lineIndex - 1) * document.lineHeight) + lineStartY
 
-        val clip = painterProperties?.clipTextToBoundingBoxes == true
-
-        if (clip && size != null && position != null &&
+        if (state.clipTextToBoundingBoxes && size != null && position != null &&
             lineOffset >= position.y + size.height + document.fontSize
         ) {
             return false

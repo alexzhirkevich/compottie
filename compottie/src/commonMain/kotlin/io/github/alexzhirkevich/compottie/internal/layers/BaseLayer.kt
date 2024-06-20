@@ -14,8 +14,6 @@ import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.L
-import io.github.alexzhirkevich.compottie.LottieComposition
-import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
@@ -39,7 +37,7 @@ internal abstract class BaseLayer() : Layer {
 
     override var painterProperties: PainterProperties? = null
 
-    override var namePath: String? = null
+    override var resolvingPath : ResolvingPath? = null
 
     protected val boundsMatrix = Matrix()
     private val path = Path()
@@ -97,16 +95,6 @@ internal abstract class BaseLayer() : Layer {
         LayerEffectsApplier(this)
     }
 
-    override fun onCreate(composition: LottieComposition) {
-        super.onCreate(composition)
-        transform.autoOrient = autoOrient == BooleanInt.Yes
-
-        if (name != null) {
-            transform.dynamic = composition
-                .dynamic?.get(layerPath(namePath, name!!))?.transform
-        }
-    }
-
     abstract fun drawLayer(
         drawScope: DrawScope,
         parentMatrix: Matrix,
@@ -121,6 +109,13 @@ internal abstract class BaseLayer() : Layer {
         state: AnimationState,
     ) {
         try {
+            transform.autoOrient = autoOrient == BooleanInt.Yes
+            resolvingPath?.let {
+                val dynamic = state.dynamic?.get(it)?.transform
+                if (transform.dynamic !== dynamic){
+                    transform.dynamic = dynamic
+                }
+            }
 
             if (hidden || (inPoint ?: 0f) > state.frame || (outPoint ?: Float.MAX_VALUE) < state.frame)
                 return

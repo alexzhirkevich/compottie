@@ -1,9 +1,24 @@
 package io.github.alexzhirkevich.compottie.dynamic
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import io.github.alexzhirkevich.compottie.ExperimentalCompottieApi
+
+@Composable
+@ExperimentalCompottieApi
+fun rememberLottieDynamicProperties(
+    vararg keys : Any?,
+    composition: DynamicProperties.() -> Unit
+) : DynamicProperties {
+    return remember(keys) {
+        DynamicCompositionProvider().apply(composition)
+    }
+}
+
 /**
  * Lottie dynamic properties builder
  * */
-sealed interface DynamicComposition {
+sealed interface DynamicProperties {
 
     /**
      * Layer dynamic properties builder.

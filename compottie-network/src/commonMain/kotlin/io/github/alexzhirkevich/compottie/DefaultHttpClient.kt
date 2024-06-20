@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Stable
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.Url
@@ -9,6 +10,10 @@ import io.ktor.http.Url
 internal val DefaultHttpClient by lazy {
     HttpClient {
         expectSuccess = true
+        install(HttpRequestRetry) {
+            maxRetries = 2
+            constantDelay(250, 250)
+        }
     }
 }
 

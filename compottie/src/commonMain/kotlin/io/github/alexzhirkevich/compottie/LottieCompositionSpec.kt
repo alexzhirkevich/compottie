@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import kotlinx.coroutines.withContext
 import kotlin.jvm.JvmInline
 
 @Stable
@@ -29,9 +30,12 @@ private value class JsonStringImpl(
     private val jsonString: String
 ) : LottieCompositionSpec {
 
+    @OptIn(InternalCompottieApi::class)
     override suspend fun load(cacheKey: Any?): LottieComposition {
-        return LottieComposition.getOrCreate(cacheKey) {
-            LottieComposition.parse(jsonString)
+        return withContext(ioDispatcher()) {
+            LottieComposition.getOrCreate(cacheKey) {
+                LottieComposition.parse(jsonString)
+            }
         }
     }
 

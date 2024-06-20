@@ -4,11 +4,9 @@ import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.util.fastForEach
-import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
-import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
@@ -97,6 +95,16 @@ internal class ShapeLayer(
 
     @Transient
     private var dynamicLayer : DynamicLayerProvider? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                if (value is DynamicShapeLayerProvider) {
+                    shapes.fastForEach {
+                        it.setDynamicProperties(null, value)
+                    }
+                }
+            }
+        }
 
     @Transient
     private val contentGroup = ContentGroup(
@@ -110,20 +118,6 @@ internal class ShapeLayer(
         setContents(emptyList(), emptyList())
     }
 
-    override fun onCreate(composition: LottieComposition) {
-        super.onCreate(composition)
-
-        if (name != null) {
-            dynamicLayer = composition.dynamic?.get(layerPath(namePath, name))
-            (dynamicLayer as? DynamicShapeLayerProvider?)?.let { dp ->
-                shapes.fastForEach {
-                    it.setDynamicProperties(null, dp)
-                }
-            }
-        }
-    }
-
-
     override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
         contentGroup.draw(drawScope, parentMatrix, parentAlpha, state)
     }
@@ -135,6 +129,15 @@ internal class ShapeLayer(
         state: AnimationState,
         outBounds: MutableRect,
     ) {
+        resolvingPath?.let {
+            dynamicLayer = state.dynamic?.get(it)
+        }
+
+        (dynamicLayer as? DynamicShapeLayerProvider?)?.let { dp ->
+            shapes.fastForEach {
+                it.setDynamicProperties(null, dp)
+            }
+        }
         super.getBounds(drawScope, parentMatrix, applyParents, state, outBounds)
         contentGroup.getBounds(drawScope, boundsMatrix, applyParents, state, outBounds)
     }

@@ -43,7 +43,7 @@ import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 
 @OptIn(ExperimentalSerializationApi::class)
-internal val LottieJson by lazy {
+internal val LottieJson by lazy{
     Json {
         ignoreUnknownKeys = true
         isLenient = true

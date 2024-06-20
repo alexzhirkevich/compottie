@@ -6,7 +6,6 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
-import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
@@ -35,19 +34,13 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         isAntiAlias = true
     }
 
-    override fun onCreate(composition: LottieComposition) {
-        layers.forEach { it.onCreate(composition) }
-    }
-
     abstract fun loadLayers(): List<Layer>
 
     private val layers by lazy {
         val layers = loadLayers().filterIsInstance<BaseLayer>()
 
-        if (name != null) {
-            layers.fastForEach {
-                it.namePath = layerPath(this.namePath, name!!)
-            }
+        layers.fastForEach {
+            it.resolvingPath = this.resolvingPath?.resolveOrNull(it.name)
         }
 
         layers.fastForEach {
@@ -128,7 +121,7 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
             layers.fastForEachReversed { layer ->
                 // Only clip precomps. This mimics the way After Effects renders animations.
                 val ignoreClipOnThisLayer =
-                    isContainerLayer || painterProperties?.clipToDrawBounds == false
+                    isContainerLayer || !state.clipToCompositionBounds
 
                 if (!ignoreClipOnThisLayer && !newClipRect.isEmpty) {
                     canvas.clipRect(newClipRect)

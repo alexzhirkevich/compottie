@@ -10,7 +10,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.scale
@@ -20,9 +19,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.IntSize
+import io.github.alexzhirkevich.compottie.dynamic.DynamicProperties
+import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
-import io.github.alexzhirkevich.compottie.internal.layers.BaseCompositionLayer
 import io.github.alexzhirkevich.compottie.internal.layers.CompositionLayer
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.layers.PainterProperties
@@ -64,6 +64,7 @@ import kotlin.math.roundToInt
 @Composable
 fun rememberLottiePainter(
     composition : LottieComposition?,
+    dynamicProperties : DynamicProperties? = null,
     isPlaying: Boolean = true,
     restartOnPlay: Boolean = true,
     reverseOnRepeat: Boolean = false,
@@ -91,6 +92,7 @@ fun rememberLottiePainter(
     return rememberLottiePainter(
         composition = composition,
         progress = { progress.value },
+        dynamicProperties = dynamicProperties,
         clipToCompositionBounds = clipToCompositionBounds,
         clipTextToBoundingBoxes = clipTextToBoundingBoxes
     )
@@ -109,6 +111,7 @@ fun rememberLottiePainter(
 fun rememberLottiePainter(
     composition : LottieComposition?,
     progress : () -> Float,
+    dynamicProperties : DynamicProperties? = null,
     clipToCompositionBounds : Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
 ) : Painter {
@@ -118,19 +121,32 @@ fun rememberLottiePainter(
     val painter by produceState<Painter>(
         EmptyPainter,
         composition,
-        clipTextToBoundingBoxes,
-        clipToCompositionBounds,
-        fontFamilyResolver,
     ) {
 
         if (composition != null) {
             value = LottiePainter(
                 composition = composition,
                 initialProgress = progress(),
+                dynamicProperties = when (dynamicProperties) {
+                    is DynamicCompositionProvider -> dynamicProperties
+                    null -> dynamicProperties
+                },
                 clipTextToBoundingBoxes = clipTextToBoundingBoxes,
                 fontFamilyResolver = fontFamilyResolver,
                 clipToCompositionBounds = clipToCompositionBounds
             )
+        }
+    }
+
+    LaunchedEffect(
+        clipTextToBoundingBoxes,
+        clipToCompositionBounds,
+        fontFamilyResolver,
+    ){
+        (painter as? LottiePainter)?.let {
+            it.clipTextToBoundingBoxes = clipTextToBoundingBoxes
+            it.clipToCompositionBounds = clipToCompositionBounds
+            it.fontFamilyResolver = fontFamilyResolver
         }
     }
 
@@ -159,13 +175,13 @@ private object EmptyPainter : Painter() {
 private class LottiePainter(
     private val composition: LottieComposition,
     initialProgress : Float,
+    dynamicProperties: DynamicCompositionProvider?,
     fontFamilyResolver : FontFamily.Resolver,
     clipTextToBoundingBoxes : Boolean,
     clipToCompositionBounds : Boolean,
 ) : Painter() {
 
     var progress: Float by mutableStateOf(initialProgress)
-
 
     override val intrinsicSize: Size = Size(
         composition.animation.width,
@@ -176,6 +192,8 @@ private class LottiePainter(
         intrinsicSize.width.roundToInt(),
         intrinsicSize.height.roundToInt()
     )
+
+
 
     private val matrix = Matrix()
 
@@ -188,22 +206,25 @@ private class LottiePainter(
                 (composition.animation.outPoint - composition.animation.inPoint) * progress
         p.coerceAtLeast(0f)
     }
+    private val animationState = AnimationState(
+        frame = frame,
+        composition = composition,
+        fontFamilyResolver = fontFamilyResolver,
+        clipToDrawBounds = clipToCompositionBounds,
+        dynamicProperties = dynamicProperties,
+        clipTextToBoundingBoxes = clipTextToBoundingBoxes
+    )
 
-    private val animationState = AnimationState(frame, composition)
+    var clipTextToBoundingBoxes: Boolean by animationState::clipTextToBoundingBoxes
+    var clipToCompositionBounds: Boolean by animationState::clipToCompositionBounds
+    var fontFamilyResolver: FontFamily.Resolver by animationState::fontFamilyResolver
+    var dynamic: DynamicCompositionProvider? by animationState::dynamic
 
     init {
         val painterProperties = PainterProperties(
             assets = composition.animation.assets.associateBy(LottieAsset::id),
-            fontFamilyResolver = fontFamilyResolver,
-            clipToDrawBounds = clipToCompositionBounds,
-            clipTextToBoundingBoxes = clipTextToBoundingBoxes,
         )
         compositionLayer.painterProperties = painterProperties
-        compositionLayer.onCreate(composition)
-
-        composition.animation.chars.forEach {
-            it.data.onCreate(composition, painterProperties)
-        }
     }
 
     override fun applyAlpha(alpha: Float): Boolean {

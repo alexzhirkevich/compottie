@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -14,13 +15,10 @@ import io.github.alexzhirkevich.compottie.assets.LottieImage
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.LottieFontSpec
 import io.github.alexzhirkevich.compottie.assets.LottieFontManager
-import io.github.alexzhirkevich.compottie.dynamic.DynamicComposition
-import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.internal.Animation
 import io.github.alexzhirkevich.compottie.internal.LottieJson
 import io.github.alexzhirkevich.compottie.internal.assets.CharacterData
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -37,7 +35,8 @@ import kotlin.time.Duration.Companion.milliseconds
 /**
  * Load and prepare [LottieComposition] for displaying.
  *
- * Instance produces by [spec] will be remembered with until [key] are changed.
+ * Instance produces by [spec] will be remembered until [key] is changed. Those instances
+ * are cached across the whole application. Cache size can be configured with [L.compositionCacheLimit]
  *
  * You can configure various dynamic animation properties in the [dynamic] block.
  * */
@@ -45,10 +44,9 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 @Stable
 fun rememberLottieComposition(
-    key : Any? = null,
+    key : Any? = currentCompositeKeyHash,
     assetsManager: LottieAssetsManager = LottieAssetsManager.Empty,
     fontManager: LottieFontManager = LottieFontManager.Empty,
-    dynamic : DynamicComposition.() -> Unit = {},
     spec : suspend () -> LottieCompositionSpec,
 ) : LottieCompositionResult {
 
@@ -59,22 +57,23 @@ fun rememberLottieComposition(
     }
 
     LaunchedEffect(result) {
-        withContext(Dispatchers.IODispatcher) {
-            try {
-                val composition = updatedSpec().load(key).apply {
-                    this.dynamic = DynamicCompositionProvider().apply(dynamic)
+        try {
+            val composition = withContext(ioDispatcher()) {
+                updatedSpec().load(key).apply {
+                    prepare(
+                        assetsManager = assetsManager,
+                        fontManager = fontManager
+                    )
                 }
-                composition.prepare(
-                    assetsManager = assetsManager,
-                    fontManager = fontManager
-                )
-                result.complete(composition)
-            } catch (c: CancellationException) {
-                result.completeExceptionally(c)
-                throw c
-            } catch (t: Throwable) {
-                result.completeExceptionally(CompottieException("Composition failed to load", t))
             }
+            result.complete(composition)
+        } catch (c: CancellationException) {
+            result.completeExceptionally(c)
+            throw c
+        } catch (t: Throwable) {
+            result.completeExceptionally(
+                CompottieException("Composition failed to load", t)
+            )
         }
     }
 
@@ -93,26 +92,7 @@ fun rememberLottieComposition(
 @Stable
 fun rememberLottieComposition(
     spec : LottieCompositionSpec,
-) : LottieCompositionResult {
-
-    val result = remember(spec) {
-        LottieCompositionResultImpl()
-    }
-
-    LaunchedEffect(result) {
-        withContext(Dispatchers.IODispatcher) {
-            try {
-                result.complete(spec.load())
-            } catch (c: CancellationException) {
-                throw c
-            } catch (t: Throwable) {
-                result.completeExceptionally(t)
-            }
-        }
-    }
-
-    return result
-}
+) : LottieCompositionResult =rememberLottieComposition { spec }
 
 @Stable
 class LottieComposition internal constructor(
@@ -167,12 +147,6 @@ class LottieComposition internal constructor(
 
     internal var fontsByFamily: Map<String, FontFamily> = emptyMap()
 
-    internal var dynamic: DynamicCompositionProvider? = null
-        set(value) {
-            if (value == null || value.size > 0) {
-                field = value
-            }
-        }
     private val prepareMutex = Mutex()
 
     internal val charGlyphs: Map<String, Map<String, CharacterData>> =
@@ -284,20 +258,14 @@ class LottieComposition internal constructor(
             if (key == null)
                 return create()
 
-            return cacheMutex.withLock {
-                cache.getOrPut(key) {
-                    create()
-                }
-            }
+            return cache.getOrPutSuspend(key, create)
         }
 
         /**
          * Clear all previously cached compositions
          * */
-        suspend fun clearCache() = cache.clear()
+        fun clearCache() = cache.clear()
 
-        private val cacheMutex = Mutex()
-
-        private val cache = LruMap<LottieComposition>(limit = { 20 })
+        private val cache = LruMap<LottieComposition>(limit = L::compositionCacheLimit)
     }
 }

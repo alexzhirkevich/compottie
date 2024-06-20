@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.IntSize
+import io.github.alexzhirkevich.compottie.dynamic.ImageSpec
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
 import kotlinx.serialization.SerialName
@@ -44,6 +45,15 @@ internal class ImageAsset(
     val width: Int get() = w ?: bitmap?.width ?: 0
 
     val height: Int get() = h ?: bitmap?.height ?: 0
+
+    @Transient
+    val spec = ImageSpec(
+        id = id,
+        path = path,
+        name = fileName,
+        width = width,
+        height = height
+    )
 
     @OptIn(ExperimentalEncodingApi::class)
     @Transient

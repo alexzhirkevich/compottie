@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.CircularProgressIndicator
@@ -39,13 +42,12 @@ import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.LottieConstants
 import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
+import io.github.alexzhirkevich.compottie.dynamic.rememberLottieDynamicProperties
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import io.github.alexzhirkevich.compottie.rememberResourcesAssetsManager
 import io.github.alexzhirkevich.compottie.rememberResourcesFontManager
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 private val GRADIENT_ELLIPSE = "gradient_ellipse.json"
@@ -95,7 +97,8 @@ suspend fun LottieCompositionSpec.Companion.Resource(
 fun App() {
 
 //    return LottieFontExample()
-    return LottieList()
+//    return LottieList()
+
 
     val composition = rememberLottieComposition(
         assetsManager = rememberResourcesAssetsManager(
@@ -107,13 +110,11 @@ fun App() {
                 else -> Res.font.ComicNeue
             }
         },
-        dynamic = {
-        }
     ) {
 //        LottieCompositionSpec.DotLottie(ResourcesAssetsManager()) {
 //            Res.readBytes("files/$DOT_WITH_IMAGE")
 //        }
-        LottieCompositionSpec.Resource(ROBOT)
+        LottieCompositionSpec.Resource(WONDERS)
 //
 //        LottieCompositionSpec.Url(
 //            "https://assets-v2.lottiefiles.com/a/926b5f5e-117a-11ee-b83d-df9534a9fcf0/DhEx6yntOU.lottie",
@@ -201,10 +202,6 @@ fun LottieFontExample() {
         focus.requestFocus()
     }
 
-    val mutex = remember {
-        Mutex()
-    }
-
     Box(
         modifier = Modifier.fillMaxSize()
             .focusRequester(focus),
@@ -254,9 +251,7 @@ fun LottieFontExample() {
                                         painter = rememberLottiePainter(
                                             rememberLottieComposition {
                                                 // sometimes cmp resources freeze on simultaneous resources access
-                                                mutex.withLock {
-                                                    LottieCompositionSpec.Resource("mobilo/$anim.json")
-                                                }
+                                                LottieCompositionSpec.Resource("mobilo/$anim.json")
                                             }.value
                                         ),
                                         contentDescription = anim
@@ -287,24 +282,24 @@ fun LottieFontExample() {
 
 @Composable
 fun LottieList() {
-    LazyColumn {
-        items(100){
-            val composition by rememberLottieComposition(
-//                key = "https://dotlottie.io/sample_files/animation-external-image.lottie"
+    LazyVerticalGrid(columns = GridCells.FixedSize(100.dp)) {
+        items(1000){
+            val composition = rememberLottieComposition(
+                key = "ROBOT"
             ) {
-//                LottieCompositionSpec.Resource(ROBOT)
-                LottieCompositionSpec.Url(
-                    url = "https://dotlottie.io/sample_files/animation-external-image.lottie",
-                )
+                LottieCompositionSpec.Resource(ROBOT)
+//                LottieCompositionSpec.Url(
+//                    url = "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/dalek.json",
+//                )
             }
 
             val painter = rememberLottiePainter(
-                composition,
+                composition.value,
                 iterations = LottieConstants.IterateForever
             )
 
             Image(
-                modifier = Modifier.height(200.dp),
+                modifier = Modifier.height(100.dp),
                 painter = painter,
                 contentDescription = ""
             )

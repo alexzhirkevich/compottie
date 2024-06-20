@@ -22,9 +22,8 @@ import kotlin.math.hypot
 @OptIn(ExperimentalCompottieApi::class)
 internal class GradientCache {
 
-    private val linear = LruMap<Shader>(limit = { L.shaderCacheLimit })
-
-    private val radial = LruMap<Shader>(limit = { L.shaderCacheLimit })
+    private val linear = LruMap<Shader>(limit = L::shaderCacheLimit)
+    private val radial = LruMap<Shader>(limit = L::shaderCacheLimit)
 
     fun getOrPut(
         hash : Int,
@@ -32,6 +31,7 @@ internal class GradientCache {
         factory : () -> Shader
     ) : Shader {
         val map = if (linear) this.linear else this.radial
+
         return map.getOrPut(hash, factory)
     }
 }

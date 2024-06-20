@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Stable
 import okio.Buffer
+import okio.ByteString.Companion.encodeUtf8
 import okio.use
 
 @Stable
@@ -41,6 +42,6 @@ class DiskCacheStrategy(
         return 31 * diskCache.hashCode()
     }
 
-    private fun key(url: String) = Buffer().write(url.encodeToByteArray()).md5().hex()
+    private fun key(url: String) = url.encodeUtf8().sha256().hex()
 }
 
