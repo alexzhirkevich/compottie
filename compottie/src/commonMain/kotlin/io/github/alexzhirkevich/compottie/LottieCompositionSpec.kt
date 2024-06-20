@@ -2,14 +2,12 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
-import io.github.alexzhirkevich.compottie.dynamic.DynamicComposition
 import kotlin.jvm.JvmInline
 
 @Stable
 interface LottieCompositionSpec {
 
-    suspend fun load() : LottieComposition
+    suspend fun load(cacheKey : Any? = null) : LottieComposition
 
     companion object {
 
@@ -29,10 +27,12 @@ interface LottieCompositionSpec {
 @JvmInline
 private value class JsonStringImpl(
     private val jsonString: String
-) : LottieCompositionSpec  {
+) : LottieCompositionSpec {
 
-    override suspend fun load(): LottieComposition {
-        return LottieComposition.parse(jsonString)
+    override suspend fun load(cacheKey: Any?): LottieComposition {
+        return LottieComposition.getOrCreate(cacheKey) {
+            LottieComposition.parse(jsonString)
+        }
     }
 
     override fun toString(): String {

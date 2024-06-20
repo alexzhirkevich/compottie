@@ -27,6 +27,7 @@ import io.github.alexzhirkevich.compottie.internal.helpers.FillRule
 import io.github.alexzhirkevich.compottie.internal.helpers.asComposeBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.asPathFillType
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
+import io.github.alexzhirkevich.compottie.internal.platform.GradientCache
 import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.utils.firstInstanceOf
@@ -107,9 +108,8 @@ internal class GradientFillShape(
     @Transient
     private var dynamicShape : DynamicShapeProvider? = null
 
-
     @Transient
-    private val gradientCache = LinkedHashMap<Int, Shader>()
+    private val gradientCache = GradientCache()
 
     @Transient
     private var roundShape : RoundShape? = null

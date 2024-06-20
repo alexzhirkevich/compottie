@@ -41,9 +41,6 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
         }
 
         override fun interpolatedRaw(state: AnimationState): Path {
-//            return Path().apply {
-//                bezier.mapPath(this)
-//            }
             return interpolated(state)
         }
     }

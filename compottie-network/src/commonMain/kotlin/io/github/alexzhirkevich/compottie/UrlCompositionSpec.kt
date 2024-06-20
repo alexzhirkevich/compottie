@@ -14,7 +14,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.bodyAsText
-import io.ktor.http.HttpHeaders
 import io.ktor.http.Url
 import io.ktor.http.isSuccess
 import io.ktor.util.toByteArray
@@ -50,33 +49,34 @@ private class NetworkCompositionSpec(
     private val request : NetworkRequest,
 ) : LottieCompositionSpec {
 
-    override suspend fun load(): LottieComposition {
+    override suspend fun load(cacheKey : Any?): LottieComposition {
 
-        try {
-            cacheStrategy.load(url)?.let {
-                return it.decodeLottieComposition(format)
+        return LottieComposition.getOrCreate(cacheKey) {
+            try {
+                cacheStrategy.load(url)?.let {
+                    return@getOrCreate it.decodeLottieComposition(format)
+                }
+            } catch (_: Throwable) {
             }
-        } catch (_: Throwable) {
+
+            val resp = request(this.client, Url(url))
+
+            if (!resp.status.isSuccess()) {
+                throw ClientRequestException(resp, resp.bodyAsText())
+            }
+
+            val bytes = resp.bodyAsChannel().toByteArray()
+
+            val composition = bytes.decodeLottieComposition(format)
+
+            try {
+                cacheStrategy.save(url, bytes)
+            } catch (t: Throwable) {
+                L.logger.error("Url composition spec failed to cache downloaded animation", t)
+            }
+            composition
         }
-
-        val resp = request(this.client, Url(url))
-
-        if (!resp.status.isSuccess()) {
-            throw ClientRequestException(resp, resp.bodyAsText())
-        }
-
-        val bytes = resp.bodyAsChannel().toByteArray()
-
-        val composition = bytes.decodeLottieComposition(format)
-
-        try {
-            cacheStrategy.save(url, bytes)
-        } catch (t: Throwable) {
-            L.logger.error("Url composition spec failed to cache downloaded animation", t)
-        }
-        return composition
     }
-
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

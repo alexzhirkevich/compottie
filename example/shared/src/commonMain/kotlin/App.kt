@@ -95,7 +95,7 @@ suspend fun LottieCompositionSpec.Companion.Resource(
 fun App() {
 
 //    return LottieFontExample()
-//    return LottieList()
+    return LottieList()
 
     val composition = rememberLottieComposition(
         assetsManager = rememberResourcesAssetsManager(
@@ -116,6 +116,7 @@ fun App() {
         LottieCompositionSpec.Resource(ROBOT)
 //
 //        LottieCompositionSpec.Url(
+//            "https://assets-v2.lottiefiles.com/a/926b5f5e-117a-11ee-b83d-df9534a9fcf0/DhEx6yntOU.lottie",
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/dalek.json",
 //            "https://dotlottie.io/sample_files/animation-external-image.lottie",
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/august_view_pulse.zip",
@@ -288,7 +289,9 @@ fun LottieFontExample() {
 fun LottieList() {
     LazyColumn {
         items(100){
-            val composition by rememberLottieComposition {
+            val composition by rememberLottieComposition(
+//                key = "https://dotlottie.io/sample_files/animation-external-image.lottie"
+            ) {
 //                LottieCompositionSpec.Resource(ROBOT)
                 LottieCompositionSpec.Url(
                     url = "https://dotlottie.io/sample_files/animation-external-image.lottie",

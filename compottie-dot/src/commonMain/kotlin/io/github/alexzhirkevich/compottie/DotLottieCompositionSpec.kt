@@ -44,50 +44,52 @@ private class DotLottieCompositionSpec(
 ) : LottieCompositionSpec {
 
     @OptIn(InternalCompottieApi::class)
-    override suspend fun load(): LottieComposition {
+    override suspend fun load(key : Any?): LottieComposition {
 
-        val fileSystem = FakeFileSystem()
-        val path = "anim".toPath()
+        return LottieComposition.getOrCreate(key) {
+            val fileSystem = FakeFileSystem()
+            val path = "anim".toPath()
 
-        fileSystem.write(path) {
-            write(archive)
-        }
-
-        val entries = fileSystem.listZipEntries(path)
-
-        val zipSystem = ZipFileSystem(fileSystem, entries, path)
-
-        val manifestPath = entries.keys.firstOrNull { it.name == "manifest.json" }
-
-        return if (manifestPath != null) {
-
-
-            val manifest = DotLottieJson.decodeFromString<DotLottieManifest>(
-                zipSystem.read(manifestPath).decodeToString()
-            )
-
-            val animation = manifest.animations.first()
-
-            val anim = zipSystem.read("animations/${animation.id}.json".toPath())
-
-            LottieComposition.parse(anim.decodeToString()).apply {
-                speed = animation.speed
-                if (animation.loop) {
-                    iterations = LottieConstants.IterateForever
-                }
-                prepare(DotLottieAssetsManager(zipSystem, manifestPath.parent))
+            fileSystem.write(path) {
+                write(archive)
             }
-        } else {
-            val animPath = entries.keys.first { it.name.endsWith(".json", true) }
-            val anim = zipSystem.read(animPath)
 
-            LottieComposition.parse(anim.decodeToString()).apply {
-                prepare(
-                    assetsManager = DotLottieAssetsManager(
-                        zipFileSystem = zipSystem,
-                        root = animPath.parent
-                    )
+            val entries = fileSystem.listZipEntries(path)
+
+            val zipSystem = ZipFileSystem(fileSystem, entries, path)
+
+            val manifestPath = entries.keys.firstOrNull { it.name == "manifest.json" }
+
+            if (manifestPath != null) {
+
+
+                val manifest = DotLottieJson.decodeFromString<DotLottieManifest>(
+                    zipSystem.read(manifestPath).decodeToString()
                 )
+
+                val animation = manifest.animations.first()
+
+                val anim = zipSystem.read("animations/${animation.id}.json".toPath())
+
+                LottieComposition.parse(anim.decodeToString()).apply {
+                    speed = animation.speed
+                    if (animation.loop) {
+                        iterations = LottieConstants.IterateForever
+                    }
+                    prepare(DotLottieAssetsManager(zipSystem, manifestPath.parent))
+                }
+            } else {
+                val animPath = entries.keys.first { it.name.endsWith(".json", true) }
+                val anim = zipSystem.read(animPath)
+
+                LottieComposition.parse(anim.decodeToString()).apply {
+                    prepare(
+                        assetsManager = DotLottieAssetsManager(
+                            zipFileSystem = zipSystem,
+                            root = animPath.parent
+                        )
+                    )
+                }
             }
         }
     }

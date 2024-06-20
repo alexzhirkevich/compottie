@@ -11,7 +11,6 @@ plugins {
 buildscript {
     dependencies {
         classpath(libs.gp.atomicfu)
-
     }
 }
 

@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.compose)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.serialization)
+    id("kotlinx-atomicfu")
     id("maven-publish")
     id("signing")
 }
