@@ -22,8 +22,13 @@ dependencies {
     // For dotLottie (zip) animations
     implementation("io.github.alexzhirkevich:compottie-dot:<2x_version>")
 
-    // For Url animation and resources loading
-    implementation("io.github.alexzhirkevich:compottie-network:<2x_version>")   
+    // For Url animation and assets loading
+    implementation("io.github.alexzhirkevich:compottie-network:<2x_version>")
+
+    // For compose-resources LottieAssetsManager and LottieFontManager.
+    // This module doesn't include resources composition spec. 
+    // Animations from compose resources can be simply loaded with one line of code. See usage
+    implementation("io.github.alexzhirkevich:compottie-resources:<2x_version>")
 }
 ```
 
@@ -38,6 +43,7 @@ dependencies {
 - [LottieAnimatable](#lottieanimatable)
 - [dotLottie](#dotlottie)
 - [Images](#images)
+- [Fonts](#fonts)
 - [URL loading](#url-loading)
 - [Dynamic Properties](#dynamic-properties)
 
@@ -67,7 +73,9 @@ Or with the `rememberLottiePainter` overload that merges `rememberLottiePainter`
 @Composable
 fun Loader() {
     val composition by rememberLottieComposition {
-        LottieCompositionSpec.JsonString(Res.readBytes("files/anim.json").decodeToString())
+        LottieCompositionSpec.JsonString(
+            Res.readBytes("files/anim.json").decodeToString()
+        )
     }
 
     Image(
@@ -89,7 +97,9 @@ To create a `LottieComposition`:
 For example:
 ```kotlin
 val composition1 by rememberLottieComposition {
-    LottieCompositionSpec.JsonString(Res.readBytes("files/anim.json").decodeToString())
+    LottieCompositionSpec.JsonString(
+        Res.readBytes("files/anim.json").decodeToString()
+    )
 }
 val composition2 by rememberLottieComposition {
     LottieCompositionSpec.Url("https://...")
@@ -181,9 +191,48 @@ dotLottie animations are up to 10x smaller in size and can have auto-linked bund
 ## Images
 
 Images should be avoided whenever possible. They are much larger, less performant, and can lead to pixelation. Whenever possible, try and make your animation consist solely of vectors. However, Lottie does support images in one of 4 ways:
-1. Baked into the Lottie json file. This is done via an option in the exporter (such as teh Bodymovin After Effects plugin). When done, images are encoded as a base64 string and embedded directly in the json file. This is the simplest way to use images because everything is contained in a single file and no additional work is necessary to make them work.
-2. Zipped with the json file in a single zip file. When parsing the animation, Lottie will unzip the animation and automatically link any images in zip file to the composition. These zip files can be stored in assets and loaded via `LottieCompositionSpec.DotLottie` (requires `compottie-dot` module) or downloaded via the internet and loaded via `LottieCompositionSpec.Url`.
-3. Via dynamic properties.
+1. Baked into the Lottie json file. This is done via an option in the exporter (such as teh Bodymovin After Effects plugin). When done, images are encoded as a base64 string and embedded directly in the json file. This is the simplest way to use images because everything is contained in a single file and no additional work is necessary to make them work;
+2. Zipped with the json file in a single zip file. When parsing the animation, Lottie will unzip the animation and automatically link any images in zip file to the composition. These zip files can be stored in assets and loaded via `LottieCompositionSpec.DotLottie` (requires `compottie-dot` module) or downloaded via the internet and loaded via `LottieCompositionSpec.Url`;
+3. External images provided by `LottieAssetsManager`;
+4. Via dynamic properties.
+
+`LottieAssetsManager` should be passed to `rememberLottieComposition` to load external resources.
+`compottie-resources` provides ready-to-use implementation that loads assets from compose-resources:
+
+```kotlin
+val composition = rememberLottieComposition(
+    assetsManager = rememberResourcesAssetsManager(
+        directory = "files" // by default,
+        readBytes = Res::readBytes
+    )
+) {
+    LottieCompositionSpec.JsonString(
+        Res.readBytes("files/anim.json").decodeToString()
+    )
+}
+```
+
+## Fonts
+
+Text can be drawn in 2 ways: using fonts and using glyphs (when characters are baked to the animation as lottie shapes)
+
+`LottieFontManager` should be passed to `rememberLottieComposition` to use custom fonts.
+`compottie-resources` provides ready-to-use implementation that loads fonts from compose-resources:
+
+```kotlin
+val composition = rememberLottieComposition(
+    fontManager = rememberResourcesFontManager { fontSpec ->
+        when (fontSpec.family) {
+            "Comic Neue" -> Res.font.ComicNeue
+            else -> null // default font will be used
+        }
+    }
+) {
+    LottieCompositionSpec.JsonString(
+        Res.readBytes("files/anim.json").decodeToString()
+    )
+}
+```
 
 ## URL loading
 To load images remotely `compottie-network` module should be added as a dependensy. This module brings an additional composition spec called `LottieCompositionSpec.Url`
