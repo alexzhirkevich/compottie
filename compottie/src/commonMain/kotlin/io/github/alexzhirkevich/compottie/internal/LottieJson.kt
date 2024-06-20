@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal
 
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedGradient
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
@@ -120,6 +121,11 @@ internal val LottieJson by lazy {
             polymorphic(AnimatedColor::class) {
                 subclass(AnimatedColor.Default::class)
                 subclass(AnimatedColor.Animated::class)
+            }
+
+            polymorphic(AnimatedGradient::class) {
+                subclass(AnimatedGradient.Default::class)
+                subclass(AnimatedGradient.Animated::class)
             }
 
             polymorphic(AnimatedShape::class) {

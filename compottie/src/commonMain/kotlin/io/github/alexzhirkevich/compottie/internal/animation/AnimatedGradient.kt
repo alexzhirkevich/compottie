@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -10,9 +11,59 @@ import kotlinx.serialization.json.JsonClassDiscriminator
 import kotlin.jvm.JvmInline
 
 internal class ColorsWithStops(
-    val colorStops: List<Float>,
-    val colors : List<Color>
-)
+    size: Int
+) {
+    val colorStops: List<Float> get() = mColorStops
+    val colors: List<Color> get() = mColors
+
+    private val mColorStops: MutableList<Float> = ArrayList(size)
+    private val mColors: MutableList<Color> = ArrayList(size)
+
+    fun fill(colors: FloatArray, numberOfColors: Int) {
+        resizeTo(numberOfColors)
+
+        repeat(numberOfColors) {
+            mColorStops[it] = colors[it * 4]
+
+            val alpha = if (colors.size == numberOfColors * 6) {
+                colors[colors.lastIndex - numberOfColors * 2 + (it + 1) * 2]
+            } else 1f
+
+
+            mColors[it] =
+                Color(
+                    red = colors[it * 4 + 1],
+                    green = colors[it * 4 + 2],
+                    blue = colors[it * 4 + 3],
+                    alpha = alpha
+                )
+        }
+    }
+
+    fun interpolateBetween(a: ColorsWithStops, b: ColorsWithStops, progress: Float) {
+        val n = minOf(a.colors.size, b.colors.size)
+
+        resizeTo(n)
+
+        repeat(n) { i ->
+            mColors[i] = lerp(a.colors[i], b.colors[i], progress)
+            mColorStops[i] =
+                androidx.compose.ui.util.lerp(a.colorStops[i], b.colorStops[i], progress)
+        }
+    }
+
+    private fun resizeTo(size: Int) {
+        while (colorStops.size < size) {
+            mColorStops.add(0f)
+            mColors.add(Color.Transparent)
+        }
+        while (colorStops.size > size) {
+            mColorStops.removeLast()
+            mColors.removeLast()
+        }
+    }
+}
+
 
 @Serializable
 internal class GradientColors(
@@ -36,45 +87,66 @@ internal value class GradientType(val type : Byte) {
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonClassDiscriminator("a")
-internal sealed interface AnimatedGradient : KeyframeAnimation<ColorsWithStops> {
+internal abstract class AnimatedGradient : KeyframeAnimation<ColorsWithStops> {
 
-    var numberOfColors: Int
+    @Transient
+    var numberOfColors: Int = 0
 
     @SerialName("0")
     @Serializable
     class Default(
         @SerialName("k")
         val colorsVector: FloatArray,
-    ) : AnimatedGradient {
+    ) : AnimatedGradient() {
 
-        @Transient
-        override var numberOfColors: Int = 0
-
-        private val colors by lazy {
-            colorsVector.asGradient(numberOfColors)
+        private val tempColors by lazy {
+            ColorsWithStops(numberOfColors).apply {
+                fill(colorsVector, numberOfColors)
+            }
         }
 
         override fun interpolated(state: AnimationState): ColorsWithStops {
-            return colors
+            return tempColors
+        }
+    }
+
+    @SerialName("1")
+    @Serializable
+    class Animated(
+        @SerialName("k")
+        val keyframes: List<VectorKeyframe>,
+    ) : AnimatedGradient(), KeyframeAnimation<ColorsWithStops> {
+
+        private val tempColors by lazy {
+            ColorsWithStops(numberOfColors)
+        }
+
+        private val tempColorsA by lazy {
+            ColorsWithStops(numberOfColors)
+        }
+
+        private val tempColorsB by lazy {
+            ColorsWithStops(numberOfColors)
+        }
+
+        @Transient
+        private val delegate = BaseKeyframeAnimation(
+            expression = null,
+            keyframes = keyframes,
+            emptyValue = tempColors
+        ) { s, e, p ->
+            val progress = easingX.transform(p)
+
+            tempColorsA.fill(s, numberOfColors)
+            tempColorsB.fill(e, numberOfColors)
+
+            tempColors.apply {
+                interpolateBetween(tempColorsA, tempColorsB, progress)
+            }
+        }
+
+        override fun interpolated(state: AnimationState): ColorsWithStops {
+            return delegate.interpolated(state)
         }
     }
 }
-
-private fun FloatArray.asGradient(numberOfColors: Int) : ColorsWithStops = ColorsWithStops(
-    colorStops = (0 until numberOfColors).map {
-        this[it * 4]
-    },
-    colors = (0 until numberOfColors).map {
-
-        val alpha = if (size == numberOfColors * 6) {
-            this[lastIndex - numberOfColors * 2 + (it + 1) * 2]
-        } else 1f
-
-        Color(
-            red = this[it * 4 + 1],
-            green = this[it * 4 + 2],
-            blue = this[it * 4 + 3],
-            alpha = alpha
-        )
-    }
-)
