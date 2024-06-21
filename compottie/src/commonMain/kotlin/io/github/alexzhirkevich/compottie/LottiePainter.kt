@@ -25,7 +25,6 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.layers.CompositionLayer
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
-import io.github.alexzhirkevich.compottie.internal.layers.PainterProperties
 import kotlin.math.roundToInt
 
 /**
@@ -60,6 +59,8 @@ import kotlin.math.roundToInt
  * @param clipToCompositionBounds if animation should be clipped to the
  *  [composition].width x [composition].height
  * @param clipTextToBoundingBoxes if text should be clipped to its bounding boxes (if provided in animation)
+ * @param enableMergePaths enable experimental merge paths feature. Most of the time animation doesn't need
+ * it even if it contains merge paths. This feature should only be enabled for tested animations
  * */
 @Composable
 fun rememberLottiePainter(
@@ -73,8 +74,9 @@ fun rememberLottiePainter(
     iterations: Int = composition?.iterations ?: 1,
     cancellationBehavior: LottieCancellationBehavior = LottieCancellationBehavior.Immediately,
     useCompositionFrameRate: Boolean = false,
+    clipToCompositionBounds: Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
-    clipToCompositionBounds: Boolean = true
+    enableMergePaths: Boolean = false,
 ) : Painter {
 
     val progress = animateLottieCompositionAsState(
@@ -94,7 +96,8 @@ fun rememberLottiePainter(
         progress = { progress.value },
         dynamicProperties = dynamicProperties,
         clipToCompositionBounds = clipToCompositionBounds,
-        clipTextToBoundingBoxes = clipTextToBoundingBoxes
+        clipTextToBoundingBoxes = clipTextToBoundingBoxes,
+        enableMergePaths = enableMergePaths
     )
 }
 
@@ -106,6 +109,8 @@ fun rememberLottiePainter(
  * @param clipToCompositionBounds if drawing should be clipped to the
  *  [composition].width x [composition].height
  * @param clipTextToBoundingBoxes if text should be clipped to its bounding boxes (if provided in animation)
+ * @param enableMergePaths enable experimental merge paths feature. Most of the time animation doesn't need
+ * it even if it contains merge paths. This feature should only be enabled for tested animations
  * */
 @Composable
 fun rememberLottiePainter(
@@ -114,6 +119,7 @@ fun rememberLottiePainter(
     dynamicProperties : DynamicProperties? = null,
     clipToCompositionBounds : Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
+    enableMergePaths: Boolean = false,
 ) : Painter {
 
     val fontFamilyResolver = LocalFontFamilyResolver.current
@@ -133,7 +139,8 @@ fun rememberLottiePainter(
                 },
                 clipTextToBoundingBoxes = clipTextToBoundingBoxes,
                 fontFamilyResolver = fontFamilyResolver,
-                clipToCompositionBounds = clipToCompositionBounds
+                clipToCompositionBounds = clipToCompositionBounds,
+                enableMergePaths = enableMergePaths
             )
         }
     }
@@ -179,6 +186,7 @@ private class LottiePainter(
     fontFamilyResolver : FontFamily.Resolver,
     clipTextToBoundingBoxes : Boolean,
     clipToCompositionBounds : Boolean,
+    enableMergePaths : Boolean,
 ) : Painter() {
 
     var progress: Float by mutableStateOf(initialProgress)
@@ -212,20 +220,16 @@ private class LottiePainter(
         fontFamilyResolver = fontFamilyResolver,
         clipToDrawBounds = clipToCompositionBounds,
         dynamicProperties = dynamicProperties,
-        clipTextToBoundingBoxes = clipTextToBoundingBoxes
+        clipTextToBoundingBoxes = clipTextToBoundingBoxes,
+        enableMergePaths = enableMergePaths,
+        layer = compositionLayer,
+        assets = composition.animation.assets.associateBy(LottieAsset::id)
     )
 
     var clipTextToBoundingBoxes: Boolean by animationState::clipTextToBoundingBoxes
     var clipToCompositionBounds: Boolean by animationState::clipToCompositionBounds
     var fontFamilyResolver: FontFamily.Resolver by animationState::fontFamilyResolver
     var dynamic: DynamicCompositionProvider? by animationState::dynamic
-
-    init {
-        val painterProperties = PainterProperties(
-            assets = composition.animation.assets.associateBy(LottieAsset::id),
-        )
-        compositionLayer.painterProperties = painterProperties
-    }
 
     override fun applyAlpha(alpha: Float): Boolean {
         if (alpha !in 0f..1f)

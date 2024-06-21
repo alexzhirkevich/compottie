@@ -7,17 +7,30 @@ import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
-internal abstract class Keyframe<out T>() {
-    abstract val start: T?
-    abstract val end: T?
-    abstract val time: Float
-    abstract val hold : BooleanInt
-    abstract val inValue: BezierInterpolation?
-    abstract val outValue: BezierInterpolation?
+internal interface Keyframe<out T> {
+    val start: T?
+    val end: T?
+    val time: Float
+    val hold : BooleanInt
+    val inValue: BezierInterpolation?
+    val outValue: BezierInterpolation?
 
     val endHold get() = if (hold == BooleanInt.Yes) start else end
 
-    val easingX: Easing by lazy {
+    val easingX: Easing
+    val easingY: Easing
+}
+
+internal class BaseKeyframe<out T>(
+    override val start: T?,
+    override val end: T?,
+    override val time: Float,
+    override val hold : BooleanInt,
+    override val inValue: BezierInterpolation?,
+    override val outValue: BezierInterpolation?,
+) : Keyframe<T> {
+
+    override val easingX: Easing = kotlin.run {
         val i = inValue
         val o = outValue
 
@@ -39,17 +52,17 @@ internal abstract class Keyframe<out T>() {
         }
     }
 
-    val easingY by lazy {
+    override val easingY = kotlin.run {
 
         val i = inValue
         val o = outValue
 
         if (hold == BooleanInt.Yes || i == null || o == null) {
-            return@lazy LinearEasing
+            return@run LinearEasing
         }
 
         if (i.x.size < 2 || i.y.size < 2 || o.x.size < 2 || o.y.size == 2) {
-            return@lazy easingX
+            return@run easingX
         }
 
         PreciseCubicBezier(

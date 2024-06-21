@@ -29,8 +29,7 @@ internal class RoundShape(
     val radius : AnimatedNumber,
 ) : Shape {
 
-    @Transient
-    override lateinit var layer: Layer
+
 
     @Transient
     private var dynamicShape : DynamicShapeProvider? = null

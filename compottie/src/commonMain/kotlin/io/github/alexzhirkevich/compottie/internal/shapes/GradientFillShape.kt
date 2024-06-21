@@ -80,8 +80,6 @@ internal class GradientFillShape(
     val fillRule : FillRule? = null,
 ) : Shape, DrawingContent {
 
-    @Transient
-    override lateinit var layer: Layer
 
     @Transient
     private val path = Path().apply {
@@ -96,12 +94,10 @@ internal class GradientFillShape(
     @Transient
     private var paths: List<PathContent> = emptyList()
 
-    private val paint by lazy {
-        Paint().apply {
-            isAntiAlias = true
-            blendMode = layer.blendMode.asComposeBlendMode()
-        }
+    private val paint= Paint().apply {
+        isAntiAlias = true
     }
+
 
     @Transient
     private var dynamicFill : DynamicFillProvider? = null
@@ -117,7 +113,10 @@ internal class GradientFillShape(
     private val effectsState by lazy {
         LayerEffectsState()
     }
+
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
+
+        paint.blendMode = state.layer.blendMode.asComposeBlendMode()
 
         if (dynamicShape?.hidden.derive(hidden, state)) {
             return
@@ -147,7 +146,7 @@ internal class GradientFillShape(
             gradientCache = gradientCache
         )
 
-        layer.effectsApplier.applyTo(paint, state, effectsState)
+        state.layer.effectsApplier.applyTo(paint, state, effectsState)
 
         path.reset()
 

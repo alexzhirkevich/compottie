@@ -20,4 +20,11 @@ internal class TextDocumentKeyframe(
     override val hold: BooleanInt = BooleanInt.No,
     override val inValue: BezierInterpolation? = null,
     override val outValue: BezierInterpolation? = null
-) : Keyframe<TextDocument>()
+) : Keyframe<TextDocument> by BaseKeyframe(
+    start = start,
+    end = end,
+    time = time,
+    hold = hold,
+    inValue = inValue,
+    outValue = outValue
+)

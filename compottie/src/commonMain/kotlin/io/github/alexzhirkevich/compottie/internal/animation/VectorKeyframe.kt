@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.graphics.Path
+import io.github.alexzhirkevich.compottie.internal.helpers.Bezier
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -32,7 +33,14 @@ internal class VectorKeyframe(
 
     @SerialName("to")
     val outTangent: FloatArray? = null,
-) : Keyframe<FloatArray>()
+) : Keyframe<FloatArray> by BaseKeyframe(
+    start = start,
+    end = end,
+    time = time,
+    hold = hold,
+    inValue = inValue,
+    outValue = outValue
+)
 
 private fun FloatArray.ofNulls() = all { it == 0f }
 

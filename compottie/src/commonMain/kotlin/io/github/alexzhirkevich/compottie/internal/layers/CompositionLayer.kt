@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
 import io.github.alexzhirkevich.compottie.LottieComposition
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
@@ -45,19 +46,7 @@ internal class CompositionLayer(
 
     override val name: String? = null
 
-    override var painterProperties: PainterProperties?
-        get() = super.painterProperties
-        set(value) {
-            super.painterProperties = value
-
-            if (value != null) {
-                composition.animation.chars.forEach {
-                    it.data.onCreate(composition, value)
-                }
-            }
-        }
-
-    override fun loadLayers(): List<Layer> {
+    override fun compose(state: AnimationState): List<Layer> {
         return composition.animation.layers
     }
 }

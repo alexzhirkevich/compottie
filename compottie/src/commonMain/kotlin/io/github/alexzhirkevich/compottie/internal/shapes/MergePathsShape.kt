@@ -3,19 +3,15 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.util.fastForEach
-import androidx.compose.ui.util.fastForEachIndexed
-import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
-import io.github.alexzhirkevich.compottie.internal.content.ContentGroupBase
 import io.github.alexzhirkevich.compottie.internal.content.GreedyContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
-import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
-import io.github.alexzhirkevich.compottie.internal.layers.Layer
+import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -53,9 +49,6 @@ internal class MergePathsShape(
 ) : Shape, GreedyContent, PathContent {
 
     @Transient
-    override lateinit var layer: Layer
-
-    @Transient
     private val path = Path()
 
     @Transient
@@ -76,7 +69,7 @@ internal class MergePathsShape(
 
         val hidden = dynamicShape?.hidden.derive(hidden, state)
 
-        if (hidden || mode == MergeMode.Normal){
+        if (hidden || mode == MergeMode.Normal || !state.enableMergePaths){
             pathContents.fastForEach {
                 path.addPath(it.getPath(state))
             }
@@ -127,35 +120,17 @@ internal class MergePathsShape(
         remainderPath.reset()
         firstPath.reset()
 
+        path.reset()
+
+        if (pathContents.isEmpty())
+            return
+
         for (i in pathContents.size - 1 downTo 1) {
-            val content = pathContents[i]
-
-            if (content is ContentGroupBase) {
-                content.pathContents.fastForEachReversed { path ->
-                    val p = path.getPath(state)
-                    content.transform?.matrix(state)
-                        ?.let(p::transform)
-                    remainderPath.addPath(p)
-                }
-            } else {
-                remainderPath.addPath(content.getPath(state))
-            }
+            remainderPath.addPath(pathContents[i].getPath(state))
         }
 
-        val lastContent = pathContents[0]
-        if (lastContent is ContentGroupBase) {
-            lastContent.pathContents.fastForEach {
-                val p = it.getPath(state)
-//                lastContent.transform?.matrix(state)?.let(p::transform)
-                firstPath.addPath(p)
-            }
-        } else {
-            firstPath.set(lastContent.getPath(state))
-        }
+        firstPath.set(pathContents[0].getPath(state))
 
-
-//        firstPath.reset()
-//        firstPath.addRect(bounds)
         path.op(firstPath, remainderPath, op)
     }
 }

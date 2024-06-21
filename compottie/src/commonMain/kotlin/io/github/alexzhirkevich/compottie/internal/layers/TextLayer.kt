@@ -1,11 +1,13 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
 import androidx.compose.ui.geometry.MutableRect
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
@@ -15,7 +17,9 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.BaselineShift
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
@@ -36,6 +40,7 @@ import io.github.alexzhirkevich.compottie.internal.helpers.text.TextJustify
 import io.github.alexzhirkevich.compottie.internal.platform.addCodePoint
 import io.github.alexzhirkevich.compottie.internal.platform.charCount
 import io.github.alexzhirkevich.compottie.internal.platform.codePointAt
+import io.github.alexzhirkevich.compottie.internal.platform.getMatrix
 import io.github.alexzhirkevich.compottie.internal.platform.isModifier
 import io.github.alexzhirkevich.compottie.internal.util.toOffset
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
@@ -124,6 +129,7 @@ internal class TextLayer(
     @Transient
     private val strokePaint = Paint().apply {
         isAntiAlias = true
+        style = PaintingStyle.Stroke
     }
 
     @Transient
@@ -166,12 +172,21 @@ internal class TextLayer(
             canvas.concat(parentMatrix)
 
             configurePaint(document, parentAlpha, state)
-            configureTextStyle(drawScope, document, state)
-            if (state.composition.fontsByFamily.isEmpty() && state.composition.charGlyphs.isNotEmpty()){
-                drawTextWithGlyphs(drawScope, document, state)
-            } else {
+
+            val hasFontFamily = configureTextStyle(drawScope, document, state)
+
+            if (hasFontFamily) {
                 drawTextWithFonts(state, drawScope, document)
+            } else {
+                val glyphs = state.composition.findGlyphs(document.fontFamily)
+
+                if (glyphs != null) {
+                    drawTextWithGlyphs(drawScope, document, state, glyphs)
+                } else {
+                    drawTextWithFonts(state, drawScope, document)
+                }
             }
+
             canvas.restore()
         }
     }
@@ -247,42 +262,38 @@ internal class TextLayer(
         drawScope: DrawScope,
         document: TextDocument,
         animationState: AnimationState
-    ) {
+    ) : Boolean  = drawScope.run {
+        val fontSize = document.fontSize.toSp()
+        val baselineShift = document.baselineShift
+            ?.let { BaselineShift(it) }
+            ?: textStyle.baselineShift
 
-        drawScope.run {
-            val fontSize = document.fontSize.toSp()
-            val baselineShift = document.baselineShift
-                ?.let { BaselineShift(it) }
-                ?: textStyle.baselineShift
+        val fontFamily = animationState.composition.findFont(document.fontFamily)
 
-            val fontFamily = animationState.composition.fontsByFamily[document.fontFamily]
+        val letterSpacing = textAnimation?.style?.letterSpacing
+            ?.interpolated(animationState)?.toSp()
+            ?: textStyle.letterSpacing
 
-            val letterSpacing = textAnimation?.style?.letterSpacing
-                ?.interpolated(animationState)?.toSp()
-                ?: textStyle.letterSpacing
+        val lineHeight = document.lineHeight.toSp()
 
-            val lineSpacing = textAnimation?.style?.lineSpacing
-                ?.interpolated(animationState) ?: 0f
-
-            val lineHeight = (document.lineHeight + lineSpacing).toSp()
-
-            if (
-                textStyle.fontSize != fontSize ||
-                textStyle.baselineShift != baselineShift ||
-                textStyle.lineHeight != lineHeight ||
-                textStyle.fontFamily != fontFamily ||
-                textStyle.letterSpacing != letterSpacing
-            ) {
-                textStyle = textStyle.copy(
-                    baselineShift = baselineShift,
-                    fontSize = fontSize,
-                    lineHeight = lineHeight,
-                    fontFamily = fontFamily,
-                    letterSpacing = letterSpacing,
-                    color = Color.Red
-                )
-            }
+        if (
+            textStyle.fontSize != fontSize ||
+            textStyle.baselineShift != baselineShift ||
+            textStyle.lineHeight != lineHeight ||
+            textStyle.fontFamily != fontFamily ||
+            textStyle.letterSpacing != letterSpacing
+        ) {
+            textStyle = textStyle.copy(
+                baselineShift = baselineShift,
+                fontSize = fontSize,
+                lineHeight = lineHeight,
+                fontFamily = fontFamily,
+                letterSpacing = letterSpacing,
+                color = Color.Red
+            )
         }
+
+        fontFamily != null
     }
 
     private fun getTextMeasurer(state: AnimationState, density: Density, layoutDirection: LayoutDirection): TextMeasurer {
@@ -305,7 +316,11 @@ internal class TextLayer(
         return tm
     }
 
-    private fun drawTextWithFonts(state: AnimationState, drawScope: DrawScope, document: TextDocument) {
+    private fun drawTextWithFonts(
+        state: AnimationState,
+        drawScope: DrawScope,
+        document: TextDocument
+    ) {
         val measurer = getTextMeasurer(state, drawScope, drawScope.layoutDirection)
 
         var tracking = document.textTracking?.div(10f) ?: 0f
@@ -329,7 +344,7 @@ internal class TextLayer(
             lines.fastForEachIndexed { idx, line ->
 
                 canvas.save()
-                if (offsetCanvas(state, canvas, document, alLinesIdx + idx, line.width)) {
+                if (offsetCanvas(state, canvas, document, alLinesIdx + idx, line.width, true)) {
                     drawFontTextLine(
                         line.text,
                         measurer,
@@ -348,7 +363,8 @@ internal class TextLayer(
     private fun drawTextWithGlyphs(
         drawScope: DrawScope,
         document: TextDocument,
-        state: AnimationState
+        state: AnimationState,
+        glyphs : Map<String, CharacterData>
     ) {
         // Split full text in multiple lines
         val textLines = getTextLines(document.text ?: return)
@@ -358,22 +374,23 @@ internal class TextLayer(
 
         val canvas = drawScope.drawContext.canvas
 
-        textLines.fastForEachIndexed { lineIndex, line ->
+        textLines.fastForEachIndexed { outerIndex, line ->
             val boxWidth = document.wrapSize?.getOrNull(0) ?: 0f
 
             val lines = splitGlyphTextIntoLines(measurer, line, boxWidth, tracking);
 
-            lines.forEach { l ->
-                canvas.save();
+            lines.forEachIndexed { innerIndex, l ->
+                canvas.save()
 
-                if (offsetCanvas(state, canvas, document, lineIndex, l.width)) {
+                if (offsetCanvas(state, canvas, document, outerIndex + innerIndex, l.width,false)) {
                     drawGlyphTextLine(
                         text = l.text,
                         state = state,
-                        fontScale = document.fontSize,
+                        fontScale = document.fontSize / 100f,
                         documentData = document,
                         drawScope = drawScope,
-                        tracking = tracking
+                        tracking = tracking,
+                        glyphs = glyphs
                     )
                 }
 
@@ -488,30 +505,33 @@ internal class TextLayer(
         canvas: Canvas,
         document: TextDocument,
         lineIndex: Int,
-        lineWidth: Float
+        lineWidth: Float,
+        withFonts : Boolean,
     ): Boolean {
-        val position = document.wrapPosition?.toOffset()
-        val size = document.wrapSize?.let { Size(it[0], it[1]) }
-        val lineStartY = if (position == null)
-            0f else document.lineHeight + position.y
 
-        val lineOffset: Float = ((lineIndex - 1) * document.lineHeight) + lineStartY
+        val position = document.wrapPosition?.toOffset() ?: Offset.Zero
+        val size = document.wrapSize?.let { Size(it[0], it[1]) } ?: Size.Zero
 
-        if (state.clipTextToBoundingBoxes && size != null && position != null &&
-            lineOffset >= position.y + size.height + document.fontSize
-        ) {
+        val lineSpacing = textAnimation?.style?.lineSpacing?.interpolated(state) ?: 0f
+
+        var lineOffsetY = (lineIndex * (document.lineHeight + lineSpacing)) + position.y
+
+        if (withFonts) {
+            // compose draws text below the Y. Lottie expects it to be above the Y
+            lineOffsetY -= document.fontSize
+        }
+
+        if (state.clipTextToBoundingBoxes &&
+            lineOffsetY >= position.y + size.height + document.fontSize) {
             return false
         }
 
-        val lineStart = position?.x ?: 0f
-        val boxWidth = size?.width ?: 0f
-
         when (document.textJustify) {
-            TextJustify.Left -> canvas.translate(lineStart, lineOffset)
-            TextJustify.Right -> canvas.translate(lineStart + boxWidth - lineWidth, lineOffset)
+            TextJustify.Left -> canvas.translate(position.x, lineOffsetY)
+            TextJustify.Right -> canvas.translate(position.x + size.width - lineWidth, lineOffsetY)
             TextJustify.Center -> canvas.translate(
-                lineStart + boxWidth / 2f - lineWidth / 2f,
-                lineOffset
+                position.x + size.width / 2f - lineWidth / 2f,
+                lineOffsetY
             )
         }
         return true
@@ -531,7 +551,6 @@ internal class TextLayer(
             val charString: String = codePointToString(text, i)
             i += charString.length
 
-
             val measureResult = textMeasurer.measure(charString, textStyle)
 
             drawCharacterFromFont(measureResult, documentData, drawScope)
@@ -547,13 +566,13 @@ internal class TextLayer(
         documentData: TextDocument,
         fontScale: Float,
         drawScope: DrawScope,
-        tracking: Float
+        tracking: Float,
+        glyphs: Map<String, CharacterData>
     ) {
         val canvas = drawScope.drawContext.canvas
         text.forEach { c ->
-            val character = state.composition.charGlyphs
-                .get(documentData.fontFamily)
-                ?.get(c.toString()) ?: return@forEach
+
+            val character = glyphs[c.toString()] ?: return@forEach
 
             drawCharacterAsGlyph(drawScope, state, character, fontScale, documentData)
             val tx = (character.width ?: 0f) * fontScale + tracking
@@ -571,7 +590,7 @@ internal class TextLayer(
         matrix.reset();
         matrix.preTranslate(0f, -(document.baselineShift ?: 0f))
         matrix.preScale(fontScale, fontScale);
-        character.data.draw(drawScope, state, matrix, strokePaint, fillPaint)
+        character.data?.draw(drawScope, state, matrix, strokePaint, fillPaint)
     }
 
     private fun codePointToString(text: String, startIndex: Int): String {

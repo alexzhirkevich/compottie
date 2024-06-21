@@ -78,13 +78,9 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
         override val index: String? = null,
     ) : AnimatedVector2() {
 
-        private val path by lazy {
-            Path()
-        }
+        private val path = Path()
 
-        private val pathMeasure by lazy {
-            PathMeasure()
-        }
+        private val pathMeasure = PathMeasure()
 
         @Transient
         private val delegate: KeyframeAnimation<Vec2> = BaseKeyframeAnimation(

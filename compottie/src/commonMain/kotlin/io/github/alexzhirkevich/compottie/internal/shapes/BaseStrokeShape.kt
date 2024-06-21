@@ -102,7 +102,6 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
             strokeMiterLimit = strokeMiter
             strokeCap = lineCap.asStrokeCap()
             strokeJoin = lineJoin.asStrokeJoin()
-            blendMode = layer.blendMode.asComposeBlendMode()
         }
     }
     private val pm = ExtendedPathMeasure()
@@ -148,6 +147,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
             return
         }
 
+        paint.blendMode = state.layer.blendMode.asComposeBlendMode()
         paint.style = PaintingStyle.Stroke
 
         getBounds(drawScope, parentMatrix, false, state, boundsRect)
@@ -169,7 +169,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
 
         applyDashPatternIfNeeded(parentMatrix, state)
 
-        layer.effectsApplier.applyTo(paint, state, effectsState)
+        state.layer.effectsApplier.applyTo(paint, state, effectsState)
 
         roundShape?.applyTo(paint, state)
 

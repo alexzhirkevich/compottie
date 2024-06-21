@@ -39,13 +39,9 @@ private class AndroidExtendedPathMeasure(
     override val length: Float
         get() = internalPathMeasure.length
 
-    private val positionArray: FloatArray by lazy {
-        FloatArray(2)
-    }
+    private val positionArray: FloatArray  = FloatArray(2)
 
-    private val tangentArray: FloatArray by lazy {
-        FloatArray(2)
-    }
+    private val tangentArray: FloatArray = FloatArray(2)
 
     override fun getSegment(
         startDistance: Float,

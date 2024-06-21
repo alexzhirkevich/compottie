@@ -18,9 +18,9 @@ internal class CharacterData(
     @SerialName("style")
     val fontStyle : String? = null,
 
-    @SerialName("width")
+    @SerialName("w")
     val width : Float? = null,
 
     @SerialName("data")
-    val data: CharacterPath
+    val data: CharacterPath? = null
 )

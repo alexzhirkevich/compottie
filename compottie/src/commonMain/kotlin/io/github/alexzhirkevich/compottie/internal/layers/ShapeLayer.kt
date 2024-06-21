@@ -9,6 +9,7 @@ import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
+import io.github.alexzhirkevich.compottie.internal.content.ContentGroupImpl
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
@@ -87,12 +88,6 @@ internal class ShapeLayer(
     val shapes: List<Shape> = emptyList(),
 ) : BaseLayer() {
 
-    init {
-        shapes.forEach {
-            it.layer = this
-        }
-    }
-
     @Transient
     private var dynamicLayer : DynamicLayerProvider? = null
         set(value) {
@@ -107,13 +102,11 @@ internal class ShapeLayer(
         }
 
     @Transient
-    private val contentGroup = ContentGroup(
+    private val contentGroup : ContentGroup = ContentGroupImpl(
         name = name,
         hidden = { dynamicLayer?.hidden.derive(hidden, it) },
         contents = shapes,
-        transform = shapes.firstInstanceOf<TransformShape>()?.apply {
-            autoOrient = this@ShapeLayer.autoOrient == BooleanInt.Yes
-        }
+        transform = shapes.firstInstanceOf<TransformShape>()
     ).apply {
         setContents(emptyList(), emptyList())
     }
@@ -133,11 +126,6 @@ internal class ShapeLayer(
             dynamicLayer = state.dynamic?.get(it)
         }
 
-        (dynamicLayer as? DynamicShapeLayerProvider?)?.let { dp ->
-            shapes.fastForEach {
-                it.setDynamicProperties(null, dp)
-            }
-        }
         super.getBounds(drawScope, parentMatrix, applyParents, state, outBounds)
         contentGroup.getBounds(drawScope, boundsMatrix, applyParents, state, outBounds)
     }

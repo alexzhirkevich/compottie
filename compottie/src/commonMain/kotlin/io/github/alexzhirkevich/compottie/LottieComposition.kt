@@ -19,6 +19,7 @@ import io.github.alexzhirkevich.compottie.internal.Animation
 import io.github.alexzhirkevich.compottie.internal.LottieJson
 import io.github.alexzhirkevich.compottie.internal.assets.CharacterData
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
+import io.github.alexzhirkevich.compottie.internal.helpers.text.TextDocument
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -145,13 +146,28 @@ class LottieComposition internal constructor(
         @InternalCompottieApi
         set
 
-    internal var fontsByFamily: Map<String, FontFamily> = emptyMap()
+    private var fontsByFamily: Map<String, FontFamily> = emptyMap()
 
     private val prepareMutex = Mutex()
 
-    internal val charGlyphs: Map<String, Map<String, CharacterData>> =
-        animation.chars.groupBy(CharacterData::fontFamily)
+    private val charGlyphs: Map<String, Map<String, CharacterData>> =
+        animation.chars
+            .groupBy(CharacterData::fontFamily)
             .mapValues { it.value.associateBy(CharacterData::character) }
+
+    internal fun findFont(family: String?) : FontFamily? {
+        return fontsByFamily[family]
+    }
+
+    internal fun findGlyphs(family : String?) : Map<String, CharacterData>? {
+        return charGlyphs[family] ?: run {
+            val font = animation.fonts?.list
+                ?.find { it.name == family || it.family == family }
+                ?: return@run null
+
+            charGlyphs[font.family] ?: charGlyphs[font.name]
+        }
+    }
 
     private var isPrepared = false
 
@@ -166,7 +182,7 @@ class LottieComposition internal constructor(
         fontManager: LottieFontManager = LottieFontManager.Empty
     ) {
         prepareMutex.withLock {
-            if (!isPrepared) {
+//            if (!isPrepared) {
                 coroutineScope {
                     launch {
                         loadAssets(assetsManager)
@@ -177,7 +193,7 @@ class LottieComposition internal constructor(
                 }.invokeOnCompletion {
                     isPrepared = it == null
                 }
-            }
+//            }
         }
     }
 
@@ -266,6 +282,7 @@ class LottieComposition internal constructor(
          * */
         fun clearCache() = cache.clear()
 
+        @OptIn(ExperimentalCompottieApi::class)
         private val cache = LruMap<LottieComposition>(limit = L::compositionCacheLimit)
     }
 }

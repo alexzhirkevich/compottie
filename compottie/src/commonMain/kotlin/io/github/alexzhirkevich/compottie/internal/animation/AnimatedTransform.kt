@@ -9,6 +9,7 @@ import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.dynamic.toScaleFactor
 import io.github.alexzhirkevich.compottie.dynamic.toVec2
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.utils.Math
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.preRotate
@@ -30,8 +31,6 @@ internal abstract class AnimatedTransform{
     abstract val skew: AnimatedNumber?
     abstract val skewAxis: AnimatedNumber?
 
-    var autoOrient = false
-
     var dynamic : DynamicTransformProvider? = null
         set(value) {
             field = value
@@ -47,23 +46,16 @@ internal abstract class AnimatedTransform{
 
     protected val matrix: Matrix = Matrix()
 
-    private val skewMatrix1: Matrix by lazy {
-        Matrix()
-    }
+    private val skewMatrix1: Matrix = Matrix()
 
-    private val skewMatrix2: Matrix by lazy {
-        Matrix()
-    }
+    private val skewMatrix2: Matrix = Matrix()
 
-    private val skewMatrix3: Matrix by lazy {
-        Matrix()
-    }
+    private val skewMatrix3: Matrix = Matrix()
 
-    private val skewValues: FloatArray by lazy {
-        FloatArray(9)
-    }
+    private val skewValues: FloatArray = FloatArray(9)
 
     fun matrix(state: AnimationState): Matrix {
+        val autoOrient = state.layer.autoOrient == BooleanInt.Yes
 
         matrix.reset()
 

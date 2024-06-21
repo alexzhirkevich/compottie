@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.assets.PrecompositionAsset
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
@@ -83,8 +84,7 @@ internal class PrecompositionLayer(
     override val collapseTransform: BooleanInt = BooleanInt.No
 ) : BaseCompositionLayer() {
 
-    override fun loadLayers(): List<Layer> {
-        return (painterProperties?.assets?.get(refId) as? PrecompositionAsset?)
-            ?.layers.orEmpty()
+    override fun compose(state: AnimationState): List<Layer> {
+        return (state.assets[refId] as? PrecompositionAsset?)?.layers.orEmpty()
     }
 }

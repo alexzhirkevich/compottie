@@ -7,25 +7,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.isIdentity
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.L
-import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsApplier
-import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MaskMode
 import io.github.alexzhirkevich.compottie.internal.helpers.isInvert
 import io.github.alexzhirkevich.compottie.internal.helpers.isLuma
 import io.github.alexzhirkevich.compottie.internal.platform.Luma
 import io.github.alexzhirkevich.compottie.internal.platform.drawRect
+import io.github.alexzhirkevich.compottie.internal.platform.getMatrix
 import io.github.alexzhirkevich.compottie.internal.platform.isAndroidAtMost
 import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
 import io.github.alexzhirkevich.compottie.internal.platform.set
@@ -33,9 +34,7 @@ import io.github.alexzhirkevich.compottie.internal.utils.intersectOrReset
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.union
 
-internal abstract class BaseLayer() : Layer {
-
-    override var painterProperties: PainterProperties? = null
+internal abstract class BaseLayer : Layer {
 
     override var resolvingPath : ResolvingPath? = null
 
@@ -46,11 +45,10 @@ internal abstract class BaseLayer() : Layer {
     private val canvasMatrix = Matrix()
     private val canvasBounds = MutableRect(0f, 0f, 0f, 0f)
 
-    private val contentPaint by lazy {
-        Paint().apply {
-            isAntiAlias = true
-        }
+    private val contentPaint = Paint().apply {
+        isAntiAlias = true
     }
+
     private val clearPaint by lazy {
         Paint().apply {
             isAntiAlias = true
@@ -102,104 +100,106 @@ internal abstract class BaseLayer() : Layer {
         state: AnimationState,
     )
 
-    override fun draw(
+    final override fun draw(
         drawScope: DrawScope,
         parentMatrix: Matrix,
         parentAlpha: Float,
         state: AnimationState,
     ) {
         try {
-            transform.autoOrient = autoOrient == BooleanInt.Yes
-            resolvingPath?.let {
-                val dynamic = state.dynamic?.get(it)?.transform
-                if (transform.dynamic !== dynamic){
-                    transform.dynamic = dynamic
+            state.onLayer(this) {
+                resolvingPath?.let {
+                    val dynamic = state.dynamic?.get(it)?.transform
+                    if (transform.dynamic !== dynamic) {
+                        transform.dynamic = dynamic
+                    }
                 }
-            }
 
-            if (hidden || (inPoint ?: 0f) > state.frame || (outPoint ?: Float.MAX_VALUE) < state.frame)
-                return
+                if (hidden || (inPoint ?: 0f) > state.frame || (outPoint
+                        ?: Float.MAX_VALUE) < state.frame
+                ) return@onLayer
 
-            buildParentLayerListIfNeeded()
-            matrix.reset()
+                buildParentLayerListIfNeeded()
+                matrix.reset()
 
-            matrix.setFrom(parentMatrix)
-            parentLayers?.fastForEachReversed {
-                matrix.preConcat(it.transform.matrix(state))
-            }
+                matrix.setFrom(parentMatrix)
+                parentLayers?.fastForEachReversed {
+                    matrix.preConcat(it.transform.matrix(state))
+                }
 
-            var alpha = 1f
+                var alpha = 1f
 
-            transform.opacity?.interpolatedNorm(state)?.let {
-                alpha = (alpha * it).coerceIn(0f, 1f)
-            }
+                transform.opacity?.interpolatedNorm(state)?.let {
+                    alpha = (alpha * it).coerceIn(0f, 1f)
+                }
 
-            alpha = (alpha * parentAlpha.coerceIn(0f,1f))
+                alpha = (alpha * parentAlpha.coerceIn(0f, 1f))
 
-            if (matteLayer == null && !hasMask()) {
-                matrix.preConcat(transform.matrix(state))
-                drawLayer(drawScope, matrix, alpha, state)
-                return
-            }
-
-
-            getBounds(drawScope, matrix, false, state, rect)
-
-            intersectBoundsWithMatte(drawScope, rect, matrix, state)
-
-            matrix.preConcat(transform.matrix(state))
-            intersectBoundsWithMask(rect, matrix, state)
-
-            // Intersect the mask and matte rect with the canvas bounds.
-            // If the canvas has a transform, then we need to transform its bounds by its matrix
-            // so that we know the coordinate space that the canvas is showing.
-//            canvasBounds.set(0f, 0f, drawScope.size.width, drawScope.size.height)
-            drawScope.drawIntoCanvas { canvas ->
-
-//                canvas.getMatrix(canvasMatrix)
-//                if (!canvasMatrix.isIdentity()) {
-//                    canvasMatrix.invert()
-//                    canvasMatrix.map(canvasBounds)
-//                }
-
-
-//                rect.intersectOrReset(canvasBounds)
-
-                // Ensure that what we are drawing is >=1px of width and height.
-                // On older devices, drawing to an offscreen buffer of <1px would draw back as a black bar.
-                // https://github.com/airbnb/lottie-android/issues/1625
-                if (rect.width >= 1f && rect.height >= 1f) {
-                    contentPaint.alpha = 1f
-                    canvas.saveLayer(rect, contentPaint)
-
-                    // Clear the off screen buffer. This is necessary for some phones.
-                    clearCanvas(canvas)
+                if (matteLayer == null && !hasMask()) {
+                    matrix.preConcat(transform.matrix(state))
                     drawLayer(drawScope, matrix, alpha, state)
+                    return@onLayer
+                }
 
 
-                    if (hasMask()) {
-                        applyMasks(canvas, matrix, state)
+                getBounds(drawScope, matrix, false, state, rect)
+
+                intersectBoundsWithMatte(drawScope, rect, parentMatrix, state)
+
+                matrix.preConcat(transform.matrix(state))
+                intersectBoundsWithMask(rect, matrix, state)
+
+                // Intersect the mask and matte rect with the canvas bounds.
+                // If the canvas has a transform, then we need to transform its bounds by its matrix
+                // so that we know the coordinate space that the canvas is showing.
+                canvasBounds.set(0f, 0f, drawScope.size.width, drawScope.size.height)
+                drawScope.drawIntoCanvas { canvas ->
+
+                    canvas.getMatrix(canvasMatrix)
+                    if (!canvasMatrix.isIdentity()) {
+                        canvasMatrix.invert()
+                        canvasMatrix.map(canvasBounds)
                     }
 
-                    matteLayer?.let {
-                        canvas.saveLayer(rect, mattePaint, SAVE_FLAGS)
+
+                    rect.intersectOrReset(canvasBounds)
+//
+                    // Ensure that what we are drawing is >=1px of width and height.
+                    // On older devices, drawing to an offscreen buffer of <1px would draw back as a black bar.
+                    // https://github.com/airbnb/lottie-android/issues/1625
+                    if (rect.width >= 1f && rect.height >= 1f) {
+                        contentPaint.alpha = 1f
+                        canvas.saveLayer(rect, contentPaint)
+
+                        // Clear the off screen buffer. This is necessary for some phones.
                         clearCanvas(canvas)
-                        it.draw(drawScope, parentMatrix, alpha, state)
+                        drawLayer(drawScope, matrix, alpha, state)
+
+
+                        if (hasMask()) {
+                            applyMasks(canvas, matrix, state)
+                        }
+
+                        matteLayer?.let {
+                            canvas.saveLayer(rect, mattePaint, SAVE_FLAGS)
+                            clearCanvas(canvas)
+                            it.draw(drawScope, parentMatrix, alpha, state)
+                            canvas.restore()
+                        }
+
                         canvas.restore()
                     }
 
-                    canvas.restore()
+//                        val outlineMasksAndMattesPaint = Paint().apply {
+//                            style = PaintingStyle.Stroke
+//                            strokeWidth = 4f
+//                            color = Color.Red
+//                        }
+//                        canvas.drawRect(rect, outlineMasksAndMattesPaint)
+//                        outlineMasksAndMattesPaint.style = PaintingStyle.Fill
+//                        outlineMasksAndMattesPaint.color = Color(0x50EBEBEB)
+//                        canvas.drawRect(rect, outlineMasksAndMattesPaint)
                 }
-
-//            if (outlineMasksAndMattes && outlineMasksAndMattesPaint != null) {
-//                outlineMasksAndMattesPaint.setStyle(android.graphics.Paint.Style.STROKE)
-//                outlineMasksAndMattesPaint.setColor(-0x3d7fd)
-//                outlineMasksAndMattesPaint.setStrokeWidth(4f)
-//                canvas.drawRect(rect, outlineMasksAndMattesPaint)
-//                outlineMasksAndMattesPaint.setStyle(android.graphics.Paint.Style.FILL)
-//                outlineMasksAndMattesPaint.setColor(0x50EBEBEB)
-//                canvas.drawRect(rect, outlineMasksAndMattesPaint)
-//            }
             }
         } catch (t: Throwable) {
             L.logger.error("Lottie crashed in draw :(", t)
@@ -299,7 +299,6 @@ internal abstract class BaseLayer() : Layer {
                     if (mask.isInverted) {
                         return
                     }
-                    val b = path.getBounds()
                     maskBoundsRect.union(path.getBounds())
                 }
             }

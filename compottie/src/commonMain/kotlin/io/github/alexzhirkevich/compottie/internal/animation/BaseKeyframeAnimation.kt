@@ -20,13 +20,9 @@ internal class BaseKeyframeAnimation<T, K, out KF : Keyframe<K>>(
         sortedKeyframes[it].time..sortedKeyframes[it + 1].time
     }
 
-    private val firstFrame: Float by lazy {
-        sortedKeyframes.first().time
-    }
+    private val firstFrame: Float = sortedKeyframes.first().time
 
-    private val lastFrame: Float by lazy {
-        sortedKeyframes.last().time
-    }
+    private val lastFrame: Float = sortedKeyframes.last().time
 
     private val initialValue by lazy {
         keyframes.first().run {

@@ -19,6 +19,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.NoLiveLiterals
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,11 +28,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.draw
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import compottie.example.shared.generated.resources.ComicNeue
@@ -73,6 +81,8 @@ private val REPEATER = "repeater.json"
 private val AUTOORIENT = "autoorient.json"
 private val TEXT_WITH_PATH = "text_with_path.json"
 private val TEXT = "text.json"
+private val TEXT_GLYPHS = "text_glyphs.json"
+private val TEXT_OFFSET = "text_offset.json"
 private val IMAGE_ASSET = "image_asset.json"
 private val IMAGE_ASSET_EMBEDDED = "image_asset_embedded.json"
 
@@ -91,7 +101,6 @@ suspend fun LottieCompositionSpec.Companion.Resource(
     readBytes: suspend (path: String) -> ByteArray = { Res.readBytes(it) }
 ) : LottieCompositionSpec = JsonString(readBytes("$dir/$path").decodeToString())
 
-
 @OptIn(ExperimentalResourceApi::class, ExperimentalCompottieApi::class)
 @Composable
 fun App() {
@@ -107,23 +116,23 @@ fun App() {
         fontManager = rememberResourcesFontManager { fontSpec ->
             when (fontSpec.family) {
                 "Comic Neue" -> Res.font.ComicNeue
-                else -> Res.font.ComicNeue
+                else -> null
             }
         },
     ) {
 //        LottieCompositionSpec.DotLottie(ResourcesAssetsManager()) {
 //            Res.readBytes("files/$DOT_WITH_IMAGE")
 //        }
-        LottieCompositionSpec.Resource(WONDERS)
+//        LottieCompositionSpec.Resource(ROBOT)
 //
-//        LottieCompositionSpec.Url(
-//            "https://assets-v2.lottiefiles.com/a/926b5f5e-117a-11ee-b83d-df9534a9fcf0/DhEx6yntOU.lottie",
+        LottieCompositionSpec.Url(
+            "https://assets-v2.lottiefiles.com/a/cae79014-1161-11ee-8989-bf611d47f80c/HSa6KZQ7MY.lottie",
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/dalek.json",
 //            "https://dotlottie.io/sample_files/animation-external-image.lottie",
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/august_view_pulse.zip",
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/anim_jpg.zip",
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/ZipInlineImage.zip",
-//        )
+        )
     }
 
     // If you want to be aware of loading errors
@@ -148,6 +157,7 @@ fun App() {
         val painter  = rememberLottiePainter(
             composition = composition.value,
             progress = { progress },
+            clipToCompositionBounds = false
         )
         Image(
             modifier = Modifier

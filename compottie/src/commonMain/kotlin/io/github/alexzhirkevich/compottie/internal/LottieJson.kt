@@ -26,7 +26,6 @@ import io.github.alexzhirkevich.compottie.internal.shapes.FillShape
 import io.github.alexzhirkevich.compottie.internal.shapes.GradientFillShape
 import io.github.alexzhirkevich.compottie.internal.shapes.GradientStrokeShape
 import io.github.alexzhirkevich.compottie.internal.shapes.GroupShape
-import io.github.alexzhirkevich.compottie.internal.shapes.MergePathsShape
 import io.github.alexzhirkevich.compottie.internal.shapes.PathShape
 import io.github.alexzhirkevich.compottie.internal.shapes.PolystarShape
 import io.github.alexzhirkevich.compottie.internal.shapes.RectShape
@@ -78,7 +77,7 @@ internal val LottieJson by lazy{
                 subclass(GradientFillShape::class)
                 subclass(GradientStrokeShape::class)
                 subclass(GroupShape::class)
-                subclass(MergePathsShape::class)
+//                subclass(MergePathsShape::class)
                 subclass(PathShape::class)
                 subclass(PolystarShape::class)
                 subclass(RectShape::class)

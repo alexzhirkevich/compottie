@@ -57,8 +57,6 @@ internal sealed interface Layer : DrawingContent {
 
     val effectsApplier : LayerEffectsApplier
 
-    var painterProperties : PainterProperties?
-
     var resolvingPath : ResolvingPath?
 }
 
@@ -75,10 +73,6 @@ internal fun ResolvingPath.resolveOrNull(child: String?) : ResolvingPath? =
     if (child != null) resolve(child) else null
 
 internal val Layer.isContainerLayer get()   =  name == "__container"
-
-internal class PainterProperties(
-    val assets: Map<String, LottieAsset> = emptyMap(),
-)
 
 
 

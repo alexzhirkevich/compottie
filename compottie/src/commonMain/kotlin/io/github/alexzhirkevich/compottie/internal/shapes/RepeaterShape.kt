@@ -7,7 +7,6 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
-import io.github.alexzhirkevich.compottie.dynamic.PropertyProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
@@ -16,11 +15,10 @@ import io.github.alexzhirkevich.compottie.internal.animation.RepeaterTransform
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
+import io.github.alexzhirkevich.compottie.internal.content.ContentGroupImpl
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.GreedyContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
-import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
-import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import kotlinx.serialization.SerialName
@@ -49,9 +47,6 @@ internal class RepeaterShape(
     @SerialName("hd")
     override val hidden: Boolean = false
 ) : Shape, GreedyContent, DrawingContent, PathContent {
-
-    @Transient
-    override lateinit var layer: Layer
 
     @Transient
     private var contentGroup: ContentGroup? = null
@@ -140,7 +135,7 @@ internal class RepeaterShape(
             contents.removeFirst()
         }
 
-        contentGroup = ContentGroup(
+        contentGroup = ContentGroupImpl(
             name = name,
             hidden = { dynamicHidden?.hidden.derive(hidden, it) },
             contents = contentsList,

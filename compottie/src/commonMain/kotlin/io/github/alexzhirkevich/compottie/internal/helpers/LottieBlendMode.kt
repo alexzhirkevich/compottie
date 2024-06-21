@@ -31,23 +31,21 @@ internal fun LottieBlendMode.asComposeBlendMode() : BlendMode {
     return BlendModeMapping[this] ?: error("Unknown lottie blend mode: $this")
 }
 
-private val BlendModeMapping by lazy {
-    mapOf(
-        LottieBlendMode.Normal to BlendMode.SrcOver,
-        LottieBlendMode.Multiply to BlendMode.Multiply,
-        LottieBlendMode.Screen to BlendMode.Screen,
-        LottieBlendMode.Overlay to BlendMode.Overlay,
-        LottieBlendMode.Darken to BlendMode.Darken,
-        LottieBlendMode.Lighten to BlendMode.Lighten,
-        LottieBlendMode.ColorDodge to BlendMode.ColorDodge,
-        LottieBlendMode.ColorBurn to BlendMode.ColorBurn,
-        LottieBlendMode.HardLight to BlendMode.Hardlight,
-        LottieBlendMode.SoftLight to BlendMode.Softlight,
-        LottieBlendMode.Difference to BlendMode.Difference,
-        LottieBlendMode.Exclusion to BlendMode.Exclusion,
-        LottieBlendMode.Hue to BlendMode.Hue,
-        LottieBlendMode.Saturation to BlendMode.Saturation,
-        LottieBlendMode.Color to BlendMode.Color,
-        LottieBlendMode.Luminosity to BlendMode.Luminosity
-    )
-}
+private val BlendModeMapping = mapOf(
+    LottieBlendMode.Normal to BlendMode.SrcOver,
+    LottieBlendMode.Multiply to BlendMode.Multiply,
+    LottieBlendMode.Screen to BlendMode.Screen,
+    LottieBlendMode.Overlay to BlendMode.Overlay,
+    LottieBlendMode.Darken to BlendMode.Darken,
+    LottieBlendMode.Lighten to BlendMode.Lighten,
+    LottieBlendMode.ColorDodge to BlendMode.ColorDodge,
+    LottieBlendMode.ColorBurn to BlendMode.ColorBurn,
+    LottieBlendMode.HardLight to BlendMode.Hardlight,
+    LottieBlendMode.SoftLight to BlendMode.Softlight,
+    LottieBlendMode.Difference to BlendMode.Difference,
+    LottieBlendMode.Exclusion to BlendMode.Exclusion,
+    LottieBlendMode.Hue to BlendMode.Hue,
+    LottieBlendMode.Saturation to BlendMode.Saturation,
+    LottieBlendMode.Color to BlendMode.Color,
+    LottieBlendMode.Luminosity to BlendMode.Luminosity
+)

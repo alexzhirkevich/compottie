@@ -70,8 +70,7 @@ internal class GradientStrokeShape(
     val type : GradientType = GradientType.Linear
 )  : BaseStrokeShape(), Shape {
 
-    @Transient
-    override lateinit var layer: Layer
+
 
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
 

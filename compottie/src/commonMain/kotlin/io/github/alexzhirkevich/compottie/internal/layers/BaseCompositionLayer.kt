@@ -4,9 +4,9 @@ import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
-import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
@@ -14,6 +14,7 @@ import io.github.alexzhirkevich.compottie.internal.helpers.isSupported
 import io.github.alexzhirkevich.compottie.internal.platform.clipRect
 import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
 import io.github.alexzhirkevich.compottie.internal.utils.union
+import kotlinx.atomicfu.locks.synchronized
 import kotlinx.serialization.Transient
 
 internal abstract class BaseCompositionLayer: BaseLayer() {
@@ -34,63 +35,9 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         isAntiAlias = true
     }
 
-    abstract fun loadLayers(): List<Layer>
+    private var loadedLayers : List<BaseLayer>? = null
 
-    private val layers by lazy {
-        val layers = loadLayers().filterIsInstance<BaseLayer>()
-
-        layers.fastForEach {
-            it.resolvingPath = this.resolvingPath?.resolveOrNull(it.name)
-        }
-
-        layers.fastForEach {
-            it.effects = effects + it.effects
-        }
-
-        val matteLayers = mutableSetOf<BaseLayer>()
-
-        val layersWithIndex = layers
-            .filter { it.index != null }
-            .associateBy { it.index }
-
-        layers.forEachIndexed { i, it ->
-            it.parent?.let { pId ->
-                val p = layersWithIndex[pId]
-
-                if (p != null) {
-                    it.setParentLayer(p)
-                }
-            }
-
-            if (it.matteMode?.isSupported() == true) {
-                if (it.matteParent != null) {
-                    val p = layersWithIndex[it.matteParent]
-
-                    if (p != null) {
-                        it.setMatteLayer(p)
-                        matteLayers.add(p)
-                    }
-                } else {
-                    if (i > 0) {
-                        it.setMatteLayer(layers[i - 1])
-                        matteLayers.add(layers[i - 1])
-                    }
-                }
-
-            }
-        }
-
-        (layers - matteLayers).filterNot { it.matteTarget == BooleanInt.Yes }
-    }
-
-    override var painterProperties: PainterProperties?
-        get() = super.painterProperties
-        set(value) {
-            super.painterProperties = value
-            layers.fastForEach {
-                it.painterProperties = value
-            }
-        }
+    abstract fun compose(state: AnimationState): List<Layer>
 
     override fun drawLayer(
         drawScope: DrawScope,
@@ -98,7 +45,8 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         parentAlpha: Float,
         state: AnimationState
     ) {
-//        remappedState.delegate = state
+
+        val layers = getLayers(state)
 
         newClipRect.set(0f, 0f, width, height)
         parentMatrix.map(newClipRect)
@@ -144,11 +92,61 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
     ) {
         super.getBounds(drawScope, parentMatrix, applyParents, state, outBounds)
 
-        layers.fastForEachReversed {
+        getLayers(state).fastForEachReversed {
             rect.set(0f, 0f, 0f, 0f)
             it.getBounds(drawScope, boundsMatrix, true, state, rect)
             outBounds.union(rect)
         }
+    }
+
+    private fun getLayers(state: AnimationState) : List<Layer> = synchronized(this) {
+        loadedLayers?.let { return it }
+
+        val layers = compose(state).filterIsInstance<BaseLayer>()
+
+        layers.fastForEach {
+            it.resolvingPath = this.resolvingPath?.resolveOrNull(it.name)
+        }
+
+        layers.fastForEach {
+            it.effects = effects + it.effects
+        }
+
+        val matteLayers = mutableSetOf<BaseLayer>()
+
+        val layersWithIndex = layers
+            .filter { it.index != null }
+            .associateBy { it.index }
+
+        layers.forEachIndexed { i, it ->
+            it.parent?.let { pId ->
+                val p = layersWithIndex[pId]
+
+                if (p != null) {
+                    it.setParentLayer(p)
+                }
+            }
+
+            if (it.matteMode?.isSupported() == true) {
+                if (it.matteParent != null) {
+                    val p = layersWithIndex[it.matteParent]
+
+                    if (p != null) {
+                        it.setMatteLayer(p)
+                        matteLayers.add(p)
+                    }
+                } else {
+                    if (i > 0) {
+                        it.setMatteLayer(layers[i - 1])
+                        matteLayers.add(layers[i - 1])
+                    }
+                }
+
+            }
+        }
+
+        this.loadedLayers = (layers - matteLayers).fastFilter { it.matteTarget != BooleanInt.Yes }
+        return this.loadedLayers!!
     }
 
     private fun getRemappedFrame(state: AnimationState): Float {

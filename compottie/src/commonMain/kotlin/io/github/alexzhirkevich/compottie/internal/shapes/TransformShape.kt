@@ -50,8 +50,7 @@ internal class TransformShape(
     override val skewAxis: AnimatedNumber? = null,
 ) : AnimatedTransform(), Shape, ModifierContent {
 
-    @Transient
-    override lateinit var layer: Layer
+
 
     @Transient
     private var dynamicShape : DynamicShapeProvider? = null

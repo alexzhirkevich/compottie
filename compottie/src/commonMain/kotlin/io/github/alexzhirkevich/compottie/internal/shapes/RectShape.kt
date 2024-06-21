@@ -50,8 +50,7 @@ internal class RectShape(
     val roundedCorners : AnimatedNumber? = null,
 ) : Shape, PathContent {
 
-    @Transient
-    override lateinit var layer: Layer
+
 
     @Transient
     private val path = Path()

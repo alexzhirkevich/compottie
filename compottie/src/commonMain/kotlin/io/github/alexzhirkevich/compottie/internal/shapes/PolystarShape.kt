@@ -82,8 +82,7 @@ internal class PolystarShape(
     val starType : StarType,
 ) : Shape, PathContent {
 
-    @Transient
-    override lateinit var layer: Layer
+
 
     @Transient
     private val path = Path()

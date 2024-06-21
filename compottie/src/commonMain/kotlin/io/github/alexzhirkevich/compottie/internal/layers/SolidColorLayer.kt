@@ -95,7 +95,10 @@ internal class SolidColorLayer(
     @Transient
     private val rect = MutableRect(0f, 0f, 0f, 0f)
 
-    private val color: Color by lazy {
+    @Transient
+    private val paint= Paint().apply {
+        isAntiAlias = true
+        blendMode = this@SolidColorLayer.blendMode.asComposeBlendMode()
 
         val hex = colorHex.substringAfter("#")
 
@@ -106,15 +109,9 @@ internal class SolidColorLayer(
             chunked.last()
         } else 255
 
-        Color(red = r, green = g, blue = b, alpha = a)
+        color = Color(red = r, green = g, blue = b, alpha = a)
     }
 
-    private val paint by lazy {
-        Paint().apply {
-            isAntiAlias = true
-            blendMode = this@SolidColorLayer.blendMode.asComposeBlendMode()
-        }
-    }
 
     @Transient
     private val path = Path()
@@ -129,7 +126,6 @@ internal class SolidColorLayer(
         if (hidden) {
             return
         }
-        paint.color = color
 
         paint.alpha = (parentAlpha * (transform.opacity?.interpolatedNorm(state)?: 1f)).coerceIn(0f, 1f)
 

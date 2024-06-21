@@ -42,8 +42,7 @@ internal class TrimPathShape(
     val type : TrimPathType = TrimPathType.Simultaneously
 ) : Shape {
 
-    @Transient
-    override lateinit var layer: Layer
+
 
     @Transient
     private var dynamicShape : DynamicShapeProvider? = null

@@ -47,9 +47,6 @@ internal class EllipseShape(
 ) : Shape, PathContent {
 
     @Transient
-    override lateinit var layer: Layer
-
-    @Transient
     private val path = Path()
 
     @Transient

@@ -59,9 +59,6 @@ internal class FillShape(
     ) : Shape, DrawingContent {
 
     @Transient
-    override lateinit var layer: Layer
-
-    @Transient
     private val path = Path().apply {
         fillRule?.asPathFillType()?.let {
             fillType = it
@@ -112,7 +109,7 @@ internal class FillShape(
 
         roundShape?.applyTo(paint, state)
 
-        layer.effectsApplier.applyTo(paint, state, effectsState)
+        state.layer.effectsApplier.applyTo(paint, state, effectsState)
         path.reset()
 
         paths.fastForEach {

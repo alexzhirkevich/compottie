@@ -4,10 +4,8 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
-import io.github.alexzhirkevich.compottie.internal.layers.PainterProperties
 import io.github.alexzhirkevich.compottie.internal.layers.PrecompositionLayer
 import io.github.alexzhirkevich.compottie.internal.shapes.GroupShape
 import io.github.alexzhirkevich.compottie.internal.shapes.Shape
@@ -20,8 +18,6 @@ import kotlinx.serialization.json.jsonObject
 
 @Serializable(with = CharacterPathSerializer::class)
 internal sealed interface CharacterPath {
-
-    fun onCreate(composition: LottieComposition, painterProperties: PainterProperties) {}
 
     fun draw(
         scope : DrawScope,
@@ -51,7 +47,9 @@ internal sealed interface CharacterPath {
 
             scope.drawIntoCanvas {
                 it.drawPath(path, fillPaint)
-                it.drawPath(path, strokePaint)
+                if (strokePaint.strokeWidth > 0f) {
+                    it.drawPath(path, strokePaint)
+                }
             }
         }
     }
@@ -59,7 +57,7 @@ internal sealed interface CharacterPath {
     @Serializable
     class Precomp(
         @SerialName("refId")
-        val refId: String,
+        val refId: String? = null,
 
         @SerialName("tr")
         val transform: Transform = Transform(),
@@ -74,22 +72,17 @@ internal sealed interface CharacterPath {
         val timeStretch: Float = 1f,
     ) : CharacterPath {
 
-        private val layer = PrecompositionLayer(
-            refId = refId,
-            transform = transform,
-            inPoint = inPoint,
-            outPoint = outPoint,
-            timeStretch = timeStretch,
-            width = 0f,
-            height = 0f
-        )
-
-        override fun onCreate(
-            composition: LottieComposition,
-            painterProperties: PainterProperties
-        ) {
-            layer.painterProperties = painterProperties
-        }
+        private val layer = if (refId != null) {
+            PrecompositionLayer(
+                refId = refId,
+                transform = transform,
+                inPoint = inPoint,
+                outPoint = outPoint,
+                timeStretch = timeStretch,
+                width = 0f,
+                height = 0f
+            )
+        } else null
 
         override fun draw(
             scope: DrawScope,
@@ -98,7 +91,7 @@ internal sealed interface CharacterPath {
             strokePaint: Paint,
             fillPaint: Paint
         ) {
-            layer.draw(scope, parentMatrix, 1f, state)
+            layer?.draw(scope, parentMatrix, 1f, state)
         }
     }
 }

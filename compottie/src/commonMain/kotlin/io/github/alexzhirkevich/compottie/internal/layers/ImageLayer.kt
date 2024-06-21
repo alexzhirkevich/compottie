@@ -89,10 +89,6 @@ internal class ImageLayer(
         blendMode = this@ImageLayer.blendMode.asComposeBlendMode()
     }
 
-    private val asset : ImageAsset? by lazy {
-        painterProperties?.assets?.get(refId) as? ImageAsset
-    }
-
     private val effectState by lazy {
         LayerEffectsState()
     }
@@ -106,7 +102,7 @@ internal class ImageLayer(
             dynamic = state.dynamic?.get(it) as? DynamicImageLayerProvider
         }
 
-        val asset = asset ?: return null
+        val asset = state.assets.get(refId) as? ImageAsset ?: return null
         val image = dynamic?.image?.invoke(state, asset.spec) ?: return asset
         asset.setBitmap(image)
 

@@ -34,8 +34,7 @@ internal class PathShape(
     val shape : AnimatedShape
 ) : Shape, PathContent {
 
-    @Transient
-    override lateinit var layer: Layer
+
 
     @Transient
     private var trimPaths : CompoundTrimPath? = null

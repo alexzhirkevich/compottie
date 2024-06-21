@@ -51,8 +51,7 @@ internal class SolidStrokeShape(
     val color : AnimatedColor,
 ) : BaseStrokeShape(), Shape {
 
-    @Transient
-    override lateinit var layer: Layer
+
 
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
         paint.color = color.interpolated(state)

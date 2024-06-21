@@ -30,7 +30,14 @@ internal class BezierKeyframe(
 
     @SerialName("o")
     override val outValue : BezierInterpolation? = null,
-) : Keyframe<Bezier>()
+) : Keyframe<Bezier> by BaseKeyframe(
+    start = start,
+    end = end,
+    time = time,
+    hold = hold,
+    inValue = inValue,
+    outValue = outValue
+)
 
 internal class BezierSerializer : JsonTransformingSerializer<Bezier>(Bezier.serializer()) {
     override fun transformDeserialize(element: JsonElement): JsonElement {
