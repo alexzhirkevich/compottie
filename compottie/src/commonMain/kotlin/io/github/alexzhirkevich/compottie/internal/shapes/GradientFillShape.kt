@@ -148,7 +148,7 @@ internal class GradientFillShape(
 
         state.layer.effectsApplier.applyTo(paint, state, effectsState)
 
-        path.reset()
+        path.rewind()
 
         paths.fastForEach {
             path.addPath(it.getPath(state), parentMatrix)
@@ -168,7 +168,7 @@ internal class GradientFillShape(
         state: AnimationState,
         outBounds: MutableRect
     ) {
-        path.reset()
+        path.rewind()
         paths.fastForEach {
             path.addPath(it.getPath(state), parentMatrix)
         }

@@ -33,6 +33,8 @@ internal sealed interface Layer : DrawingContent {
 
     val outPoint : Float?
 
+    val startTime : Float?
+
     val blendMode : LottieBlendMode
 
     val transform : Transform
@@ -50,6 +52,8 @@ internal sealed interface Layer : DrawingContent {
     val htmlId : String?
 
     val collapseTransform : BooleanInt
+
+    val hasMask : Boolean?
 
     val masks : List<Mask>?
 
@@ -72,7 +76,7 @@ internal value class ResolvingPath private constructor(val path : String) {
 internal fun ResolvingPath.resolveOrNull(child: String?) : ResolvingPath? =
     if (child != null) resolve(child) else null
 
-internal val Layer.isContainerLayer get()   =  name == "__container"
+internal val Layer.isContainerLayer get()   =  name == CONTAINER_NAME
 
 
 

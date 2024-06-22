@@ -22,6 +22,8 @@ internal class CompositionLayer(
 
     override val masks: List<Mask>? get() = null
 
+    override val hasMask: Boolean get() = false
+
     override var effects: List<LayerEffect> = emptyList()
 
     override val transform: Transform = Transform()
@@ -41,12 +43,17 @@ internal class CompositionLayer(
 
     override val blendMode: LottieBlendMode get() = LottieBlendMode.Normal
 
-    override val inPoint: Float get() = composition.animation.inPoint
-    override val outPoint: Float get() = composition.animation.outPoint
+    override val inPoint: Float? get() = null
 
-    override val name: String? = null
+    override val outPoint: Float? get() = null
+
+    override val startTime: Float? get() = null
+
+    override val name: String = CONTAINER_NAME
 
     override fun compose(state: AnimationState): List<Layer> {
         return composition.animation.layers
     }
 }
+
+internal const val CONTAINER_NAME = "__compottie_container"

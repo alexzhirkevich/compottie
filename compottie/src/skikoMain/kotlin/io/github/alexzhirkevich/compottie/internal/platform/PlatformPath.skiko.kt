@@ -20,6 +20,5 @@ private class SkikoExtendedPathMeasure(
     }
 }
 
-
 internal actual fun Path.addPath(path: Path, matrix: Matrix) =
     asSkiaPath().addPath(path.asSkiaPath(), matrix = matrix.asSkia33()).asComposePath()

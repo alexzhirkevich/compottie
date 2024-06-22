@@ -117,10 +117,9 @@ internal class MergePathsShape(
 
     private fun opFirstPathWithRest(op: PathOperation, state: AnimationState) {
 
-        remainderPath.reset()
-        firstPath.reset()
-
-        path.reset()
+        remainderPath.rewind()
+        firstPath.rewind()
+        path.rewind()
 
         if (pathContents.isEmpty())
             return

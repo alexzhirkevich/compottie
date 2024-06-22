@@ -25,7 +25,7 @@ sealed class LottieClipSpec {
     class Frame(
         val min: Int?,
         val max: Int?,
-        val maxInclusive: Boolean,
+        val maxInclusive: Boolean = true,
     ) : LottieClipSpec() {
 
         private val actualMaxFrame = when {

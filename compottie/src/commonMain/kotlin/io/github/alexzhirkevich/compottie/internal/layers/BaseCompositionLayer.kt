@@ -14,8 +14,10 @@ import io.github.alexzhirkevich.compottie.internal.helpers.isSupported
 import io.github.alexzhirkevich.compottie.internal.platform.clipRect
 import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
 import io.github.alexzhirkevich.compottie.internal.utils.union
+import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlinx.serialization.Transient
+import kotlin.math.absoluteValue
 
 internal abstract class BaseCompositionLayer: BaseLayer() {
 
@@ -35,7 +37,9 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         isAntiAlias = true
     }
 
-    private var loadedLayers : List<BaseLayer>? = null
+    private val getLayerLock = SynchronizedObject()
+
+    private var loadedLayers: List<BaseLayer>? = null
 
     abstract fun compose(state: AnimationState): List<Layer>
 
@@ -65,7 +69,8 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
 
         val childAlpha = if (isDrawingWithOffScreen) 1f else parentAlpha
 
-        state.remapped(getRemappedFrame(state)) { remappedState ->
+        state.onFrame(getRemappedFrame(state)) { remappedState ->
+
             layers.fastForEachReversed { layer ->
                 // Only clip precomps. This mimics the way After Effects renders animations.
                 val ignoreClipOnThisLayer =
@@ -99,8 +104,8 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         }
     }
 
-    private fun getLayers(state: AnimationState) : List<Layer> = synchronized(this) {
-        loadedLayers?.let { return it }
+    private fun getLayers(state: AnimationState): List<Layer> = synchronized(getLayerLock) {
+        loadedLayers?.let { return@synchronized it }
 
         val layers = compose(state).filterIsInstance<BaseLayer>()
 
@@ -148,19 +153,15 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         this.loadedLayers = (layers - matteLayers).fastFilter { it.matteTarget != BooleanInt.Yes }
         return this.loadedLayers!!
     }
-
     private fun getRemappedFrame(state: AnimationState): Float {
 
-        val f = if (timeStretch != 0f && timeStretch != 1f && !isContainerLayer) {
-            state.frame / timeStretch
-        } else state.frame
+        val frame = timeRemapping?.interpolated(state)
+            ?.times(state.composition.frameRate)
+            ?.minus(state.composition.startFrame)
+            ?: (state.frame - (startTime ?: inPoint ?: 0f)  )
 
-        val tr = timeRemapping ?: return f
-
-        val composition = state.composition
-
-        return state.remapped(f) {
-            tr.interpolated(it) * composition.frameRate - composition.startFrame
-        }
+        return if (timeStretch.absoluteValue > Float.MIN_VALUE && timeStretch != 1f && !isContainerLayer) {
+            frame / timeStretch
+        } else frame
     }
 }

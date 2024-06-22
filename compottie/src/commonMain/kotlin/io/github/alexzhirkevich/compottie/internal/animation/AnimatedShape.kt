@@ -35,13 +35,12 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
         private val tmpPath = Path()
 
         override fun interpolated(state: AnimationState): Path {
-            tmpPath.reset()
             bezier.mapPath(tmpPath)
             return tmpPath
         }
 
         override fun interpolatedRaw(state: AnimationState): Path {
-            return interpolated(state)
+            return Path().apply { bezier.mapPath(this) }
         }
     }
 

@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
 import androidx.compose.ui.geometry.MutableRect
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -19,6 +20,7 @@ import io.github.alexzhirkevich.compottie.internal.helpers.asComposeBlendMode
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import org.jetbrains.skia.Color
 
 @Serializable
 @SerialName("2")
@@ -50,6 +52,9 @@ internal class ImageLayer(
     @SerialName("op")
     override val outPoint: Float? = null,
 
+    @SerialName("st")
+    override val startTime: Float? = null,
+
     @SerialName("nm")
     override val name: String? = null,
 
@@ -77,6 +82,8 @@ internal class ImageLayer(
     @SerialName("masksProperties")
     override val masks: List<Mask>? = null,
 
+    override val hasMask: Boolean? = null,
+
     @SerialName("ef")
     override var effects: List<LayerEffect> = emptyList(),
 
@@ -85,24 +92,19 @@ internal class ImageLayer(
 ) : BaseLayer() {
 
     @Transient
-    private val paint = Paint().apply {
-        blendMode = this@ImageLayer.blendMode.asComposeBlendMode()
-    }
+    private val paint = Paint()
 
     private val effectState by lazy {
         LayerEffectsState()
     }
 
-    @Transient
-    private var dynamic : DynamicImageLayerProvider? = null
-
     private fun dynamicAsset(state: AnimationState) : ImageAsset? {
 
-        resolvingPath?.let {
-            dynamic = state.dynamic?.get(it) as? DynamicImageLayerProvider
+        val dynamic = resolvingPath?.let {
+            state.dynamic?.get(it) as? DynamicImageLayerProvider
         }
 
-        val asset = state.assets.get(refId) as? ImageAsset ?: return null
+        val asset = state.assets[refId] as? ImageAsset ?: return null
         val image = dynamic?.image?.invoke(state, asset.spec) ?: return asset
         asset.setBitmap(image)
 
@@ -114,6 +116,7 @@ internal class ImageLayer(
         val bitmap = mAsset.bitmap ?: return
 
         paint.alpha = parentAlpha
+        paint.blendMode = blendMode.asComposeBlendMode()
 
         effectsApplier.applyTo(paint, state, effectState)
 
@@ -121,16 +124,9 @@ internal class ImageLayer(
             canvas.save()
             canvas.concat(parentMatrix)
 
-            drawScope.drawImage(
-                image = bitmap,
-                alpha = parentAlpha,
-                colorFilter = paint.colorFilter
-            )
-//            canvas.drawImage(
-//                image = bitmap,
-//                topLeftOffset = Offset.Zero,
-//                paint = paint
-//            )
+            drawScope.drawIntoCanvas {
+                it.drawImage(bitmap, Offset.Zero, paint)
+            }
             canvas.restore()
         }
     }

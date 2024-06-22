@@ -17,7 +17,7 @@ import io.github.alexzhirkevich.compottie.internal.utils.union
 internal class ContentGroupImpl(
     contents: List<Content>,
     override val name: String?,
-    private val hidden : (AnimationState) -> Boolean,
+    private val hidden : ((AnimationState) -> Boolean)?,
     override val transform: AnimatedTransform?,
 ) : ContentGroup {
 
@@ -30,7 +30,7 @@ internal class ContentGroupImpl(
     private val path = Path()
 
     override fun hidden(state: AnimationState): Boolean {
-        return hidden.invoke(state)
+        return hidden?.invoke(state) == true
     }
 
     private val mContents = contents
@@ -100,7 +100,7 @@ internal class ContentGroupImpl(
 
     override fun getPath(state: AnimationState): Path {
 
-        path.reset()
+        path.rewind()
         if (hidden(state)) {
             return path
         }

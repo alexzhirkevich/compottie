@@ -51,7 +51,7 @@ private class NetworkAssetsManagerImpl(
                 } catch (_: Throwable) {
                 }
 
-                val bytes = request(client, url).bodyAsChannel().toByteArray()
+                val bytes = request(client, url).execute().bodyAsChannel().toByteArray()
 
                 try {
                     cacheStrategy.save(path, bytes)

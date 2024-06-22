@@ -304,7 +304,7 @@ internal class PolystarShape(
                     // We want the final bezier curve to end *slightly* before the start.
                     // The close() call at the end will complete the polystar.
                     // https://github.com/airbnb/lottie-android/issues/2329
-                    lastSegmentPath.reset()
+                    lastSegmentPath.rewind()
                     lastSegmentPath.moveTo(previousX, previousY)
                     lastSegmentPath.cubicTo(vX, vY, cpX, cpY, x, y)
                     lastSegmentPathMeasure.setPath(lastSegmentPath, false)

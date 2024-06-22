@@ -43,6 +43,9 @@ internal class NullLayer(
     @SerialName("op")
     override val outPoint: Float? = null,
 
+    @SerialName("st")
+    override val startTime: Float? = null,
+
     @SerialName("nm")
     override val name: String? = null,
 
@@ -70,12 +73,16 @@ internal class NullLayer(
     @SerialName("masksProperties")
     override val masks: List<Mask>? = null,
 
+    @SerialName("hasMask")
+    override val hasMask: Boolean? = null,
+
     @SerialName("ef")
     override var effects: List<LayerEffect> = emptyList(),
 ) : BaseLayer() {
 
     override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
     }
+
 
     override fun getBounds(
         drawScope: DrawScope,

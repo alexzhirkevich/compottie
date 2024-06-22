@@ -1,13 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
-import androidx.compose.ui.layout.ScaleFactor
 import io.github.alexzhirkevich.compottie.dynamic.DynamicTransformProvider
-import io.github.alexzhirkevich.compottie.dynamic.Identity
-import io.github.alexzhirkevich.compottie.dynamic.derive
-import io.github.alexzhirkevich.compottie.dynamic.toScaleFactor
-import io.github.alexzhirkevich.compottie.dynamic.toVec2
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.utils.Math
@@ -77,7 +71,7 @@ internal abstract class AnimatedTransform{
                 // 1) Find the next position value.
                 // 2) Create a vector from the current position to the next position.
                 // 3) Find the angle of that vector to the X axis (0 degrees).
-                val nextPosition = state.remapped(state.frame + 0.001f) {
+                val nextPosition = state.onFrame(state.frame + 0.001f) {
                     position!!.interpolated(it)
                 }
 
@@ -157,8 +151,6 @@ internal abstract class AnimatedTransform{
     }
 
     private fun clearSkewValues() {
-        for (i in 0..8) {
-            skewValues[i] = 0f
-        }
+        skewValues.fill(0f)
     }
 }

@@ -39,3 +39,9 @@ internal value class MaskMode(val type : String) {
         val Difference = MaskMode("f")
     }
 }
+
+internal fun MaskMode.isSupported() =
+    this == MaskMode.None ||
+            this == MaskMode.Add ||
+            this == MaskMode.Subtract
+            || this == MaskMode.Intersect

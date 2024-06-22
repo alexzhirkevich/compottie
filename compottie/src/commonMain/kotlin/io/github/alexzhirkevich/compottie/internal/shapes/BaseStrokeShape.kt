@@ -180,7 +180,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
                 if (pathGroup.trimPath != null) {
                     applyTrimPath(canvas, state, pathGroup, parentMatrix)
                 } else {
-                    path.reset()
+                    path.rewind()
                     pathGroup.paths.fastForEachReversed {
                         path.addPath(it.getPath(state), parentMatrix)
                     }
@@ -232,7 +232,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         state: AnimationState,
         outBounds: MutableRect,
     ) {
-        path.reset()
+        path.rewind()
         pathGroups.fastForEach { pathGroup ->
             pathGroup.paths.fastForEach {
                 path.addPath(it.getPath(state), parentMatrix)
@@ -269,7 +269,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
             return
         }
 
-        path.reset()
+        path.rewind()
 
         pathGroup.paths.fastForEachReversed {
             path.addPath(it.getPath(state).apply { transform(parentMatrix) })

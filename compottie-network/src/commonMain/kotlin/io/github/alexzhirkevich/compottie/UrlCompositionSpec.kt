@@ -67,7 +67,7 @@ private class NetworkCompositionSpec(
                         } catch (_: Throwable) {
                         }
 
-                        val response = request(client, Url(url))
+                        val response = request(client, Url(url)).execute()
 
                         if (!response.status.isSuccess()) {
                             throw ClientRequestException(response, response.bodyAsText())

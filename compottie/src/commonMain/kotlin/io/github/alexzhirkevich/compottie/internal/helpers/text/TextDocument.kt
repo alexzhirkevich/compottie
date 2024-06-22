@@ -48,3 +48,5 @@ internal class TextDocument(
     @SerialName("ls")
     var baselineShift : Float? = null,
 )
+
+internal val TextDocument.fontScale get() = fontSize/100f

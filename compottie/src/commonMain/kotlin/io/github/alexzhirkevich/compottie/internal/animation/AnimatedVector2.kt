@@ -89,7 +89,7 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
             emptyValue = Offset.Zero,
             map = { s, e, p ->
                 if (inTangent != null && outTangent != null && !s.contentEquals(e)) {
-                    path.reset()
+                    path.rewind()
                     path.createPath(s, e, outTangent, inTangent)
                     pathMeasure.setPath(path, false)
 

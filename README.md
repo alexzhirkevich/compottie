@@ -6,7 +6,12 @@
 ![badge-macOS](https://img.shields.io/badge/Platform-macOS-purple)
 ![badge-web](https://img.shields.io/badge/Platform-Web-blue)
 
-Compose Multiplatform port of [airbnb/lottie-compose](https://github.com/airbnb/lottie/blob/master/android-compose.md)
+Compose Multiplatform Adobe After Effects Bodymovin (Lottie) animations renderer.
+
+> [!IMPORTANT]
+> Starting from v2.0 Compottie has its own multiplatform rendering engine without any platform delegates.
+> <br>The new rendering engine is implemented from scratch and therefore may have bugs.
+> <br>Please [report](https://github.com/alexzhirkevich/compottie/issues) if you find any, preferably with a reproducible animation
 
 # Installation
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.alexzhirkevich/compottie/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.alexzhirkevich/compottie)
@@ -26,16 +31,16 @@ dependencies {
     implementation("io.github.alexzhirkevich:compottie-network:<2x_version>")
 
     // For compose-resources LottieAssetsManager and LottieFontManager.
-    // This module doesn't include resources composition spec. 
-    // Animations from compose resources can be simply loaded with one line of code. See usage
+    // This module DOESN'T include resources composition spec due to its uselessness
     implementation("io.github.alexzhirkevich:compottie-resources:<2x_version>")
 }
 ```
 
 # Usage
-> [!TIP]
-> The following docs describe the Compottie 2.x usage.
-> For Compottie 1.x docs please refer to the [airbnb docs](https://github.com/airbnb/lottie/blob/master/android-compose.md#basic-usage).
+The following docs describe the Compottie 2.x usage.
+For Compottie 1.x docs please refer to the [airbnb docs](https://github.com/airbnb/lottie/blob/master/android-compose.md#basic-usage).
+
+## Compottie 2.0
 
 - [Basic Usage](#basic-usage)
 - [LottieComposition](#lottiecomposition)
@@ -89,10 +94,7 @@ fun Loader() {
 ```
 
 ## LottieComposition
-`LottieComposition` is the parsed version of your Lottie json file. It is stateless and can be cached/reused freely.
-To create a `LottieComposition`:
-* Use `rememberLottieComposition(spec)`
-* Pass in a `LottieCompositionSpec`. `LottieCompositionSpec` is an open interface that lets you select the source (assets, string, network, etc.).
+`LottieComposition` is the parsed version of your Lottie json file. It is stateless and can be cached/reused freely. Call `rememberLottieComposition(spec)` to create new composition. `LottieCompositionSpec` is an open interface that lets you select the source (string/zip, network/assets, etc.).
 
 For example:
 ```kotlin
@@ -105,7 +107,9 @@ val composition2 by rememberLottieComposition {
     LottieCompositionSpec.Url("https://...")
 }
 val composition3 by rememberLottieComposition {
-    LottieCompositionSpec.DotLottie(Res.readBytes("files/anim.lottie"))
+    LottieCompositionSpec.DotLottie(
+        Res.readBytes("files/anim.lottie")
+    )
 }
 ```
 

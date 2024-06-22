@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie
 
+import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -10,28 +11,29 @@ internal class LruMap<T : Any>(
 ) : MutableMap<Any, T> by delegate {
 
     private val suspendGetOrPutMutex = Mutex()
+    private val lock = SynchronizedObject()
 
-    override fun put(key: Any, value: T): T?  = synchronized(this) {
+    override fun put(key: Any, value: T): T?  = synchronized(lock) {
         putRaw(key, value)
     }
 
-    override fun clear() = synchronized(this) {
+    override fun clear() = synchronized(lock) {
         clearRaw()
     }
 
-    override fun putAll(from: Map<out Any, T>)  = synchronized(this) {
+    override fun putAll(from: Map<out Any, T>)  = synchronized(lock) {
         putAllRaw(from)
     }
 
-    override fun remove(key: Any): T? = synchronized(this) {
+    override fun remove(key: Any): T? = synchronized(lock) {
         removeRaw(key)
     }
 
-    override fun get(key: Any): T? = synchronized(this) {
+    override fun get(key: Any): T? = synchronized(lock) {
         getRaw(key)
     }
 
-    fun getOrPut(key: Any?, put: () -> T): T = synchronized(this) {
+    fun getOrPut(key: Any?, put: () -> T): T = synchronized(lock) {
         if (key == null)
             return put()
 

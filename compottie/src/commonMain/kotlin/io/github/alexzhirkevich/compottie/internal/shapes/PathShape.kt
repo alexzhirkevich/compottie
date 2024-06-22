@@ -45,12 +45,12 @@ internal class PathShape(
     private var dynamicShape : DynamicShapeProvider? = null
 
     override fun getPath(state: AnimationState): Path {
-        path.reset()
+        path.rewind()
 
         if (dynamicShape?.hidden.derive(hidden, state)) {
             return path
         }
-        path.set(shape.interpolatedRaw(state))
+        path.set(shape.interpolated(state))
         path.fillType = PathFillType.EvenOdd
 
         trimPaths?.apply(path, state)

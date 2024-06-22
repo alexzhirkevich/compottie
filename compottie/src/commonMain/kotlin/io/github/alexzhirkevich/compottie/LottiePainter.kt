@@ -19,6 +19,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.dynamic.DynamicProperties
 import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.internal.AnimationState
@@ -210,10 +211,9 @@ private class LottiePainter(
     private val compositionLayer: Layer = CompositionLayer(composition)
 
     private val frame: Float by derivedStateOf {
-        val p = composition.animation.inPoint +
-                (composition.animation.outPoint - composition.animation.inPoint) * progress
-        p.coerceAtLeast(0f)
+        lerp(composition.startFrame, composition.endFrame, progress)
     }
+
     private val animationState = AnimationState(
         frame = frame,
         composition = composition,
@@ -255,7 +255,7 @@ private class LottiePainter(
 
         scale(scale.scaleX, scale.scaleY) {
             translate(offset.x.toFloat(), offset.y.toFloat()) {
-                animationState.remapped(frame) {
+                animationState.onFrame(frame) {
                     compositionLayer.draw(this, matrix, alpha, it)
                 }
             }

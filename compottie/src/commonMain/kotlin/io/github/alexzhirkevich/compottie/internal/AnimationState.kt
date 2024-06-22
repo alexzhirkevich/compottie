@@ -46,7 +46,7 @@ class AnimationState @PublishedApi internal constructor(
      * State is restored after the [block] call
      * */
     @OptIn(ExperimentalContracts::class)
-    internal fun <R> remapped(frame: Float, block: (AnimationState) -> R): R {
+    internal fun <R> onFrame(frame: Float, block: (AnimationState) -> R): R {
         contract {
             callsInPlace(block, InvocationKind.EXACTLY_ONCE)
         }

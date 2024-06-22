@@ -92,7 +92,7 @@ internal class RepeaterShape(
     }
 
     override fun getPath(state: AnimationState): Path {
-        path.reset()
+        path.rewind()
         val contentPath = contentGroup?.getPath(state) ?: return path
 
         val copies = copies.interpolated(state)

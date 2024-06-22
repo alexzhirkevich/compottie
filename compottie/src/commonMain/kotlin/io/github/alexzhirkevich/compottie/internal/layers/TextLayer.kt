@@ -37,6 +37,7 @@ import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.helpers.text.TextData
 import io.github.alexzhirkevich.compottie.internal.helpers.text.TextDocument
 import io.github.alexzhirkevich.compottie.internal.helpers.text.TextJustify
+import io.github.alexzhirkevich.compottie.internal.helpers.text.fontScale
 import io.github.alexzhirkevich.compottie.internal.platform.addCodePoint
 import io.github.alexzhirkevich.compottie.internal.platform.charCount
 import io.github.alexzhirkevich.compottie.internal.platform.codePointAt
@@ -68,6 +69,9 @@ internal class TextLayer(
     @SerialName("op")
     override val outPoint: Float? = null,
 
+    @SerialName("st")
+    override val startTime: Float? = null,
+
     @SerialName("nm")
     override val name: String? = null,
 
@@ -82,6 +86,9 @@ internal class TextLayer(
 
     @SerialName("masksProperties")
     override val masks: List<Mask>? = null,
+
+    @SerialName("hasMask")
+    override val hasMask: Boolean? = null,
 
     @SerialName("ef")
     override var effects: List<LayerEffect> = emptyList(),
@@ -339,7 +346,8 @@ internal class TextLayer(
         allLines.fastForEachIndexed { alLinesIdx, textLine ->
             val boxWidth = document.wrapSize?.firstOrNull() ?: 0f
 
-            val lines = splitGlyphTextIntoLines(measurer, textLine, boxWidth, tracking)
+            val lines = splitGlyphTextIntoLines(
+                measurer, textLine, document.fontScale,boxWidth, tracking,null)
 
             lines.fastForEachIndexed { idx, line ->
 
@@ -377,7 +385,7 @@ internal class TextLayer(
         textLines.fastForEachIndexed { outerIndex, line ->
             val boxWidth = document.wrapSize?.getOrNull(0) ?: 0f
 
-            val lines = splitGlyphTextIntoLines(measurer, line, boxWidth, tracking);
+            val lines = splitGlyphTextIntoLines(measurer, line,document.fontScale, boxWidth, tracking, glyphs);
 
             lines.forEachIndexed { innerIndex, l ->
                 canvas.save()
@@ -386,7 +394,7 @@ internal class TextLayer(
                     drawGlyphTextLine(
                         text = l.text,
                         state = state,
-                        fontScale = document.fontSize / 100f,
+                        fontScale = document.fontScale,
                         documentData = document,
                         drawScope = drawScope,
                         tracking = tracking,
@@ -411,8 +419,10 @@ internal class TextLayer(
     private fun splitGlyphTextIntoLines(
         textMeasurer: TextMeasurer,
         textLine: String,
+        fontScale: Float,
         boxWidth: Float,
         tracking: Float,
+        glyphs: Map<String, CharacterData>?,
     ): List<TextSubLine> {
         var lineCount = 0
 
@@ -428,19 +438,15 @@ internal class TextLayer(
 
         for (i in textLine.indices) {
             val c = textLine[i]
-//            if (usingGlyphs) {
-//                val characterHash: Int = FontCharacter.hashFor(c, font.getFamily(), font.getStyle())
-//                val character: FontCharacter =
-//                    composition.getCharacters().get(characterHash) ?: continue
-//                currentCharWidth =
-//                    character.getWidth() as Float * fontScale * Utils.dpScale() + tracking
-//            } else {
+            val currentCharWidth = if (glyphs != null) {
+                val character = glyphs[textLine[i].toString()]
+                (character?.width ?: 0f) * fontScale + tracking
+            } else {
+                val measureResult = textMeasurer.measure(textLine[i].toString(), textStyle)
+                measureResult.size.width + tracking
 //                currentCharWidth = fillPaint.measureText(textLine.substring(i, i + 1)) + tracking
-//            }
+            }
 
-            val measureResult = textMeasurer.measure(textLine[i].toString(), textStyle)
-
-            val currentCharWidth = measureResult.size.width + tracking
 
             if (c == ' ') {
                 spaceWidth = currentCharWidth
@@ -527,12 +533,12 @@ internal class TextLayer(
         }
 
         when (document.textJustify) {
-            TextJustify.Left -> canvas.translate(position.x, lineOffsetY)
-            TextJustify.Right -> canvas.translate(position.x + size.width - lineWidth, lineOffsetY)
-            TextJustify.Center -> canvas.translate(
-                position.x + size.width / 2f - lineWidth / 2f,
-                lineOffsetY
-            )
+            TextJustify.Left, TextJustify.LastLineLeft ->
+                canvas.translate(position.x, lineOffsetY)
+            TextJustify.Right, TextJustify.LastLineRight ->
+                canvas.translate(position.x + size.width - lineWidth, lineOffsetY)
+            TextJustify.Center, TextJustify.LastLineCenter ->
+                canvas.translate(position.x + (size.width - lineWidth) / 2f, lineOffsetY)
         }
         return true
     }

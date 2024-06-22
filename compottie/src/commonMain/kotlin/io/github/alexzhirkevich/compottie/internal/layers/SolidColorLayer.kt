@@ -52,6 +52,9 @@ internal class SolidColorLayer(
     @SerialName("op")
     override val outPoint: Float? = null,
 
+    @SerialName("st")
+    override val startTime: Float? = null,
+
     @SerialName("nm")
     override val name: String? = null,
 
@@ -78,6 +81,9 @@ internal class SolidColorLayer(
 
     @SerialName("masksProperties")
     override val masks: List<Mask>? = null,
+
+    @SerialName("hasMask")
+    override val hasMask: Boolean? = null,
 
     @SerialName("sw")
     val width : Float,
@@ -133,7 +139,7 @@ internal class SolidColorLayer(
             return
         }
 
-        path.reset()
+        path.rewind()
 
         parentMatrix.map(Offset.Zero).let { path.moveTo(it.x, it.y) }
         parentMatrix.map(Offset(width, 0f)).let { path.lineTo(it.x, it.y) }

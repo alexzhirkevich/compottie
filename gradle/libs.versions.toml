@@ -8,7 +8,7 @@ lottie-android="6.4.0"
 okio = "3.9.0"
 serialization="1.6.2"
 ktor="2.3.11"
-atomicfu="0.23.1"
+atomicfu="0.23.2"
 coroutines="1.8.0"
 
 [libraries]

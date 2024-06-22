@@ -31,6 +31,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.microseconds
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
@@ -113,7 +114,10 @@ class LottieComposition internal constructor(
     /**
      * Animation duration
      * */
-    val duration: Duration = ((endFrame - startFrame) / frameRate * 1000).toInt().milliseconds
+    val duration: Duration = (durationFrames / frameRate * 1_000_000).toInt().microseconds
+
+    val durationFrames : Float
+        get() = animation.outPoint - animation.inPoint
 
     /**
      * Animation frame rate

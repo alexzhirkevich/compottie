@@ -6,7 +6,6 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
-import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroupImpl
@@ -54,6 +53,9 @@ internal class ShapeLayer(
     @SerialName("op")
     override val outPoint: Float? = null,
 
+    @SerialName("st")
+    override val startTime: Float? = null,
+
     @SerialName("nm")
     override val name: String? = null,
 
@@ -84,12 +86,15 @@ internal class ShapeLayer(
     @SerialName("masksProperties")
     override val masks: List<Mask>? = null,
 
+    @SerialName("hasMask")
+    override val hasMask: Boolean? = null,
+
     @SerialName("shapes")
     val shapes: List<Shape> = emptyList(),
 ) : BaseLayer() {
 
     @Transient
-    private var dynamicLayer : DynamicLayerProvider? = null
+    private var dynamic : DynamicLayerProvider? = null
         set(value) {
             if (field != value) {
                 field = value
@@ -103,8 +108,8 @@ internal class ShapeLayer(
 
     @Transient
     private val contentGroup : ContentGroup = ContentGroupImpl(
-        name = name,
-        hidden = { dynamicLayer?.hidden.derive(hidden, it) },
+        name = CONTAINER_NAME,
+        hidden = null, // will be managed by BaseLayer
         contents = shapes,
         transform = shapes.firstInstanceOf<TransformShape>()
     ).apply {
@@ -123,7 +128,7 @@ internal class ShapeLayer(
         outBounds: MutableRect,
     ) {
         resolvingPath?.let {
-            dynamicLayer = state.dynamic?.get(it)
+            dynamic = state.dynamic?.get(it)
         }
 
         super.getBounds(drawScope, parentMatrix, applyParents, state, outBounds)

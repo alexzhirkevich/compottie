@@ -30,7 +30,7 @@ internal class GroupShape(
 
 ) : Shape, ContentGroup by ContentGroupImpl(
     name = name,
-    hidden = { hidden },
+    hidden = null, // overrided
     contents = items,
     transform = items.firstInstanceOf()
 ) {
