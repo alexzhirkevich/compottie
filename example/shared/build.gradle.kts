@@ -1,15 +1,15 @@
+@Suppress("DSL_SCOPE_VIOLATION")
+
 plugins {
-    kotlin("multiplatform")
-    id("com.android.library")
-    id("org.jetbrains.compose")
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.compose)
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.multiplatform)
 }
 
 val _jvmTarget = findProperty("jvmTarget") as String
 
-//@OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
 kotlin {
-//    targetHierarchy.default()
 
     applyDefaultHierarchyTemplate()
     jvm("desktop") {
@@ -53,7 +53,6 @@ kotlin {
             implementation(compose.runtime)
             implementation(compose.material3)
             implementation(compose.foundation)
-            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
             implementation(compose.components.resources)
         }
         androidMain.dependencies {
@@ -80,7 +79,7 @@ kotlin {
 }
 
 android {
-    namespace = "io.github.alexzhirkevich.compottie.example"
+    namespace = "compottie.example"
     compileSdk = 34
 
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")

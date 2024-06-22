@@ -1,18 +1,15 @@
 [versions]
-compottie = "1.1.1"
 kotlin="2.0.0"
 dokka="1.9.0"
 compose="1.6.10"
-androidGradlePlugin = "8.1.1"
-lottie-android="6.4.0"
+agp = "8.1.1"
 okio = "3.9.0"
-serialization="1.6.2"
+serialization="1.6.3"
 ktor="2.3.11"
 atomicfu="0.23.2"
 coroutines="1.8.0"
 
 [libraries]
-lottie-android = { module ="com.airbnb.android:lottie-compose", version.ref = "lottie-android" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 okio-fakefilesystem = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okio" }
 serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
@@ -26,9 +23,8 @@ coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", ve
 [plugins]
 compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 kotlin-multiplatform = { id ="org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-kotlin-android = { id ="org.jetbrains.kotlin.android", version.ref = "kotlin" }
-android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
-android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
