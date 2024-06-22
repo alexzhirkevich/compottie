@@ -220,26 +220,28 @@ val composition = rememberLottieComposition(
 
 Text can be drawn in 2 ways: using fonts and using glyphs (when characters are baked to the animation as lottie shapes)
 
-`LottieFontManager` should be passed to `rememberLottieComposition` to use custom fonts.
+`LottieFontManager` should be passed to `rememberLottiePainter` to use custom fonts.
 `compottie-resources` provides ready-to-use implementation that loads fonts from compose-resources:
 
 ```kotlin
-val composition = rememberLottieComposition(
+val composition by rememberLottieComposition() {
+   //...
+}
+
+val painter = rememberLottiePainter(
+    composition = composition,
     fontManager = rememberResourcesFontManager { fontSpec ->
         when (fontSpec.family) {
             "Comic Neue" -> Res.font.ComicNeue
             else -> null // default font will be used
         }
     }
-) {
-    LottieCompositionSpec.JsonString(
-        Res.readBytes("files/anim.json").decodeToString()
-    )
-}
+)
 ```
 
 ## URL loading
-To load images remotely `compottie-network` module should be added as a dependensy. This module brings an additional composition spec called `LottieCompositionSpec.Url`
+To load images remotely `compottie-network` module should be added as a dependensy.
+This module brings an additional composition spec called `LottieCompositionSpec.Url`
 ```kotlin
 fun LottieCompositionSpec.Companion.Url(
     url : String,
@@ -251,23 +253,17 @@ fun LottieCompositionSpec.Companion.Url(
 ```
 that can be used to load JSON and dotLottie animations from the Internet.
 
-`LottieAnimationFormat` is used to determine wheither animation is a JSON or dotLottie. If you left it `Undefined`, composition spec will automatically detect is this a JSON or dotLottie file.
+`LottieAnimationFormat` is used to determine wheither animation is a JSON or dotLottie. If you left it `Undefined`, 
+composition spec will automatically detect is this a JSON or dotLottie file.
 
-Ktor HTTP client can be overrided with `client` parameter. `request` is a lambda that takes url and client and returns a HTTP responce. By default it is a GET request.
+Ktor HTTP client can be provided with `client` parameter.
 
-Caching strategy can be set with `cacheStrategy` parameter. By default animations are cached in the device temp directory.
+Caching strategy can be set with `cacheStrategy` parameter. By default animations are cached in the
+device temp directory.
 
-The network module also brings the `NetworkAssetsManager` that have similar parameters and can be used to load image assets
-
-Complete usage example:
-
-```kotlin
-val composition by rememberLottieComposition(
-    assetsManager = remember { NetworkAssetsManager() }
-) {
-    LottieCompositionSpec.Url("https://example.com/animation.json")
-}
-```
+The network module also brings the `NetworkAssetsManager` that have similar parameters and can be used to load image assets.
+If you are using Url composition spec then specifying `NetworkAssetsManager` is redundant.
+Url composition spec automatically prepares url assets
 
 ## Dynamic Properties
 

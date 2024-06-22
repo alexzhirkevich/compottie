@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie.internal
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
@@ -15,6 +16,7 @@ import kotlin.contracts.contract
 class AnimationState @PublishedApi internal constructor(
     val composition : LottieComposition,
     internal val assets: Map<String, LottieAsset>,
+    internal val fonts : Map<String, FontFamily>,
     frame : Float,
     fontFamilyResolver: FontFamily.Resolver,
     clipToDrawBounds : Boolean,

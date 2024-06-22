@@ -82,7 +82,6 @@ private val DOT_WITH_IMAGE = "dotlottie/dot_with_image.lottie"
 
 private val ALL = listOf(
     GRADIENT_ELLIPSE,
-    TEST,
     CHECKMARK,
     FADE_BALLS,
     BOUNCING_BALL,
@@ -127,19 +126,9 @@ suspend fun LottieCompositionSpec.Companion.Resource(
 fun App() {
 
 //    return LottieFontExample()
-//    return AllExamples()
+    return AllExamples()
 
-    val composition = rememberLottieComposition(
-        assetsManager = rememberResourcesAssetsManager(
-            readBytes = Res::readBytes
-        ),
-        fontManager = rememberResourcesFontManager { fontSpec ->
-            when (fontSpec.family) {
-                "Comic Neue" -> Res.font.ComicNeue
-                else -> null
-            }
-        },
-    ) {
+    val composition = rememberLottieComposition() {
 //        LottieCompositionSpec.DotLottie(ResourcesAssetsManager()) {
 //            Res.readBytes("files/$DOT_WITH_IMAGE")
 //        }
@@ -172,14 +161,21 @@ fun App() {
     ) {
 
         val progress by animateLottieCompositionAsState(
-//            clipSpec = LottieClipSpec.Progress(.55f, 1f),
             iterations = LottieConstants.IterateForever,
             composition = composition.value
         )
         val painter  = rememberLottiePainter(
             composition = composition.value,
             progress = { progress },
-//            clipToCompositionBounds = false
+            assetsManager = rememberResourcesAssetsManager(
+                readBytes = Res::readBytes
+            ),
+            fontManager = rememberResourcesFontManager { fontSpec ->
+                when (fontSpec.family) {
+                    "Comic Neue" -> Res.font.ComicNeue
+                    else -> null
+                }
+            },
         )
 
         Image(
@@ -206,22 +202,24 @@ fun AllExamples(){
         columns = GridCells.FixedSize(150.dp),
     ){
         items(ALL) {
-            val composition by rememberLottieComposition(
-                assetsManager = rememberResourcesAssetsManager(
-                    readBytes = Res::readBytes
-                ),
-                fontManager = rememberResourcesFontManager { fontSpec ->
-                    when (fontSpec.family) {
-                        "Comic Neue" -> Res.font.ComicNeue
-                        else -> null
-                    }
-                },
-            ) {
+            val composition by rememberLottieComposition() {
                 LottieCompositionSpec.Resource(it)
             }
 
             Image(
-                painter = rememberLottiePainter(composition, iterations = LottieConstants.IterateForever),
+                painter = rememberLottiePainter(
+                    composition = composition,
+                    iterations = LottieConstants.IterateForever,
+                    assetsManager = rememberResourcesAssetsManager(
+                        readBytes = Res::readBytes
+                    ),
+                    fontManager = rememberResourcesFontManager { fontSpec ->
+                        when (fontSpec.family) {
+                            "Comic Neue" -> Res.font.ComicNeue
+                            else -> null
+                        }
+                    },
+                ),
                 contentDescription = null,
                 modifier = Modifier
                     .size(150.dp)
@@ -243,21 +241,13 @@ fun LottieFontExample() {
     val add1 = "COMPOTTIE NOW HAS IT'S OWN  COMPOSE MULTIPLATFORM LOTTIE RENDERING ENGINE"
 
     LaunchedEffect(0) {
-//        while (true) {
         listOf(add1).forEach { line ->
             line.forEach {
-//                if (it == ' ') {
-//                    delay(200)
-//                } else {
                 delay(30)
-//                }
                 text += it
             }
             delay(500)
         }
-//            delay(1000)
-//            text = ""
-//        }
     }
 
     val fontSize = 90.dp
@@ -272,10 +262,8 @@ fun LottieFontExample() {
     Box(
         modifier = Modifier.fillMaxSize()
             .focusRequester(focus),
-//            .focusable(interactionSource = interactionSource),
         contentAlignment = Alignment.Center
     ) {
-
 
         BasicTextField(
             modifier = Modifier.fillMaxSize(),
@@ -355,9 +343,6 @@ fun LottieList() {
                 key = "ROBOT"
             ) {
                 LottieCompositionSpec.Resource(ROBOT)
-//                LottieCompositionSpec.Url(
-//                    url = "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/dalek.json",
-//                )
             }
 
             val painter = rememberLottiePainter(

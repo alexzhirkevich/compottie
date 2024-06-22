@@ -9,6 +9,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -20,12 +21,17 @@ import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.lerp
+import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
+import io.github.alexzhirkevich.compottie.assets.LottieFontManager
 import io.github.alexzhirkevich.compottie.dynamic.DynamicProperties
 import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
+import io.github.alexzhirkevich.compottie.dynamic.rememberLottieDynamicProperties
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.layers.CompositionLayer
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 /**
@@ -35,6 +41,11 @@ import kotlin.math.roundToInt
  *
  * @param composition [LottieComposition] usually created by [rememberLottieComposition]
  * @param composition The composition to render. This should be retrieved with [rememberLottieComposition].
+ * @param assetsManager used to load animation assets that were not loaded during composition
+ * initialization
+ * @param fontManager used to load animation fonts
+ * @param dynamicProperties dynamically-configurable animation properties. Can be created with
+ * [rememberLottieDynamicProperties]
  * @param isPlaying Whether or not the animation is currently playing. Note that the internal
  * animation may end due to reaching the target iterations count. If that happens, the animation may
  * stop even if this is still true. You can observe the returned [LottieAnimationState.isPlaying]
@@ -66,6 +77,8 @@ import kotlin.math.roundToInt
 @Composable
 fun rememberLottiePainter(
     composition : LottieComposition?,
+    assetsManager: LottieAssetsManager = LottieAssetsManager.Empty,
+    fontManager: LottieFontManager = LottieFontManager.Empty,
     dynamicProperties : DynamicProperties? = null,
     isPlaying: Boolean = true,
     restartOnPlay: Boolean = true,
@@ -95,6 +108,8 @@ fun rememberLottiePainter(
     return rememberLottiePainter(
         composition = composition,
         progress = { progress.value },
+        assetsManager = assetsManager,
+        fontManager = fontManager,
         dynamicProperties = dynamicProperties,
         clipToCompositionBounds = clipToCompositionBounds,
         clipTextToBoundingBoxes = clipTextToBoundingBoxes,
@@ -107,16 +122,24 @@ fun rememberLottiePainter(
  *
  * @param composition [LottieComposition] usually created by [rememberLottieComposition]
  * @param progress animation progress from 0 to 1 usually derived from [animateLottieCompositionAsState]
+ * @param assetsManager used to load animation assets that were not loaded during composition
+ * initialization
+ * @param fontManager used to load animation fonts
+ * @param dynamicProperties dynamically-configurable animation properties. Can be created with
+ * [rememberLottieDynamicProperties]
  * @param clipToCompositionBounds if drawing should be clipped to the
  *  [composition].width x [composition].height
  * @param clipTextToBoundingBoxes if text should be clipped to its bounding boxes (if provided in animation)
  * @param enableMergePaths enable experimental merge paths feature. Most of the time animation doesn't need
  * it even if it contains merge paths. This feature should only be enabled for tested animations
  * */
+@OptIn(InternalCompottieApi::class)
 @Composable
 fun rememberLottiePainter(
     composition : LottieComposition?,
     progress : () -> Float,
+    assetsManager: LottieAssetsManager = LottieAssetsManager.Empty,
+    fontManager: LottieFontManager = LottieFontManager.Empty,
     dynamicProperties : DynamicProperties? = null,
     clipToCompositionBounds : Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
@@ -131,6 +154,12 @@ fun rememberLottiePainter(
     ) {
 
         if (composition != null) {
+            val assets = async(ioDispatcher()) {
+                composition.loadAssets(assetsManager, true)
+            }
+            val fonts = async(ioDispatcher()) {
+                composition.loadFonts(fontManager)
+            }
             value = LottiePainter(
                 composition = composition,
                 initialProgress = progress(),
@@ -141,7 +170,9 @@ fun rememberLottiePainter(
                 clipTextToBoundingBoxes = clipTextToBoundingBoxes,
                 fontFamilyResolver = fontFamilyResolver,
                 clipToCompositionBounds = clipToCompositionBounds,
-                enableMergePaths = enableMergePaths
+                enableMergePaths = enableMergePaths,
+                assets = assets.await(),
+                fonts = fonts.await()
             )
         }
     }
@@ -182,6 +213,8 @@ private object EmptyPainter : Painter() {
 
 private class LottiePainter(
     private val composition: LottieComposition,
+    assets : List<LottieAsset>,
+    fonts : Map<String, FontFamily>,
     initialProgress : Float,
     dynamicProperties: DynamicCompositionProvider?,
     fontFamilyResolver : FontFamily.Resolver,
@@ -202,8 +235,6 @@ private class LottiePainter(
         intrinsicSize.height.roundToInt()
     )
 
-
-
     private val matrix = Matrix()
 
     private var alpha by mutableStateOf(1f)
@@ -223,7 +254,8 @@ private class LottiePainter(
         clipTextToBoundingBoxes = clipTextToBoundingBoxes,
         enableMergePaths = enableMergePaths,
         layer = compositionLayer,
-        assets = composition.animation.assets.associateBy(LottieAsset::id)
+        assets = assets.associateBy(LottieAsset::id),
+        fonts = fonts
     )
 
     var clipTextToBoundingBoxes: Boolean by animationState::clipTextToBoundingBoxes

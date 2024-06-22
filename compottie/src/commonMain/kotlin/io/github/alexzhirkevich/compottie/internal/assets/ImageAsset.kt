@@ -70,11 +70,16 @@ internal class ImageAsset(
         this.bitmap = transformBitmap(bitmap)
     }
 
-    private fun transformBitmap(bitmap: ImageBitmap) : ImageBitmap {
+    private fun transformBitmap(bitmap: ImageBitmap): ImageBitmap {
         return if (w != null && w != bitmap.width || h != null && h != bitmap.width) {
             bitmap.resize(w ?: bitmap.width, h ?: bitmap.height)
         } else bitmap
     }
+
+    override fun copy(): LottieAsset =
+        ImageAsset(id, fileName, path, slotId, name, embedded, w, h).apply {
+            this.bitmap?.let { setBitmap(it) }
+        }
 }
 
 private val String.isBase64Data : Boolean get() =

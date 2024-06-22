@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import io.github.alexzhirkevich.compottie.assets.LottieImage
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
@@ -19,7 +20,7 @@ import io.github.alexzhirkevich.compottie.internal.Animation
 import io.github.alexzhirkevich.compottie.internal.LottieJson
 import io.github.alexzhirkevich.compottie.internal.assets.CharacterData
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
-import io.github.alexzhirkevich.compottie.internal.helpers.text.TextDocument
+import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -32,41 +33,30 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.microseconds
-import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Load and prepare [LottieComposition] for displaying.
  *
  * Instance produces by [spec] will be remembered until [key] is changed. Those instances
  * are cached across the whole application. Cache size can be configured with [L.compositionCacheLimit]
- *
- * You can configure various dynamic animation properties in the [dynamic] block.
  * */
 @OptIn(InternalCompottieApi::class)
 @Composable
-@Stable
 fun rememberLottieComposition(
     key : Any? = currentCompositeKeyHash,
-    assetsManager: LottieAssetsManager = LottieAssetsManager.Empty,
-    fontManager: LottieFontManager = LottieFontManager.Empty,
     spec : suspend () -> LottieCompositionSpec,
 ) : LottieCompositionResult {
 
     val updatedSpec by rememberUpdatedState(spec)
 
-    val result = remember(key, assetsManager) {
+    val result = remember(key) {
         LottieCompositionResultImpl()
     }
 
     LaunchedEffect(result) {
         try {
             val composition = withContext(ioDispatcher()) {
-                updatedSpec().load(key).apply {
-                    prepare(
-                        assetsManager = assetsManager,
-                        fontManager = fontManager
-                    )
-                }
+                updatedSpec().load(key)
             }
             result.complete(composition)
         } catch (c: CancellationException) {
@@ -83,18 +73,40 @@ fun rememberLottieComposition(
 }
 
 /**
- * Load and prepare [LottieComposition].
+ * Load [LottieComposition].
  * */
+@OptIn(InternalCompottieApi::class)
 @Deprecated(
     "Use overload with lambda instead",
     ReplaceWith("rememberLottieComposition { spec }")
 )
-@OptIn(InternalCompottieApi::class)
 @Composable
-@Stable
 fun rememberLottieComposition(
     spec : LottieCompositionSpec,
-) : LottieCompositionResult =rememberLottieComposition { spec }
+) : LottieCompositionResult {
+
+    val result = remember(spec) {
+        LottieCompositionResultImpl()
+    }
+
+    LaunchedEffect(result) {
+        try {
+            val composition = withContext(ioDispatcher()) {
+                spec.load()
+            }
+            result.complete(composition)
+        } catch (c: CancellationException) {
+            result.completeExceptionally(c)
+            throw c
+        } catch (t: Throwable) {
+            result.completeExceptionally(
+                CompottieException("Composition failed to load", t)
+            )
+        }
+    }
+
+    return result
+}
 
 @Stable
 class LottieComposition internal constructor(
@@ -150,18 +162,13 @@ class LottieComposition internal constructor(
         @InternalCompottieApi
         set
 
-    private var fontsByFamily: Map<String, FontFamily> = emptyMap()
-
-    private val prepareMutex = Mutex()
-
     private val charGlyphs: Map<String, Map<String, CharacterData>> =
         animation.chars
             .groupBy(CharacterData::fontFamily)
             .mapValues { it.value.associateBy(CharacterData::character) }
 
-    internal fun findFont(family: String?) : FontFamily? {
-        return fontsByFamily[family]
-    }
+
+    private val assetsMutex = Mutex()
 
     internal fun findGlyphs(family : String?) : Map<String, CharacterData>? {
         return charGlyphs[family] ?: run {
@@ -173,37 +180,23 @@ class LottieComposition internal constructor(
         }
     }
 
-    private var isPrepared = false
-
-    /**
-     * Preload assets for instant animation displaying.
-     *
-     * Assets that are already loaded (such as embedded base64 images or assets
-     * successfully loaded at prev [prepare] call) will not be loaded again
-     * */
-    suspend fun prepare(
-        assetsManager: LottieAssetsManager = LottieAssetsManager.Empty,
-        fontManager: LottieFontManager = LottieFontManager.Empty
-    ) {
-        prepareMutex.withLock {
-//            if (!isPrepared) {
-                coroutineScope {
-                    launch {
-                        loadAssets(assetsManager)
-                    }
-                    launch {
-                        loadFonts(fontManager)
-                    }
-                }.invokeOnCompletion {
-                    isPrepared = it == null
-                }
-//            }
+    @InternalCompottieApi
+    suspend fun prepareAssets(assetsManager: LottieAssetsManager) {
+        assetsMutex.withLock {
+            loadAssets(assetsManager, false)
         }
     }
 
-    private suspend fun loadAssets(assetsManager: LottieAssetsManager) {
+    internal suspend fun loadAssets(
+        assetsManager: LottieAssetsManager,
+        copy : Boolean
+    ) : List<LottieAsset> {
+        val assets = if (copy)
+            animation.assets.map(LottieAsset::copy)
+        else animation.assets
+
         coroutineScope {
-            animation.assets.mapNotNull { asset ->
+            assets.mapNotNull { asset ->
                 when (asset) {
                     is ImageAsset -> {
                         if (asset.bitmap == null) {
@@ -225,15 +218,16 @@ class LottieComposition internal constructor(
                 }
             }.joinAll()
         }
+        return assets
     }
 
 
-    private suspend fun loadFonts(assetsManager: LottieFontManager) {
-        coroutineScope {
-            fontsByFamily = animation.fonts?.list
+    internal suspend fun loadFonts(fontManager: LottieFontManager) : Map<String, FontFamily> {
+        return coroutineScope {
+            animation.fonts?.list
                 ?.map {
                     async {
-                        val f = it.font ?: assetsManager.font(
+                        val f = it.font ?: fontManager.font(
                             LottieFontSpec(
                                 family = it.family,
                                 name = it.name,

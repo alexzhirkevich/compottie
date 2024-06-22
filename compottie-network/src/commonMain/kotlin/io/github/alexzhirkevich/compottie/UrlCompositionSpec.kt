@@ -24,11 +24,14 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 /**
- * [LottieComposition] from web [url]
+ * [LottieComposition] from network [url]
  *
- * @param client Ktor http client to use
- * @param assetsManager manager for assets that not embedded to the animation JSON or dotLottie archive.
- * [NetworkAssetsManager] is used by default
+ * @param format animation format. Composition spec will try to guess format if format is not specified.
+ * @param client http client user for loading animation
+ * @param request request builder. Simple GET by default
+ * @param cacheStrategy caching strategy. Caching to system tmp dir by default
+ *
+ * URL assets will be automatically prepared with [NetworkAssetsManager]
  * */
 @Stable
 fun LottieCompositionSpec.Companion.Url(
@@ -53,6 +56,8 @@ private class NetworkCompositionSpec(
     private val cacheStrategy: LottieCacheStrategy = DiskCacheStrategy(),
     private val request : NetworkRequest,
 ) : LottieCompositionSpec {
+
+    private val assetsManager = NetworkAssetsManager(client, cacheStrategy, request)
 
     @OptIn(InternalCompottieApi::class)
     override suspend fun load(cacheKey : Any?): LottieComposition {
@@ -92,6 +97,8 @@ private class NetworkCompositionSpec(
                         mutexByUrl.remove(url)
                     }
                 }
+            }.apply {
+                prepareAssets(assetsManager)
             }
         }
     }

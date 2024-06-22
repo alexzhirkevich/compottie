@@ -275,7 +275,7 @@ internal class TextLayer(
             ?.let { BaselineShift(it) }
             ?: textStyle.baselineShift
 
-        val fontFamily = animationState.composition.findFont(document.fontFamily)
+        val fontFamily = animationState.fonts[document.fontFamily]
 
         val letterSpacing = textAnimation?.style?.letterSpacing
             ?.interpolated(animationState)?.toSp()

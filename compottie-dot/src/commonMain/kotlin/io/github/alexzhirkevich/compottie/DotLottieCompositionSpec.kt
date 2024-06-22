@@ -77,15 +77,15 @@ private class DotLottieCompositionSpec(
                         if (animation.loop) {
                             iterations = LottieConstants.IterateForever
                         }
-                        prepare(DotLottieAssetsManager(zipSystem, manifestPath.parent))
+                        prepareAssets(DotLottieAssetsManager(zipSystem, manifestPath.parent))
                     }
                 } else {
                     val animPath = entries.keys.first { it.name.endsWith(".json", true) }
                     val anim = zipSystem.read(animPath)
 
                     LottieComposition.parse(anim.decodeToString()).apply {
-                        prepare(
-                            assetsManager = DotLottieAssetsManager(
+                        prepareAssets(
+                            DotLottieAssetsManager(
                                 zipFileSystem = zipSystem,
                                 root = animPath.parent
                             )

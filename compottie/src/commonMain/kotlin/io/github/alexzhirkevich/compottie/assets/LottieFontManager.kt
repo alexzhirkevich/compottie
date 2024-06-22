@@ -4,7 +4,8 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.text.font.Font
 
 /**
- * Used to fetch lottie assets that are not embedded to the animation JSON file
+ * Used to load animation fonts. If manager returns null then glyphs or default platform font
+ * will be used
  * */
 @Stable
 interface LottieFontManager {

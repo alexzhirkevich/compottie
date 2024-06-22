@@ -7,4 +7,8 @@ import kotlinx.serialization.Serializable
 internal class PrecompositionAsset(
     override val id: String,
     val layers : List<Layer>
-) : LottieAsset
+) : LottieAsset {
+    override fun copy(): LottieAsset {
+        return this
+    }
+}

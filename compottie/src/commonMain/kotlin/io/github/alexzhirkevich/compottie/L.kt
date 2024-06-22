@@ -34,6 +34,7 @@ object L {
     /**
      * Warmup JSON parser. The first animation parsing will be much faster
      * */
+    @ExperimentalCompottieApi
     fun warmup() {
         LottieJson.decodeFromString<Animation>(warmupAnim)
     }
