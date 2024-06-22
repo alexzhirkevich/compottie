@@ -46,7 +46,7 @@ For Compottie 1.x docs please refer to the [airbnb docs](https://github.com/airb
 - [LottieComposition](#lottiecomposition)
 - [Animating/Updating Progress](#animatingupdating-progress)
 - [LottieAnimatable](#lottieanimatable)
-- [dotLottie](#dotlottie)
+- [dotLottie (ZIP)](#dotlottie-zip)
 - [Images](#images)
 - [Fonts](#fonts)
 - [URL loading](#url-loading)
@@ -184,13 +184,17 @@ LaunchedEffect(Unit) {
 }
 ```
 
-## dotLottie
+## dotLottie (ZIP)
 
 [dotLottie ](https://dotlottie.io/) is an open-source file format that aggregates one or more Lottie files and their associated resources into a single file. They are ZIP archives compressed with the Deflate compression method and carry the file extension of ".lottie".
 
 dotLottie animations are up to 10x smaller in size and can have auto-linked bundled assets (as well as external assets ofc).
 
 `compottie-dot` module is required to use dotLottie animations in your app. It brings the new type of composition spec - `LottieCompositionSpec.DotLottie`.
+
+You can also use `DotLottie` composition spec even without making a .lottie file just by ZIPping
+your animation with assets using deflate algorithm. The only limitation - animation can't be named
+as "manifest.json" and should contain exactly one .json file.
 
 ## Images
 
@@ -207,7 +211,7 @@ Images should be avoided whenever possible. They are much larger, less performan
 val composition = rememberLottieComposition(
     assetsManager = rememberResourcesAssetsManager(
         directory = "files" // by default,
-        readBytes = Res::readBytes
+                readBytes = Res::readBytes
     )
 ) {
     LottieCompositionSpec.JsonString(
@@ -225,7 +229,7 @@ Text can be drawn in 2 ways: using fonts and using glyphs (when characters are b
 
 ```kotlin
 val composition by rememberLottieComposition() {
-   //...
+    //...
 }
 
 val painter = rememberLottiePainter(
@@ -253,7 +257,7 @@ fun LottieCompositionSpec.Companion.Url(
 ```
 that can be used to load JSON and dotLottie animations from the Internet.
 
-`LottieAnimationFormat` is used to determine wheither animation is a JSON or dotLottie. If you left it `Undefined`, 
+`LottieAnimationFormat` is used to determine wheither animation is a JSON or dotLottie. If you left it `Undefined`,
 composition spec will automatically detect is this a JSON or dotLottie file.
 
 Ktor HTTP client can be provided with `client` parameter.
