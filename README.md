@@ -22,7 +22,7 @@ Compose Multiplatform Adobe After Effects Bodymovin (Lottie) animations renderin
 | Module                | Description   | Artifact |
 | --------------------- | ------------- | -------------------------------------------------------- |
 | `compottie`           | Main compottie module with rendering engine and `JsonString` animation spec. Currently has two branches - 1.x (with platform renderers - Skottie and lottie-android) and 2.x (with own renderer). 1.x is maintained until the new renderer becomes stable  | `io.github.alexzhirkevich:compottie-dot:<version>` |
-| `compottie-dot`       | Contains [dotLottie](https://dotlottie.io/) and ZIP animation spec. Transitively depends on [Okio](https://square.github.io/okio/). For Compottie 2.x only | `io.github.alexzhirkevich:compottie-dot:<version>`         |
+| `compottie-dot`       | Contains [dotLottie](https://dotlottie.io/) and ZIP animation spec. Depends on [Okio](https://square.github.io/okio/). For Compottie 2.x only | `io.github.alexzhirkevich:compottie-dot:<version>`         |
 | `compottie-network`   | Contains `Url` animation spec and asset/font managers (with [Ktor](https://ktor.io/) and local cache with [Okio](https://square.github.io/okio/)). Allows loading animations and assets from web. For Compottie 2.x only | `io.github.alexzhirkevich:compottie-network:<version>`     |
 | `compottie-resources` | Contains asset and font managers powered by official Compose resources. For Compottie 2.x only  | `io.github.alexzhirkevich:compottie-resources:<version>` |
 
