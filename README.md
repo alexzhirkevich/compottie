@@ -10,33 +10,20 @@ Compose Multiplatform Adobe After Effects Bodymovin (Lottie) animations renderin
 
 ![Example](https://github.com/alexzhirkevich/compottie/assets/63979218/2735c77a-d940-4fd7-825c-208454b3960a)
 
+# Installation
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.alexzhirkevich/compottie/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.alexzhirkevich/compottie)
+
 > [!IMPORTANT]
 > Starting from v2.0 Compottie has its own multiplatform rendering engine without any platform delegates.
 > <br>The new engine is implemented from scratch and therefore may have bugs.
 > <br>Please [report](https://github.com/alexzhirkevich/compottie/issues) if you find any, preferably with a reproducible animation
 
-# Installation
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.alexzhirkevich/compottie/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.alexzhirkevich/compottie)
-
-```kotlin
-
-
-dependencies {
-    implementation("io.github.alexzhirkevich:compottie:<version>")
-
-    // The rest modules are only supported by Compottie 2.x
-
-    // For dotLottie (zip) animations
-    implementation("io.github.alexzhirkevich:compottie-dot:<2x_version>")
-
-    // For Url animation and assets loading
-    implementation("io.github.alexzhirkevich:compottie-network:<2x_version>")
-
-    // For compose-resources LottieAssetsManager and LottieFontManager.
-    // This module DOESN'T include resources composition spec due to its uselessness
-    implementation("io.github.alexzhirkevich:compottie-resources:<2x_version>")
-}
-```
+| Module                | Description   | Artifact |
+| --------------------- | ------------- | -------------------------------------------------------- |
+| `compottie`           | Main module with rendering engine and `JsonString` animation spec. Currently has two branches - 1.x (with platform renderers - Skottie and lottie-android) and 2.x (with own renderer). 1.x is maintained until the new renderer becomes stable  | `io.github.alexzhirkevich:compottie-dot:<version>` |
+| `compottie-dot`       | Contains [dotLottie](https://dotlottie.io/) and ZIP animation spec. Depends on [Okio](https://square.github.io/okio/). For Compottie 2.x only | `io.github.alexzhirkevich:compottie-dot:<version>`         |
+| `compottie-network`   | Contains `Url` animation spec and asset/font managers (with [Ktor](https://ktor.io/) and local cache with [Okio](https://square.github.io/okio/)). Allows loading animations and assets from web. For Compottie 2.x only | `io.github.alexzhirkevich:compottie-network:<version>`     |
+| `compottie-resources` | Contains asset and font managers powered by official Compose resources. For Compottie 2.x only  | `io.github.alexzhirkevich:compottie-resources:<version>` |
 
 # Usage
 The following docs describe the Compottie 2.x usage.
