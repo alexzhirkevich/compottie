@@ -13,7 +13,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.font.FontFamily
 import io.github.alexzhirkevich.compottie.assets.LottieImage
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
-import io.github.alexzhirkevich.compottie.assets.LottieFontSpec
 import io.github.alexzhirkevich.compottie.assets.LottieFontManager
 import io.github.alexzhirkevich.compottie.internal.Animation
 import io.github.alexzhirkevich.compottie.internal.LottieJson
@@ -33,16 +32,21 @@ import kotlinx.coroutines.withContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.microseconds
 
+internal object UnspecifiedCompositionKey
+
 /**
  * Load and prepare [LottieComposition] for displaying.
  *
  * Instance produces by [spec] will be remembered until [key] is changed. Those instances
- * are cached across the whole application. Cache size can be configured with [L.compositionCacheLimit]
+ * are cached across the whole application. Cache size can be configured with [L.compositionCacheLimit].
+ * If key is not provided then [LottieCompositionSpec.key] will be used.
+ * To disable caching null [key] must be passed explicitly.
+ * [currentCompositeKeyHash] in appropriate place can be used as a key (inappropriate places are loops without key for example)
  * */
 @OptIn(InternalCompottieApi::class)
 @Composable
 fun rememberLottieComposition(
-    key : Any? = currentCompositeKeyHash,
+    key : Any? = UnspecifiedCompositionKey,
     spec : suspend () -> LottieCompositionSpec,
 ) : LottieCompositionResult {
 
@@ -55,7 +59,13 @@ fun rememberLottieComposition(
     LaunchedEffect(result) {
         try {
             val composition = withContext(ioDispatcher()) {
-                updatedSpec().load(key)
+            val specInstance = updatedSpec()
+                val k = when (key) {
+                    UnspecifiedCompositionKey -> specInstance.key
+                    null -> null
+                    else -> key
+                }
+                specInstance.load(k)
             }
             result.complete(composition)
         } catch (c: CancellationException) {

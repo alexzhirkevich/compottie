@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.compottie.CompottieException
+import io.github.alexzhirkevich.compottie.DotLottie
 import io.github.alexzhirkevich.compottie.ExperimentalCompottieApi
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
@@ -135,9 +136,6 @@ fun App() {
 
 
     val composition = rememberLottieComposition() {
-//        LottieCompositionSpec.DotLottie {
-//            Res.readBytes("files/$DOT_WITH_IMAGE")
-//        }
         LottieCompositionSpec.ResourceString(ROBOT)
 //
 //        LottieCompositionSpec.Url(
@@ -337,10 +335,8 @@ fun LottieFontExample() {
 fun LottieList() {
     LazyVerticalGrid(columns = GridCells.FixedSize(100.dp)) {
         items(1000){
-            val composition = rememberLottieComposition(
-                key = "ROBOT"
-            ) {
-                LottieCompositionSpec.ResourceString(WONDERS)
+            val composition = rememberLottieComposition() {
+                LottieCompositionSpec.ResourceString(ROBOT)
             }
 
             val painter = rememberLottiePainter(

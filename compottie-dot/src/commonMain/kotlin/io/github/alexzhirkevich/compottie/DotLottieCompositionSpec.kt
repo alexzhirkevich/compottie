@@ -45,6 +45,8 @@ private class DotLottieCompositionSpec(
     private val animationId : String?,
 ) : LottieCompositionSpec {
 
+    override val key: String = "zip_${archive.contentHashCode()}_${animationId.orEmpty()}"
+
     @OptIn(InternalCompottieApi::class)
     override suspend fun load(cacheKey : Any?): LottieComposition {
         return withContext(ioDispatcher()) {

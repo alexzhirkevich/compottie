@@ -8,6 +8,11 @@ import kotlin.jvm.JvmInline
 @Stable
 interface LottieCompositionSpec {
 
+    /**
+     * Key that uniquely identifies composition instance. Equal specs must return equal key
+     * */
+    val key : String?
+
     suspend fun load(cacheKey : Any? = null) : LottieComposition
 
     companion object {
@@ -29,6 +34,9 @@ interface LottieCompositionSpec {
 private value class JsonStringImpl(
     private val jsonString: String
 ) : LottieCompositionSpec {
+
+    override val key: String
+        get() = "string_${jsonString.hashCode()}"
 
     @OptIn(InternalCompottieApi::class)
     override suspend fun load(cacheKey: Any?): LottieComposition {
