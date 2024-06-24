@@ -102,11 +102,11 @@ internal abstract class AnimatedTransform{
 
             val mCos = if (skewAngle == null)
                 0f
-            else cos(Math.toRadians(-skewAngle!! + 90))
+            else cos(Math.toRadians(-skewAngle + 90))
 
             val mSin = if (skewAngle == null)
                 1f
-            else sin(Math.toRadians(-skewAngle!! + 90))
+            else sin(Math.toRadians(-skewAngle + 90))
 
             val aTan = tan(Math.toRadians(sk))
 

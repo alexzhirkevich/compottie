@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -185,29 +186,6 @@ fun App() {
             assetsManager = rememberResourcesAssetsManager(
                 readBytes = Res::readBytes
             ),
-            dynamicProperties = rememberLottieDynamicProperties {
-                shapeLayer("Layer") {
-                    group("Group") {
-                        rect("Rectangle") {
-//                            size {
-//                                it //* progress
-//                            }
-                        }
-                        stroke("Stroke"){
-                            gradient {
-                                LottieGradient.Linear(
-                                    colorStops = listOf(0f to Color.Red, 1f to Color.Blue),
-                                    start = Offset.Zero,
-                                    end = it.bottomRight
-                                )
-                            }
-                            width {
-                                it / this.progress.coerceAtLeast(.5f)
-                            }
-                        }
-                    }
-                }
-            },
         )
 
         Image(
@@ -268,18 +246,6 @@ private val ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ':, \n"
 fun LottieFontExample() {
     var text by remember {
         mutableStateOf("")
-    }
-
-    val add1 = "COMPOTTIE NOW HAS IT'S OWN  COMPOSE MULTIPLATFORM LOTTIE RENDERING ENGINE"
-
-    LaunchedEffect(0) {
-        listOf(add1).forEach { line ->
-            line.forEach {
-                delay(30)
-                text += it
-            }
-            delay(500)
-        }
     }
 
     val fontSize = 90.dp

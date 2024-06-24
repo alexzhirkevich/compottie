@@ -23,14 +23,14 @@ var L.useStableWasmMemoryManagement by ::_useStableWasmMemoryManagement
 /**
  * [LottieComposition] from a dotLottie zip archive.
  *
- * @param archive archive bytes supplier
- * @param assetsManager required only if animation contains assets that are not included in the archive
- * (like fonts, resource images, etc.)
+ * @param archive dotLottie or zip archive file
+ * @param animId animation id (if dotLottie contains multiple animations)
  * */
 @Stable
 fun LottieCompositionSpec.Companion.DotLottie(
     archive: ByteArray,
-) : LottieCompositionSpec = DotLottieCompositionSpec(archive)
+    animId: String? = null
+) : LottieCompositionSpec = DotLottieCompositionSpec(archive, animId)
 
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -42,6 +42,7 @@ private val DotLottieJson = Json {
 
 private class DotLottieCompositionSpec(
     private val archive : ByteArray,
+    private val animationId : String?,
 ) : LottieCompositionSpec {
 
     @OptIn(InternalCompottieApi::class)
@@ -68,9 +69,11 @@ private class DotLottieCompositionSpec(
                         zipSystem.read(manifestPath).decodeToString()
                     )
 
-                    val animation = manifest.animations.first()
+                    val animation = checkNotNull(manifest.animations.firstOrNull()){
+                        "dotLottie animation folder is empty"
+                    }
 
-                    val anim = zipSystem.read("animations/${animation.id}.json".toPath())
+                    val anim = zipSystem.read("animations/${animationId ?: animation.id}.json".toPath())
 
                     LottieComposition.parse(anim.decodeToString()).apply {
                         speed = animation.speed

@@ -75,7 +75,7 @@ internal class RepeaterShape(
             for (i in copies.toInt() - 1 downTo 0) {
                 matrix.setFrom(parentMatrix)
                 matrix.preConcat(transform.repeaterMatrix(state, i + offset))
-                val newAlpha = parentAlpha * lerp(startOpacity, endOpacity, i / copies)
+                val newAlpha = parentAlpha * lerp(startOpacity, endOpacity, i / copies).coerceIn(0f, 1f)
                 contentGroup.draw(drawScope, matrix, newAlpha, state)
             }
         }
