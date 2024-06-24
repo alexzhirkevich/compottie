@@ -10,8 +10,14 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.JsonTransformingSerializer
+import kotlinx.serialization.json.floatOrNull
+import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = AnimatedNumberSerializer::class)
 internal sealed class AnimatedNumber : KeyframeAnimation<Float>, Indexable {
@@ -84,11 +90,16 @@ internal sealed class AnimatedNumber : KeyframeAnimation<Float>, Indexable {
 }
 
 internal fun AnimatedNumber.interpolatedNorm(state: AnimationState) = interpolated(state) / 100f
+
 internal class AnimatedNumberSerializer : JsonContentPolymorphicSerializer<AnimatedNumber>(AnimatedNumber::class){
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedNumber> {
 
+        if (element is JsonPrimitive){
+            return AnimatedNumberAsPrimitiveSerializer
+        }
+
         val value = requireNotNull(element.jsonObject["k"]){
-            "Unrecognized animation value: $element"
+            "Illegal animated number encoding: $element"
         }
 
         return if (value is JsonPrimitive){
@@ -96,5 +107,12 @@ internal class AnimatedNumberSerializer : JsonContentPolymorphicSerializer<Anima
         } else {
             AnimatedNumber.Animated.serializer()
         }
+    }
+}
+
+private object AnimatedNumberAsPrimitiveSerializer :
+    JsonTransformingSerializer<AnimatedNumber.Default>(AnimatedNumber.Default.serializer()) {
+    override fun transformDeserialize(element: JsonElement): JsonElement {
+        return JsonObject(mapOf("k" to element))
     }
 }

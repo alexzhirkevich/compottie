@@ -15,15 +15,15 @@ internal class TextData(
     @SerialName("m")
     val alignment: TextAlignment,
 
-    @SerialName("p")
-    val followPath : TextFollowPath,
+//    @SerialName("p")
+//    val followPath : TextFollowPath,
 ) {
     fun deepCopy() : TextData{
         return TextData(
             ranges = ranges.map(TextRange::copy),
             document = document.copy(),
             alignment = alignment.copy(),
-            followPath = followPath.deepCopy()
+//            followPath = followPath.deepCopy()
         )
     }
 }

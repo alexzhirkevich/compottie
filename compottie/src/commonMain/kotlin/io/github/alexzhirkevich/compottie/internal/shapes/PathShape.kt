@@ -30,11 +30,19 @@ internal class PathShape(
     @SerialName("hd")
     override val hidden : Boolean = false,
 
+    @SerialName("closed")
+    private val isClosedLegacy : Boolean? = null,
+
     @SerialName("ks")
     val shape : AnimatedShape
 ) : Shape, PathContent {
 
-
+    init {
+        // Until v 4.4.18 path objects had a boolean closed property and c was not present in the bezier data
+        if (isClosedLegacy != null) {
+            shape.setClosed(isClosedLegacy)
+        }
+    }
 
     @Transient
     private var trimPaths : CompoundTrimPath? = null

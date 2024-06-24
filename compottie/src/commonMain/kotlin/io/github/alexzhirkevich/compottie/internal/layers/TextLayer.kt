@@ -17,9 +17,9 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.BaselineShift
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
@@ -41,7 +41,6 @@ import io.github.alexzhirkevich.compottie.internal.helpers.text.fontScale
 import io.github.alexzhirkevich.compottie.internal.platform.addCodePoint
 import io.github.alexzhirkevich.compottie.internal.platform.charCount
 import io.github.alexzhirkevich.compottie.internal.platform.codePointAt
-import io.github.alexzhirkevich.compottie.internal.platform.getMatrix
 import io.github.alexzhirkevich.compottie.internal.platform.isModifier
 import io.github.alexzhirkevich.compottie.internal.util.toOffset
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
@@ -302,7 +301,13 @@ internal class TextLayer(
             ?.let { BaselineShift(it) }
             ?: textStyle.baselineShift
 
-        val fontFamily = animationState.fonts[document.fontFamily]
+        val strFontFamily = document.fontFamily ?: return@run false
+        val fontFamily = animationState.fonts[strFontFamily]
+
+        val fontSpec = animationState.composition.animation.fonts?.find(strFontFamily)
+
+        val weight = fontSpec?.weight ?: FontWeight.Normal
+        val style = fontSpec?.style ?: FontStyle.Normal
 
         val letterSpacing = textAnimation?.style?.letterSpacing
             ?.interpolated(animationState)?.toSp()
@@ -315,7 +320,9 @@ internal class TextLayer(
             textStyle.baselineShift != baselineShift ||
             textStyle.lineHeight != lineHeight ||
             textStyle.fontFamily != fontFamily ||
-            textStyle.letterSpacing != letterSpacing
+            textStyle.letterSpacing != letterSpacing ||
+            textStyle.fontWeight != weight ||
+            textStyle.fontStyle != style
         ) {
             textStyle = textStyle.copy(
                 baselineShift = baselineShift,
@@ -323,7 +330,9 @@ internal class TextLayer(
                 lineHeight = lineHeight,
                 fontFamily = fontFamily,
                 letterSpacing = letterSpacing,
-                color = Color.Red
+                color = Color.Red,
+                fontWeight = weight,
+                fontStyle = style
             )
         }
 

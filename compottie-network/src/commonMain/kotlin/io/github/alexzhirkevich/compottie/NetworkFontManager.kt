@@ -9,7 +9,7 @@ import okio.Path
 /**
  * Font manager that loads fonts from the web using [request] with [client].
  *
- * Supports only [LottieFontSpec.FontOrigin.FontUrl] .ttf fonts (support may be higher on non-Android platforms).
+ * Guaranteed to work only with [LottieFontSpec.FontOrigin.FontUrl] .ttf fonts (support may be higher on non-Android platforms).
  *
  * Note: [LottieCacheStrategy.path] should return valid file system paths to make [NetworkFontManager] work.
  * Default [DiskCacheStrategy] supports it.

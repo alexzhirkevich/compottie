@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.helpers.Bezier
 import kotlinx.serialization.DeserializationStrategy
@@ -21,6 +22,8 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
 
     fun copy() : AnimatedShape
 
+    fun setClosed(closed : Boolean)
+
     @Serializable
     class Default(
         @SerialName("x")
@@ -35,6 +38,10 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
 
         @Transient
         private val tmpPath = Path()
+
+        override fun setClosed(closed: Boolean) {
+            bezier.setIsClosed(closed)
+        }
 
         override fun interpolated(state: AnimationState): Path {
             bezier.mapPath(tmpPath)
@@ -93,6 +100,13 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
                 }
             }
         )
+
+        override fun setClosed(closed: Boolean) {
+            keyframes.fastForEach {
+                it.start?.setIsClosed(closed)
+                it.end?.setIsClosed(closed)
+            }
+        }
 
         override fun interpolatedRaw(state: AnimationState): Path {
             return rawDelegate.interpolated(state)

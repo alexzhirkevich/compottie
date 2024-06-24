@@ -21,9 +21,20 @@ internal class Mask(
     @SerialName("mode")
     val mode : MaskMode = MaskMode.Intersect,
 
+    @SerialName("cl")
+    val isClosedLegacy : Boolean? = null,
+
     @SerialName("x")
     val expand: AnimatedNumber? = null
 ) {
+
+    init {
+        // Until v 4.4.18 mask objects had a boolean cl property and c was not present in the bezier data
+        if (isClosedLegacy != null) {
+            shape?.setClosed(isClosedLegacy)
+        }
+    }
+
     fun deepCopy() = Mask(
         isInverted = isInverted,
         shape = shape?.copy(),

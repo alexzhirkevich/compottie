@@ -83,6 +83,8 @@ internal fun FloatArray.toColor() = Color(
     alpha = getOrNull(3)?.toColorComponent() ?: 1f
 )
 
+// Modern Lotties (v 4.1.9+) have color components in the [0, 1] range.
+// Older ones have components in the [0, 255] range.
 private fun Float.toColorComponent() : Float = when (this) {
     in COLOR_RANGE_01 -> this
     in COLOR_RANGE_0255 -> this/255f

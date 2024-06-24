@@ -5,7 +5,6 @@ import androidx.compose.ui.geometry.lerp
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
-import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.internal.util.toOffset
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -63,22 +62,21 @@ internal class Bezier(
             }
 
             if (isClosed) {
-                val vertex = vertices[0]
-                val prevVertex = vertices.last()
-                val cp1 = outTangents[vertices.lastIndex]
-                val cp2 = inTangents[0]
-
-                val shapeCp1 = floatArrayOf(prevVertex[0] + cp1[0], prevVertex[1] + cp1[1])
-                val shapeCp2 = floatArrayOf(vertex[0] + cp2[0], vertex[1] + cp2[1])
-
-                curves.add(
-                    CubicCurveData(
-                        shapeCp1.toOffset(),
-                        shapeCp2.toOffset(),
-                        vertex.toOffset()
-                    )
-                )
+                closeShape()
             }
+        }
+    }
+
+    fun setIsClosed(closed : Boolean){
+        if (isClosed == closed){
+            return
+        }
+
+        this.isClosed = closed
+        if (closed){
+            closeShape()
+        } else {
+            curves.removeLast()
         }
     }
 
@@ -145,6 +143,24 @@ internal class Bezier(
         if (isClosed) {
             outPath.close()
         }
+    }
+
+    private fun closeShape(){
+        val vertex = vertices[0]
+        val prevVertex = vertices.last()
+        val cp1 = outTangents[vertices.lastIndex]
+        val cp2 = inTangents[0]
+
+        val shapeCp1 = floatArrayOf(prevVertex[0] + cp1[0], prevVertex[1] + cp1[1])
+        val shapeCp2 = floatArrayOf(vertex[0] + cp2[0], vertex[1] + cp2[1])
+
+        curves.add(
+            CubicCurveData(
+                shapeCp1.toOffset(),
+                shapeCp2.toOffset(),
+                vertex.toOffset()
+            )
+        )
     }
 }
 

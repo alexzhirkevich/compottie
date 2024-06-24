@@ -235,16 +235,7 @@ class LottieComposition internal constructor(
             loadedFonts + animation.fonts?.list
                 ?.map {
                     async {
-                        val f = it.font ?: fontManager.font(
-                            LottieFontSpec(
-                                family = it.family,
-                                name = it.name,
-                                style = it.fontStyle,
-                                weight = it.weight,
-                                path = it.path,
-                                origin = it.origin?.toSpecOrigin() ?: LottieFontSpec.FontOrigin.Unknown
-                            )
-                        )
+                        val f = it.font ?: fontManager.font(it.spec)
 
                         it.font = f
 

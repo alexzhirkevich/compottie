@@ -11,7 +11,6 @@ import io.github.alexzhirkevich.compottie.lottieContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        lottieContext = this
 //          StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder()
 //                           .detectAll()
 //                           .penaltyLog()

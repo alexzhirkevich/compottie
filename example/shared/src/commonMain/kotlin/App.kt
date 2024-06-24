@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -32,11 +31,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.layout.ScaleFactor
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.compottie.CompottieException
@@ -56,7 +51,6 @@ import io.github.alexzhirkevich.shared.generated.resources.ComicNeue
 import io.github.alexzhirkevich.shared.generated.resources.Res
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import kotlin.random.Random
 
 private val GRADIENT_ELLIPSE = "gradient_ellipse.json"
 private val TEST = "test.json"
@@ -124,7 +118,7 @@ private val ALL = listOf(
  * */
 @OptIn(ExperimentalResourceApi::class)
 @Stable
-suspend fun LottieCompositionSpec.Companion.Resource(
+suspend fun LottieCompositionSpec.Companion.ResourceString(
     path : String,
     dir : String = "files",
     readBytes: suspend (path: String) -> ByteArray = { Res.readBytes(it) }
@@ -143,10 +137,11 @@ fun App() {
 //        LottieCompositionSpec.DotLottie {
 //            Res.readBytes("files/$DOT_WITH_IMAGE")
 //        }
-        LottieCompositionSpec.Resource(WONDERS)
+        LottieCompositionSpec.ResourceString(ROBOT)
 //
 //        LottieCompositionSpec.Url(
-//            "https://assets-v2.lottiefiles.com/a/1633f0d6-117a-11ee-a98b-eb5ca344688a/8OoA7VFval.lottie",
+//            "https://assets-v2.lottiefiles.com/a/e9cce796-ee9b-11ee-817f-5ff9e267b845/1IrfDLeScs.lottie",
+//            "https://lottie.host/02723b80-a213-478e-9320-0e5c3adf88ff/zz4HlIqtSb.lottie",
 //            "https://assets-v2.lottiefiles.com/a/10956594-1169-11ee-98fe-ef3d9d71ad0f/WVFg2bDWGj.lottie",
 //            "https://assets-v2.lottiefiles.com/a/0e63252e-1153-11ee-9e35-dfc2b798a135/sYygPbem7R.lottie",
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/dalek.json",
@@ -178,11 +173,20 @@ fun App() {
         val painter  = rememberLottiePainter(
             composition = composition.value,
             progress = { progress },
+            fontManager = remember {
+                NetworkFontManager()
+            },
+            //            fontManager = rememberResourcesFontManager { fontSpec ->
+//                when (fontSpec.family) {
+//                    "Comic Neue" -> Res.font.ComicNeue
+//                    else -> null
+//                }
+//            },
             assetsManager = rememberResourcesAssetsManager(
                 readBytes = Res::readBytes
             ),
             dynamicProperties = rememberLottieDynamicProperties {
-                shapeLayer("Layer"){
+                shapeLayer("Layer") {
                     group("Group") {
                         rect("Rectangle") {
 //                            size {
@@ -204,15 +208,6 @@ fun App() {
                     }
                 }
             },
-            fontManager = remember {
-                NetworkFontManager()
-            }
-//            fontManager = rememberResourcesFontManager { fontSpec ->
-//                when (fontSpec.family) {
-//                    "Comic Neue" -> Res.font.ComicNeue
-//                    else -> null
-//                }
-//            },
         )
 
         Image(
@@ -240,7 +235,7 @@ fun AllExamples(){
     ){
         items(ALL) {
             val composition by rememberLottieComposition() {
-                LottieCompositionSpec.Resource(it)
+                LottieCompositionSpec.ResourceString(it)
             }
 
             Image(
@@ -343,7 +338,7 @@ fun LottieFontExample() {
                                         painter = rememberLottiePainter(
                                             rememberLottieComposition {
                                                 // sometimes cmp resources freeze on simultaneous resources access
-                                                LottieCompositionSpec.Resource("mobilo/$anim.json")
+                                                LottieCompositionSpec.ResourceString("mobilo/$anim.json")
                                             }.value
                                         ),
                                         contentDescription = anim
@@ -359,7 +354,7 @@ fun LottieFontExample() {
                                 .offset(x = -fontSize / 3),
                             painter = rememberLottiePainter(
                                 composition = rememberLottieComposition {
-                                    LottieCompositionSpec.Resource("mobilo/BlinkingCursor.json")
+                                    LottieCompositionSpec.ResourceString("mobilo/BlinkingCursor.json")
                                 }.value,
                                 iterations = LottieConstants.IterateForever
                             ),
@@ -379,7 +374,7 @@ fun LottieList() {
             val composition = rememberLottieComposition(
                 key = "ROBOT"
             ) {
-                LottieCompositionSpec.Resource(WONDERS)
+                LottieCompositionSpec.ResourceString(WONDERS)
             }
 
             val painter = rememberLottiePainter(

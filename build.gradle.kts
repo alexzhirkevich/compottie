@@ -92,7 +92,7 @@ subprojects {
     }
 
     android {
-        namespace = "_$_group.${name.filter { it.isLetter() }}"
+        namespace = "$_group.${name.filter { it.isLetter() }}"
         compileSdk = (findProperty("android.compileSdk") as String).toInt()
 
         defaultConfig {

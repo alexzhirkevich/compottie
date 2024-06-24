@@ -13,7 +13,17 @@ import kotlin.jvm.JvmInline
 internal class FontList(
     val list : List<LottieFontAsset>
 ) {
-    fun deepCopy() : FontList {
+
+    @Transient
+    private val map = list.map {
+        listOf(it.name to it.spec, it.family to it.spec)
+    }.flatten().toMap()
+
+    fun find(family: String): LottieFontSpec? {
+        return map[family]
+    }
+
+    fun deepCopy(): FontList {
         return FontList(list.map(LottieFontAsset::copy))
     }
 }
@@ -56,6 +66,17 @@ internal class LottieFontAsset(
         FontStyle.Italic else FontStyle.Normal
 
     var font: Font? = null
+
+    val spec by lazy {
+        LottieFontSpec(
+            family = family,
+            name = name,
+            style = fontStyle,
+            weight = weight,
+            path = path,
+            origin = origin?.toSpecOrigin() ?: LottieFontSpec.FontOrigin.Unknown
+        )
+    }
 
     fun copy(): LottieFontAsset {
         return LottieFontAsset(
