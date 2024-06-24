@@ -8,9 +8,11 @@
 
 Compose Multiplatform Adobe After Effects Bodymovin (Lottie) animations rendering engine.
 
+![Example](https://github.com/alexzhirkevich/compottie/assets/63979218/2735c77a-d940-4fd7-825c-208454b3960a)
+
 > [!IMPORTANT]
 > Starting from v2.0 Compottie has its own multiplatform rendering engine without any platform delegates.
-> <br>The new rendering engine is implemented from scratch and therefore may have bugs.
+> <br>The new engine is implemented from scratch and therefore may have bugs.
 > <br>Please [report](https://github.com/alexzhirkevich/compottie/issues) if you find any, preferably with a reproducible animation
 
 # Installation
