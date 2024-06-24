@@ -7,6 +7,8 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachReversed
+import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
@@ -102,6 +104,19 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
             it.getBounds(drawScope, boundsMatrix, true, state, rect)
             outBounds.union(rect)
         }
+    }
+
+    override fun setDynamicProperties(
+        composition: DynamicCompositionProvider,
+        state: AnimationState
+    ): DynamicLayerProvider? {
+        val dynamic = super.setDynamicProperties(composition, state)
+
+        getLayers(state).fastForEach {
+            it.setDynamicProperties(composition, state)
+        }
+
+        return dynamic
     }
 
     private fun getLayers(state: AnimationState): List<Layer> = synchronized(getLayerLock) {

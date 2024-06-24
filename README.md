@@ -6,7 +6,7 @@
 ![badge-macOS](https://img.shields.io/badge/Platform-macOS-purple)
 ![badge-web](https://img.shields.io/badge/Platform-Web-blue)
 
-Compose Multiplatform Adobe After Effects Bodymovin (Lottie) animations renderer.
+Compose Multiplatform Adobe After Effects Bodymovin (Lottie) animations rendering engine.
 
 > [!IMPORTANT]
 > Starting from v2.0 Compottie has its own multiplatform rendering engine without any platform delegates.

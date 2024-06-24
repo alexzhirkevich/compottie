@@ -1,10 +1,10 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.geometry.MutableRect
+import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
@@ -26,10 +26,10 @@ import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsState
 import io.github.alexzhirkevich.compottie.internal.helpers.FillRule
 import io.github.alexzhirkevich.compottie.internal.helpers.asComposeBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.asPathFillType
-import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.platform.GradientCache
 import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
+import io.github.alexzhirkevich.compottie.internal.utils.IdentityMatrix
 import io.github.alexzhirkevich.compottie.internal.utils.firstInstanceOf
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.SerialName
@@ -92,7 +92,7 @@ internal class GradientFillShape(
     private val boundsRect = MutableRect(0f,0f,0f,0f)
 
     @Transient
-    private var paths: List<PathContent> = emptyList()
+    private var pathContents: List<PathContent> = emptyList()
 
     private val paint= Paint().apply {
         isAntiAlias = true
@@ -132,9 +132,8 @@ internal class GradientFillShape(
                 matrix = parentMatrix,
                 cache = gradientCache
             )
-        } else {
-            getBounds(drawScope, parentMatrix, false, state, boundsRect)
         }
+        getBounds(drawScope, IdentityMatrix, false, state, boundsRect)
 
         dynamicFill.applyToPaint(
             paint = paint,
@@ -142,7 +141,7 @@ internal class GradientFillShape(
             parentAlpha = parentAlpha,
             opacity = opacity,
             parentMatrix = parentMatrix,
-            size = boundsRect.size,
+            size = boundsRect::toRect,
             gradientCache = gradientCache
         )
 
@@ -150,7 +149,7 @@ internal class GradientFillShape(
 
         path.rewind()
 
-        paths.fastForEach {
+        pathContents.fastForEach {
             path.addPath(it.getPath(state), parentMatrix)
         }
 
@@ -169,7 +168,7 @@ internal class GradientFillShape(
         outBounds: MutableRect
     ) {
         path.rewind()
-        paths.fastForEach {
+        pathContents.fastForEach {
             path.addPath(it.getPath(state), parentMatrix)
         }
         outBounds.set(path.getBounds())
@@ -192,8 +191,24 @@ internal class GradientFillShape(
 
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
-        paths = contentsAfter.filterIsInstance<PathContent>()
+        pathContents = contentsAfter.filterIsInstance<PathContent>()
         roundShape = contentsBefore.firstInstanceOf()
+    }
+
+    override fun deepCopy(): Shape {
+        return GradientFillShape(
+            matchName = matchName,
+            name = name,
+            hidden = hidden,
+            opacity = opacity?.copy(),
+            startPoint = startPoint.copy(),
+            endPoint = endPoint.copy(),
+            type = type,
+            highlightLength = highlightLength?.copy(),
+            highlightAngle = highlightAngle?.copy(),
+            colors = colors.copy(),
+            fillRule = fillRule
+        )
     }
 }
 

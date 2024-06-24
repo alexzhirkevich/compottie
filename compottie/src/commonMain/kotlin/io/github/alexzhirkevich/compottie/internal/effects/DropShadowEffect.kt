@@ -18,4 +18,8 @@ internal class DropShadowEffect(
     val angle  get() = values.getAs<EffectValue.Angle>(2)?.value
     val distance  get() = values.getAs<EffectValue.Slider>(3)?.value
     val blur  get() = values.getAs<EffectValue.Slider>(4)?.value
+
+    override fun copy(): LayerEffect {
+        return DropShadowEffect(values.map(EffectValue<Any?>::copy))
+    }
 }

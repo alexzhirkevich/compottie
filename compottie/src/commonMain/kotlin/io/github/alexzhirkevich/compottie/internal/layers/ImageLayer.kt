@@ -20,7 +20,6 @@ import io.github.alexzhirkevich.compottie.internal.helpers.asComposeBlendMode
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import org.jetbrains.skia.Color
 
 @Serializable
 @SerialName("2")
@@ -100,9 +99,7 @@ internal class ImageLayer(
 
     private fun dynamicAsset(state: AnimationState) : ImageAsset? {
 
-        val dynamic = resolvingPath?.let {
-            state.dynamic?.get(it) as? DynamicImageLayerProvider
-        }
+        val dynamic = dynamicLayer as? DynamicImageLayerProvider
 
         val asset = state.assets[refId] as? ImageAsset ?: return null
         val image = dynamic?.image?.invoke(state, asset.spec) ?: return asset
@@ -149,6 +146,33 @@ internal class ImageLayer(
             )
             boundsMatrix.map(outBounds)
         }
+    }
+
+    override fun deepCopy(): Layer {
+        return ImageLayer(
+            transform = transform.deepCopy(),
+            autoOrient = autoOrient,
+            is3d = is3d,
+            index = index,
+            blendMode = blendMode,
+            clazz = clazz,
+            htmlId = htmlId,
+            inPoint = inPoint,
+            outPoint = outPoint,
+            startTime = startTime,
+            name = name,
+            timeStretch = timeStretch,
+            parent = parent,
+            matteMode = matteMode,
+            matteParent = matteParent,
+            matteTarget = matteTarget,
+            hidden = hidden,
+            collapseTransform = collapseTransform,
+            masks = masks?.map(Mask::deepCopy),
+            hasMask = hasMask,
+            effects = effects.map(LayerEffect::copy),
+            refId = refId
+        )
     }
 }
 

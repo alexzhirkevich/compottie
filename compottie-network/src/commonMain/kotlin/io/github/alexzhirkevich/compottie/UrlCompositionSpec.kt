@@ -10,6 +10,7 @@ import io.github.alexzhirkevich.compottie.LottieCacheStrategy
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.NetworkAssetsManager
+import io.github.alexzhirkevich.compottie.NetworkFontManager
 import io.github.alexzhirkevich.compottie.NetworkRequest
 import io.github.alexzhirkevich.compottie.ioDispatcher
 import io.ktor.client.HttpClient
@@ -19,6 +20,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Url
 import io.ktor.http.isSuccess
 import io.ktor.util.toByteArray
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -57,7 +59,8 @@ private class NetworkCompositionSpec(
     private val request : NetworkRequest,
 ) : LottieCompositionSpec {
 
-    private val assetsManager = NetworkAssetsManager(client, cacheStrategy, request)
+    private val assetsManager = NetworkAssetsManager(client, request, cacheStrategy)
+    private val fontManager = NetworkFontManager(client, request, cacheStrategy)
 
     @OptIn(InternalCompottieApi::class)
     override suspend fun load(cacheKey : Any?): LottieComposition {
@@ -98,7 +101,12 @@ private class NetworkCompositionSpec(
                     }
                 }
             }.apply {
-                prepareAssets(assetsManager)
+                launch {
+                    prepareAssets(assetsManager)
+                }
+                launch {
+                    prepareFonts(fontManager)
+                }
             }
         }
     }

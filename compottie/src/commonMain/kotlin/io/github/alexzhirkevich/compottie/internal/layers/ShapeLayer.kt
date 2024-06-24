@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.util.fastForEach
+import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
 import io.github.alexzhirkevich.compottie.internal.AnimationState
@@ -94,20 +95,7 @@ internal class ShapeLayer(
 ) : BaseLayer() {
 
     @Transient
-    private var dynamic : DynamicLayerProvider? = null
-        set(value) {
-            if (field != value) {
-                field = value
-                if (value is DynamicShapeLayerProvider) {
-                    shapes.fastForEach {
-                        it.setDynamicProperties(null, value)
-                    }
-                }
-            }
-        }
-
-    @Transient
-    private val contentGroup : ContentGroup = ContentGroupImpl(
+    private val contentGroup: ContentGroup = ContentGroupImpl(
         name = CONTAINER_NAME,
         hidden = null, // will be managed by BaseLayer
         contents = shapes,
@@ -116,7 +104,26 @@ internal class ShapeLayer(
         setContents(emptyList(), emptyList())
     }
 
-    override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
+    override fun setDynamicProperties(
+        composition: DynamicCompositionProvider,
+        state: AnimationState
+    ): DynamicLayerProvider? {
+        val layer = super.setDynamicProperties(composition,state)
+        if (layer !is DynamicShapeLayerProvider)
+            return layer
+
+        shapes.fastForEach {
+            it.setDynamicProperties(null, layer)
+        }
+        return layer
+    }
+
+    override fun drawLayer(
+        drawScope: DrawScope,
+        parentMatrix: Matrix,
+        parentAlpha: Float,
+        state: AnimationState
+    ) {
         contentGroup.draw(drawScope, parentMatrix, parentAlpha, state)
     }
 
@@ -127,11 +134,34 @@ internal class ShapeLayer(
         state: AnimationState,
         outBounds: MutableRect,
     ) {
-        resolvingPath?.let {
-            dynamic = state.dynamic?.get(it)
-        }
-
         super.getBounds(drawScope, parentMatrix, applyParents, state, outBounds)
         contentGroup.getBounds(drawScope, boundsMatrix, applyParents, state, outBounds)
+    }
+
+    override fun deepCopy(): Layer {
+        return ShapeLayer(
+            transform = transform.deepCopy(),
+            autoOrient = autoOrient,
+            is3d = is3d,
+            index = index,
+            blendMode = blendMode,
+            clazz = clazz,
+            htmlId = htmlId,
+            inPoint = inPoint,
+            outPoint = outPoint,
+            startTime = startTime,
+            name = name,
+            effects = effects.map(LayerEffect::copy),
+            timeStretch = timeStretch,
+            parent = parent,
+            matteMode = matteMode,
+            matteParent = matteParent,
+            matteTarget = matteTarget,
+            hidden = hidden,
+            collapseTransform = collapseTransform,
+            masks = masks?.map(Mask::deepCopy),
+            hasMask = hasMask,
+            shapes = shapes.map(Shape::deepCopy)
+        )
     }
 }

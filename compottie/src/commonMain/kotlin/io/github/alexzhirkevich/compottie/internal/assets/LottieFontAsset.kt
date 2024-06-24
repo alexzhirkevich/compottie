@@ -3,14 +3,20 @@ package io.github.alexzhirkevich.compottie.internal.assets
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import io.github.alexzhirkevich.compottie.assets.LottieFontSpec
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlin.jvm.JvmInline
 
 @Serializable
 internal class FontList(
     val list : List<LottieFontAsset>
-)
+) {
+    fun deepCopy() : FontList {
+        return FontList(list.map(LottieFontAsset::copy))
+    }
+}
 
 @Serializable
 internal class LottieFontAsset(
@@ -25,7 +31,10 @@ internal class LottieFontAsset(
     val style : String,
 
     @SerialName("fPath")
-    val path : String? = null
+    val path : String? = null,
+
+    @SerialName("origin")
+    val origin : FontOrigin? = null
 ) {
 
     @Transient
@@ -46,5 +55,34 @@ internal class LottieFontAsset(
     val fontStyle = if ("italic" in lStyle)
         FontStyle.Italic else FontStyle.Normal
 
-    var font : Font? = null
+    var font: Font? = null
+
+    fun copy(): LottieFontAsset {
+        return LottieFontAsset(
+            family = family,
+            name = name,
+            style = style,
+            path = path,
+            origin = origin
+        )
+    }
+}
+
+@JvmInline
+@Serializable
+internal value class FontOrigin(val type : Byte){
+    companion object{
+        val Local = FontOrigin(0)
+        val CssUrl = FontOrigin(1)
+        val ScriptUrl = FontOrigin(2)
+        val FontUrl = FontOrigin(3)
+    }
+
+    fun toSpecOrigin() = when(this){
+        Local -> LottieFontSpec.FontOrigin.Local
+        CssUrl -> LottieFontSpec.FontOrigin.CssUrl
+        ScriptUrl -> LottieFontSpec.FontOrigin.ScriptUrl
+        FontUrl -> LottieFontSpec.FontOrigin.FontUrl
+        else -> LottieFontSpec.FontOrigin.Unknown
+    }
 }

@@ -27,13 +27,15 @@ internal abstract class AnimatedTransform{
 
     var dynamic : DynamicTransformProvider? = null
         set(value) {
-            field = value
-            position?.dynamicOffset(value?.offset)
-            scale?.dynamicScale(value?.scale)
-            rotation?.dynamic(value?.rotation)
-            opacity?.dynamic(value?.opacity)
-            skew?.dynamic(value?.skew)
-            skewAxis?.dynamic(value?.skewAxis)
+            if (field !== value) {
+                field = value
+                position?.dynamicOffset(value?.offset)
+                scale?.dynamicScale(value?.scale)
+                rotation?.dynamic(value?.rotation)
+                opacity?.dynamic(value?.opacity)
+                skew?.dynamic(value?.skew)
+                skewAxis?.dynamic(value?.skewAxis)
+            }
         }
 
     open fun isHidden(state: AnimationState) : Boolean = false

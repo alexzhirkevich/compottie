@@ -19,6 +19,8 @@ import kotlinx.serialization.json.jsonObject
 @Serializable(with = CharacterPathSerializer::class)
 internal sealed interface CharacterPath {
 
+    fun copy() : CharacterPath
+
     fun draw(
         scope : DrawScope,
         state: AnimationState,
@@ -52,6 +54,10 @@ internal sealed interface CharacterPath {
                 }
             }
         }
+
+        override fun copy(): CharacterPath {
+            return Shapes(shapes.map(Shape::deepCopy))
+        }
     }
 
     @Serializable
@@ -83,6 +89,16 @@ internal sealed interface CharacterPath {
                 height = 0f
             )
         } else null
+
+        override fun copy(): CharacterPath {
+            return Precomp(
+                refId = refId,
+                transform = transform,
+                inPoint = inPoint,
+                outPoint = outPoint,
+                timeStretch = timeStretch
+            )
+        }
 
         override fun draw(
             scope: DrawScope,

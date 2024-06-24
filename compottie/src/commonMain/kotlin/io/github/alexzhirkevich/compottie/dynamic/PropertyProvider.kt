@@ -25,7 +25,7 @@ internal fun <T> PropertyProvider<T>?.derive(source : T, state: AnimationState) 
 internal fun Vec2.toScaleFactor() = ScaleFactor(x, y)
 internal fun Vec2.toSize() = Size(x, y)
 internal fun Size.toVec2() = Vec2(width, height)
-internal fun ScaleFactor.toVec2() = Vec2(scaleX, scaleY)
+internal fun ScaleFactor.toVec2() = Vec2(scaleX * 100f, scaleY * 100f)
 internal fun Offset.toVec2() = this
 
 internal fun Vec2.toOffset() = this

@@ -10,7 +10,7 @@ internal class DynamicCompositionProvider : DynamicProperties {
         get() = layers.size
 
     override fun shapeLayer(vararg path: String, builder: DynamicShapeLayer.() -> Unit) {
-        val p = path.joinToString(LayerPathSeparator)
+        val p = path.joinToString(LayerPathSeparator, LayerPathSeparator)
 
         val provider = when(val existent = layers[p]) {
             is DynamicShapeLayerProvider -> existent
@@ -27,11 +27,11 @@ internal class DynamicCompositionProvider : DynamicProperties {
     }
 
     override fun imageLayer(vararg path: String, builder: DynamicImageLayer.() -> Unit) {
-        layers[path.joinToString(LayerPathSeparator)] = DynamicImageLayerProvider().apply(builder)
+        layers[path.joinToString(LayerPathSeparator, LayerPathSeparator)] = DynamicImageLayerProvider().apply(builder)
     }
 
     override fun layer(vararg path: String, builder: DynamicLayer.() -> Unit) {
-        layers[path.joinToString(LayerPathSeparator)] = DynamicLayerProvider().apply(builder)
+        layers[path.joinToString(LayerPathSeparator, LayerPathSeparator)] = DynamicLayerProvider().apply(builder)
     }
 
     operator fun get(path: ResolvingPath): DynamicLayerProvider? = layers[path.path]

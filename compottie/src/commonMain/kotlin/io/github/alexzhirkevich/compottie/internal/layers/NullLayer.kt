@@ -94,4 +94,30 @@ internal class NullLayer(
         super.getBounds(drawScope, parentMatrix, applyParents, state, outBounds)
         outBounds.set(0f,0f,0f,0f)
     }
+
+    override fun deepCopy(): Layer {
+        return NullLayer(
+            transform = transform.deepCopy(),
+            autoOrient = autoOrient,
+            is3d = is3d,
+            index = index,
+            blendMode = blendMode,
+            clazz = clazz,
+            htmlId = htmlId,
+            inPoint = inPoint,
+            outPoint = outPoint,
+            startTime = startTime,
+            name = name,
+            timeStretch = timeStretch,
+            parent = parent,
+            matteMode = matteMode,
+            matteParent = matteParent,
+            matteTarget = matteTarget,
+            hidden = hidden,
+            collapseTransform = collapseTransform,
+            masks = masks?.map(Mask::deepCopy),
+            hasMask = hasMask,
+            effects = effects.map(LayerEffect::copy)
+        )
+    }
 }

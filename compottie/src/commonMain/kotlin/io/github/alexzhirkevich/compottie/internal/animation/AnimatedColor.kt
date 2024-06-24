@@ -21,10 +21,12 @@ import kotlinx.serialization.json.jsonPrimitive
 @Serializable(with = AnimatedColorSerializer::class)
 internal sealed interface AnimatedColor : KeyframeAnimation<Color>, Indexable {
 
+    fun copy() : AnimatedColor
+
     @Serializable()
     class Default(
         @SerialName("k")
-        val value: FloatArray,
+        val value: List<Float>,
 
         @SerialName("x")
         override val expression: String? = null,
@@ -35,6 +37,9 @@ internal sealed interface AnimatedColor : KeyframeAnimation<Color>, Indexable {
 
         @Transient
         private val color: Color = value.toColor()
+        override fun copy(): AnimatedColor {
+            return Default(value = value, expression = expression, index = index)
+        }
 
         override fun interpolated(state: AnimationState) = color
     }
@@ -57,8 +62,19 @@ internal sealed interface AnimatedColor : KeyframeAnimation<Color>, Indexable {
         map = { s, e, p ->
             lerp(s.toColor(), e.toColor(), easingX.transform(p))
         }
-    )
+    ) {
+        override fun copy(): AnimatedColor {
+            return Animated(value = value, expression = expression, index = index)
+        }
+    }
 }
+
+internal fun List<Float>.toColor() = Color(
+    red = get(0).toColorComponent(),
+    green = get(1).toColorComponent(),
+    blue = get(2).toColorComponent(),
+    alpha = getOrNull(3)?.toColorComponent() ?: 1f
+)
 
 internal fun FloatArray.toColor() = Color(
     red = get(0).toColorComponent(),

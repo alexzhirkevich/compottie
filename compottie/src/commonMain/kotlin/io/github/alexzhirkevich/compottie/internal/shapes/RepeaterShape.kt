@@ -149,4 +149,15 @@ internal class RepeaterShape(
             dynamicHidden = properties[layerPath(basePath, name)]
         }
     }
+
+    override fun deepCopy(): Shape {
+        return RepeaterShape(
+            copies = copies.copy(),
+            offset = offset?.copy(),
+            transform = transform.deepCopy(),
+            name = name,
+            matchName = matchName,
+            hidden = hidden
+        )
+    }
 }

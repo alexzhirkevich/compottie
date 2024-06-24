@@ -3,10 +3,8 @@ package io.github.alexzhirkevich.compottie.internal
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import io.github.alexzhirkevich.compottie.LottieComposition
-import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlin.contracts.ExperimentalContracts
@@ -14,16 +12,15 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 class AnimationState @PublishedApi internal constructor(
-    val composition : LottieComposition,
+    val composition: LottieComposition,
     internal val assets: Map<String, LottieAsset>,
-    internal val fonts : Map<String, FontFamily>,
-    frame : Float,
+    internal val fonts: Map<String, FontFamily>,
+    frame: Float,
     fontFamilyResolver: FontFamily.Resolver,
-    clipToDrawBounds : Boolean,
-    dynamicProperties : DynamicCompositionProvider?,
-    clipTextToBoundingBoxes : Boolean,
+    clipToDrawBounds: Boolean,
+    clipTextToBoundingBoxes: Boolean,
     enableMergePaths: Boolean,
-    layer : Layer
+    layer: Layer
 ) {
     var frame by mutableStateOf(frame)
         private set
@@ -38,7 +35,6 @@ class AnimationState @PublishedApi internal constructor(
     internal var clipToCompositionBounds by mutableStateOf(clipToDrawBounds)
     internal var clipTextToBoundingBoxes by mutableStateOf(clipTextToBoundingBoxes)
     internal var fontFamilyResolver by mutableStateOf(fontFamilyResolver)
-    internal var dynamic by mutableStateOf(dynamicProperties)
     internal var enableMergePaths by mutableStateOf(enableMergePaths)
     internal var layer by mutableStateOf(layer)
         private set

@@ -160,4 +160,16 @@ internal class RectShape(
             roundedCorners?.dynamic(dynamicRect?.roundCorners)
         }
     }
+
+    override fun deepCopy(): Shape {
+        return RectShape(
+            matchName = matchName,
+            name = name,
+            hidden = hidden,
+            direction = direction,
+            position = position.copy(),
+            size = size.copy(),
+            roundedCorners = roundedCorners?.copy()
+        )
+    }
 }

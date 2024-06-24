@@ -42,6 +42,8 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
         dynamic = provider
     }
 
+    abstract fun copy() : AnimatedVector2
+
     protected abstract fun interpolatedInternal(state: AnimationState) : Vec2
 
     final override fun interpolated(state: AnimationState): Vec2 {
@@ -51,7 +53,7 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
     @Serializable
     class Default(
         @SerialName("k")
-        val value: FloatArray,
+        val value: List<Float>,
 
         @SerialName("x")
         override val expression: String? = null,
@@ -64,6 +66,14 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
         private val animationVector = Offset(value[0], value[1])
 
         override fun interpolatedInternal(state: AnimationState): Vec2 = animationVector
+
+        override fun copy(): AnimatedVector2 {
+            return Default(
+                value = value,
+                expression = expression,
+                index = index
+            )
+        }
     }
 
     @Serializable
@@ -88,7 +98,7 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
             keyframes = value,
             emptyValue = Offset.Zero,
             map = { s, e, p ->
-                if (inTangent != null && outTangent != null && !s.contentEquals(e)) {
+                if (inTangent != null && outTangent != null && s != e) {
                     path.rewind()
                     path.createPath(s, e, outTangent, inTangent)
                     pathMeasure.setPath(path, false)
@@ -119,6 +129,14 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
                 dynamic.derive(it, state)
             }
         }
+
+        override fun copy(): AnimatedVector2 {
+            return Animated(
+                value = value,
+                expression = expression,
+                index = index
+            )
+        }
     }
 
     @Serializable
@@ -129,6 +147,9 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
 
         override val expression: String? get() = null
         override val index: String? get() = null
+        override fun copy(): AnimatedVector2 {
+            return Split(x.copy(), y.copy())
+        }
 
         override fun interpolatedInternal(state: AnimationState): Vec2 {
             return Offset(
@@ -183,10 +204,10 @@ internal class AnimatedVector2Serializer : JsonContentPolymorphicSerializer<Anim
 
 
 private fun Path.createPath(
-    startPoint : FloatArray,
-    endPoint: FloatArray,
-    cp1: FloatArray,
-    cp2: FloatArray
+    startPoint : List<Float>,
+    endPoint: List<Float>,
+    cp1: List<Float>,
+    cp2: List<Float>
 ) {
     moveTo(startPoint[0], startPoint[1])
 
@@ -203,4 +224,4 @@ private fun Path.createPath(
     }
 }
 
-private fun FloatArray.hypot() = hypot(this[0], this[1])
+private fun List<Float>.hypot() = hypot(this[0], this[1])

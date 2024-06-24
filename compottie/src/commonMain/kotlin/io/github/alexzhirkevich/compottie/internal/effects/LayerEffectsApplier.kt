@@ -34,7 +34,7 @@ internal class LayerEffectsApplier(
                 is DropShadowEffect -> {
 //                    paint.applyDropShadowEffect(it, animationState, effectState)
                 }
-                LayerEffect.UnsupportedEffect -> {
+                is LayerEffect.UnsupportedEffect -> {
 
                 }
             }

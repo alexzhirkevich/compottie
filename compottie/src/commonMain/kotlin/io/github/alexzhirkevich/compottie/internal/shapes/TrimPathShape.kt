@@ -60,6 +60,18 @@ internal class TrimPathShape(
             dynamicShape = properties[layerPath(basePath, name)]
         }
     }
+
+    override fun deepCopy(): Shape {
+        return TrimPathShape(
+            name = name,
+            matchName = matchName,
+            hidden = hidden,
+            start = start.copy(),
+            end = end.copy(),
+            offset = offset.copy(),
+            type = type
+        )
+    }
 }
 
 

@@ -1,6 +1,8 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
-import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsApplier
@@ -11,9 +13,7 @@ import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonClassDiscriminator
-import kotlinx.serialization.json.JsonNames
 import kotlin.jvm.JvmInline
-import kotlin.math.ceil
 
 @OptIn(ExperimentalSerializationApi::class)
 @JsonClassDiscriminator("ty")
@@ -62,6 +62,10 @@ internal sealed interface Layer : DrawingContent {
     val effectsApplier : LayerEffectsApplier
 
     var resolvingPath : ResolvingPath?
+
+    fun setDynamicProperties(composition: DynamicCompositionProvider, state: AnimationState): DynamicLayerProvider?
+
+    fun deepCopy() : Layer
 }
 
 @JvmInline
@@ -69,14 +73,14 @@ internal value class ResolvingPath private constructor(val path : String) {
     fun resolve(child : String) = ResolvingPath("$path/$child")
 
     companion object {
-        val root = ResolvingPath("/")
+        val root = ResolvingPath("")
     }
 }
 
 internal fun ResolvingPath.resolveOrNull(child: String?) : ResolvingPath? =
     if (child != null) resolve(child) else null
 
-internal val Layer.isContainerLayer get()   =  name == CONTAINER_NAME
+internal val Layer.isContainerLayer get()  =  name == CONTAINER_NAME
 
 
 

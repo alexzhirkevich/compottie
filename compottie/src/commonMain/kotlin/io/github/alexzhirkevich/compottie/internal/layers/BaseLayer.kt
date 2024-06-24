@@ -15,6 +15,8 @@ import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.L
+import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
@@ -102,6 +104,20 @@ internal abstract class BaseLayer : Layer {
         LayerEffectsApplier(this)
     }
 
+    protected var dynamicLayer : DynamicLayerProvider? = null
+        private set
+
+    override fun setDynamicProperties(
+        composition: DynamicCompositionProvider,
+        state: AnimationState
+    ) : DynamicLayerProvider? {
+        resolvingPath?.let {
+            dynamicLayer = composition[it]
+        }
+        transform.dynamic = dynamicLayer?.transform
+        return dynamicLayer
+    }
+
     abstract fun drawLayer(
         drawScope: DrawScope,
         parentMatrix: Matrix,
@@ -117,16 +133,8 @@ internal abstract class BaseLayer : Layer {
     ) {
         try {
             state.onLayer(this) {
-                val dynamic = resolvingPath?.let {
-                    state.dynamic?.get(it).also { d ->
-                        if (transform.dynamic !== d?.transform) {
-                            transform.dynamic = d?.transform
-                        }
-                    }
-                }
 
-
-                if (dynamic?.hidden.derive(hidden, state)
+                if (dynamicLayer?.hidden.derive(hidden, state)
                     || (inPoint ?: Float.MIN_VALUE) > state.frame
                     || (outPoint ?: Float.MAX_VALUE) < state.frame
                 ) return@onLayer

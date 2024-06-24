@@ -9,7 +9,6 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -31,8 +30,8 @@ import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.layers.CompositionLayer
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.coroutines.async
-import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
+import kotlin.time.measureTime
 
 /**
  * Create and remember Lottie painter.
@@ -160,12 +159,13 @@ fun rememberLottiePainter(
             val fonts = async(ioDispatcher()) {
                 composition.loadFonts(fontManager)
             }
+
             value = LottiePainter(
-                composition = composition,
+                composition = composition.deepCopy(),
                 initialProgress = progress(),
                 dynamicProperties = when (dynamicProperties) {
                     is DynamicCompositionProvider -> dynamicProperties
-                    null -> dynamicProperties
+                    null -> null
                 },
                 clipTextToBoundingBoxes = clipTextToBoundingBoxes,
                 fontFamilyResolver = fontFamilyResolver,
@@ -246,22 +246,26 @@ private class LottiePainter(
     }
 
     private val animationState = AnimationState(
-        frame = frame,
         composition = composition,
+        assets = assets.associateBy(LottieAsset::id),
+        fonts = fonts,
+        frame = frame,
         fontFamilyResolver = fontFamilyResolver,
         clipToDrawBounds = clipToCompositionBounds,
-        dynamicProperties = dynamicProperties,
         clipTextToBoundingBoxes = clipTextToBoundingBoxes,
         enableMergePaths = enableMergePaths,
-        layer = compositionLayer,
-        assets = assets.associateBy(LottieAsset::id),
-        fonts = fonts
+        layer = compositionLayer
     )
+
+    init {
+        if (dynamicProperties != null) {
+            compositionLayer.setDynamicProperties(dynamicProperties, animationState)
+        }
+    }
 
     var clipTextToBoundingBoxes: Boolean by animationState::clipTextToBoundingBoxes
     var clipToCompositionBounds: Boolean by animationState::clipToCompositionBounds
     var fontFamilyResolver: FontFamily.Resolver by animationState::fontFamilyResolver
-    var dynamic: DynamicCompositionProvider? by animationState::dynamic
 
     override fun applyAlpha(alpha: Float): Boolean {
         if (alpha !in 0f..1f)

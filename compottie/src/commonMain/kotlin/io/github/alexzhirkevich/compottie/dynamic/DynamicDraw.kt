@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.dynamic
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
@@ -17,10 +18,27 @@ sealed interface DynamicDraw : DynamicShape {
 
     fun color(provider: PropertyProvider<Color>)
 
+    /**
+     * Dynamic gradient provider.
+     *
+     * Will be invoked for each frame therefore gradient instance should be cached if possible
+     *
+     * Example:
+     *
+     * ```kotlin
+     * gradient { bounds ->
+     *     LottieGradient.Linear(
+     *          colorStops = listOf(0f to Color.Red, 1f to Color.Blue),
+     *          start = bounds.topLeft,
+     *          end = bounds.bottomRight
+     *      )
+     * }
+     * ```
+     * */
     fun gradient(provider: GradientProvider)
 }
 
-typealias GradientProvider = (Size, AnimationState) -> LottieGradient
+typealias GradientProvider = AnimationState.(Rect) -> LottieGradient
 
 sealed interface LottieGradient {
 

@@ -41,4 +41,21 @@ internal class Animation(
     val chars : List<CharacterData> = emptyList(),
 
     val markers : List<Marker> = emptyList()
-)
+) {
+    fun deepCopy() : Animation {
+        return Animation(
+            frameRate = frameRate,
+            width = width,
+            height = height,
+            version = version,
+            inPoint = inPoint,
+            outPoint = outPoint,
+            name = name,
+            layers = layers.map(Layer::deepCopy),
+            assets = assets.map(LottieAsset::copy),
+            fonts = fonts?.deepCopy(),
+            chars = chars.map(CharacterData::deepCopy),
+            markers = markers
+        )
+    }
+}

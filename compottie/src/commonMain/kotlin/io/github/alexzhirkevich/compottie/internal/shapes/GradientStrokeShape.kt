@@ -88,5 +88,25 @@ internal class GradientStrokeShape(
 
         super.draw(drawScope, parentMatrix, parentAlpha, state)
     }
+
+    override fun deepCopy(): Shape {
+        return GradientStrokeShape(
+            matchName = matchName,
+            name = name,
+            hidden = hidden,
+            lineCap = lineCap,
+            lineJoin = lineJoin,
+            strokeMiter = strokeMiter,
+            opacity = opacity.copy(),
+            strokeWidth = strokeWidth.copy(),
+            strokeDash = strokeDash?.map(StrokeDash::copy),
+            startPoint = startPoint.copy(),
+            endPoint = endPoint.copy(),
+            highlightLength = highlightLength?.copy(),
+            highlightAngle = highlightAngle?.copy(),
+            colors = colors.copy(),
+            type = type
+        )
+    }
 }
 

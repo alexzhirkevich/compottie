@@ -166,6 +166,33 @@ internal class TextLayer(
     @Transient
     private val matrix = Matrix()
 
+    override fun deepCopy(): Layer {
+        return TextLayer(
+            transform = transform.deepCopy(),
+            is3d = is3d,
+            index = index,
+            inPoint = inPoint,
+            outPoint = outPoint,
+            startTime = startTime,
+            name = name,
+            timeStretch = timeStretch,
+            parent = parent,
+            hidden = hidden,
+            masks = masks?.map(Mask::deepCopy),
+            hasMask = hasMask,
+            effects = effects.map(LayerEffect::copy),
+            textData = textData.deepCopy(),
+            autoOrient = autoOrient,
+            matteMode = matteMode,
+            matteParent = matteParent,
+            matteTarget = matteTarget,
+            blendMode = blendMode,
+            clazz = clazz,
+            htmlId = htmlId,
+            collapseTransform = collapseTransform
+        )
+    }
+
     override fun drawLayer(
         drawScope: DrawScope,
         parentMatrix: Matrix,

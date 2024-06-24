@@ -14,4 +14,7 @@ internal class BlurEffect(
 ) : LayerEffect {
 
     val radius get() = values.getAs<EffectValue.Slider>(0)?.value
+    override fun copy(): LayerEffect {
+        return BlurEffect(values.map(EffectValue<Any?>::copy))
+    }
 }

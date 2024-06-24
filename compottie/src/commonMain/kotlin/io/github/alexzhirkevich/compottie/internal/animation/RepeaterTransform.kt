@@ -39,6 +39,8 @@ internal class RepeaterTransform(
     val endOpacity : AnimatedNumber? = null,
 ) : AnimatedTransform() {
 
+
+
     fun repeaterMatrix(state: AnimationState, amount: Float): Matrix {
         matrix.reset()
 
@@ -73,4 +75,16 @@ internal class RepeaterTransform(
 
         return matrix
     }
+
+    fun deepCopy() = RepeaterTransform(
+        anchorPoint = anchorPoint?.copy(),
+        position = position?.copy(),
+        scale = scale?.copy(),
+        rotation = rotation?.copy(),
+        opacity = opacity?.copy(),
+        skew = skew?.copy(),
+        skewAxis = skewAxis?.copy(),
+        startOpacity = startOpacity?.copy(),
+        endOpacity = endOpacity?.copy()
+    )
 }

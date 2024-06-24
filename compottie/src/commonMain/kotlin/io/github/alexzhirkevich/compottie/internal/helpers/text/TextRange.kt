@@ -14,4 +14,9 @@ internal class TextRange(
 
     @SerialName("a")
     val style : TextStyle? = null
-)
+) {
+    fun copy()  = TextRange(
+        name = name,
+        style = style?.copy()
+    )
+}

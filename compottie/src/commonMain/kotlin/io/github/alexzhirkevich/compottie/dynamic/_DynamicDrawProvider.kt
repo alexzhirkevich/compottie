@@ -70,7 +70,7 @@ internal fun DynamicDrawProvider?.applyToPaint(
     parentAlpha: Float,
     parentMatrix : Matrix,
     opacity : AnimatedNumber?,
-    size: Size,
+    size: () -> Rect,
     gradientCache: GradientCache
 ) {
     this?.color?.let {
@@ -78,7 +78,7 @@ internal fun DynamicDrawProvider?.applyToPaint(
     }
     this?.gradient?.let {
         paint.shader = GradientShader(
-            gradient = it.invoke(size, state),
+            gradient = it.invoke(state, size()),
             matrix = parentMatrix,
             cache = gradientCache
         )

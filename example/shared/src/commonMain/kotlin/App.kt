@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -31,7 +32,11 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.ScaleFactor
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.compottie.CompottieException
@@ -39,7 +44,10 @@ import io.github.alexzhirkevich.compottie.ExperimentalCompottieApi
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.LottieConstants
+import io.github.alexzhirkevich.compottie.NetworkFontManager
 import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
+import io.github.alexzhirkevich.compottie.dynamic.LottieGradient
+import io.github.alexzhirkevich.compottie.dynamic.rememberLottieDynamicProperties
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import io.github.alexzhirkevich.compottie.rememberResourcesAssetsManager
@@ -48,6 +56,7 @@ import io.github.alexzhirkevich.shared.generated.resources.ComicNeue
 import io.github.alexzhirkevich.shared.generated.resources.Res
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.ExperimentalResourceApi
+import kotlin.random.Random
 
 private val GRADIENT_ELLIPSE = "gradient_ellipse.json"
 private val TEST = "test.json"
@@ -126,16 +135,18 @@ suspend fun LottieCompositionSpec.Companion.Resource(
 fun App() {
 
 //    return LottieFontExample()
-    return AllExamples()
+//    return AllExamples()
+//    return LottieList()
+
 
     val composition = rememberLottieComposition() {
-//        LottieCompositionSpec.DotLottie(ResourcesAssetsManager()) {
+//        LottieCompositionSpec.DotLottie {
 //            Res.readBytes("files/$DOT_WITH_IMAGE")
 //        }
-//        LottieCompositionSpec.Resource(ROBOT)
+        LottieCompositionSpec.Resource(WONDERS)
 //
-        LottieCompositionSpec.Url(
-            "https://assets-v2.lottiefiles.com/a/1633f0d6-117a-11ee-a98b-eb5ca344688a/8OoA7VFval.lottie",
+//        LottieCompositionSpec.Url(
+//            "https://assets-v2.lottiefiles.com/a/1633f0d6-117a-11ee-a98b-eb5ca344688a/8OoA7VFval.lottie",
 //            "https://assets-v2.lottiefiles.com/a/10956594-1169-11ee-98fe-ef3d9d71ad0f/WVFg2bDWGj.lottie",
 //            "https://assets-v2.lottiefiles.com/a/0e63252e-1153-11ee-9e35-dfc2b798a135/sYygPbem7R.lottie",
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/dalek.json",
@@ -143,7 +154,7 @@ fun App() {
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/august_view_pulse.zip",
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/anim_jpg.zip",
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/ZipInlineImage.zip",
-        )
+//        )
     }
 
     // If you want to be aware of loading errors
@@ -170,12 +181,38 @@ fun App() {
             assetsManager = rememberResourcesAssetsManager(
                 readBytes = Res::readBytes
             ),
-            fontManager = rememberResourcesFontManager { fontSpec ->
-                when (fontSpec.family) {
-                    "Comic Neue" -> Res.font.ComicNeue
-                    else -> null
+            dynamicProperties = rememberLottieDynamicProperties {
+                shapeLayer("Layer"){
+                    group("Group") {
+                        rect("Rectangle") {
+//                            size {
+//                                it //* progress
+//                            }
+                        }
+                        stroke("Stroke"){
+                            gradient {
+                                LottieGradient.Linear(
+                                    colorStops = listOf(0f to Color.Red, 1f to Color.Blue),
+                                    start = Offset.Zero,
+                                    end = it.bottomRight
+                                )
+                            }
+                            width {
+                                it / this.progress.coerceAtLeast(.5f)
+                            }
+                        }
+                    }
                 }
             },
+            fontManager = remember {
+                NetworkFontManager()
+            }
+//            fontManager = rememberResourcesFontManager { fontSpec ->
+//                when (fontSpec.family) {
+//                    "Comic Neue" -> Res.font.ComicNeue
+//                    else -> null
+//                }
+//            },
         )
 
         Image(
@@ -342,7 +379,7 @@ fun LottieList() {
             val composition = rememberLottieComposition(
                 key = "ROBOT"
             ) {
-                LottieCompositionSpec.Resource(ROBOT)
+                LottieCompositionSpec.Resource(WONDERS)
             }
 
             val painter = rememberLottiePainter(

@@ -1,20 +1,17 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
-import androidx.compose.ui.graphics.Path
-import io.github.alexzhirkevich.compottie.internal.helpers.Bezier
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 
 @Serializable
 internal class VectorKeyframe(
 
     @SerialName("s")
-    override val start : FloatArray? = null,
+    override val start : List<Float>? = null,
 
     @SerialName("e")
-    override val end : FloatArray? = null,
+    override val end : List<Float>? = null,
 
     @SerialName("t")
     override val time : Float,
@@ -29,18 +26,31 @@ internal class VectorKeyframe(
     override val outValue : BezierInterpolation? = null,
 
     @SerialName("ti")
-    val inTangent: FloatArray? = null,
+    val inTangent: List<Float>? = null,
 
     @SerialName("to")
-    val outTangent: FloatArray? = null,
-) : Keyframe<FloatArray> by BaseKeyframe(
+    val outTangent: List<Float>? = null,
+) : Keyframe<List<Float>> by BaseKeyframe(
     start = start,
     end = end,
     time = time,
     hold = hold,
     inValue = inValue,
     outValue = outValue
-)
+) {
+    fun copy(): VectorKeyframe {
+        return VectorKeyframe(
+            start = start,
+            end = end,
+            time = time,
+            hold = hold,
+            inValue = inValue,
+            outValue = outValue,
+            inTangent = inTangent,
+            outTangent = outTangent
+        )
+    }
+}
 
 private fun FloatArray.ofNulls() = all { it == 0f }
 

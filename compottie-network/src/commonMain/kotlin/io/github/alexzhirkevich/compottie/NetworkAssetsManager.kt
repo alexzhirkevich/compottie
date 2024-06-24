@@ -11,15 +11,12 @@ import io.ktor.util.toByteArray
 import kotlinx.coroutines.withContext
 
 /**
- * Asset manager that load images from web.
- *
- * It can't be used to download fonts. Combine it with other font-loading manager
- * using [LottieAssetsManager.combine] if needed
+ * Asset manager that load images from web using [request] with [client].
  * */
 fun NetworkAssetsManager(
     client: HttpClient = DefaultHttpClient,
-    cacheStrategy: LottieCacheStrategy = DiskCacheStrategy(),
     request : NetworkRequest = GetRequest,
+    cacheStrategy: LottieCacheStrategy = DiskCacheStrategy(),
 ) : LottieAssetsManager = NetworkAssetsManagerImpl(
     client = client,
     cacheStrategy = cacheStrategy,
@@ -27,41 +24,11 @@ fun NetworkAssetsManager(
 )
 
 private class NetworkAssetsManagerImpl(
-    private val client: HttpClient,
-    private val cacheStrategy: LottieCacheStrategy,
-    private val request : NetworkRequest,
-) : LottieAssetsManager {
-
-    @OptIn(InternalCompottieApi::class)
+    client: HttpClient,
+    cacheStrategy: LottieCacheStrategy,
+    request : NetworkRequest,
+) : NetworkDownloadManager(client, cacheStrategy, request), LottieAssetsManager {
     override suspend fun image(image: LottieImage): ImageRepresentable? {
-        return withContext(ioDispatcher()) {
-            try {
-                val path = image.path + image.name
-
-                val url = try {
-                    Url(path)
-                } catch (t: URLParserException) {
-                    return@withContext null
-                }
-
-                try {
-                    cacheStrategy.load(path)?.let {
-                        return@withContext ImageRepresentable.Bytes(it)
-                    }
-                } catch (_: Throwable) {
-                }
-
-                val bytes = request(client, url).execute().bodyAsChannel().toByteArray()
-
-                try {
-                    cacheStrategy.save(path, bytes)
-                } catch (e: Throwable) {
-                    L.logger.error("NetworkAssetsManager failed to cache downloaded asset", e)
-                }
-                ImageRepresentable.Bytes(bytes)
-            } catch (t: Throwable) {
-                null
-            }
-        }
+        return load(image.path + image.name).second?.let(ImageRepresentable::Bytes)
     }
 }

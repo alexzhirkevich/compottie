@@ -50,6 +50,15 @@ internal class RoundShape(
         }
     }
 
+    override fun deepCopy(): Shape {
+        return RoundShape(
+            matchName = matchName,
+            name = name,
+            hidden = hidden,
+            radius = radius.copy()
+        )
+    }
+
 }
 
 internal fun RoundShape.applyTo(paint: Paint, state: AnimationState) {

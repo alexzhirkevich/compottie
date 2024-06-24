@@ -163,4 +163,33 @@ internal class SolidColorLayer(
         boundsMatrix.map(rect)
         outBounds.set(rect)
     }
+
+    override fun deepCopy(): Layer {
+        return SolidColorLayer(
+            transform = transform.deepCopy(),
+            autoOrient = autoOrient,
+            is3d = is3d,
+            index = index,
+            blendMode = blendMode,
+            clazz = clazz,
+            htmlId = htmlId,
+            inPoint = inPoint,
+            outPoint = outPoint,
+            startTime = startTime,
+            name = name,
+            timeStretch = timeStretch,
+            parent = parent,
+            matteMode = matteMode,
+            matteParent = matteParent,
+            matteTarget = matteTarget,
+            hidden = hidden,
+            collapseTransform = collapseTransform,
+            masks = masks?.map(Mask::deepCopy),
+            hasMask = hasMask,
+            width = width,
+            height = height,
+            colorHex = colorHex,
+            effects = effects.map(LayerEffect::copy)
+        )
+    }
 }

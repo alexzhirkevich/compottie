@@ -18,7 +18,14 @@ internal class StrokeDash(
 
     @SerialName("v")
     val value : AnimatedNumber
-)
+) {
+    fun copy() = StrokeDash(
+        name = name,
+        matchName = matchName,
+        dashType = dashType,
+        value = value.copy()
+    )
+}
 
 @JvmInline
 @Serializable

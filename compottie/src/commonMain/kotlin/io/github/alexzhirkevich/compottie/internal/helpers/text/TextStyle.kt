@@ -49,4 +49,21 @@ internal class TextStyle(
 
     @SerialName("bl")
     val blur : AnimatedNumber? = null,
-)
+) {
+    fun copy() = TextStyle(
+        strokeWidth = strokeWidth?.copy(),
+        strokeColor = strokeColor?.copy(),
+        strokeHue = strokeHue?.copy(),
+        strokeSaturation = strokeSaturation?.copy(),
+        strokeBrightness = strokeBrightness?.copy(),
+        strokeOpacity = strokeOpacity?.copy(),
+        fillColor = fillColor?.copy(),
+        fillHue = fillHue?.copy(),
+        fillSaturation = fillSaturation?.copy(),
+        fillBrightness = fillBrightness?.copy(),
+        fillOpacity = fillOpacity?.copy(),
+        letterSpacing = letterSpacing?.copy(),
+        lineSpacing = lineSpacing?.copy(),
+        blur = blur?.copy()
+    )
+}

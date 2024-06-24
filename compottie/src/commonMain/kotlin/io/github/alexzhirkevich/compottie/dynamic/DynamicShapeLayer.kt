@@ -27,7 +27,7 @@ interface DynamicShapeLayer: DynamicLayer {
      * fill("Group 1", "Fill 1") { }
      *```
      * */
-    fun group(name: String, builder: DynamicShapeLayer.() -> Unit)
+    fun group(vararg path: String, builder: DynamicShapeLayer.() -> Unit)
 
     /**
      * Configure dynamic stroke.

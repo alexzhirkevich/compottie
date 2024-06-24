@@ -10,6 +10,7 @@ private val tempMatrixConcat = Matrix()
 private val tempMatrixTransform = Matrix()
 
 
+internal val IdentityMatrix = Matrix()
 
 private val InvSqrt2Offset = Offset(
     1/sqrt(2f),

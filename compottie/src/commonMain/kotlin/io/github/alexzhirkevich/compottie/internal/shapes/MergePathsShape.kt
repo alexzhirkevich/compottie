@@ -93,6 +93,15 @@ internal class MergePathsShape(
         }
     }
 
+    override fun deepCopy(): Shape {
+        return MergePathsShape(
+            matchName = matchName,
+            name = name,
+            hidden = hidden,
+            mode = mode
+        )
+    }
+
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
         pathContents.fastForEach {
             it.setContents(contentsBefore, contentsAfter)

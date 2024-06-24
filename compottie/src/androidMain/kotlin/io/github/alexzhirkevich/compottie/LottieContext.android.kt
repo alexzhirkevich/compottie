@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
+lateinit var lottieContext: Context
+
 actual typealias LottieContext = Context
 
 @Composable

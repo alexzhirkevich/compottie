@@ -35,4 +35,10 @@ internal class AnimatedTextDocument(
     override fun interpolated(state: AnimationState): TextDocument {
         return delegate.interpolated(state)
     }
+
+    fun copy() = AnimatedTextDocument(
+        keyframes = keyframes,
+        expression = expression,
+        slotID = slotID
+    )
 }

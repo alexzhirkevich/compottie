@@ -7,4 +7,9 @@ import kotlinx.serialization.Serializable
 internal class TextAlignment(
     val alignment : AnimatedVector2? = null,
     val grouping: TextGrouping? = null
-)
+) {
+    fun copy()  = TextAlignment(
+        alignment = alignment?.copy(),
+        grouping = grouping
+    )
+}

@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.dynamic
 
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
@@ -28,7 +29,7 @@ internal fun DynamicStrokeProvider?.applyToPaint(
     parentMatrix : Matrix,
     opacity : AnimatedNumber?,
     strokeWidth : AnimatedNumber,
-    size: Size,
+    size: () -> Rect,
     gradientCache: GradientCache
 ) {
     applyToPaint(

@@ -107,9 +107,19 @@ internal class EllipseShape(
             position.dynamicOffset(dynamicEllipse?.position)
         }
     }
-
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
         trimPaths = CompoundSimultaneousTrimPath(contentsBefore)
+    }
+
+    override fun deepCopy(): Shape {
+        return EllipseShape(
+            matchName = matchName,
+            name = name,
+            hidden = hidden,
+            direction = direction,
+            position = position.copy(),
+            size = size.copy()
+        )
     }
 }
 private const val ELLIPSE_CONTROL_POINT_PERCENTAGE = 0.55228f

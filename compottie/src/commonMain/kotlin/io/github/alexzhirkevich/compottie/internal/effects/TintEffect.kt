@@ -21,4 +21,8 @@ internal class TintEffect(
 
     val intensity
         get() = values.getAs<EffectValue.Slider>(2)?.value
+
+    override fun copy(): LayerEffect {
+        return TintEffect(values.map(EffectValue<Any?>::copy))
+    }
 }

@@ -52,5 +52,14 @@ internal class GroupShape(
             }
         }
     }
+
+    override fun deepCopy(): Shape {
+        return GroupShape(
+            matchName = matchName,
+            name = name,
+            hidden = hidden,
+            items = items.map(Shape::deepCopy)
+        )
+    }
 }
 

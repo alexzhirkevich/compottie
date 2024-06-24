@@ -58,5 +58,21 @@ internal class SolidStrokeShape(
 
         super.draw(drawScope, parentMatrix, parentAlpha, state)
     }
+
+    override fun deepCopy(): Shape {
+        return SolidStrokeShape(
+            matchName = matchName,
+            name = name,
+            hidden = hidden,
+            withAlpha = withAlpha,
+            lineCap = lineCap,
+            lineJoin = lineJoin,
+            strokeMiter = strokeMiter,
+            opacity = opacity.copy(),
+            strokeWidth = strokeWidth.copy(),
+            strokeDash = strokeDash?.map(StrokeDash::copy),
+            color = color.copy()
+        )
+    }
 }
 

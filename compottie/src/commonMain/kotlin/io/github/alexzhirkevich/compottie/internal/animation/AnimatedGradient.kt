@@ -40,6 +40,28 @@ internal class ColorsWithStops(
         }
     }
 
+    fun fill(colors: List<Float>, numberOfColors: Int) {
+        resizeTo(numberOfColors)
+
+        repeat(numberOfColors) {
+            mColorStops[it] = colors[it * 4]
+
+            val alpha = if (colors.size == numberOfColors * 6) {
+                colors[colors.lastIndex - numberOfColors * 2 + (it + 1) * 2]
+            } else 1f
+
+
+            mColors[it] =
+                Color(
+                    red = colors[it * 4 + 1],
+                    green = colors[it * 4 + 2],
+                    blue = colors[it * 4 + 3],
+                    alpha = alpha
+                )
+        }
+    }
+
+
     fun interpolateBetween(a: ColorsWithStops, b: ColorsWithStops, progress: Float) {
         val n = minOf(a.colors.size, b.colors.size)
 
@@ -73,7 +95,13 @@ internal class GradientColors(
 
     @SerialName("p")
     val numberOfColors: Int = 0
-)
+) {
+    fun copy()  = GradientColors(
+        colors = colors.copy(),
+        numberOfColors = numberOfColors
+    )
+
+}
 
 @Serializable
 @JvmInline
@@ -92,6 +120,8 @@ internal abstract class AnimatedGradient : KeyframeAnimation<ColorsWithStops> {
     @Transient
     var numberOfColors: Int = 0
 
+    abstract fun copy() : AnimatedGradient
+
     @SerialName("0")
     @Serializable
     class Default(
@@ -107,6 +137,10 @@ internal abstract class AnimatedGradient : KeyframeAnimation<ColorsWithStops> {
 
         override fun interpolated(state: AnimationState): ColorsWithStops {
             return tempColors
+        }
+
+        override fun copy(): AnimatedGradient {
+            return Default(colorsVector.copyOf())
         }
     }
 
@@ -143,6 +177,10 @@ internal abstract class AnimatedGradient : KeyframeAnimation<ColorsWithStops> {
             tempColors.apply {
                 interpolateBetween(tempColorsA, tempColorsB, progress)
             }
+        }
+
+        override fun copy(): AnimatedGradient {
+            return Animated(keyframes)
         }
 
         override fun interpolated(state: AnimationState): ColorsWithStops {

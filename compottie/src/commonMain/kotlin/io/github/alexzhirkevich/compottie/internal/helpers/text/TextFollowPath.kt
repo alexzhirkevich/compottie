@@ -25,4 +25,13 @@ internal class TextFollowPath(
 
     @SerialName("p")
     val perpendicularToPath : AnimatedNumber? = null,
-)
+) {
+    fun deepCopy() = TextFollowPath(
+        mask = mask?.deepCopy(),
+        firstMargin = firstMargin?.copy(),
+        lastMargin = lastMargin?.copy(),
+        reversePath = reversePath?.copy(),
+        forceAlignment = forceAlignment?.copy(),
+        perpendicularToPath = perpendicularToPath?.copy()
+    )
+}

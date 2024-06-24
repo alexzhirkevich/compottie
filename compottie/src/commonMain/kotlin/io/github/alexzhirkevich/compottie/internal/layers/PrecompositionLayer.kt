@@ -93,4 +93,34 @@ internal data class PrecompositionLayer(
     override fun compose(state: AnimationState): List<Layer> {
         return (state.assets[refId] as? PrecompositionAsset?)?.layers.orEmpty()
     }
+
+    override fun deepCopy(): Layer {
+        return PrecompositionLayer(
+            refId = refId,
+            width = width,
+            height = height,
+            timeRemapping = timeRemapping,
+            is3d = is3d,
+            index = index,
+            inPoint = inPoint,
+            outPoint = outPoint,
+            startTime = startTime,
+            name = name,
+            timeStretch = timeStretch,
+            parent = parent,
+            hidden = hidden,
+            masks = masks?.map(Mask::deepCopy),
+            hasMask = hasMask,
+            effects = effects.map(LayerEffect::copy),
+            transform = transform.deepCopy(),
+            autoOrient = autoOrient,
+            matteMode = matteMode,
+            matteParent = matteParent,
+            matteTarget = matteTarget,
+            blendMode = blendMode,
+            clazz = clazz,
+            htmlId = htmlId,
+            collapseTransform = collapseTransform
+        )
+    }
 }

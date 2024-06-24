@@ -15,37 +15,49 @@ internal sealed interface EffectValue<T> {
 
     val value : T?
 
+    fun copy() : EffectValue<T>
+
     @Serializable
     @SerialName("0")
     class Slider(
         @SerialName("v")
         override val value : AnimatedNumber? = null
-    ) : EffectValue<AnimatedNumber>
+    ) : EffectValue<AnimatedNumber> {
+        override fun copy()  = Slider(value?.copy())
+    }
 
     @Serializable
     @SerialName("1")
     class Angle(
         @SerialName("v")
         override val value : AnimatedNumber? = null
-    ) : EffectValue<AnimatedNumber>
+    ) : EffectValue<AnimatedNumber>{
+        override fun copy()  = Angle(value?.copy())
+    }
 
     @Serializable
     @SerialName("4")
     class CheckBox(
         @SerialName("v")
         override val value : AnimatedNumber? = null
-    ) : EffectValue<AnimatedNumber>
+    ) : EffectValue<AnimatedNumber> {
+        override fun copy() = CheckBox(value?.copy())
+    }
 
     @Serializable
     @SerialName("2")
     class Color(
         @SerialName("v")
         override val value : AnimatedColor? = null
-    ) : EffectValue<AnimatedColor>
+    ) : EffectValue<AnimatedColor> {
+        override fun copy() = Color(value?.copy())
+    }
 
     @Serializable
     class Unsupported(
         @SerialName("v")
         override val value : JsonElement? = null
-    ) : EffectValue<JsonElement>
+    ) : EffectValue<JsonElement> {
+        override fun copy() = Unsupported(value) // TODO deep copy JsonElement?
+    }
 }

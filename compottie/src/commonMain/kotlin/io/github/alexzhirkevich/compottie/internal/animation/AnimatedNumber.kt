@@ -23,6 +23,8 @@ internal sealed class AnimatedNumber : KeyframeAnimation<Float>, Indexable {
         dynamic = provider
     }
 
+    abstract fun copy() : AnimatedNumber
+
     abstract fun interpolatedInternal(state: AnimationState): Float
 
     final override fun interpolated(state: AnimationState): Float {
@@ -42,6 +44,9 @@ internal sealed class AnimatedNumber : KeyframeAnimation<Float>, Indexable {
         @SerialName("ix")
         override val index: String? = null
     ) : AnimatedNumber() {
+        override fun copy(): AnimatedNumber {
+            return Default(value, expression, index)
+        }
 
         override fun interpolatedInternal(state: AnimationState): Float = value
     }
@@ -67,6 +72,10 @@ internal sealed class AnimatedNumber : KeyframeAnimation<Float>, Indexable {
                 lerp(s[0], e[0], easingX.transform(p))
             }
         )
+
+        override fun copy(): AnimatedNumber {
+            return Animated(value, expression, index)
+        }
 
         override fun interpolatedInternal(state: AnimationState): Float {
             return delegate.interpolated(state)

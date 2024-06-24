@@ -23,7 +23,15 @@ internal class Mask(
 
     @SerialName("x")
     val expand: AnimatedNumber? = null
-)
+) {
+    fun deepCopy() = Mask(
+        isInverted = isInverted,
+        shape = shape?.copy(),
+        opacity = opacity?.copy(),
+        mode = mode,
+        expand = expand?.copy()
+    )
+}
 
 @Serializable
 @JvmInline

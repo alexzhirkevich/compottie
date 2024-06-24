@@ -19,6 +19,8 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
 
     fun interpolatedRaw(state: AnimationState): Path
 
+    fun copy() : AnimatedShape
+
     @Serializable
     class Default(
         @SerialName("x")
@@ -41,6 +43,10 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
 
         override fun interpolatedRaw(state: AnimationState): Path {
             return Path().apply { bezier.mapPath(this) }
+        }
+
+        override fun copy(): AnimatedShape {
+            return Default(expression = expression, index = index, bezier = bezier)
         }
     }
 
@@ -90,6 +96,10 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
 
         override fun interpolatedRaw(state: AnimationState): Path {
             return rawDelegate.interpolated(state)
+        }
+
+        override fun copy(): AnimatedShape {
+            return Animated(expression = expression, index = index, keyframes = keyframes)
         }
 
         override fun interpolated(state: AnimationState): Path {

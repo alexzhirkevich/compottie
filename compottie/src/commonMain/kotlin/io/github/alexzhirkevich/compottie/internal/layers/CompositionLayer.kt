@@ -54,6 +54,10 @@ internal class CompositionLayer(
     override fun compose(state: AnimationState): List<Layer> {
         return composition.animation.layers
     }
+
+    override fun deepCopy(): Layer {
+        return CompositionLayer(composition.deepCopy())
+    }
 }
 
 internal const val CONTAINER_NAME = "__compottie_container"

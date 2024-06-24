@@ -10,18 +10,25 @@ import kotlinx.serialization.json.JsonClassDiscriminator
 @Serializable
 @JsonClassDiscriminator("ty")
 internal sealed interface Shape : Content {
-    val matchName : String?
 
-    val hidden : Boolean
+    val matchName: String?
 
-    fun setDynamicProperties(basePath: String?, properties : DynamicShapeLayerProvider) {}
+    val hidden: Boolean
+
+    fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {}
 
     @Serializable
-    data object UnsupportedShape : Shape {
+    class UnsupportedShape : Shape {
         override val name: String? get() = null
 
         override val matchName: String? get() = null
         override val hidden: Boolean get() = true
         override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {}
+
+        override fun deepCopy(): Shape = UnsupportedShape()
     }
+
+    fun deepCopy(): Shape
 }
+
+const val DIRECTION_REVERSED = 3

@@ -23,4 +23,15 @@ internal class CharacterData(
 
     @SerialName("data")
     val data: CharacterPath? = null
-)
+) {
+    fun deepCopy() : CharacterData {
+        return CharacterData(
+            character = character,
+            fontFamily = fontFamily,
+            fontSize = fontSize,
+            fontStyle = fontStyle,
+            width = width,
+            data = data?.copy()
+        )
+    }
+}

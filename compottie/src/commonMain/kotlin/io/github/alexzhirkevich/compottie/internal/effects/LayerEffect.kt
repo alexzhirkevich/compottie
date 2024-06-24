@@ -11,9 +11,15 @@ internal sealed interface LayerEffect {
 
     val values : List<EffectValue<*>>
 
+    fun copy() : LayerEffect
+
     @Serializable
-    data object UnsupportedEffect : LayerEffect {
+    class UnsupportedEffect : LayerEffect {
         override val values: List<EffectValue<*>>
             get() = emptyList()
+
+        override fun copy(): LayerEffect {
+            return UnsupportedEffect()
+        }
     }
 }

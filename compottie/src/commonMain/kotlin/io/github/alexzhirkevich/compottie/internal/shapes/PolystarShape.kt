@@ -139,16 +139,33 @@ internal class PolystarShape(
         }
     }
 
+    override fun deepCopy(): Shape {
+        return PolystarShape(
+            matchName = matchName,
+            name = name,
+            hidden = hidden,
+            position = position?.copy(),
+            direction = direction,
+            innerRoundness = innerRoundness?.copy(),
+            innerRadius = innerRadius?.copy(),
+            outerRadius = outerRadius?.copy(),
+            outerRoundness = outerRoundness?.copy(),
+            rotation = rotation?.copy(),
+            points = points.copy(),
+            starType = starType
+        )
+    }
+
 
     private fun createStarPath(state: AnimationState) {
         val points = points.interpolated(state = state)
         var currentAngle = Math.toRadians((rotation?.interpolated(state) ?: 0f) - 90f)
 
         // adjust current angle for partial points
-        val anglePerPoint: Float = (TwoPI / points).toFloat()
-//        if (isReversed) {
-//            anglePerPoint *= -1f
-//        }
+        var anglePerPoint: Float = (TwoPI / points).toFloat()
+        if (direction == DIRECTION_REVERSED) {
+            anglePerPoint *= -1f
+        }
         val halfAnglePerPoint = anglePerPoint / 2.0f
         val partialPointAmount = points - points.toInt()
         if (partialPointAmount != 0f) {

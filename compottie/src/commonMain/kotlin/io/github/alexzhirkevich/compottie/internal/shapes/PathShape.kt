@@ -69,4 +69,13 @@ internal class PathShape(
         }
     }
 
+    override fun deepCopy(): Shape {
+        return PathShape(
+            matchName = matchName,
+            name = name,
+            hidden = hidden,
+            shape = shape.copy()
+        )
+    }
+
 }

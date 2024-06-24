@@ -70,5 +70,20 @@ internal class TransformShape(
             dynamicShape = properties[layerPath(basePath, name)]
         }
     }
+
+    override fun deepCopy(): Shape {
+        return TransformShape(
+            matchName = matchName,
+            name = name,
+            hidden = hidden,
+            anchorPoint = anchorPoint?.copy(),
+            position = position?.copy(),
+            scale = scale?.copy(),
+            rotation = rotation?.copy(),
+            opacity = opacity?.copy(),
+            skew = skew?.copy(),
+            skewAxis = skewAxis?.copy()
+        )
+    }
 }
 

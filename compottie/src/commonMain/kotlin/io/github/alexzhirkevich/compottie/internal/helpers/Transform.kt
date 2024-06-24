@@ -1,9 +1,8 @@
 package io.github.alexzhirkevich.compottie.internal.helpers
 
-import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -30,6 +29,18 @@ internal class Transform(
 
     @SerialName("sa")
     override val skewAxis: AnimatedNumber? = null,
-) : AnimatedTransform()
+) : AnimatedTransform() {
 
+    fun deepCopy(): Transform {
+        return Transform(
+            anchorPoint = anchorPoint?.copy(),
+            position = position?.copy(),
+            scale = scale?.copy(),
+            rotation = rotation?.copy(),
+            opacity = opacity?.copy(),
+            skew = skew?.copy(),
+            skewAxis = skewAxis?.copy()
+        )
+    }
+}
 

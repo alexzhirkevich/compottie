@@ -16,4 +16,7 @@ internal class FillEffect(
 
     val opacity get() = values.getAs<EffectValue.Slider>(6)?.value
 
+    override fun copy(): LayerEffect {
+        return FillEffect(values.map(EffectValue<Any?>::copy))
+    }
 }

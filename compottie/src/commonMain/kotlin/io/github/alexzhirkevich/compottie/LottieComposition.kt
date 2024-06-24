@@ -10,7 +10,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import io.github.alexzhirkevich.compottie.assets.LottieImage
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
@@ -169,6 +168,9 @@ class LottieComposition internal constructor(
 
 
     private val assetsMutex = Mutex()
+    private val fontsMutex = Mutex()
+
+    private var loadedFonts : Map<String, FontFamily> = emptyMap()
 
     internal fun findGlyphs(family : String?) : Map<String, CharacterData>? {
         return charGlyphs[family] ?: run {
@@ -184,6 +186,13 @@ class LottieComposition internal constructor(
     suspend fun prepareAssets(assetsManager: LottieAssetsManager) {
         assetsMutex.withLock {
             loadAssets(assetsManager, false)
+        }
+    }
+
+    @InternalCompottieApi
+    suspend fun prepareFonts(fontsManager : LottieFontManager) {
+        fontsMutex.withLock {
+            loadedFonts = loadFonts(fontsManager)
         }
     }
 
@@ -221,10 +230,9 @@ class LottieComposition internal constructor(
         return assets
     }
 
-
     internal suspend fun loadFonts(fontManager: LottieFontManager) : Map<String, FontFamily> {
         return coroutineScope {
-            animation.fonts?.list
+            loadedFonts + animation.fonts?.list
                 ?.map {
                     async {
                         val f = it.font ?: fontManager.font(
@@ -233,7 +241,8 @@ class LottieComposition internal constructor(
                                 name = it.name,
                                 style = it.fontStyle,
                                 weight = it.weight,
-                                path = it.path
+                                path = it.path,
+                                origin = it.origin?.toSpecOrigin() ?: LottieFontSpec.FontOrigin.Unknown
                             )
                         )
 
@@ -252,6 +261,12 @@ class LottieComposition internal constructor(
                 ?.mapValues { FontFamily(it.value.map { it.second }) }
                 .orEmpty()
         }
+    }
+
+    internal fun deepCopy() : LottieComposition {
+        return LottieComposition(
+            animation
+        )
     }
 
     internal fun marker(name: String?) =

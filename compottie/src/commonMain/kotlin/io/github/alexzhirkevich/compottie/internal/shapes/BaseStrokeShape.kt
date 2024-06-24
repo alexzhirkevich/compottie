@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.geometry.MutableRect
+import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
@@ -35,6 +36,7 @@ import io.github.alexzhirkevich.compottie.internal.platform.ExtendedPathMeasure
 import io.github.alexzhirkevich.compottie.internal.platform.GradientCache
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.platform.set
+import io.github.alexzhirkevich.compottie.internal.utils.IdentityMatrix
 import io.github.alexzhirkevich.compottie.internal.utils.scale
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.Serializable
@@ -94,7 +96,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
     private val trimPathPath = Path()
     private val path = Path()
     private val rect = MutableRect(0f, 0f, 0f, 0f)
-    private val boundsRect = MutableRect(0f, 0f, 0f, 0f)
+    private val rawBoundsRect = MutableRect(0f, 0f, 0f, 0f)
 
     protected val paint by lazy {
         Paint().apply {
@@ -150,7 +152,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         paint.blendMode = state.layer.blendMode.asComposeBlendMode()
         paint.style = PaintingStyle.Stroke
 
-        getBounds(drawScope, parentMatrix, false, state, boundsRect)
+        getBounds(drawScope, IdentityMatrix, false, state, rawBoundsRect)
 
         dynamicStroke.applyToPaint(
             paint = paint,
@@ -159,7 +161,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
             parentMatrix = parentMatrix,
             opacity = opacity,
             strokeWidth = strokeWidth,
-            size = boundsRect.size,
+            size = rawBoundsRect::toRect,
             gradientCache = gradientCache
         )
 

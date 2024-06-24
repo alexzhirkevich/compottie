@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.geometry.MutableRect
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
@@ -89,6 +90,18 @@ internal class FillShape(
     @Transient
     private val gradientCache = GradientCache()
 
+    override fun deepCopy(): Shape {
+        return FillShape(
+            matchName = matchName,
+            name = name,
+            hidden = hidden,
+            direction = direction,
+            opacity = opacity?.copy(),
+            color = color.copy(),
+            fillRule = fillRule
+        )
+    }
+
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
 
         if (dynamicShape?.hidden.derive(hidden, state)) {
@@ -103,7 +116,7 @@ internal class FillShape(
             parentAlpha = parentAlpha,
             parentMatrix = parentMatrix,
             opacity = opacity,
-            size = Size.Zero,
+            size = { Rect.Zero },
             gradientCache = gradientCache
         )
 

@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie
 import androidx.compose.runtime.Stable
 import okio.Buffer
 import okio.ByteString.Companion.encodeUtf8
+import okio.Path
 import okio.use
 
 @Stable
@@ -10,15 +11,27 @@ class DiskCacheStrategy(
     private val diskCache: DiskCache = SharedDiskCache
 ) : LottieCacheStrategy {
 
-    override suspend fun save(url: String, bytes: ByteArray) {
-        val editor = diskCache.openEditor(key(url)) ?: return
-        try {
+    override fun path(url: String): Path? {
+        return try {
+            diskCache.openSnapshot(key(url)).use { it?.data }
+        } catch (t: Throwable) {
+            null
+        }
+    }
+
+    override suspend fun save(url: String, bytes: ByteArray): Path? {
+        val editor = diskCache.openEditor(key(url)) ?: return null
+
+        return try {
             diskCache.fileSystem.write(editor.data) {
                 write(bytes)
             }
-            editor.commit()
+            editor.commitAndOpenSnapshot().use {
+                it?.data
+            }
         } catch (t: Throwable) {
             editor.abort()
+            null
         }
     }
 
