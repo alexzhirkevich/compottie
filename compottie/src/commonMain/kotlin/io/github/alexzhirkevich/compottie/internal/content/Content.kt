@@ -1,7 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.content
 
 
-interface Content {
+internal interface Content {
 
     val name: String?
 

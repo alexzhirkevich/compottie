@@ -91,7 +91,9 @@ internal class ImageLayer(
 ) : BaseLayer() {
 
     @Transient
-    private val paint = Paint()
+    private val paint = Paint().apply {
+        isAntiAlias = true
+    }
 
     private val effectState by lazy {
         LayerEffectsState()

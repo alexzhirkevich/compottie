@@ -77,7 +77,7 @@ internal abstract class BaseLayer : Layer {
     private val matteBoundsRect = MutableRect(0f, 0f, 0f, 0f)
     private val mattePaint by lazy {
         Paint().apply {
-            isAntiAlias = false
+            isAntiAlias = true
             if (matteMode?.isLuma() == true){
                 colorFilter = ColorFilter.Luma
             }

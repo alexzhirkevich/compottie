@@ -29,7 +29,7 @@ internal class StrokeDash(
 
 @JvmInline
 @Serializable
-value class DashType(val type : String) {
+internal value class DashType(val type : String) {
 
     companion object {
         val Dash = DashType("d")

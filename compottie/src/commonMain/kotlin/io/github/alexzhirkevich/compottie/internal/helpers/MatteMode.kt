@@ -5,7 +5,7 @@ import kotlin.jvm.JvmInline
 
 @Serializable
 @JvmInline
-value class MatteMode(val mode : Byte) {
+internal value class MatteMode(val mode : Byte) {
     companion object {
         val None = MatteMode(0)
         val Add = MatteMode(1)
