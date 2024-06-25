@@ -24,13 +24,13 @@ var L.useStableWasmMemoryManagement by ::_useStableWasmMemoryManagement
  * [LottieComposition] from a dotLottie zip archive.
  *
  * @param archive dotLottie or zip archive file
- * @param animId animation id (if dotLottie contains multiple animations)
+ * @param animationId animation id (if dotLottie contains multiple animations)
  * */
 @Stable
 fun LottieCompositionSpec.Companion.DotLottie(
     archive: ByteArray,
-    animId: String? = null
-) : LottieCompositionSpec = DotLottieCompositionSpec(archive, animId)
+    animationId: String? = null
+) : LottieCompositionSpec = DotLottieCompositionSpec(archive, animationId)
 
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -40,6 +40,7 @@ private val DotLottieJson = Json {
     allowTrailingComma = true
 }
 
+@Stable
 private class DotLottieCompositionSpec(
     private val archive : ByteArray,
     private val animationId : String?,
@@ -102,12 +103,12 @@ private class DotLottieCompositionSpec(
     }
 
     override fun hashCode(): Int {
-        return 31 * archive.contentHashCode()
+        return 31 * (31 * archive.contentHashCode() + animationId.hashCode())
     }
 
     override fun equals(other: Any?): Boolean {
         return (other as? DotLottieCompositionSpec)?.let {
-            it.archive.contentEquals(archive)
+            it.archive.contentEquals(archive) && it.animationId == other.animationId
         } == true
     }
 }
