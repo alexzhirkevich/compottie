@@ -77,8 +77,17 @@ internal class ImageAsset(
     }
 
     override fun copy(): LottieAsset =
-        ImageAsset(id, fileName, path, slotId, name, embedded, w, h).apply {
-            this.bitmap?.let { setBitmap(it) }
+        ImageAsset(
+            id = id,
+            fileName = fileName,
+            path = path,
+            slotId = slotId,
+            name = name,
+            embedded = embedded,
+            w = w,
+            h = h
+        ).apply {
+            setBitmap(this@ImageAsset.bitmap ?: return@apply)
         }
 }
 

@@ -1,7 +1,5 @@
 package io.github.alexzhirkevich.compottie.internal
 
-import androidx.compose.ui.text.font.FontFamily
-import io.github.alexzhirkevich.compottie.assets.LottieFontSpec
 import io.github.alexzhirkevich.compottie.internal.assets.CharacterData
 import io.github.alexzhirkevich.compottie.internal.assets.FontList
 import io.github.alexzhirkevich.compottie.internal.helpers.Marker

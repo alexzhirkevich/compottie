@@ -45,10 +45,9 @@ import kotlin.math.roundToInt
  * @param applyOpacityToLayers Sets whether to apply opacity to the each layer instead of shape.
  * Opacity is normally applied directly to a shape. In cases where translucent
  * shapes overlap, applying opacity to a layer will be more accurate at the expense of performance.
- * Note: Turning this on can be very expensive and sometimes can cause artifacts. Enable it
- * only if the animation have translucent overlapping shapes
- * @param clipToCompositionBounds if drawing should be clipped to the
- *  [composition].width x [composition].height
+ * Note: Turning this on can be very expensive and sometimes can cause artifacts. Enable it only if
+ * the animation have translucent overlapping shapes and always test if it works fine for your animation
+ * @param clipToCompositionBounds if drawing should be clipped to the [composition].width X [composition].height rect
  * @param clipTextToBoundingBoxes if text should be clipped to its bounding boxes (if provided in animation)
  * @param enableMergePaths enable experimental merge paths feature. Most of the time animation doesn't need
  * it even if it contains merge paths. This feature should only be enabled for tested animations

@@ -14,10 +14,10 @@ internal sealed interface LottieAsset {
     fun copy() : LottieAsset
 
     @Serializable
-    object UnsupportedAsset : LottieAsset {
+    class UnsupportedAsset() : LottieAsset {
         override val id: String get() = ""
 
-        override fun copy() = this
+        override fun copy() = UnsupportedAsset()
     }
 }
 
