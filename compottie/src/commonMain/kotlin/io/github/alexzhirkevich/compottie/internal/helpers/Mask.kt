@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.helpers
 
+import io.github.alexzhirkevich.compottie.L
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import kotlinx.serialization.SerialName
@@ -47,6 +48,25 @@ internal class Mask(
 @Serializable
 @JvmInline
 internal value class MaskMode(val type : String) {
+
+    init {
+        if (!isSupported()){
+            L.logger.log("Animation contains unsupported mask type: $this. It will be treated as an 'Add' mask")
+        }
+    }
+
+    override fun toString() : String {
+        return when(this){
+            None -> "None"
+            Add -> "Add"
+            Subtract -> "Subtract"
+            Intersect -> "Intersect"
+            Lighten -> "Lighten"
+            Darken -> "Darken"
+            Difference -> "Difference"
+            else -> "Unknown"
+        }
+    }
 
     companion object {
         val None = MaskMode("n")

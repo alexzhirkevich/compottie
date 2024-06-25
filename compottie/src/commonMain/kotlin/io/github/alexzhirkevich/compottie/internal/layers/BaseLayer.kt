@@ -96,10 +96,6 @@ internal abstract class BaseLayer : Layer {
         masks?.all { it.mode == MaskMode.None } == true
     }
 
-    private val supportedMasks by lazy {
-        masks?.fastFilter { it.mode.isSupported() }
-    }
-
     override val effectsApplier by lazy {
         LayerEffectsApplier(this)
     }
@@ -159,6 +155,7 @@ internal abstract class BaseLayer : Layer {
                     drawLayer(drawScope, matrix, alpha, state)
                     return@onLayer
                 }
+
 
                 getBounds(drawScope, matrix, false, state, rect)
 
@@ -278,7 +275,7 @@ internal abstract class BaseLayer : Layer {
         }
     }
 
-    private fun hasMasks(): Boolean = hasMask != false && !supportedMasks.isNullOrEmpty()
+    private fun hasMasks(): Boolean = hasMask != false && !masks.isNullOrEmpty()
 
     private fun clearCanvas(canvas: Canvas) {
         // If we don't pad the clear draw, some phones leave a 1px border of the graphics buffer.
@@ -299,7 +296,7 @@ internal abstract class BaseLayer : Layer {
             return
         }
 
-        supportedMasks?.fastForEach { mask ->
+        masks?.fastForEach { mask ->
             val maskPath = mask.shape?.interpolatedRaw(state) ?: return@fastForEach
             path.set(maskPath)
             path.transform(matrix)
@@ -363,13 +360,7 @@ internal abstract class BaseLayer : Layer {
                         canvas.drawRect(rect, contentPaint)
                     }
 
-                MaskMode.Add -> if (mask.isInverted) {
-                    applyInvertedAddMask(canvas, matrix, mask, state)
-                } else {
-                    applyAddMask(canvas, matrix, mask, state)
-                }
-
-                MaskMode.Subtract -> {
+                MaskMode.Subtract-> {
                     if (i == 0) {
                         contentPaint.color = Color.Black
                         contentPaint.alpha = 1f
@@ -387,6 +378,15 @@ internal abstract class BaseLayer : Layer {
                 } else {
                     applyIntersectMask(canvas, matrix, mask, state)
                 }
+
+                // MaskMode.Add
+                else -> if (mask.isInverted) {
+                    applyInvertedAddMask(canvas, matrix, mask, state)
+                } else {
+                    println("MAKING ADD MASK")
+                    applyAddMask(canvas, matrix, mask, state)
+                }
+
             }
         }
         canvas.restore()
