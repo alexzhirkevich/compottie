@@ -22,7 +22,8 @@ class AnimationState @PublishedApi internal constructor(
     enableMergePaths: Boolean,
     layer: Layer
 ) {
-    var frame by mutableStateOf(frame)
+
+    var frame = frame
         private set
 
     val progress: Float
@@ -36,7 +37,8 @@ class AnimationState @PublishedApi internal constructor(
     internal var clipTextToBoundingBoxes by mutableStateOf(clipTextToBoundingBoxes)
     internal var fontFamilyResolver by mutableStateOf(fontFamilyResolver)
     internal var enableMergePaths by mutableStateOf(enableMergePaths)
-    internal var layer by mutableStateOf(layer)
+
+    internal var layer = layer
         private set
 
     /**
@@ -44,7 +46,7 @@ class AnimationState @PublishedApi internal constructor(
      * State is restored after the [block] call
      * */
     @OptIn(ExperimentalContracts::class)
-    internal fun <R> onFrame(frame: Float, block: (AnimationState) -> R): R {
+    internal inline fun <R> onFrame(frame: Float, block: (AnimationState) -> R): R {
         contract {
             callsInPlace(block, InvocationKind.EXACTLY_ONCE)
         }
@@ -59,7 +61,7 @@ class AnimationState @PublishedApi internal constructor(
     }
 
     @OptIn(ExperimentalContracts::class)
-    internal fun <R> onLayer(layer: Layer, block: (AnimationState) -> R): R {
+    internal inline fun <R> onLayer(layer: Layer, block: (AnimationState) -> R): R {
         contract {
             callsInPlace(block, InvocationKind.EXACTLY_ONCE)
         }
@@ -72,4 +74,36 @@ class AnimationState @PublishedApi internal constructor(
             this.layer = prevLayer
         }
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as AnimationState
+
+        if (composition != other.composition) return false
+        if (assets != other.assets) return false
+        if (fonts != other.fonts) return false
+        if (frame != other.frame) return false
+        if (clipToCompositionBounds != other.clipToCompositionBounds) return false
+        if (clipTextToBoundingBoxes != other.clipTextToBoundingBoxes) return false
+        if (fontFamilyResolver != other.fontFamilyResolver) return false
+        if (enableMergePaths != other.enableMergePaths) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = composition.hashCode()
+        result = 31 * result + assets.hashCode()
+        result = 31 * result + fonts.hashCode()
+        result = 31 * result + frame.hashCode()
+        result = 31 * result + clipToCompositionBounds.hashCode()
+        result = 31 * result + clipTextToBoundingBoxes.hashCode()
+        result = 31 * result + fontFamilyResolver.hashCode()
+        result = 31 * result + enableMergePaths.hashCode()
+        return result
+    }
+
+
 }
