@@ -17,6 +17,7 @@ class AnimationState @PublishedApi internal constructor(
     internal val fonts: Map<String, FontFamily>,
     frame: Float,
     fontFamilyResolver: FontFamily.Resolver,
+    applyOpacityToLayers : Boolean,
     clipToDrawBounds: Boolean,
     clipTextToBoundingBoxes: Boolean,
     enableMergePaths: Boolean,
@@ -37,6 +38,7 @@ class AnimationState @PublishedApi internal constructor(
     internal var clipTextToBoundingBoxes by mutableStateOf(clipTextToBoundingBoxes)
     internal var fontFamilyResolver by mutableStateOf(fontFamilyResolver)
     internal var enableMergePaths by mutableStateOf(enableMergePaths)
+    internal val applyOpacityToLayers by mutableStateOf(applyOpacityToLayers)
 
     internal var layer = layer
         private set

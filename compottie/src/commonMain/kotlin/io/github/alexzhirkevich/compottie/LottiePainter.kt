@@ -31,47 +31,104 @@ import io.github.alexzhirkevich.compottie.internal.layers.CompositionLayer
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.coroutines.async
 import kotlin.math.roundToInt
-import kotlin.time.measureTime
 
 /**
- * Create and remember Lottie painter.
- * Shortcut that combines [rememberLottiePainter] (with progress arg)
- * and [animateLottieCompositionAsState]
+ * Create and remember Lottie painter
  *
  * @param composition [LottieComposition] usually created by [rememberLottieComposition]
- * @param composition The composition to render. This should be retrieved with [rememberLottieComposition].
+ * @param progress animation progress from 0 to 1 usually derived from [animateLottieCompositionAsState]
  * @param assetsManager used to load animation assets that were not loaded during composition
  * initialization
  * @param fontManager used to load animation fonts
  * @param dynamicProperties dynamically-configurable animation properties. Can be created with
  * [rememberLottieDynamicProperties]
- * @param isPlaying Whether or not the animation is currently playing. Note that the internal
- * animation may end due to reaching the target iterations count. If that happens, the animation may
- * stop even if this is still true. You can observe the returned [LottieAnimationState.isPlaying]
- * to determine whether the underlying animation is still playing.
- * @param restartOnPlay If isPlaying switches from false to true, restartOnPlay determines whether
- * the progress and iteration gets reset.
- * @param reverseOnRepeat Defines what this animation should do when it reaches the end. This setting
- * is applied only when [iterations] is either greater than 0 or [LottieConstants.IterateForever].
- * Defaults to `false`.
- * @param clipSpec A [LottieClipSpec] that specifies the bound the animation playback
- * should be clipped to.
- * @param speed The speed the animation should play at. Numbers larger than one will speed it up.
- * Numbers between 0 and 1 will slow it down. Numbers less than 0 will play it backwards.
- * @param iterations The number of times the animation should repeat before stopping. It must be
- * a positive number. [LottieConstants.IterateForever] can be used to repeat forever.
- * @param cancellationBehavior The behavior that this animation should have when cancelled.
- * In most cases, you will want it to cancel immediately. However, if you have a state based
- * transition and you want an animation to finish playing before moving on to the next one then you
- * may want to set this to [LottieCancellationBehavior.OnIterationFinish].
- * @param useCompositionFrameRate Use frame rate declared in animation instead of screen refresh rate.
- * Animation may seem junky if parameter is set to true and composition frame rate is less than screen
- * refresh rate
- * @param clipToCompositionBounds if animation should be clipped to the
+ * @param applyOpacityToLayers Sets whether to apply opacity to the each layer instead of shape.
+ * Opacity is normally applied directly to a shape. In cases where translucent
+ * shapes overlap, applying opacity to a layer will be more accurate at the expense of performance.
+ * Note: Turning this on can be very expensive and sometimes can cause artifacts. Enable it
+ * only if the animation have translucent overlapping shapes
+ * @param clipToCompositionBounds if drawing should be clipped to the
  *  [composition].width x [composition].height
  * @param clipTextToBoundingBoxes if text should be clipped to its bounding boxes (if provided in animation)
  * @param enableMergePaths enable experimental merge paths feature. Most of the time animation doesn't need
  * it even if it contains merge paths. This feature should only be enabled for tested animations
+ * */
+@OptIn(InternalCompottieApi::class)
+@Composable
+fun rememberLottiePainter(
+    composition : LottieComposition?,
+    progress : () -> Float,
+    assetsManager: LottieAssetsManager = LottieAssetsManager.Empty,
+    fontManager: LottieFontManager = LottieFontManager.Empty,
+    dynamicProperties : DynamicProperties? = null,
+    applyOpacityToLayers : Boolean = false,
+    clipToCompositionBounds : Boolean = true,
+    clipTextToBoundingBoxes: Boolean = false,
+    enableMergePaths: Boolean = false,
+) : Painter {
+
+    val fontFamilyResolver = LocalFontFamilyResolver.current
+
+    val painter by produceState<Painter>(
+        EmptyPainter,
+        composition,
+    ) {
+
+        if (composition != null) {
+            val assets = async(ioDispatcher()) {
+                composition.loadAssets(assetsManager, true)
+            }
+            val fonts = async(ioDispatcher()) {
+                composition.loadFonts(fontManager)
+            }
+
+            value = LottiePainter(
+                composition = composition.deepCopy(),
+                initialProgress = progress(),
+                dynamicProperties = when (dynamicProperties) {
+                    is DynamicCompositionProvider -> dynamicProperties
+                    null -> null
+                },
+                clipTextToBoundingBoxes = clipTextToBoundingBoxes,
+                fontFamilyResolver = fontFamilyResolver,
+                clipToCompositionBounds = clipToCompositionBounds,
+                enableMergePaths = enableMergePaths,
+                applyOpacityToLayers = applyOpacityToLayers,
+                assets = assets.await(),
+                fonts = fonts.await()
+            )
+        }
+    }
+
+    LaunchedEffect(
+        clipTextToBoundingBoxes,
+        clipToCompositionBounds,
+        fontFamilyResolver,
+    ){
+        (painter as? LottiePainter)?.let {
+            it.clipTextToBoundingBoxes = clipTextToBoundingBoxes
+            it.clipToCompositionBounds = clipToCompositionBounds
+            it.fontFamilyResolver = fontFamilyResolver
+        }
+    }
+
+    LaunchedEffect(painter) {
+        (painter as? LottiePainter)?.let { lp ->
+            snapshotFlow {
+                progress()
+            }.collect {
+                lp.progress = it
+            }
+        }
+    }
+
+    return painter
+}
+
+/**
+ * Create and remember Lottie painter.
+ *
+ * Shortcut that combines [rememberLottiePainter] and [animateLottieCompositionAsState]
  * */
 @Composable
 fun rememberLottiePainter(
@@ -82,6 +139,7 @@ fun rememberLottiePainter(
     isPlaying: Boolean = true,
     restartOnPlay: Boolean = true,
     reverseOnRepeat: Boolean = false,
+    applyOpacityToLayers : Boolean = false,
     clipSpec: LottieClipSpec? = null,
     speed: Float = composition?.speed ?: 1f,
     iterations: Int = composition?.iterations ?: 1,
@@ -116,92 +174,6 @@ fun rememberLottiePainter(
     )
 }
 
-/**
- * Create and remember Lottie painter
- *
- * @param composition [LottieComposition] usually created by [rememberLottieComposition]
- * @param progress animation progress from 0 to 1 usually derived from [animateLottieCompositionAsState]
- * @param assetsManager used to load animation assets that were not loaded during composition
- * initialization
- * @param fontManager used to load animation fonts
- * @param dynamicProperties dynamically-configurable animation properties. Can be created with
- * [rememberLottieDynamicProperties]
- * @param clipToCompositionBounds if drawing should be clipped to the
- *  [composition].width x [composition].height
- * @param clipTextToBoundingBoxes if text should be clipped to its bounding boxes (if provided in animation)
- * @param enableMergePaths enable experimental merge paths feature. Most of the time animation doesn't need
- * it even if it contains merge paths. This feature should only be enabled for tested animations
- * */
-@OptIn(InternalCompottieApi::class)
-@Composable
-fun rememberLottiePainter(
-    composition : LottieComposition?,
-    progress : () -> Float,
-    assetsManager: LottieAssetsManager = LottieAssetsManager.Empty,
-    fontManager: LottieFontManager = LottieFontManager.Empty,
-    dynamicProperties : DynamicProperties? = null,
-    clipToCompositionBounds : Boolean = true,
-    clipTextToBoundingBoxes: Boolean = false,
-    enableMergePaths: Boolean = false,
-) : Painter {
-
-    val fontFamilyResolver = LocalFontFamilyResolver.current
-
-    val painter by produceState<Painter>(
-        EmptyPainter,
-        composition,
-    ) {
-
-        if (composition != null) {
-            val assets = async(ioDispatcher()) {
-                composition.loadAssets(assetsManager, true)
-            }
-            val fonts = async(ioDispatcher()) {
-                composition.loadFonts(fontManager)
-            }
-
-            value = LottiePainter(
-                composition = composition.deepCopy(),
-                initialProgress = progress(),
-                dynamicProperties = when (dynamicProperties) {
-                    is DynamicCompositionProvider -> dynamicProperties
-                    null -> null
-                },
-                clipTextToBoundingBoxes = clipTextToBoundingBoxes,
-                fontFamilyResolver = fontFamilyResolver,
-                clipToCompositionBounds = clipToCompositionBounds,
-                enableMergePaths = enableMergePaths,
-                assets = assets.await(),
-                fonts = fonts.await()
-            )
-        }
-    }
-
-    LaunchedEffect(
-        clipTextToBoundingBoxes,
-        clipToCompositionBounds,
-        fontFamilyResolver,
-    ){
-        (painter as? LottiePainter)?.let {
-            it.clipTextToBoundingBoxes = clipTextToBoundingBoxes
-            it.clipToCompositionBounds = clipToCompositionBounds
-            it.fontFamilyResolver = fontFamilyResolver
-        }
-    }
-
-    LaunchedEffect(painter) {
-        (painter as? LottiePainter)?.let { lp ->
-            snapshotFlow {
-                progress()
-            }.collect {
-                lp.progress = it
-            }
-        }
-    }
-
-    return painter
-}
-
 private object EmptyPainter : Painter() {
 
 
@@ -218,6 +190,7 @@ private class LottiePainter(
     initialProgress : Float,
     dynamicProperties: DynamicCompositionProvider?,
     fontFamilyResolver : FontFamily.Resolver,
+    applyOpacityToLayers : Boolean,
     clipTextToBoundingBoxes : Boolean,
     clipToCompositionBounds : Boolean,
     enableMergePaths : Boolean,
@@ -251,6 +224,7 @@ private class LottiePainter(
         fonts = fonts,
         frame = frame,
         fontFamilyResolver = fontFamilyResolver,
+        applyOpacityToLayers = applyOpacityToLayers,
         clipToDrawBounds = clipToCompositionBounds,
         clipTextToBoundingBoxes = clipTextToBoundingBoxes,
         enableMergePaths = enableMergePaths,

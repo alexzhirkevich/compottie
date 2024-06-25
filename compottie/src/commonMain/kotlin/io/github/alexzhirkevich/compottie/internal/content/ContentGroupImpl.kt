@@ -12,6 +12,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
+import io.github.alexzhirkevich.compottie.internal.utils.set
 import io.github.alexzhirkevich.compottie.internal.utils.union
 
 internal class ContentGroupImpl(
@@ -76,10 +77,12 @@ internal class ContentGroupImpl(
             }
         }
 
-        val isRenderingWithOffScreen = drawingContents.size > 1 && layerAlpha < .99f
+        val isRenderingWithOffScreen = state.applyOpacityToLayers &&
+                drawingContents.size > 1 && layerAlpha < .99f
 
         val canvas = drawScope.drawContext.canvas
         if (isRenderingWithOffScreen) {
+            offscreenRect.set(0f,0f,0f,0f)
             getBounds(drawScope, matrix, true, state, offscreenRect)
             offscreenPaint.alpha = layerAlpha
             canvas.saveLayer(offscreenRect.toRect(), offscreenPaint)
