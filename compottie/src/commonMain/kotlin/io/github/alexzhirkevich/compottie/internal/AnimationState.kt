@@ -18,7 +18,7 @@ class AnimationState @PublishedApi internal constructor(
     frame: Float,
     fontFamilyResolver: FontFamily.Resolver,
     applyOpacityToLayers : Boolean,
-    clipToDrawBounds: Boolean,
+    clipToCompositionBounds: Boolean,
     clipTextToBoundingBoxes: Boolean,
     enableMergePaths: Boolean,
     layer: Layer
@@ -34,11 +34,11 @@ class AnimationState @PublishedApi internal constructor(
             return p.coerceIn(0f, 1f)
         }
 
-    internal var clipToCompositionBounds by mutableStateOf(clipToDrawBounds)
+    internal var clipToCompositionBounds by mutableStateOf(clipToCompositionBounds)
     internal var clipTextToBoundingBoxes by mutableStateOf(clipTextToBoundingBoxes)
     internal var fontFamilyResolver by mutableStateOf(fontFamilyResolver)
     internal var enableMergePaths by mutableStateOf(enableMergePaths)
-    internal val applyOpacityToLayers by mutableStateOf(applyOpacityToLayers)
+    internal var applyOpacityToLayers by mutableStateOf(applyOpacityToLayers)
 
     internal var layer = layer
         private set

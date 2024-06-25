@@ -100,13 +100,17 @@ fun rememberLottiePainter(
     }
 
     LaunchedEffect(
+        fontFamilyResolver,
         clipTextToBoundingBoxes,
         clipToCompositionBounds,
-        fontFamilyResolver,
+        applyOpacityToLayers,
+        enableMergePaths
     ){
         (painter as? LottiePainter)?.let {
-            it.clipTextToBoundingBoxes = clipTextToBoundingBoxes
+            it.enableMergePaths = enableMergePaths
+            it.applyOpacityToLayers = applyOpacityToLayers
             it.clipToCompositionBounds = clipToCompositionBounds
+            it.fontFamilyResolver = fontFamilyResolver
             it.fontFamilyResolver = fontFamilyResolver
         }
     }
@@ -224,7 +228,7 @@ private class LottiePainter(
         frame = frame,
         fontFamilyResolver = fontFamilyResolver,
         applyOpacityToLayers = applyOpacityToLayers,
-        clipToDrawBounds = clipToCompositionBounds,
+        clipToCompositionBounds = clipToCompositionBounds,
         clipTextToBoundingBoxes = clipTextToBoundingBoxes,
         enableMergePaths = enableMergePaths,
         layer = compositionLayer
@@ -236,6 +240,8 @@ private class LottiePainter(
         }
     }
 
+    var enableMergePaths: Boolean by animationState::enableMergePaths
+    var applyOpacityToLayers: Boolean by animationState::applyOpacityToLayers
     var clipTextToBoundingBoxes: Boolean by animationState::clipTextToBoundingBoxes
     var clipToCompositionBounds: Boolean by animationState::clipToCompositionBounds
     var fontFamilyResolver: FontFamily.Resolver by animationState::fontFamilyResolver

@@ -73,17 +73,10 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         val childAlpha = if (isDrawingWithOffScreen) 1f else parentAlpha
 
         state.onFrame(getRemappedFrame(state)) { remappedState ->
-
             layers.fastForEachReversed { layer ->
-                // Only clip precomps. This mimics the way After Effects renders animations.
-                val ignoreClipOnThisLayer =
-                    isContainerLayer || !state.clipToCompositionBounds
-
-                if (!ignoreClipOnThisLayer && !newClipRect.isEmpty) {
+                if (state.clipToCompositionBounds && !newClipRect.isEmpty) {
                     canvas.clipRect(newClipRect)
                 }
-
-
                 layer.draw(drawScope, parentMatrix, childAlpha, remappedState)
             }
         }

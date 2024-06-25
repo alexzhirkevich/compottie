@@ -17,7 +17,7 @@ import kotlinx.coroutines.withContext
 /**
  * [LottieComposition] from network [url]
  *
- * @param format animation format. Composition spec will try to guess format if format is not specified.
+ * @param format animation format (JSON/dotLottie). Composition spec will try to guess format if format is not specified.
  * @param client http client used for loading animation
  * @param request request builder. Simple GET by default
  * @param cacheStrategy caching strategy. Caching to system temp dir by default
