@@ -1,7 +1,6 @@
 package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Stable
-import okio.Buffer
 import okio.ByteString.Companion.encodeUtf8
 import okio.Path
 import okio.use
@@ -56,5 +55,11 @@ class DiskCacheStrategy(
     }
 
     private fun key(url: String) = url.encodeUtf8().sha256().hex()
+
+    internal companion object {
+        val Instance by lazy {
+            DiskCacheStrategy()
+        }
+    }
 }
 

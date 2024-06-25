@@ -53,7 +53,7 @@ private class DotLottieCompositionSpec(
         return withContext(ioDispatcher()) {
             LottieComposition.getOrCreate(cacheKey) {
                 val fileSystem = FakeFileSystem()
-                val path = "anim".toPath()
+                val path = "lottie".toPath()
 
                 fileSystem.write(path) {
                     write(archive)
@@ -66,7 +66,6 @@ private class DotLottieCompositionSpec(
                 val manifestPath = entries.keys.firstOrNull { it.name == "manifest.json" }
 
                 if (manifestPath != null) {
-
 
                     val manifest = DotLottieJson.decodeFromString<DotLottieManifest>(
                         zipSystem.read(manifestPath).decodeToString()

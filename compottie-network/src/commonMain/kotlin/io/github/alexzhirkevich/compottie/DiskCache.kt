@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie
 
+import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import okio.Closeable
@@ -11,6 +12,7 @@ import kotlin.js.JsName
 /**
  * An LRU cache of files.
  */
+@Stable
 interface DiskCache {
 
     /** The current size of the cache in bytes. */
@@ -116,6 +118,7 @@ internal val SharedDiskCache by lazy {
 
 @OptIn(InternalCompottieApi::class)
 @JsName("LottieDiskCache")
+@Stable
 fun DiskCache(
     directory: Path = FileSystem.SYSTEM_TEMPORARY_DIRECTORY.resolve("compottie_disc_cache".toPath()),
     fileSystem : FileSystem = defaultFileSystem(),

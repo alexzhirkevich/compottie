@@ -1,10 +1,12 @@
 package io.github.alexzhirkevich.compottie
 
+import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CoroutineDispatcher
 import okio.ByteString.Companion.encodeUtf8
 import okio.FileSystem
 import okio.Path
 
+@Stable
 internal class RealDiskCache(
     override val maxSize: Long,
     override val directory: Path,
@@ -44,6 +46,28 @@ internal class RealDiskCache(
     }
 
     private fun String.hash() = encodeUtf8().sha256().hex()
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as RealDiskCache
+
+        if (maxSize != other.maxSize) return false
+        if (directory != other.directory) return false
+        if (fileSystem != other.fileSystem) return false
+        if (cache != other.cache) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = maxSize.hashCode()
+        result = 31 * result + directory.hashCode()
+        result = 31 * result + fileSystem.hashCode()
+        result = 31 * result + cache.hashCode()
+        return result
+    }
 
     private class RealSnapshot(private val snapshot: DiskLruCache.Snapshot) : DiskCache.Snapshot {
 

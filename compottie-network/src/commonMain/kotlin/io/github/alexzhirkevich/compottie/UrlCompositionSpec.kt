@@ -1,18 +1,6 @@
+package io.github.alexzhirkevich.compottie
+
 import androidx.compose.runtime.Stable
-import io.github.alexzhirkevich.compottie.DefaultHttpClient
-import io.github.alexzhirkevich.compottie.DiskCacheStrategy
-import io.github.alexzhirkevich.compottie.DotLottie
-import io.github.alexzhirkevich.compottie.GetRequest
-import io.github.alexzhirkevich.compottie.InternalCompottieApi
-import io.github.alexzhirkevich.compottie.L
-import io.github.alexzhirkevich.compottie.LottieAnimationFormat
-import io.github.alexzhirkevich.compottie.LottieCacheStrategy
-import io.github.alexzhirkevich.compottie.LottieComposition
-import io.github.alexzhirkevich.compottie.LottieCompositionSpec
-import io.github.alexzhirkevich.compottie.NetworkAssetsManager
-import io.github.alexzhirkevich.compottie.NetworkFontManager
-import io.github.alexzhirkevich.compottie.NetworkRequest
-import io.github.alexzhirkevich.compottie.ioDispatcher
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.statement.bodyAsChannel
@@ -41,7 +29,7 @@ fun LottieCompositionSpec.Companion.Url(
     format: LottieAnimationFormat = LottieAnimationFormat.Undefined,
     client: HttpClient = DefaultHttpClient,
     request : NetworkRequest = GetRequest,
-    cacheStrategy: LottieCacheStrategy = DiskCacheStrategy(),
+    cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
 ) : LottieCompositionSpec = NetworkCompositionSpec(
     url = url,
     format = format,
@@ -92,7 +80,7 @@ private class NetworkCompositionSpec(
                             cacheStrategy.save(url, bytes)
                         } catch (t: Throwable) {
                             L.logger.error(
-                                "Url composition spec failed to cache downloaded animation",
+                                "io.github.alexzhirkevich.compottie.Url composition spec failed to cache downloaded animation",
                                 t
                             )
                         }
