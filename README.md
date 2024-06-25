@@ -258,6 +258,22 @@ The network module also brings the `NetworkAssetsManager` that have similar para
 If you are using Url composition spec then specifying `NetworkAssetsManager` is redundant.
 Url composition spec automatically prepares url assets
 
+There is no stable Ktor client for wasm so to use network module on this target you need to add 
+the following to the bottom of your build script:
+
+```kotlin
+configurations
+    .filter { it.name.contains("wasmJs") }
+    .onEach {
+        it.resolutionStrategy.eachDependency {
+            if (requested.group.startsWith("io.ktor") &&
+                requested.name.startsWith("ktor-client-")
+            ) {
+                useVersion("3.0.0-wasm2")
+            }
+        }
+    }
+```
 ## Dynamic Properties
 
 Lottie allows you to update Lottie animation properties at runtime. Some reasons you may want to do this are:

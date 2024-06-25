@@ -3,22 +3,20 @@
 plugins {
     id("org.jetbrains.kotlin.android")
     alias(libs.plugins.android.application)
-    alias(libs.plugins.compose)
-    alias(libs.plugins.composeCompiler)
 }
 
 val _jvmTarget = findProperty("jvmTarget") as String
 
 android {
-    namespace = "io.github.alexzhirkevich.compottie.example.android"
+    namespace = "$group.compottie.example.android"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "io.github.alexzhirkevich.compottie.example.android"
+        applicationId = namespace
         minSdk = 24
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = project.version.toString()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -42,6 +40,6 @@ dependencies {
 
     implementation(project(":example:shared"))
     implementation(project(":compottie"))
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.activity:activity-compose:1.8.0")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.activity.compose)
 }

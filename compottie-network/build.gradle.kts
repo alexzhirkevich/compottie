@@ -1,15 +1,8 @@
-    @file:Suppress("DSL_SCOPE_VIOLATION")
-
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import java.util.Base64
-
 plugins {
-    alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.compose)
-    alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.serialization)
     id("kotlinx-atomicfu")
+    id("ktorwasm.workaround")
 }
+
 kotlin {
     sourceSets {
         commonMain.dependencies {

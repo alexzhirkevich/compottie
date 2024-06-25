@@ -1,37 +1,10 @@
-@Suppress("DSL_SCOPE_VIOLATION")
-
 plugins {
-    alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.compose)
-    alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.multiplatform)
+    id("module.android")
+    id("module.multiplatform")
+    id("ktorwasm.workaround")
 }
 
-val _jvmTarget = findProperty("jvmTarget") as String
-
 kotlin {
-
-    applyDefaultHierarchyTemplate()
-    jvm("desktop") {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = _jvmTarget
-            }
-        }
-    }
-    androidTarget() {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = _jvmTarget
-            }
-        }
-    }
-    js(IR) {
-        browser()
-    }
-    wasmJs(){
-        browser()
-    }
 
     listOf(
         iosX64(),
@@ -79,31 +52,7 @@ kotlin {
 }
 
 android {
-    namespace = "compottie.example"
-    compileSdk = 34
-
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     sourceSets["main"].res.srcDirs("src/androidMain/res")
     sourceSets["main"].resources.srcDirs("src/commonMain/resources")
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.toVersion(_jvmTarget)
-        targetCompatibility = JavaVersion.toVersion(_jvmTarget)
-    }
-
-    defaultConfig {
-        minSdk = 24
-    }
 }
-
-configurations
-    .filter { it.name.contains("wasmJs") }
-    .onEach {
-        it.resolutionStrategy.eachDependency {
-            if (requested.group.startsWith("io.ktor") &&
-                requested.name.startsWith("ktor-client-")
-            ) {
-                useVersion("3.0.0-wasm2")
-            }
-        }
-    }
