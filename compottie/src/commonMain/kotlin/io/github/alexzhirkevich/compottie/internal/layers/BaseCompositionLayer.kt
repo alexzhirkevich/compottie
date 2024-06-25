@@ -58,7 +58,7 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         parentMatrix.map(newClipRect)
 
         // Apply off-screen rendering only when needed in order to improve rendering performance.
-        val isDrawingWithOffScreen = layers.isEmpty() && parentAlpha < 1f
+        val isDrawingWithOffScreen = layers.isNotEmpty() && parentAlpha < .99f
 
         val canvas = drawScope.drawContext.canvas
 

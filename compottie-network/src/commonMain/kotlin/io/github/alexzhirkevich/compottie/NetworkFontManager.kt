@@ -15,6 +15,10 @@ import okio.Path
  *
  * Note: [LottieCacheStrategy.path] should return valid file system paths to make [NetworkFontManager] work.
  * Default [DiskCacheStrategy] supports it.
+ *
+ * @param client http client used for loading animation
+ * @param request request builder. Simple GET by default
+ * @param cacheStrategy caching strategy. Caching to system temp dir by default
  * */
 @Stable
 fun NetworkFontManager(

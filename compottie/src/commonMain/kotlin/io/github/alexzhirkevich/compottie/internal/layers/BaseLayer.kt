@@ -10,7 +10,6 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
@@ -34,6 +33,7 @@ import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import io.github.alexzhirkevich.compottie.internal.utils.intersectOrReset
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
+import io.github.alexzhirkevich.compottie.internal.utils.set
 import io.github.alexzhirkevich.compottie.internal.utils.union
 
 internal abstract class BaseLayer : Layer {
@@ -156,7 +156,7 @@ internal abstract class BaseLayer : Layer {
                     return@onLayer
                 }
 
-
+                rect.set(0f,0f,0f,0f)
                 getBounds(drawScope, matrix, false, state, rect)
 
                 intersectBoundsWithMatte(drawScope, rect, parentMatrix, state)
@@ -383,7 +383,6 @@ internal abstract class BaseLayer : Layer {
                 else -> if (mask.isInverted) {
                     applyInvertedAddMask(canvas, matrix, mask, state)
                 } else {
-                    println("MAKING ADD MASK")
                     applyAddMask(canvas, matrix, mask, state)
                 }
 

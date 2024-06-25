@@ -9,6 +9,7 @@ import io.ktor.http.Url
 
 internal val DefaultHttpClient by lazy {
     HttpClient {
+        followRedirects = true
         expectSuccess = true
         install(HttpRequestRetry) {
             maxRetries = 2

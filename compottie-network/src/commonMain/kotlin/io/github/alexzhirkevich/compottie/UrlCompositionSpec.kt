@@ -7,6 +7,7 @@ import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Url
 import io.ktor.http.isSuccess
+import io.ktor.util.logging.Logger
 import io.ktor.util.toByteArray
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -17,9 +18,9 @@ import kotlinx.coroutines.withContext
  * [LottieComposition] from network [url]
  *
  * @param format animation format. Composition spec will try to guess format if format is not specified.
- * @param client http client user for loading animation
+ * @param client http client used for loading animation
  * @param request request builder. Simple GET by default
- * @param cacheStrategy caching strategy. Caching to system tmp dir by default
+ * @param cacheStrategy caching strategy. Caching to system temp dir by default
  *
  * URL assets will be automatically prepared with [NetworkAssetsManager]
  * */
@@ -60,27 +61,45 @@ private class NetworkCompositionSpec(
                 try {
                     LottieComposition.getOrCreate(cacheKey) {
                         try {
+                            L.logger.log("Searching for animation in cache...")
                             cacheStrategy.load(url)?.let {
-                                return@getOrCreate it.decodeLottieComposition(format)
+                                L.logger.log("Animation was found in cache. Parsing...")
+                                return@getOrCreate it.decodeLottieComposition(format).also {
+                                    L.logger.log("Animation was successfully loaded from cache")
+                                }
+                            } ?: run {
+                                L.logger.log("Animation wasn't found in cache")
                             }
                         } catch (_: Throwable) {
+                            L.logger.log("Failed to load or decode animation from cache")
                         }
 
-                        val response = request(client, Url(url)).execute()
+                        L.logger.log("Fetching animation from web...")
 
-                        if (!response.status.isSuccess()) {
-                            throw ClientRequestException(response, response.bodyAsText())
+                        val bytes = try {
+                            val response = request(client, Url(url)).execute()
+
+                            if (!response.status.isSuccess()) {
+                                L.logger.log("Animation request failed with ${response.status.value} status code")
+                                throw ClientRequestException(response, response.bodyAsText())
+                            }
+
+                            response.bodyAsChannel().toByteArray()
+                        } catch (t : ClientRequestException){
+                            L.logger.log("Animation request failed with ${t.response.status.value} status code")
+                            throw t
                         }
-
-                        val bytes = response.bodyAsChannel().toByteArray()
+                        L.logger.log("Animation was loaded from web. Parsing...")
 
                         val composition = bytes.decodeLottieComposition(format)
+                        L.logger.log("Animation was successfully loaded from web. Caching...")
 
                         try {
                             cacheStrategy.save(url, bytes)
+                            L.logger.log("Animation was successfully saved to cache")
                         } catch (t: Throwable) {
                             L.logger.error(
-                                "io.github.alexzhirkevich.compottie.Url composition spec failed to cache downloaded animation",
+                                "Failed to cache animation",
                                 t
                             )
                         }

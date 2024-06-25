@@ -24,7 +24,6 @@ internal class ContentGroupImpl(
     private val rect = MutableRect(0f, 0f, 0f, 0f)
     private val offscreenRect = MutableRect(0f, 0f, 0f, 0f)
     private val offscreenPaint = Paint().apply {
-        isAntiAlias = true
     }
     private val matrix = Matrix()
     private val path = Path()
@@ -77,11 +76,10 @@ internal class ContentGroupImpl(
             }
         }
 
-        val isRenderingWithOffScreen = drawingContents.size > 2 && layerAlpha < 1f
+        val isRenderingWithOffScreen = drawingContents.size > 1 && layerAlpha < .99f
 
         val canvas = drawScope.drawContext.canvas
         if (isRenderingWithOffScreen) {
-            offscreenRect.set(0f, 0f, 0f, 0f)
             getBounds(drawScope, matrix, true, state, offscreenRect)
             offscreenPaint.alpha = layerAlpha
             canvas.saveLayer(offscreenRect.toRect(), offscreenPaint)
