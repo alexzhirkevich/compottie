@@ -70,6 +70,8 @@ private class NetworkCompositionSpec(
                             } ?: run {
                                 L.logger.log("Animation wasn't found in cache")
                             }
+                        } catch (t : CacheIsUnsupportedException) {
+                            L.logger.log("File system cache is disabled for this strategy on the current platform")
                         } catch (_: Throwable) {
                             L.logger.log("Failed to load or decode animation from cache")
                         }
@@ -97,6 +99,8 @@ private class NetworkCompositionSpec(
                         try {
                             cacheStrategy.save(url, bytes)
                             L.logger.log("Animation was successfully saved to cache")
+                        } catch (t : CacheIsUnsupportedException) {
+                          L.logger.log("File system cache is disabled for this strategy on the current platform")
                         } catch (t: Throwable) {
                             L.logger.error(
                                 "Failed to cache animation",

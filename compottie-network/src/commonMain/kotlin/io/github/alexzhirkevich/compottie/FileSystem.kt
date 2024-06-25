@@ -8,6 +8,8 @@ import okio.Path
 import kotlin.random.Random
 import kotlin.random.nextULong
 
+internal object CacheIsUnsupportedException : Exception()
+
 internal expect fun defaultFileSystem() : FileSystem
 
 internal fun Closeable.closeQuietly() {
