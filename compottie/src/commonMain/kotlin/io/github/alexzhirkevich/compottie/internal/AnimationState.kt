@@ -3,8 +3,10 @@ package io.github.alexzhirkevich.compottie.internal
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.font.FontFamily
 import io.github.alexzhirkevich.compottie.LottieComposition
+import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlin.contracts.ExperimentalContracts
@@ -23,6 +25,12 @@ class AnimationState @PublishedApi internal constructor(
     enableMergePaths: Boolean,
     layer: Layer
 ) {
+    /**
+     * All successfully loaded images for this animation by the asset id
+     * */
+    val images : Map<String, ImageBitmap> = assets
+        .filterValues { it is ImageAsset && it.bitmap != null }
+        .mapValues { (it.value as ImageAsset).bitmap!! }
 
     var frame = frame
         private set

@@ -10,14 +10,10 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.JsonTransformingSerializer
-import kotlinx.serialization.json.floatOrNull
-import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = AnimatedNumberSerializer::class)
 internal sealed class AnimatedNumber : KeyframeAnimation<Float>, Indexable {
@@ -87,6 +83,12 @@ internal sealed class AnimatedNumber : KeyframeAnimation<Float>, Indexable {
             return delegate.interpolated(state)
         }
     }
+}
+
+internal fun AnimatedNumber.dynamicNorm(provider: PropertyProvider<Float>?) {
+    if (provider != null)
+        dynamic { provider(it) * 100f }
+    else dynamic(null)
 }
 
 internal fun AnimatedNumber.Companion.defaultRotation() : AnimatedNumber =

@@ -109,11 +109,8 @@ internal class ShapeLayer(
         state: AnimationState
     ): DynamicLayerProvider? {
         val layer = super.setDynamicProperties(composition,state)
-        if (layer !is DynamicShapeLayerProvider) {
-            shapes.fastForEach {
-                it.setDynamicProperties(null, null)
-            }
-            return layer
+        shapes.fastForEach {
+            it.setDynamicProperties(null, layer as? DynamicShapeLayerProvider)
         }
         return layer
     }

@@ -32,7 +32,7 @@ internal abstract class AnimatedTransform {
                 position.dynamicOffset(value?.offset)
                 scale.dynamicScale(value?.scale)
                 rotation.dynamic(value?.rotation)
-                opacity.dynamic(value?.opacity)
+                opacity.dynamicNorm(value?.opacity)
                 skew.dynamic(value?.skew)
                 skewAxis.dynamic(value?.skewAxis)
             }
