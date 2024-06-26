@@ -5,7 +5,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
 
 internal interface ContentGroup : DrawingContent, PathContent {
 
-    val transform : AnimatedTransform?
+    val transform : AnimatedTransform
 
     val isEmpty : Boolean
 

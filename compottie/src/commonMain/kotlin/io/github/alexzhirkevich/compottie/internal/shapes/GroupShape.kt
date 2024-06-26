@@ -7,6 +7,7 @@ import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroupImpl
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
+import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.utils.firstInstanceOf
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -32,7 +33,7 @@ internal class GroupShape(
     name = name,
     hidden = null, // overrided
     contents = items,
-    transform = items.firstInstanceOf()
+    transform = items.firstInstanceOf() ?: Transform()
 ) {
 
     @Transient

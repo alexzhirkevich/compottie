@@ -7,7 +7,13 @@ object Compottie {
 
     const val IterateForever = Int.MAX_VALUE
 
-    var logger : LottieLogger = LottieLogger.Default
+    /**
+     * Logger used to inform about various events, errors, unsupported features, etc.
+     *
+     * Default instance uses stdout / stderr.
+     * You can set it to null for production
+     * */
+    var logger : LottieLogger? = LottieLogger.Default
 
     /**
      * Limit gradient shaders cache size.
@@ -29,8 +35,12 @@ object Compottie {
     @ExperimentalCompottieApi
     var shaderCacheLimit : Int = 1000
 
+    /**
+     * Limit the number of in-memory cached lottie compositions.
+     * */
     @ExperimentalCompottieApi
-    var compositionCacheLimit : Int = 20
+    var compositionCacheLimit : Int = 15
+
 
     /**
      * Warmup JSON parser. The first animation parsing will be much faster

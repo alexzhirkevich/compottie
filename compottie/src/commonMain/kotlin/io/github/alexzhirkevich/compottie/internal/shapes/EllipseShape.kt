@@ -12,6 +12,8 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.animation.defaultPosition
+import io.github.alexzhirkevich.compottie.internal.animation.defaultScale
 import io.github.alexzhirkevich.compottie.internal.animation.dynamicOffset
 import io.github.alexzhirkevich.compottie.internal.animation.dynamicSize
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
@@ -37,7 +39,7 @@ internal class EllipseShape(
     val direction : Int = 1,
 
     @SerialName("p")
-    val position : AnimatedVector2,
+    val position : AnimatedVector2 = AnimatedVector2.defaultPosition(),
 
     @SerialName("s")
     val size : AnimatedVector2,

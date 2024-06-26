@@ -6,6 +6,7 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
+import io.github.alexzhirkevich.compottie.internal.animation.defaultOpacity
 import io.github.alexzhirkevich.compottie.internal.helpers.StrokeDash
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
@@ -39,7 +40,7 @@ internal class SolidStrokeShape(
     override val strokeMiter : Float = 0f,
 
     @SerialName("o")
-    override val opacity : AnimatedNumber,
+    override val opacity : AnimatedNumber = AnimatedNumber.defaultOpacity(),
 
     @SerialName("w")
     override val strokeWidth : AnimatedNumber,

@@ -89,6 +89,25 @@ internal sealed class AnimatedNumber : KeyframeAnimation<Float>, Indexable {
     }
 }
 
+internal fun AnimatedNumber.Companion.defaultRotation() : AnimatedNumber =
+    AnimatedNumber.Default(0f)
+
+internal fun AnimatedNumber.Companion.defaultSkew() : AnimatedNumber =
+    AnimatedNumber.Default(0f)
+
+internal fun AnimatedNumber.Companion.defaultSkewAxis() : AnimatedNumber =
+    AnimatedNumber.Default(0f)
+
+internal fun AnimatedNumber.Companion.defaultOpacity() : AnimatedNumber =
+    AnimatedNumber.Default(100f)
+
+internal fun AnimatedNumber.Companion.defaultRoundness() : AnimatedNumber =
+    AnimatedNumber.Default(0f)
+
+internal fun AnimatedNumber.Companion.defaultRadius() : AnimatedNumber =
+    AnimatedNumber.Default(0f)
+
+
 internal fun AnimatedNumber.interpolatedNorm(state: AnimationState) = interpolated(state) / 100f
 
 internal class AnimatedNumberSerializer : JsonContentPolymorphicSerializer<AnimatedNumber>(AnimatedNumber::class){

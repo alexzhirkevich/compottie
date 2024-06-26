@@ -30,6 +30,7 @@ import io.github.alexzhirkevich.compottie.internal.platform.drawRect
 import io.github.alexzhirkevich.compottie.internal.platform.isAndroidAtMost
 import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
 import io.github.alexzhirkevich.compottie.internal.platform.set
+import io.github.alexzhirkevich.compottie.internal.utils.fastSetFrom
 import io.github.alexzhirkevich.compottie.internal.utils.intersectOrReset
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.union
@@ -135,14 +136,14 @@ internal abstract class BaseLayer : Layer {
 
                 buildParentLayerListIfNeeded()
 
-                matrix.setFrom(parentMatrix)
+                matrix.fastSetFrom(parentMatrix)
                 parentLayers?.fastForEachReversed {
                     matrix.preConcat(it.transform.matrix(state))
                 }
 
                 var alpha = 1f
 
-                transform.opacity?.interpolatedNorm(state)?.let {
+                transform.opacity.interpolatedNorm(state).let {
                     alpha = (alpha * it).coerceIn(0f, 1f)
                 }
 
@@ -213,7 +214,7 @@ internal abstract class BaseLayer : Layer {
                 }
             }
         } catch (t: Throwable) {
-            Compottie.logger.error("Lottie crashed in draw :(", t)
+            Compottie.logger?.error("Lottie crashed in draw :(", t)
         }
     }
 
@@ -226,7 +227,7 @@ internal abstract class BaseLayer : Layer {
     ) {
         rect.set(0f, 0f, 0f, 0f)
         buildParentLayerListIfNeeded()
-        boundsMatrix.setFrom(parentMatrix)
+        boundsMatrix.fastSetFrom(parentMatrix)
 
         if (applyParents) {
             val p = parentLayers

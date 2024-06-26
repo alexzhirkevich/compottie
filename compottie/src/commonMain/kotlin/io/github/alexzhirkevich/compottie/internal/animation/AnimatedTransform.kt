@@ -15,26 +15,26 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.tan
 
-internal abstract class AnimatedTransform{
+internal abstract class AnimatedTransform {
 
-    abstract val anchorPoint: AnimatedVector2?
-    abstract val position: AnimatedVector2?
-    abstract val scale: AnimatedVector2?
-    abstract val rotation: AnimatedNumber?
-    abstract val opacity: AnimatedNumber?
-    abstract val skew: AnimatedNumber?
-    abstract val skewAxis: AnimatedNumber?
+    abstract val anchorPoint: AnimatedVector2
+    abstract val position: AnimatedVector2
+    abstract val scale: AnimatedVector2
+    abstract val rotation: AnimatedNumber
+    abstract val opacity: AnimatedNumber
+    abstract val skew: AnimatedNumber
+    abstract val skewAxis: AnimatedNumber
 
     var dynamic : DynamicTransformProvider? = null
         set(value) {
             if (field !== value) {
                 field = value
-                position?.dynamicOffset(value?.offset)
-                scale?.dynamicScale(value?.scale)
-                rotation?.dynamic(value?.rotation)
-                opacity?.dynamic(value?.opacity)
-                skew?.dynamic(value?.skew)
-                skewAxis?.dynamic(value?.skewAxis)
+                position.dynamicOffset(value?.offset)
+                scale.dynamicScale(value?.scale)
+                rotation.dynamic(value?.rotation)
+                opacity.dynamic(value?.opacity)
+                skew.dynamic(value?.skew)
+                skewAxis.dynamic(value?.skewAxis)
             }
         }
 
@@ -59,8 +59,8 @@ internal abstract class AnimatedTransform{
             return matrix
         }
 
-        val interpolatedPosition = position?.interpolated(state)
-            ?.takeIf { it.x != 0f || it.y != 0f }
+        val interpolatedPosition = position.interpolated(state)
+            .takeIf { it != Vec2.Zero }
             ?.also {
                 matrix.preTranslate(it.x, it.y)
             }
@@ -74,7 +74,7 @@ internal abstract class AnimatedTransform{
                 // 2) Create a vector from the current position to the next position.
                 // 3) Find the angle of that vector to the X axis (0 degrees).
                 val nextPosition = state.onFrame(state.frame + 0.001f) {
-                    position!!.interpolated(it)
+                    position.interpolated(it)
                 }
 
                 val rotationValue= Math.toDegree(
@@ -84,27 +84,27 @@ internal abstract class AnimatedTransform{
                     )
                 )
 
-
                 matrix.preRotate(rotationValue)
             }
         } else {
-            val rotation = rotation?.interpolated(state)
-                ?.takeIf { it != 0f }
+            val rotation = rotation.interpolated(state).takeIf { it != 0f }
 
-            rotation?.let(matrix::preRotate)
+            rotation?.let {
+                matrix.preRotate(it)
+            }
         }
 
-        val skew = skew?.interpolated(state)
-            ?.takeIf { it != 0f }
+        val skew = skew.interpolated(state).takeIf { it != 0f }
 
         skew?.let { sk ->
-            val skewAngle = skewAxis?.interpolated(state)
 
-            val mCos = if (skewAngle == null)
+            val skewAngle = skewAxis.interpolated(state)
+
+            val mCos = if (skewAngle == 0f)
                 0f
             else cos(Math.toRadians(-skewAngle + 90))
 
-            val mSin = if (skewAngle == null)
+            val mSin = if (skewAngle == 0f)
                 1f
             else sin(Math.toRadians(-skewAngle + 90))
 
@@ -133,18 +133,19 @@ internal abstract class AnimatedTransform{
             skewMatrix3.setValues(skewValues)
             skewMatrix2.preConcat(skewMatrix1)
             skewMatrix3.preConcat(skewMatrix2)
+
             matrix.preConcat(skewMatrix3)
         }
 
-        val scale = scale?.interpolatedNorm(state)
-            ?.takeIf { it.x != 1f || it.y != 1f }
 
-        scale?.let {
-            matrix.preScale(it.x, it.y)
-        }
+        scale.interpolatedNorm(state)
+            .takeIf { it.x != 1f || it.y != 1f }
+            ?.let {
+                matrix.preScale(it.x, it.y)
+            }
 
-        anchorPoint?.interpolated(state)
-            ?.takeIf { it.x != 0f || it.y != 0f }
+        anchorPoint.interpolated(state)
+            .takeIf { it != Vec2.Zero }
             ?.let {
                 matrix.preTranslate(-it.x, -it.y)
             }

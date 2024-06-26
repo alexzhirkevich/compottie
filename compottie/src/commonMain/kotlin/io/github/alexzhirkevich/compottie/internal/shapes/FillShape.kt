@@ -17,6 +17,7 @@ import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
+import io.github.alexzhirkevich.compottie.internal.animation.defaultOpacity
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
@@ -47,7 +48,7 @@ internal class FillShape(
     val direction : Int = 1,
 
     @SerialName("o")
-    val opacity : AnimatedNumber?,
+    val opacity : AnimatedNumber = AnimatedNumber.defaultOpacity(),
 
     @SerialName("c")
     val color : AnimatedColor,
@@ -94,7 +95,7 @@ internal class FillShape(
             name = name,
             hidden = hidden,
             direction = direction,
-            opacity = opacity?.copy(),
+            opacity = opacity.copy(),
             color = color.copy(),
             fillRule = fillRule
         )

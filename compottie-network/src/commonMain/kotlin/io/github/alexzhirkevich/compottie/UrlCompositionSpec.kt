@@ -60,48 +60,48 @@ private class NetworkCompositionSpec(
                 try {
                     LottieComposition.getOrCreate(cacheKey) {
                         try {
-                            Compottie.logger.log("Searching for animation in cache...")
+                            Compottie.logger?.info("Searching for animation in cache...")
                             cacheStrategy.load(url)?.let {
-                                Compottie.logger.log("Animation was found in cache. Parsing...")
+                                Compottie.logger?.info("Animation was found in cache. Parsing...")
                                 return@getOrCreate it.decodeLottieComposition(format).also {
-                                    Compottie.logger.log("Animation was successfully loaded from cache")
+                                    Compottie.logger?.info("Animation was successfully loaded from cache")
                                 }
                             } ?: run {
-                                Compottie.logger.log("Animation wasn't found in cache")
+                                Compottie.logger?.info("Animation wasn't found in cache")
                             }
                         } catch (t : CacheIsUnsupportedException) {
-                            Compottie.logger.log("File system cache is disabled for this strategy on the current platform")
+                            Compottie.logger?.info("File system cache is disabled for this strategy on the current platform")
                         } catch (_: Throwable) {
-                            Compottie.logger.log("Failed to load or decode animation from cache")
+                            Compottie.logger?.info("Failed to load or decode animation from cache")
                         }
 
-                        Compottie.logger.log("Fetching animation from web...")
+                        Compottie.logger?.info("Fetching animation from web...")
 
                         val bytes = try {
                             val response = request(client, Url(url)).execute()
 
                             if (!response.status.isSuccess()) {
-                                Compottie.logger.log("Animation request failed with ${response.status.value} status code")
+                                Compottie.logger?.info("Animation request failed with ${response.status.value} status code")
                                 throw ClientRequestException(response, response.bodyAsText())
                             }
 
                             response.bodyAsChannel().toByteArray()
                         } catch (t : ClientRequestException){
-                            Compottie.logger.log("Animation request failed with ${t.response.status.value} status code")
+                            Compottie.logger?.info("Animation request failed with ${t.response.status.value} status code")
                             throw t
                         }
-                        Compottie.logger.log("Animation was loaded from web. Parsing...")
+                        Compottie.logger?.info("Animation was loaded from web. Parsing...")
 
                         val composition = bytes.decodeLottieComposition(format)
-                        Compottie.logger.log("Animation was successfully loaded from web. Caching...")
+                        Compottie.logger?.info("Animation was successfully loaded from web. Caching...")
 
                         try {
                             cacheStrategy.save(url, bytes)
-                            Compottie.logger.log("Animation was successfully saved to cache")
+                            Compottie.logger?.info("Animation was successfully saved to cache")
                         } catch (t : CacheIsUnsupportedException) {
-                          Compottie.logger.log("File system cache is disabled for this strategy on the current platform")
+                          Compottie.logger?.info("File system cache is disabled for this strategy on the current platform")
                         } catch (t: Throwable) {
-                            Compottie.logger.error(
+                            Compottie.logger?.error(
                                 "Failed to cache animation",
                                 t
                             )

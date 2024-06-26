@@ -160,6 +160,18 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
     }
 }
 
+internal fun AnimatedVector2.Companion.defaultPosition() : AnimatedVector2 =
+    AnimatedVector2.Default(FloatList3)
+
+internal fun AnimatedVector2.Companion.defaultAnchorPoint() : AnimatedVector2 =
+    AnimatedVector2.Default(FloatList3)
+
+internal fun AnimatedVector2.Companion.defaultScale() : AnimatedVector2 =
+    AnimatedVector2.Default(FloatList3_100)
+
+private val FloatList3 = listOf(0f,0f,0f)
+private val FloatList3_100 = listOf(100f, 100f, 100f)
+
 
 internal fun AnimatedVector2.interpolatedNorm(state: AnimationState) = interpolated(state) / 100f
 

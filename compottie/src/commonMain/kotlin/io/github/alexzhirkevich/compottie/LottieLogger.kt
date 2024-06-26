@@ -4,12 +4,15 @@ private const val TAG = "COMPOTTIE"
 
 interface LottieLogger {
 
-    fun log(message: String)
+    fun info(message: String)
 
     fun error(message: String, throwable: Throwable)
 
+    /**
+     * Uses stdout / stderr.
+     * */
     object Default : LottieLogger {
-        override fun log(message: String) {
+        override fun info(message: String) {
             println("[$TAG] $message")
         }
 

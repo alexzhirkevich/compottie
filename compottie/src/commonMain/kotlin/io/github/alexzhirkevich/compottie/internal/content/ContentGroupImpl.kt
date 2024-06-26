@@ -11,15 +11,15 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
+import io.github.alexzhirkevich.compottie.internal.utils.fastSetFrom
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
-import io.github.alexzhirkevich.compottie.internal.utils.set
 import io.github.alexzhirkevich.compottie.internal.utils.union
 
 internal class ContentGroupImpl(
     contents: List<Content>,
     override val name: String?,
     private val hidden : ((AnimationState) -> Boolean)?,
-    override val transform: AnimatedTransform?,
+    override val transform: AnimatedTransform,
 ) : ContentGroup {
 
     private val rect = MutableRect(0f, 0f, 0f, 0f)
@@ -67,14 +67,12 @@ internal class ContentGroupImpl(
 
         var layerAlpha = parentAlpha
 
-        matrix.setFrom(parentMatrix)
+        matrix.fastSetFrom(parentMatrix)
 
-        if (transform != null) {
-            matrix.preConcat(transform.matrix(state))
-            transform.opacity?.interpolatedNorm(state)?.let {
+        matrix.preConcat(transform.matrix(state))
+        transform.opacity.interpolatedNorm(state).let {
 
-                layerAlpha = (layerAlpha * it).coerceIn(0f, 1f)
-            }
+            layerAlpha = (layerAlpha * it).coerceIn(0f, 1f)
         }
 
         val isRenderingWithOffScreen = state.applyOpacityToLayers &&
@@ -107,9 +105,7 @@ internal class ContentGroupImpl(
         }
         matrix.reset()
 
-        if (transform != null) {
-            matrix.setFrom(transform.matrix(state))
-        }
+        matrix.fastSetFrom(transform.matrix(state))
         pathContents.fastForEachReversed {
             path.addPath(it.getPath(state), matrix)
         }
@@ -136,10 +132,8 @@ internal class ContentGroupImpl(
         state: AnimationState,
         outBounds: MutableRect,
     ) {
-        matrix.setFrom(parentMatrix)
-        if (transform != null) {
-            matrix.preConcat(transform.matrix(state))
-        }
+        matrix.fastSetFrom(parentMatrix)
+        matrix.preConcat(transform.matrix(state))
         rect.set(0f, 0f, 0f, 0f)
 
         drawingContents.fastForEachReversed {

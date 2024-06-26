@@ -19,6 +19,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.GradientColors
 import io.github.alexzhirkevich.compottie.internal.animation.GradientType
+import io.github.alexzhirkevich.compottie.internal.animation.defaultOpacity
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
@@ -50,7 +51,7 @@ internal class GradientFillShape(
     override val hidden : Boolean = false,
 
     @SerialName("o")
-    val opacity : AnimatedNumber? = null,
+    val opacity : AnimatedNumber = AnimatedNumber.defaultOpacity(),
 
     @SerialName("s")
     val startPoint : AnimatedVector2,
@@ -200,7 +201,7 @@ internal class GradientFillShape(
             matchName = matchName,
             name = name,
             hidden = hidden,
-            opacity = opacity?.copy(),
+            opacity = opacity.copy(),
             startPoint = startPoint.copy(),
             endPoint = endPoint.copy(),
             type = type,
