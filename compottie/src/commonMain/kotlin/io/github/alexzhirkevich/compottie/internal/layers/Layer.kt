@@ -63,7 +63,7 @@ internal sealed interface Layer : DrawingContent {
 
     var resolvingPath : ResolvingPath?
 
-    fun setDynamicProperties(composition: DynamicCompositionProvider, state: AnimationState): DynamicLayerProvider?
+    fun setDynamicProperties(composition: DynamicCompositionProvider?, state: AnimationState): DynamicLayerProvider?
 
     fun deepCopy() : Layer
 }

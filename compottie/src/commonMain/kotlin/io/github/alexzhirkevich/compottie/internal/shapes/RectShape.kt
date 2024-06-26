@@ -2,13 +2,11 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Path
-import io.github.alexzhirkevich.compottie.dynamic.DynamicEllipseProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicRectProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.dynamic.layerPath
-import io.github.alexzhirkevich.compottie.dynamic.toSize
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
@@ -18,7 +16,6 @@ import io.github.alexzhirkevich.compottie.internal.animation.dynamicOffset
 import io.github.alexzhirkevich.compottie.internal.animation.dynamicSize
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundSimultaneousTrimPath
-import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -148,11 +145,11 @@ internal class RectShape(
         return path
     }
 
-    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
 
         if (name != null) {
-            dynamicShape = properties[layerPath(basePath, name)]
+            dynamicShape = properties?.get(layerPath(basePath, name))
             val dynamicRect = dynamicShape as? DynamicRectProvider?
 
             position.dynamicOffset(dynamicRect?.position)

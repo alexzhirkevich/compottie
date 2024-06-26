@@ -42,11 +42,11 @@ internal class GroupShape(
         return dynamicShape?.hidden.derive(hidden, state)
     }
 
-    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
         if (name != null) {
             val path = layerPath(basePath, name)
-            dynamicShape = properties[path]
+            dynamicShape = properties?.get(path)
             items.forEach {
                 it.setDynamicProperties(path, properties)
             }

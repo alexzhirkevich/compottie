@@ -72,7 +72,6 @@ fun rememberLottiePainter(
         EmptyPainter,
         composition,
     ) {
-
         if (composition != null) {
             val assets = async(ioDispatcher()) {
                 composition.loadAssets(assetsManager, true)
@@ -100,19 +99,32 @@ fun rememberLottiePainter(
     }
 
     LaunchedEffect(
+        painter,
         fontFamilyResolver,
         clipTextToBoundingBoxes,
         clipToCompositionBounds,
         applyOpacityToLayers,
-        enableMergePaths
+        enableMergePaths,
     ){
         (painter as? LottiePainter)?.let {
             it.enableMergePaths = enableMergePaths
             it.applyOpacityToLayers = applyOpacityToLayers
             it.clipToCompositionBounds = clipToCompositionBounds
-            it.fontFamilyResolver = fontFamilyResolver
+            it.clipTextToBoundingBoxes = clipTextToBoundingBoxes
             it.fontFamilyResolver = fontFamilyResolver
         }
+    }
+
+    LaunchedEffect(
+        painter,
+        dynamicProperties
+    ) {
+        (painter as? LottiePainter)?.setDynamicProperties(
+            when (dynamicProperties) {
+                is DynamicCompositionProvider -> dynamicProperties
+                null -> null
+            },
+        )
     }
 
     LaunchedEffect(painter) {
@@ -171,6 +183,7 @@ fun rememberLottiePainter(
         assetsManager = assetsManager,
         fontManager = fontManager,
         dynamicProperties = dynamicProperties,
+        applyOpacityToLayers = applyOpacityToLayers,
         clipToCompositionBounds = clipToCompositionBounds,
         clipTextToBoundingBoxes = clipTextToBoundingBoxes,
         enableMergePaths = enableMergePaths
@@ -234,10 +247,12 @@ private class LottiePainter(
         layer = compositionLayer
     )
 
+    fun setDynamicProperties(provider : DynamicCompositionProvider?) {
+        compositionLayer.setDynamicProperties(provider, animationState)
+    }
+
     init {
-        if (dynamicProperties != null) {
-            compositionLayer.setDynamicProperties(dynamicProperties, animationState)
-        }
+        setDynamicProperties(dynamicProperties)
     }
 
     var enableMergePaths: Boolean by animationState::enableMergePaths

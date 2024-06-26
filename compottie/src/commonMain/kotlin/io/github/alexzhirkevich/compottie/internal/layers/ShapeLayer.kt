@@ -105,15 +105,15 @@ internal class ShapeLayer(
     }
 
     override fun setDynamicProperties(
-        composition: DynamicCompositionProvider,
+        composition: DynamicCompositionProvider?,
         state: AnimationState
     ): DynamicLayerProvider? {
         val layer = super.setDynamicProperties(composition,state)
-        if (layer !is DynamicShapeLayerProvider)
+        if (layer !is DynamicShapeLayerProvider) {
+            shapes.fastForEach {
+                it.setDynamicProperties(null, null)
+            }
             return layer
-
-        shapes.fastForEach {
-            it.setDynamicProperties(null, layer)
         }
         return layer
     }

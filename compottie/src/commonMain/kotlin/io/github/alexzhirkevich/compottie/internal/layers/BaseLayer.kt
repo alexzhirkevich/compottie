@@ -25,7 +25,6 @@ import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MaskMode
 import io.github.alexzhirkevich.compottie.internal.helpers.isInvert
 import io.github.alexzhirkevich.compottie.internal.helpers.isLuma
-import io.github.alexzhirkevich.compottie.internal.helpers.isSupported
 import io.github.alexzhirkevich.compottie.internal.platform.Luma
 import io.github.alexzhirkevich.compottie.internal.platform.drawRect
 import io.github.alexzhirkevich.compottie.internal.platform.isAndroidAtMost
@@ -33,7 +32,6 @@ import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import io.github.alexzhirkevich.compottie.internal.utils.intersectOrReset
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
-import io.github.alexzhirkevich.compottie.internal.utils.set
 import io.github.alexzhirkevich.compottie.internal.utils.union
 
 internal abstract class BaseLayer : Layer {
@@ -104,11 +102,11 @@ internal abstract class BaseLayer : Layer {
         private set
 
     override fun setDynamicProperties(
-        composition: DynamicCompositionProvider,
+        composition: DynamicCompositionProvider?,
         state: AnimationState
     ) : DynamicLayerProvider? {
-        resolvingPath?.let {
-            dynamicLayer = composition[it]
+        dynamicLayer = resolvingPath?.let {
+            composition?.get(it)
         }
         transform.dynamic = dynamicLayer?.transform
         return dynamicLayer

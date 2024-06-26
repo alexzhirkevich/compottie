@@ -181,11 +181,11 @@ internal class GradientFillShape(
         )
     }
 
-    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
         if (name != null) {
-            dynamicFill = properties[layerPath(basePath, name)]
-            dynamicShape = properties[layerPath(basePath, name)]
+            dynamicFill = properties?.get(layerPath(basePath, name))
+            dynamicShape = properties?.get(layerPath(basePath, name))
         }
     }
 

@@ -2,7 +2,6 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
@@ -24,7 +23,6 @@ import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsState
 import io.github.alexzhirkevich.compottie.internal.helpers.FillRule
 import io.github.alexzhirkevich.compottie.internal.helpers.asPathFillType
-import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.platform.GradientCache
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.utils.set
@@ -156,11 +154,11 @@ internal class FillShape(
         )
     }
 
-    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
         if (name != null) {
-            dynamicFill = properties[layerPath(basePath, name)]
-            dynamicShape = properties[layerPath(basePath, name)]
+            dynamicFill = properties?.get(layerPath(basePath, name))
+            dynamicShape = properties?.get(layerPath(basePath, name))
         }
     }
 

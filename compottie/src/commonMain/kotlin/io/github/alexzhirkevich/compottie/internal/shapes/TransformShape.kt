@@ -10,7 +10,6 @@ import io.github.alexzhirkevich.compottie.internal.content.ModifierContent
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
-import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -63,11 +62,11 @@ internal class TransformShape(
         return dynamicShape?.hidden.derive(hidden, state)
     }
 
-    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
 
         if (name != null) {
-            dynamicShape = properties[layerPath(basePath, name)]
+            dynamicShape = properties?.get(layerPath(basePath, name))
         }
     }
 

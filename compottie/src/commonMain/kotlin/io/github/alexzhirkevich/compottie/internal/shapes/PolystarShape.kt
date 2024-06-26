@@ -3,13 +3,11 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
-import io.github.alexzhirkevich.compottie.dynamic.DynamicEllipseProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicPolystarProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.dynamic.layerPath
-import io.github.alexzhirkevich.compottie.dynamic.toOffset
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
@@ -19,7 +17,6 @@ import io.github.alexzhirkevich.compottie.internal.animation.dynamicOffset
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundSimultaneousTrimPath
-import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.utils.Math
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -122,11 +119,11 @@ internal class PolystarShape(
         trimPaths = CompoundSimultaneousTrimPath(contentsBefore)
     }
 
-    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
 
         if (name != null) {
-            dynamicShape = properties[layerPath(basePath, name)]
+            dynamicShape = properties?.get(layerPath(basePath, name))
             val dynamicPolystar = dynamicShape as? DynamicPolystarProvider?
 
             position?.dynamicOffset(dynamicPolystar?.position)

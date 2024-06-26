@@ -58,7 +58,7 @@ internal class RepeaterShape(
     private val matrix = Matrix()
 
     @Transient
-    private var dynamicHidden : DynamicShapeProvider? = null
+    private var dynamicShape : DynamicShapeProvider? = null
 
     override fun draw(
         drawScope: DrawScope,
@@ -137,16 +137,16 @@ internal class RepeaterShape(
 
         contentGroup = ContentGroupImpl(
             name = name,
-            hidden = { dynamicHidden?.hidden.derive(hidden, it) },
+            hidden = { dynamicShape?.hidden.derive(hidden, it) },
             contents = contentsList,
             transform = null,
         )
     }
 
-    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
         if (name != null) {
-            dynamicHidden = properties[layerPath(basePath, name)]
+            dynamicShape = properties?.get(layerPath(basePath, name))
         }
     }
 

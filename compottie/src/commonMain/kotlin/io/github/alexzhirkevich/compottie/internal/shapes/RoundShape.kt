@@ -9,7 +9,6 @@ import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.content.Content
-import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -42,11 +41,11 @@ internal class RoundShape(
 
     }
 
-    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
 
         if (name != null) {
-            dynamicShape = properties[layerPath(basePath, name)]
+            dynamicShape = properties?.get(layerPath(basePath, name))
         }
     }
 
