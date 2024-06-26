@@ -34,6 +34,10 @@ internal class Mask(
         if (isClosedLegacy != null) {
             shape?.setClosed(isClosedLegacy)
         }
+
+        if (!mode.isSupported()){
+            Compottie.logger.log("Animation contains unsupported mask type: $mode. It will be treated as an 'Add' mask")
+        }
     }
 
     fun deepCopy() = Mask(
@@ -49,10 +53,14 @@ internal class Mask(
 @JvmInline
 internal value class MaskMode(val type : String) {
 
-    init {
-        if (!isSupported()){
-            Compottie.logger.log("Animation contains unsupported mask type: $this. It will be treated as an 'Add' mask")
-        }
+    companion object {
+        val None = MaskMode("n")
+        val Add = MaskMode("a")
+        val Subtract = MaskMode("s")
+        val Intersect = MaskMode("i")
+        val Lighten = MaskMode("l")
+        val Darken = MaskMode("d")
+        val Difference = MaskMode("f")
     }
 
     override fun toString() : String {
@@ -64,23 +72,17 @@ internal value class MaskMode(val type : String) {
             Lighten -> "Lighten"
             Darken -> "Darken"
             Difference -> "Difference"
-            else -> "Unknown"
+            else -> "Unknown ($type)"
         }
-    }
-
-    companion object {
-        val None = MaskMode("n")
-        val Add = MaskMode("a")
-        val Subtract = MaskMode("s")
-        val Intersect = MaskMode("i")
-        val Lighten = MaskMode("l")
-        val Darken = MaskMode("d")
-        val Difference = MaskMode("f")
     }
 }
 
-internal fun MaskMode.isSupported() =
-    this == MaskMode.None ||
-            this == MaskMode.Add ||
-            this == MaskMode.Subtract
-            || this == MaskMode.Intersect
+internal fun MaskMode.isSupported() : Boolean =
+    this in supportedMasks
+
+private val supportedMasks  = listOf(
+    MaskMode.None,
+    MaskMode.Add,
+    MaskMode.Subtract,
+    MaskMode.Intersect
+)
