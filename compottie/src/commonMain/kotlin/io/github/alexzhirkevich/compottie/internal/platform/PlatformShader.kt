@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.ExperimentalCompottieApi
-import io.github.alexzhirkevich.compottie.L
+import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.LruMap
 import io.github.alexzhirkevich.compottie.dynamic.LottieGradient
 import io.github.alexzhirkevich.compottie.internal.AnimationState
@@ -22,8 +22,8 @@ import kotlin.math.hypot
 @OptIn(ExperimentalCompottieApi::class)
 internal class GradientCache {
 
-    private val linear = LruMap<Shader>(limit = L::shaderCacheLimit)
-    private val radial = LruMap<Shader>(limit = L::shaderCacheLimit)
+    private val linear = LruMap<Shader>(limit = Compottie::shaderCacheLimit)
+    private val radial = LruMap<Shader>(limit = Compottie::shaderCacheLimit)
 
     fun getOrPut(
         hash : Int,

@@ -32,7 +32,7 @@ internal fun createSourceUnstable(data : JsReference<ByteArray>) : JsAny = js(""
 
 @OptIn(ExperimentalCompottieApi::class)
 internal fun Int8Array.toByteArray(): Array<Byte> {
-    if (L.useStableWasmMemoryManagement) {
+    if (Compottie.useStableWasmMemoryManagement) {
         return Array(byteLength) {
             this[it]
         }
@@ -42,7 +42,7 @@ internal fun Int8Array.toByteArray(): Array<Byte> {
 
 @OptIn(ExperimentalCompottieApi::class)
 internal fun ByteArray.toInt8Array() : Int8Array {
-    if (L.useStableWasmMemoryManagement) {
+    if (Compottie.useStableWasmMemoryManagement) {
         val result = Int8Array(size)
         for (i in indices) {
             result[i] = this[i]

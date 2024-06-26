@@ -103,7 +103,7 @@ interface LottieAnimatable : LottieAnimationState {
      * @param composition The [LottieComposition] that should be rendered.
      * @param iteration The iteration to start the animation at. Defaults to 1 and carries over from previous animates.
      * @param iterations The number of iterations to continue running for. Set to 1 to play one time
-     *                   set to [LottieConstants.IterateForever] to iterate forever. Can be set to arbitrary
+     *                   set to [Compottie.IterateForever] to iterate forever. Can be set to arbitrary
      *                   numbers. Defaults to 1 and carries over from previous animates.
      * @param speed The speed at which the composition should be animated. Can be negative. Defaults to 1 and
      *              carries over from previous animates.
@@ -278,7 +278,7 @@ private class LottieAnimatableImpl : LottieAnimatable {
     }
 
     private suspend fun doFrame(iterations: Int): Boolean {
-        return if (iterations == LottieConstants.IterateForever) {
+        return if (iterations == Compottie.IterateForever) {
             // We use withInfiniteAnimationFrameNanos because it allows tests to add a CoroutineContext
             // element that will cancel infinite transitions instead of preventing composition from ever going idle.
             withInfiniteAnimationFrameNanos { frameNanos ->

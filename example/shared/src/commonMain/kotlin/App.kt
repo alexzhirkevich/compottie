@@ -35,6 +35,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.CompottieException
 import io.github.alexzhirkevich.compottie.DotLottie
 import io.github.alexzhirkevich.compottie.ExperimentalCompottieApi
@@ -166,7 +167,7 @@ fun App() {
     ) {
 
         val progress by animateLottieCompositionAsState(
-            iterations = LottieConstants.IterateForever,
+            iterations = Compottie.IterateForever,
             composition = composition.value
         )
         val painter  = rememberLottiePainter(
@@ -217,7 +218,7 @@ fun AllExamples(){
             Image(
                 painter = rememberLottiePainter(
                     composition = composition,
-                    iterations = LottieConstants.IterateForever,
+                    iterations = Compottie.IterateForever,
                     assetsManager = rememberResourcesAssetsManager(
                         readBytes = Res::readBytes
                     ),
@@ -320,7 +321,7 @@ fun LottieFontExample() {
                                 composition = rememberLottieComposition {
                                     LottieCompositionSpec.ResourceString("mobilo/BlinkingCursor.json")
                                 }.value,
-                                iterations = LottieConstants.IterateForever
+                                iterations = Compottie.IterateForever
                             ),
                             contentDescription = it.toString()
                         )
@@ -341,7 +342,7 @@ fun LottieList() {
 
             val painter = rememberLottiePainter(
                 composition.value,
-                iterations = LottieConstants.IterateForever
+                iterations = Compottie.IterateForever
             )
 
             Image(

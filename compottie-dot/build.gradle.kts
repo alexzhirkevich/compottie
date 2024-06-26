@@ -13,7 +13,7 @@ kotlin {
             implementation(libs.okio)
             implementation(libs.okio.fakefilesystem)
             implementation(libs.coroutines.core)
-            implementation(project(":compottie"))
+            api(project(":compottie"))
         }
     }
 }

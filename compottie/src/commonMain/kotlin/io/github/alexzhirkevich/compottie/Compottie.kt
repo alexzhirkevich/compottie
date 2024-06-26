@@ -3,7 +3,9 @@ package io.github.alexzhirkevich.compottie
 import io.github.alexzhirkevich.compottie.internal.Animation
 import io.github.alexzhirkevich.compottie.internal.LottieJson
 
-object L {
+object Compottie {
+
+    const val IterateForever = Int.MAX_VALUE
 
     var logger : LottieLogger = LottieLogger.Default
 
@@ -29,7 +31,6 @@ object L {
 
     @ExperimentalCompottieApi
     var compositionCacheLimit : Int = 20
-
 
     /**
      * Warmup JSON parser. The first animation parsing will be much faster

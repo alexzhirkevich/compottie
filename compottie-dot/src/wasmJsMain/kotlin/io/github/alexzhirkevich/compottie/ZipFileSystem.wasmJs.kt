@@ -8,7 +8,7 @@ internal actual suspend fun decompress(array: ByteArray, inflatedSize : Int) : B
 
     val ds = DecompressionStream("deflate-raw")
 
-    val source = if (L.useStableWasmMemoryManagement) {
+    val source = if (Compottie.useStableWasmMemoryManagement) {
         createSourceStable(array.toInt8Array())
     } else {
         createSourceUnstable(array.toJsReference())

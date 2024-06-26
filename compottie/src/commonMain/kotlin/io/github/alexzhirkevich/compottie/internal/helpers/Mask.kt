@@ -1,6 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.helpers
 
-import io.github.alexzhirkevich.compottie.L
+import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import kotlinx.serialization.SerialName
@@ -51,7 +51,7 @@ internal value class MaskMode(val type : String) {
 
     init {
         if (!isSupported()){
-            L.logger.log("Animation contains unsupported mask type: $this. It will be treated as an 'Add' mask")
+            Compottie.logger.log("Animation contains unsupported mask type: $this. It will be treated as an 'Add' mask")
         }
     }
 

@@ -16,7 +16,8 @@ Compose Multiplatform Adobe After Effects Bodymovin (Lottie) animations renderin
 > [!IMPORTANT]
 > Starting from v2.0 Compottie has its own multiplatform rendering engine without any platform delegates.
 > <br>The new engine is implemented from scratch and therefore may have bugs.
-> <br>Please [report](https://github.com/alexzhirkevich/compottie/issues) if you find any, preferably with a reproducible animation
+> <br>Please [report](https://github.com/alexzhirkevich/compottie/issues) if you find any, preferably with a reproducible animation.
+> <br>List of supported AE Lottie features is the same as for [lottie-android](https://lottiefiles.com/supported-features)
 
 | Module                | Description   | Artifact |
 | --------------------- | ------------- | -------------------------------------------------------- |
@@ -143,7 +144,7 @@ val progress by animateLottieCompositionAsState(composition)
 ```kotlin
 val progress by animateLottieCompositionAsState(
     composition,
-    iterations = LottieConstants.IterateForever,
+    iterations = Compottie.IterateForever,
 )
 ```
 ```kotlin
@@ -167,7 +168,7 @@ val lottieAnimatable = rememberLottieAnimatable()
 LaunchedEffect(Unit) {
     lottieAnimatable.animate(
         composition,
-        iterations = LottieConstants.IterateForever,
+        iterations = Compottie.IterateForever,
         clipSpec = LottieClipSpec.Progress(0.5f, 0.75f),
     )
 }
@@ -258,7 +259,7 @@ The network module also brings the `NetworkAssetsManager` that have similar para
 If you are using Url composition spec then specifying `NetworkAssetsManager` is redundant.
 Url composition spec automatically prepares url assets
 
-There is no stable Ktor client for wasm so to use network module on this target you need to add 
+There is no stable Ktor client for wasm so to use network module on this target you need to add
 the following to the bottom of your build script:
 
 ```kotlin

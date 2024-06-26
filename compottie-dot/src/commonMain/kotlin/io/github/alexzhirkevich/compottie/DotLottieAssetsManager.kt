@@ -41,7 +41,7 @@ internal class DotLottieAssetsManager(
             val r = this.root ?: "/".toPath()
             zipFileSystem.read(r.resolve(fullPath.toPath(true)))
         } catch (t: IOException) {
-            L.logger.error("Failed to decode dotLottie asset $trimName", t)
+            Compottie.logger.error("Failed to decode dotLottie asset $trimName", t)
             return null
         }
     }

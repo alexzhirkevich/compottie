@@ -18,7 +18,7 @@ private var _useStableWasmMemoryManagement : Boolean = false
  * It is disabled by default. Turn this on if you have problems with dotLottie decompression on wasm
  * */
 @ExperimentalCompottieApi
-var L.useStableWasmMemoryManagement by ::_useStableWasmMemoryManagement
+var Compottie.useStableWasmMemoryManagement by ::_useStableWasmMemoryManagement
 
 /**
  * [LottieComposition] from a dotLottie zip archive.
@@ -80,7 +80,7 @@ private class DotLottieCompositionSpec(
                     LottieComposition.parse(anim.decodeToString()).apply {
                         speed = animation.speed
                         if (animation.loop) {
-                            iterations = LottieConstants.IterateForever
+                            iterations = Compottie.IterateForever
                         }
                         prepareAssets(DotLottieAssetsManager(zipSystem, manifestPath.parent))
                     }

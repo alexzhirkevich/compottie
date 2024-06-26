@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
-import io.github.alexzhirkevich.compottie.L
+import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
@@ -213,7 +213,7 @@ internal abstract class BaseLayer : Layer {
                 }
             }
         } catch (t: Throwable) {
-            L.logger.error("Lottie crashed in draw :(", t)
+            Compottie.logger.error("Lottie crashed in draw :(", t)
         }
     }
 
