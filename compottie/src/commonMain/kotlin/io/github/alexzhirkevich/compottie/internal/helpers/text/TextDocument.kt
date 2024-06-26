@@ -28,10 +28,10 @@ internal class TextDocument(
     var lineHeight : Float = fontSize,
 
     @SerialName("sz")
-    var wrapSize : FloatArray? = null,
+    var wrapSize : List<Float>? = null,
 
     @SerialName("ps")
-    var wrapPosition : FloatArray? = null,
+    var wrapPosition : List<Float>? = null,
 
     @SerialName("t")
     var text : String? = null,

@@ -5,7 +5,7 @@ import androidx.compose.ui.geometry.lerp
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
-import io.github.alexzhirkevich.compottie.internal.util.toOffset
+import io.github.alexzhirkevich.compottie.internal.utils.toOffset
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient

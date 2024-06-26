@@ -42,9 +42,9 @@ import io.github.alexzhirkevich.compottie.internal.platform.addCodePoint
 import io.github.alexzhirkevich.compottie.internal.platform.charCount
 import io.github.alexzhirkevich.compottie.internal.platform.codePointAt
 import io.github.alexzhirkevich.compottie.internal.platform.isModifier
-import io.github.alexzhirkevich.compottie.internal.util.toOffset
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
+import io.github.alexzhirkevich.compottie.internal.utils.toOffset
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
