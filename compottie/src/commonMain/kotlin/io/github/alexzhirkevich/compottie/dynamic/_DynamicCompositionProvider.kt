@@ -11,28 +11,37 @@ internal class DynamicCompositionProvider : LottieDynamicProperties {
         get() = layers.size
 
     override fun shapeLayer(vararg path: String, builder: DynamicShapeLayer.() -> Unit) {
-        val p = path.joinToString(LayerPathSeparator, LayerPathSeparator)
-
-        val provider = when(val existent = layers[p]) {
-            is DynamicShapeLayerProvider -> existent
-            is DynamicLayerProvider -> DynamicShapeLayerProvider().apply {
-                transform = existent.transform
-            }
-
-            else -> DynamicShapeLayerProvider()
-        }
-
-        provider.apply(builder)
-
-        layers[p] = provider
+//        val p = path.joinToString(LayerPathSeparator, LayerPathSeparator)
+//
+//        val provider = when(val existent = layers[p]) {
+//            is DynamicShapeLayerProvider -> existent
+//            is DynamicLayerProvider -> DynamicShapeLayerProvider().apply {
+//                transform = existent.transform
+//            }
+//
+//            else -> DynamicShapeLayerProvider()
+//        }
+//
+//        provider.apply(builder)
+//
+//        layers[p] = provider
+        appendLayer(path, DynamicShapeLayerProvider().apply(builder))
     }
 
     override fun imageLayer(vararg path: String, builder: DynamicImageLayer.() -> Unit) {
-        layers[path.joinToString(LayerPathSeparator, LayerPathSeparator)] = DynamicImageLayerProvider().apply(builder)
+        appendLayer(path, DynamicImageLayerProvider().apply(builder))
+    }
+
+    override fun textLayer(vararg path: String, builder: DynamicTextLayer.() -> Unit) {
+        appendLayer(path, DynamicTextLayerProvider().apply(builder))
     }
 
     override fun layer(vararg path: String, builder: DynamicLayer.() -> Unit) {
-        layers[path.joinToString(LayerPathSeparator, LayerPathSeparator)] = DynamicLayerProvider().apply(builder)
+        appendLayer(path, DynamicLayerProvider().apply(builder))
+    }
+
+    private fun <T : DynamicLayerProvider> appendLayer(path : Array<out String>, instance : T) {
+        layers[path.joinToString(LayerPathSeparator, LayerPathSeparator)] = instance
     }
 
     operator fun get(path: ResolvingPath): DynamicLayerProvider? = layers[path.path]

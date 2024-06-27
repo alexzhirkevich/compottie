@@ -3,6 +3,9 @@ package io.github.alexzhirkevich.compottie.dynamic
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import io.github.alexzhirkevich.compottie.ExperimentalCompottieApi
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 /**
  * Create and remember [createLottieDynamicProperties].
@@ -12,14 +15,13 @@ import io.github.alexzhirkevich.compottie.ExperimentalCompottieApi
  * */
 @Composable
 @ExperimentalCompottieApi
-fun rememberLottieDynamicProperties(
+inline fun rememberLottieDynamicProperties(
     vararg keys : Any?,
-    builder: LottieDynamicProperties.() -> Unit
-) : LottieDynamicProperties {
-    return remember(keys) {
-        createLottieDynamicProperties(builder)
-    }
+    crossinline builder: LottieDynamicProperties.() -> Unit
+) : LottieDynamicProperties = remember(keys) {
+    createLottieDynamicProperties(builder)
 }
+
 
 /**
  * Create and remember [LottieDynamicProperties].
@@ -29,9 +31,13 @@ fun rememberLottieDynamicProperties(
  *
  * Use [rememberLottieDynamicProperties] to create it from the composition
  * */
+@OptIn(ExperimentalContracts::class)
 inline fun createLottieDynamicProperties(
     builder: LottieDynamicProperties.() -> Unit
 ) : LottieDynamicProperties {
+    contract {
+        callsInPlace(builder, InvocationKind.EXACTLY_ONCE)
+    }
     return DynamicCompositionProvider().apply(builder)
 }
 
@@ -94,6 +100,14 @@ sealed interface LottieDynamicProperties {
      * All layers in the chain must have a name.
      * */
     fun imageLayer(vararg path: String, builder: DynamicImageLayer.() -> Unit)
+
+    /**
+     * Text layer dynamic properties builder.
+     *
+     * Path is a chain of layers names up to the required layer.
+     * All layers in the chain must have a name.
+     * */
+    fun textLayer(vararg path: String, builder: DynamicTextLayer.() -> Unit)
 }
 
 

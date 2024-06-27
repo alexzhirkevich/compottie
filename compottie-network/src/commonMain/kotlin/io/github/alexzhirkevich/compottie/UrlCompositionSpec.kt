@@ -43,7 +43,7 @@ private class NetworkCompositionSpec(
     private val url : String,
     private val format: LottieAnimationFormat,
     private val client : HttpClient,
-    private val cacheStrategy: LottieCacheStrategy = DiskCacheStrategy(),
+    private val cacheStrategy: LottieCacheStrategy,
     private val request : NetworkRequest,
 ) : LottieCompositionSpec {
 

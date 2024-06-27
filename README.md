@@ -19,12 +19,35 @@ Compose Multiplatform Adobe After Effects Bodymovin (Lottie) animations renderin
 > <br>Please [report](https://github.com/alexzhirkevich/compottie/issues) if you find any, preferably with a reproducible animation.
 > <br>List of supported AE Lottie features is the same as for [lottie-android](https://lottiefiles.com/supported-features)
 
-| Module                | Description   | Artifact |
-| --------------------- | ------------- | -------------------------------------------------------- |
-| `compottie`           | Main module with rendering engine and `JsonString` animation spec. Currently has two branches - 1.x (with platform renderers - Skottie and lottie-android) and 2.x (with own renderer). 1.x is maintained until the new renderer becomes stable  | `io.github.alexzhirkevich:compottie-dot:<version>` |
-| `compottie-dot`       | Contains [dotLottie](https://dotlottie.io/) and ZIP animation spec. Depends on [Okio](https://square.github.io/okio/). For Compottie 2.x only | `io.github.alexzhirkevich:compottie-dot:<version>`         |
-| `compottie-network`   | Contains `Url` animation spec and asset/font managers (with [Ktor](https://ktor.io/) and local cache with [Okio](https://square.github.io/okio/)). Allows loading animations and assets from web. For Compottie 2.x only | `io.github.alexzhirkevich:compottie-network:<version>`     |
-| `compottie-resources` | Contains asset and font managers powered by official Compose resources. For Compottie 2.x only  | `io.github.alexzhirkevich:compottie-resources:<version>` |
+| Module | Description  | 
+| :----: | ------------- | 
+| `compottie`  | Main module with rendering engine and `JsonString` animation spec. Currently has two branches - 1.x (with platform renderers - Skottie and lottie-android) and 2.x (with own renderer). 1.x is maintained until the new renderer becomes stable  |
+| `compottie⁠-⁠dot` | Contains [dotLottie](https://dotlottie.io/) and ZIP animation spec. Depends on [Okio](https://square.github.io/okio/). For Compottie 2.x only |
+| `compottie⁠-⁠network` | Contains `Url` animation spec and asset/font managers (with [Ktor](https://ktor.io/) and local cache with [Okio](https://square.github.io/okio/)). Allows loading animations and assets from web. For Compottie 2.x only |
+| `compottie⁠-⁠resources` | Contains asset and font managers powered by official Compose resources. For Compottie 2.x only | 
+
+Add as a Gradle dependency
+```kotlin
+dependencies {
+    implementation("io.github.alexzhirkevich:compottie:<version>")
+    implementation("io.github.alexzhirkevich:compottie-dot:<version>")
+    implementation("io.github.alexzhirkevich:compottie-network:<version>")
+    implementation("io.github.alexzhirkevich:compottie-resources:<version>")
+}
+```
+
+or with version catalog
+
+```toml
+[versions]
+compottie="<latest_version>"
+
+[libraries]
+compottie = { module = "io.github.alexzhirkevich:compottie", version.ref = "compottie" }
+compottie-dot = { module = "io.github.alexzhirkevich:compottie-dot", version.ref = "compottie" }
+compottie-network = { module = "io.github.alexzhirkevich:compottie-network", version.ref = "compottie" }
+compottie-resources = { module = "io.github.alexzhirkevich:compottie-resources", version.ref = "compottie" }
+```
 
 # Usage
 The following docs describe the Compottie 2.x usage.
@@ -53,7 +76,7 @@ fun Loader() {
         )
     }
     val progress by animateLottieCompositionAsState(composition)
-    
+
     Image(
         painter = rememberLottiePainter(
             composition = composition,
@@ -277,10 +300,11 @@ configurations
 ```
 ## Dynamic Properties
 
-Lottie allows you to update Lottie animation properties at runtime. Some reasons you may want to do this are:
+Lottie allows you to update animation properties at runtime. Some reasons you may want to do this are:
 1. Change colors for day/night or other app theme.
-2. Change the progress of a specific layer to show download progress.
-3. Change the size and position of something in response to a gesture.
+2. Localize animation text
+3. Change the progress of a specific layer to show download progress.
+4. Change the size and position of something in response to a gesture.
 
 Dynamic properties are created with `rememberLottieDynamicProperties`
 
@@ -310,5 +334,3 @@ val painter = rememberLottiePainter(
 ```
 
 Note, that final property building blocks (such as rotations, color, alpha) are called on EACH ANIMATION FRAME and should be cached if they don't rely on progress and have allocations or hard computations.
-
-

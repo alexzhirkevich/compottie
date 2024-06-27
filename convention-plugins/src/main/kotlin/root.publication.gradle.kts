@@ -16,7 +16,6 @@ nexusPublishing {
             snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
 
             if (System.getenv("OSSRH_PASSWORD") != null) {
-                stagingProfileId.set(System.getenv("OSSRH_STAGING_PROFILE_ID"))
                 username.set(System.getenv("OSSRH_USERNAME"))
                 password.set(System.getenv("OSSRH_PASSWORD"))
             }

@@ -5,14 +5,15 @@ import kotlin.jvm.JvmInline
 
 @Serializable
 @JvmInline
-internal value class TextJustify(val type : Byte) {
+value class TextJustify internal constructor(val type : Byte) {
+
     companion object {
         val Left = TextJustify(0)
         val Right = TextJustify(1)
         val Center = TextJustify(2)
-        val LastLineLeft = TextJustify(3)
-        val LastLineRight = TextJustify(4)
-        val LastLineCenter = TextJustify(5)
-        val LastLineFull = TextJustify(6)
+        internal val LastLineLeft = TextJustify(3)
+        internal val LastLineRight = TextJustify(4)
+        internal val LastLineCenter = TextJustify(5)
+        internal val LastLineFull = TextJustify(6)
     }
 }

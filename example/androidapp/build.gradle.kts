@@ -42,4 +42,7 @@ dependencies {
     implementation(project(":compottie"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.activity.compose)
+    implementation(compose.uiTooling)
+    implementation(compose.preview)
 }
