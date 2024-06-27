@@ -1,6 +1,7 @@
 [versions]
 androidx-activity-compose="1.9.0"
 androidx-core-ktx="1.13.1"
+androidx-startup="1.1.1"
 kotlin="2.0.0"
 dokka="1.9.0"
 compose="1.6.11"
@@ -15,6 +16,7 @@ nexus-publish="2.0.0"
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core-ktx" }
+androidx-startup = { module = "androidx.startup:startup-runtime", version.ref = "androidx-startup" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 okio-fakefilesystem = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okio" }
 serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }

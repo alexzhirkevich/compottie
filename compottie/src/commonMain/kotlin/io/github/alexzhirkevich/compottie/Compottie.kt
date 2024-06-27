@@ -41,7 +41,6 @@ object Compottie {
     @ExperimentalCompottieApi
     var compositionCacheLimit : Int = 15
 
-
     /**
      * Warmup JSON parser. The first animation parsing will be much faster
      * */
@@ -49,6 +48,10 @@ object Compottie {
     fun warmup() {
         LottieJson.decodeFromString<Animation>(warmupAnim)
     }
+
+    @InternalCompottieApi
+    var context : LottieContext? = null
+        internal set
 }
 
 

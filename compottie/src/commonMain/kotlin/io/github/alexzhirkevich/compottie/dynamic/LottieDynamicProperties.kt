@@ -4,21 +4,44 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import io.github.alexzhirkevich.compottie.ExperimentalCompottieApi
 
+/**
+ * Create and remember [createLottieDynamicProperties].
+ *
+ * Dynamic properties are used to style your animation. For example, change color according to app theme
+ * or change size/position of specific layer as a reaction for a click.
+ * */
 @Composable
 @ExperimentalCompottieApi
 fun rememberLottieDynamicProperties(
     vararg keys : Any?,
-    composition: DynamicProperties.() -> Unit
-) : DynamicProperties {
+    builder: LottieDynamicProperties.() -> Unit
+) : LottieDynamicProperties {
     return remember(keys) {
-        DynamicCompositionProvider().apply(composition)
+        createLottieDynamicProperties(builder)
     }
 }
 
 /**
- * Lottie dynamic properties builder
+ * Create and remember [LottieDynamicProperties].
+ *
+ * Dynamic properties are used to style your animation. For example, change color according to app theme
+ * or change size/position of specific layer as a reaction for a click.
+ *
+ * Use [rememberLottieDynamicProperties] to create it from the composition
  * */
-sealed interface DynamicProperties {
+inline fun createLottieDynamicProperties(
+    builder: LottieDynamicProperties.() -> Unit
+) : LottieDynamicProperties {
+    return DynamicCompositionProvider().apply(builder)
+}
+
+/**
+ * Lottie dynamic properties builder.
+ *
+ * Usually created with [rememberLottieDynamicProperties] (from Compose) or
+ * [createLottieDynamicProperties] (outside of Compose)
+ * */
+sealed interface LottieDynamicProperties {
 
     /**
      * Layer dynamic properties builder.

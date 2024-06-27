@@ -6,8 +6,8 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Matrix
@@ -18,11 +18,12 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.createFontFamilyResolver
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.LottieFontManager
-import io.github.alexzhirkevich.compottie.dynamic.DynamicProperties
+import io.github.alexzhirkevich.compottie.dynamic.LottieDynamicProperties
 import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.dynamic.rememberLottieDynamicProperties
 import io.github.alexzhirkevich.compottie.internal.AnimationState
@@ -30,6 +31,7 @@ import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.layers.CompositionLayer
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlin.math.roundToInt
 
 /**
@@ -59,7 +61,7 @@ fun rememberLottiePainter(
     progress : () -> Float,
     assetsManager: LottieAssetsManager = LottieAssetsManager.Empty,
     fontManager: LottieFontManager = LottieFontManager.Empty,
-    dynamicProperties : DynamicProperties? = null,
+    dynamicProperties : LottieDynamicProperties? = null,
     applyOpacityToLayers : Boolean = false,
     clipToCompositionBounds : Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
@@ -67,6 +69,8 @@ fun rememberLottiePainter(
 ) : Painter {
 
     val fontFamilyResolver = LocalFontFamilyResolver.current
+
+    val updatedProgress by rememberUpdatedState(progress)
 
     val painter by produceState<Painter>(
         EmptyPainter,
@@ -82,7 +86,7 @@ fun rememberLottiePainter(
 
             value = LottiePainter(
                 composition = composition.deepCopy(),
-                initialProgress = progress(),
+                progress = { updatedProgress() },
                 dynamicProperties = when (dynamicProperties) {
                     is DynamicCompositionProvider -> dynamicProperties
                     null -> null
@@ -127,16 +131,6 @@ fun rememberLottiePainter(
         )
     }
 
-    LaunchedEffect(painter) {
-        (painter as? LottiePainter)?.let { lp ->
-            snapshotFlow {
-                progress()
-            }.collect {
-                lp.progress = it
-            }
-        }
-    }
-
     return painter
 }
 
@@ -150,7 +144,7 @@ fun rememberLottiePainter(
     composition : LottieComposition?,
     assetsManager: LottieAssetsManager = LottieAssetsManager.Empty,
     fontManager: LottieFontManager = LottieFontManager.Empty,
-    dynamicProperties : DynamicProperties? = null,
+    dynamicProperties : LottieDynamicProperties? = null,
     isPlaying: Boolean = true,
     restartOnPlay: Boolean = true,
     reverseOnRepeat: Boolean = false,
@@ -190,6 +184,54 @@ fun rememberLottiePainter(
     )
 }
 
+
+/**
+ * Factory method to create Lottie painter from non-composable context.
+ * This painter will not work with Android Studio preview.
+ * Use [rememberLottiePainter] to create it from the composition.
+ *
+ * [progress] lambda has to be derivable so that [derivedStateOf] can derive progress from it.
+ *
+ * Use [LottieCompositionSpec.load] to get [LottieComposition] instance from [LottieCompositionSpec].
+ * */
+@OptIn(InternalCompottieApi::class)
+suspend fun LottiePainter(
+    composition : LottieComposition,
+    progress : () -> Float,
+    assetsManager: LottieAssetsManager = LottieAssetsManager.Empty,
+    fontManager: LottieFontManager = LottieFontManager.Empty,
+    dynamicProperties : LottieDynamicProperties? = null,
+    applyOpacityToLayers : Boolean = false,
+    clipToCompositionBounds : Boolean = true,
+    clipTextToBoundingBoxes: Boolean = false,
+    enableMergePaths: Boolean = false,
+) : Painter = coroutineScope {
+    val assets = async(ioDispatcher()) {
+        composition.loadAssets(assetsManager, true)
+    }
+    val fonts = async(ioDispatcher()) {
+        composition.loadFonts(fontManager)
+    }
+
+    LottiePainter(
+        composition = composition.deepCopy(),
+        progress = progress,
+        dynamicProperties = when (dynamicProperties) {
+            is DynamicCompositionProvider -> dynamicProperties
+            null -> null
+        },
+        clipTextToBoundingBoxes = clipTextToBoundingBoxes,
+        fontFamilyResolver = makeFontFamilyResolver(),
+        clipToCompositionBounds = clipToCompositionBounds,
+        enableMergePaths = enableMergePaths,
+        applyOpacityToLayers = applyOpacityToLayers,
+        assets = assets.await(),
+        fonts = fonts.await()
+    )
+}
+
+internal expect fun makeFontFamilyResolver() : FontFamily.Resolver
+
 private object EmptyPainter : Painter() {
 
 
@@ -201,9 +243,9 @@ private object EmptyPainter : Painter() {
 
 private class LottiePainter(
     private val composition: LottieComposition,
+    progress : () -> Float,
     assets : List<LottieAsset>,
     fonts : Map<String, FontFamily>,
-    initialProgress : Float,
     dynamicProperties: DynamicCompositionProvider?,
     fontFamilyResolver : FontFamily.Resolver,
     applyOpacityToLayers : Boolean,
@@ -212,7 +254,6 @@ private class LottiePainter(
     enableMergePaths : Boolean,
 ) : Painter() {
 
-    var progress: Float by mutableStateOf(initialProgress)
 
     override val intrinsicSize: Size = Size(
         composition.animation.width,
@@ -224,6 +265,8 @@ private class LottiePainter(
         intrinsicSize.height.roundToInt()
     )
 
+    private val progress: Float by derivedStateOf(progress::invoke)
+
     private val matrix = Matrix()
 
     private var alpha by mutableStateOf(1f)
@@ -231,7 +274,7 @@ private class LottiePainter(
     private val compositionLayer: Layer = CompositionLayer(composition)
 
     private val frame: Float by derivedStateOf {
-        lerp(composition.startFrame, composition.endFrame, progress)
+        lerp(composition.startFrame, composition.endFrame, this.progress)
     }
 
     private val animationState = AnimationState(

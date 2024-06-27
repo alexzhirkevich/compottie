@@ -2,7 +2,8 @@ package io.github.alexzhirkevich.compottie.dynamic
 
 import io.github.alexzhirkevich.compottie.internal.layers.ResolvingPath
 
-internal class DynamicCompositionProvider : DynamicProperties {
+@PublishedApi
+internal class DynamicCompositionProvider : LottieDynamicProperties {
 
     private val layers = mutableMapOf<String, DynamicLayerProvider>()
 

@@ -180,7 +180,7 @@ class LottieComposition internal constructor(
     private val assetsMutex = Mutex()
     private val fontsMutex = Mutex()
 
-    private var loadedFonts : Map<String, FontFamily> = emptyMap()
+    private var storedFonts : MutableMap<String, FontFamily> = mutableMapOf()
 
     internal fun findGlyphs(family : String?) : Map<String, CharacterData>? {
         return charGlyphs[family] ?: run {
@@ -192,6 +192,7 @@ class LottieComposition internal constructor(
         }
     }
 
+
     @InternalCompottieApi
     suspend fun prepareAssets(assetsManager: LottieAssetsManager) {
         assetsMutex.withLock {
@@ -202,7 +203,7 @@ class LottieComposition internal constructor(
     @InternalCompottieApi
     suspend fun prepareFonts(fontsManager : LottieFontManager) {
         fontsMutex.withLock {
-            loadedFonts = loadFonts(fontsManager)
+            storedFonts.putAll(loadFontsInternal(fontsManager))
         }
     }
 
@@ -242,7 +243,13 @@ class LottieComposition internal constructor(
 
     internal suspend fun loadFonts(fontManager: LottieFontManager) : Map<String, FontFamily> {
         return coroutineScope {
-            loadedFonts + animation.fonts?.list
+            storedFonts + loadFontsInternal(fontManager)
+        }
+    }
+
+    private suspend fun loadFontsInternal(fontManager: LottieFontManager) : Map<String, FontFamily> {
+        return coroutineScope {
+            storedFonts + animation.fonts?.list
                 ?.map {
                     async {
                         val f = it.font ?: fontManager.font(it.spec)
