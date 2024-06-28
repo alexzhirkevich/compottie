@@ -299,7 +299,7 @@ class LottieComposition internal constructor(
         }
 
         /**
-         * Clear all previously cached compositions
+         * Clear all previously in-memory cached compositions
          * */
         fun clearCache() = cache.clear()
 
@@ -307,3 +307,4 @@ class LottieComposition internal constructor(
         private val cache = LruMap<LottieComposition>(limit = Compottie::compositionCacheLimit)
     }
 }
+

@@ -1,5 +1,5 @@
 package io.github.alexzhirkevich.compottie
 
-@RequiresOptIn("This is internal api used but compottie modules")
+@RequiresOptIn("This is internal API used by Compottie modules")
 @Retention(value = AnnotationRetention.BINARY)
-annotation class InternalCompottieApi()
+annotation class InternalCompottieApi

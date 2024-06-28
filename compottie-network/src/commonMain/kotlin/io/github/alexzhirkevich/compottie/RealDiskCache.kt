@@ -41,6 +41,7 @@ internal class RealDiskCache(
         cache.evictAll()
     }
 
+    @OptIn(InternalCompottieApi::class)
     override fun shutdown() {
         cache.closeQuietly()
     }

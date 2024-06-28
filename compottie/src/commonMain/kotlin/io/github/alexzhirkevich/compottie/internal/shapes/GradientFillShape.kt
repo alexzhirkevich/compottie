@@ -62,17 +62,11 @@ internal class GradientFillShape(
     @SerialName("t")
     val type : GradientType,
 
-    /**
-     * Gradient Highlight Length. Only if type is Radial
-     * */
-    @SerialName("h")
-    val highlightLength : AnimatedNumber? = null,
-
-    /**
-     * Highlight Angle. Only if type is Radial
-     * */
-    @SerialName("a")
-    val highlightAngle : AnimatedNumber? = null,
+//    @SerialName("h")
+//    val highlightLength : AnimatedNumber? = null,
+//
+//    @SerialName("a")
+//    val highlightAngle : AnimatedNumber? = null,
 
     @SerialName("g")
     val colors : GradientColors,
@@ -205,8 +199,8 @@ internal class GradientFillShape(
             startPoint = startPoint.copy(),
             endPoint = endPoint.copy(),
             type = type,
-            highlightLength = highlightLength?.copy(),
-            highlightAngle = highlightAngle?.copy(),
+//            highlightLength = highlightLength?.copy(),
+//            highlightAngle = highlightAngle?.copy(),
             colors = colors.copy(),
             fillRule = fillRule
         )

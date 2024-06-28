@@ -32,11 +32,13 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RenderEffect
 import androidx.compose.ui.layout.ScaleFactor
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.CompottieException
+import io.github.alexzhirkevich.compottie.DotLottie
 import io.github.alexzhirkevich.compottie.ExperimentalCompottieApi
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
@@ -135,10 +137,19 @@ fun App() {
 //    return AllExamples()
 //    return LottieList()
 
+
     val composition = rememberLottieComposition() {
-        LottieCompositionSpec.ResourceString(ROBOT)
+
+//        LottieCompositionSpec.DotLottie(
+//            Res.readBytes("files/$DOT_WITH_IMAGE")
+//        )
+
+//        LottieCompositionSpec.ResourceString(ROBOT)
 //
-//        LottieCompositionSpec.Url(
+        LottieCompositionSpec.Url(
+            "https://assets-v2.lottiefiles.com/a/a63d8606-1166-11ee-a7f8-83d9759dd8ff/hCTtJKM3Tu.lottie"
+//            "https://assets-v2.lottiefiles.com/a/d5654818-1168-11ee-a43f-870f05952f24/m5LUOQBrz9.lottie" // radial gr with angle
+//            "https://assets-v2.lottiefiles.com/a/27cd3f04-1180-11ee-852d-8b2f8ce04afa/SB3d1oChh6.lottie", // broken envelope transform
 //            "https://assets-v2.lottiefiles.com/a/4a2c7f7e-1171-11ee-ae37-d7b32f8315b2/7qw6O5kPfv.lottie", // broken text pos
 //            "https://lottie.host/02723b80-a213-478e-9320-0e5c3adf88ff/zz4HlIqtSb.lottie",
 //            "https://assets-v2.lottiefiles.com/a/10956594-1169-11ee-98fe-ef3d9d71ad0f/WVFg2bDWGj.lottie",
@@ -148,7 +159,7 @@ fun App() {
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/august_view_pulse.zip",
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/anim_jpg.zip",
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/ZipInlineImage.zip",
-//        )
+        )
     }
 
     // If you want to be aware of loading errors
@@ -173,7 +184,7 @@ fun App() {
         val painter = rememberLottiePainter(
             composition = composition.value,
             progress = progress::value,
-            clipToCompositionBounds = false,
+//            clipToCompositionBounds = false,
 //            fontManager = rememberResourcesFontManager { fontSpec ->
 //                when (fontSpec.family) {
 //                    "Comic Neue" -> Res.font.ComicNeue

@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie
 
+import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
 import org.khronos.webgl.get
 import org.khronos.webgl.set
@@ -30,15 +31,21 @@ internal fun createSourceUnstable(data : JsReference<ByteArray>) : JsAny = js(""
 })
 """)
 
+internal fun ArrayBuffer.toByteArray(): ByteArray {
+    return Int8Array(this).toByteArray()
+}
+
 @OptIn(ExperimentalCompottieApi::class)
-internal fun Int8Array.toByteArray(): Array<Byte> {
+internal fun Int8Array.toByteArray(): ByteArray {
+
     if (Compottie.useStableWasmMemoryManagement) {
-        return Array(byteLength) {
+        return ByteArray(byteLength) {
             this[it]
         }
     }
     return jsInt8ArrayToKotlinByteArray(this)
 }
+
 
 @OptIn(ExperimentalCompottieApi::class)
 internal fun ByteArray.toInt8Array() : Int8Array {
@@ -81,7 +88,7 @@ private fun byteArrayToInt8ArrayImpl(a: JsReference<ByteArray>): Int8Array = js(
 )
 private external fun jsExportInt8ArrayToWasm(src: Int8Array, size: Int, dstAddr: Int)
 
-private fun jsInt8ArrayToKotlinByteArray(x: Int8Array): Array<Byte> {
+private fun jsInt8ArrayToKotlinByteArray(x: Int8Array): ByteArray {
     val size = x.length
 
     @OptIn(UnsafeWasmMemoryApi::class)
@@ -89,6 +96,7 @@ private fun jsInt8ArrayToKotlinByteArray(x: Int8Array): Array<Byte> {
         val memBuffer = allocator.allocate(size)
         val dstAddress = memBuffer.address.toInt()
         jsExportInt8ArrayToWasm(x, size, dstAddress)
-        Array(size) { i -> (memBuffer + i).loadByte() }
+        ByteArray(size) { i -> (memBuffer + i).loadByte() }
     }
 }
+

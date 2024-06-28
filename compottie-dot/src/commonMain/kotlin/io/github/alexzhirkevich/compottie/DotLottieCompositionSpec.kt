@@ -111,3 +111,20 @@ private class DotLottieCompositionSpec(
         } == true
     }
 }
+
+@InternalCompottieApi
+suspend fun ByteArray.decodeToLottieComposition(
+    format: LottieAnimationFormat,
+) : LottieComposition {
+    return when (format) {
+        LottieAnimationFormat.Json -> LottieCompositionSpec.JsonString(decodeToString()).load()
+        LottieAnimationFormat.DotLottie -> LottieCompositionSpec.DotLottie(this).load()
+        LottieAnimationFormat.Undefined -> {
+            try {
+                decodeToLottieComposition(LottieAnimationFormat.Json)
+            } catch (t: Throwable) {
+                decodeToLottieComposition(LottieAnimationFormat.DotLottie)
+            }
+        }
+    }
+}

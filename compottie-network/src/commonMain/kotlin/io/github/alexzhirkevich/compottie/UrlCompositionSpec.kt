@@ -63,13 +63,13 @@ private class NetworkCompositionSpec(
                             Compottie.logger?.info("Searching for animation in cache...")
                             cacheStrategy.load(url)?.let {
                                 Compottie.logger?.info("Animation was found in cache. Parsing...")
-                                return@getOrCreate it.decodeLottieComposition(format).also {
+                                return@getOrCreate it.decodeToLottieComposition(format).also {
                                     Compottie.logger?.info("Animation was successfully loaded from cache")
                                 }
                             } ?: run {
                                 Compottie.logger?.info("Animation wasn't found in cache")
                             }
-                        } catch (t : CacheIsUnsupportedException) {
+                        } catch (t : UnsupportedFileSystemException) {
                             Compottie.logger?.info("File system cache is disabled for this strategy on the current platform")
                         } catch (_: Throwable) {
                             Compottie.logger?.info("Failed to load or decode animation from cache")
@@ -92,13 +92,13 @@ private class NetworkCompositionSpec(
                         }
                         Compottie.logger?.info("Animation was loaded from web. Parsing...")
 
-                        val composition = bytes.decodeLottieComposition(format)
+                        val composition = bytes.decodeToLottieComposition(format)
                         Compottie.logger?.info("Animation was successfully loaded from web. Caching...")
 
                         try {
                             cacheStrategy.save(url, bytes)
                             Compottie.logger?.info("Animation was successfully saved to cache")
-                        } catch (t : CacheIsUnsupportedException) {
+                        } catch (t : UnsupportedFileSystemException) {
                           Compottie.logger?.info("File system cache is disabled for this strategy on the current platform")
                         } catch (t: Throwable) {
                             Compottie.logger?.error(
@@ -154,19 +154,3 @@ private class NetworkCompositionSpec(
     }
 }
 
-
-private suspend fun ByteArray.decodeLottieComposition(
-    format: LottieAnimationFormat
-) : LottieComposition {
-    return when (format) {
-        LottieAnimationFormat.Json -> LottieCompositionSpec.JsonString(decodeToString()).load()
-        LottieAnimationFormat.DotLottie -> LottieCompositionSpec.DotLottie(this).load()
-        LottieAnimationFormat.Undefined -> {
-            try {
-                decodeLottieComposition(LottieAnimationFormat.Json)
-            } catch (t: Throwable) {
-                decodeLottieComposition(LottieAnimationFormat.DotLottie)
-            }
-        }
-    }
-}

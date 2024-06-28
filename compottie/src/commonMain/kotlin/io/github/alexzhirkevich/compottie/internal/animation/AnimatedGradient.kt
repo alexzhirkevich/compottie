@@ -69,8 +69,7 @@ internal class ColorsWithStops(
 
         repeat(n) { i ->
             mColors[i] = lerp(a.colors[i], b.colors[i], progress)
-            mColorStops[i] =
-                androidx.compose.ui.util.lerp(a.colorStops[i], b.colorStops[i], progress)
+            mColorStops[i] = androidx.compose.ui.util.lerp(a.colorStops[i], b.colorStops[i], progress)
         }
     }
 
