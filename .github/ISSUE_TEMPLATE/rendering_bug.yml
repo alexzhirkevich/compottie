@@ -13,9 +13,7 @@ body:
     id: what-happened
     attributes:
       label: What happened?
-      description: Please describe what happened, attach the bug screenshot and the screenshot of what you expect to see (from AE or other Lottie player)
-
-      Tip: You can attach images by clicking this area to highlight it and then dragging files in.
+      description: Please describe what happened, attach the bug screenshot and the screenshot of what you expect to see (from AE or other Lottie player). You can attach images by clicking this area to highlight it and then dragging files in.
       placeholder: Tell us what you see!
       value: "A rendering bug happened!"
     validations:
