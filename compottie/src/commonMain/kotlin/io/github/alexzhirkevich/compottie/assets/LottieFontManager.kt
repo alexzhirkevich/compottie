@@ -11,22 +11,7 @@ import androidx.compose.ui.text.font.Font
 interface LottieFontManager {
 
     /**
-     * Load font by [font] requirements
-     *
-     * @param id unique asset id that is used for referring from animation layers
-     * @param path relative system path or web URL excluding file name. For example:
-     *
-     * - /path/to/images/
-     * - https://example.com/images/
-     *
-     * @param name asset name and extension (for example image.png)
+     * Load [font] by requirements
      * */
     suspend fun font(font: LottieFontSpec): Font?
-
-    companion object {
-
-        val Empty = object : LottieFontManager {
-            override suspend fun font(font: LottieFontSpec): Font? = null
-        }
-    }
 }

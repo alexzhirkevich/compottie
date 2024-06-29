@@ -63,7 +63,7 @@ fun ResourcesAssetsManager(
 private class ResourcesAssetsManagerImpl(
     private val directory : String = "files",
     private val readBytes : suspend (path : String) -> ByteArray,
-) : LottieAssetsManager by LottieAssetsManager.Empty {
+) : LottieAssetsManager {
 
     override suspend fun image(image: LottieImage): ImageRepresentable? {
         return try {

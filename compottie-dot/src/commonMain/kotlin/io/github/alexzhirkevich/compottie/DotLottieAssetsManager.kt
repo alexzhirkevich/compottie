@@ -10,7 +10,7 @@ import okio.Path.Companion.toPath
 internal class DotLottieAssetsManager(
     private val zipFileSystem: ZipFileSystem,
     private val root : Path? = null
-) : LottieAssetsManager by LottieAssetsManager.Empty {
+) : LottieAssetsManager {
 
     override suspend fun image(image: LottieImage): ImageRepresentable? {
 

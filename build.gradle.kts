@@ -3,8 +3,8 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
-    id("root.publication")
 
+    id("root.publication")
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.android.application).apply(false)
     alias(libs.plugins.android.library) apply false
@@ -12,8 +12,6 @@ plugins {
     alias(libs.plugins.composeCompiler).apply(false)
     alias(libs.plugins.dokka).apply(false)
     alias(libs.plugins.serialization).apply(false)
-    id("maven-publish")
-    id("signing")
 }
 
 buildscript {
@@ -22,10 +20,6 @@ buildscript {
         classpath(libs.nexus.publish)
     }
 }
-
-val jvmTarget = findProperty("jvmTarget") as String
-
-val _group = findProperty("group") as String
 
 subprojects {
 
@@ -41,6 +35,3 @@ subprojects {
     plugins.apply("module.multiplatform")
 }
 
-//tasks.register("clean", Delete::class) {
-//    delete(rootProject.buildDir)
-//}

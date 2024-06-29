@@ -18,10 +18,16 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(project(":compottie"))
-            implementation(project(":compottie-dot"))
-            implementation(project(":compottie-network"))
-            implementation(project(":compottie-resources"))
+//            implementation(project(":compottie"))
+//            implementation(project(":compottie-dot"))
+//            implementation(project(":compottie-network"))
+//            implementation(project(":compottie-resources"))
+//            implementation(project(":compottie-resources"))
+            implementation("io.github.alexzhirkevich:compottie:2.0.0-beta01")
+            implementation("io.github.alexzhirkevich:compottie-dot:2.0.0-beta01")
+            implementation("io.github.alexzhirkevich:compottie-network:2.0.0-beta01")
+            implementation("io.github.alexzhirkevich:compottie-resources:2.0.0-beta01")
+
             implementation(compose.ui)
             implementation(compose.runtime)
             implementation(compose.material3)

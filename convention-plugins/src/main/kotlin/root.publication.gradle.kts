@@ -3,8 +3,8 @@ plugins {
 }
 
 allprojects {
-    group = "io.github.alexzhirkevich"
-    version = "1.1.3"
+    group = findProperty("group") as String
+    version = findProperty("version") as String
 }
 
 nexusPublishing {

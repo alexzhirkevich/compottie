@@ -59,8 +59,8 @@ import kotlin.math.roundToInt
 fun rememberLottiePainter(
     composition : LottieComposition?,
     progress : () -> Float,
-    assetsManager: LottieAssetsManager = LottieAssetsManager.Empty,
-    fontManager: LottieFontManager = LottieFontManager.Empty,
+    assetsManager: LottieAssetsManager? = null,
+    fontManager: LottieFontManager? = null,
     dynamicProperties : LottieDynamicProperties? = null,
     applyOpacityToLayers : Boolean = false,
     clipToCompositionBounds : Boolean = true,
@@ -78,10 +78,14 @@ fun rememberLottiePainter(
     ) {
         if (composition != null) {
             val assets = async(ioDispatcher()) {
-                composition.loadAssets(assetsManager, true)
+                assetsManager?.let {
+                    composition.loadAssets(it, true)
+                }
             }
             val fonts = async(ioDispatcher()) {
-                composition.loadFonts(fontManager)
+                fontManager?.let {
+                    composition.loadFonts(it)
+                }
             }
 
             value = LottiePainter(
@@ -96,8 +100,8 @@ fun rememberLottiePainter(
                 clipToCompositionBounds = clipToCompositionBounds,
                 enableMergePaths = enableMergePaths,
                 applyOpacityToLayers = applyOpacityToLayers,
-                assets = assets.await(),
-                fonts = fonts.await()
+                assets = assets.await().orEmpty(),
+                fonts = fonts.await().orEmpty()
             )
         }
     }
@@ -142,8 +146,8 @@ fun rememberLottiePainter(
 @Composable
 fun rememberLottiePainter(
     composition : LottieComposition?,
-    assetsManager: LottieAssetsManager = LottieAssetsManager.Empty,
-    fontManager: LottieFontManager = LottieFontManager.Empty,
+    assetsManager: LottieAssetsManager? = null,
+    fontManager: LottieFontManager? = null,
     dynamicProperties : LottieDynamicProperties? = null,
     isPlaying: Boolean = true,
     restartOnPlay: Boolean = true,
@@ -198,8 +202,8 @@ fun rememberLottiePainter(
 suspend fun LottiePainter(
     composition : LottieComposition,
     progress : () -> Float,
-    assetsManager: LottieAssetsManager = LottieAssetsManager.Empty,
-    fontManager: LottieFontManager = LottieFontManager.Empty,
+    assetsManager: LottieAssetsManager? = null,
+    fontManager: LottieFontManager? = null,
     dynamicProperties : LottieDynamicProperties? = null,
     applyOpacityToLayers : Boolean = false,
     clipToCompositionBounds : Boolean = true,
@@ -207,10 +211,14 @@ suspend fun LottiePainter(
     enableMergePaths: Boolean = false,
 ) : Painter = coroutineScope {
     val assets = async(ioDispatcher()) {
-        composition.loadAssets(assetsManager, true)
+        assetsManager?.let {
+            composition.loadAssets(it, true)
+        }
     }
     val fonts = async(ioDispatcher()) {
-        composition.loadFonts(fontManager)
+        fontManager?.let {
+            composition.loadFonts(it)
+        }
     }
 
     LottiePainter(
@@ -225,8 +233,8 @@ suspend fun LottiePainter(
         clipToCompositionBounds = clipToCompositionBounds,
         enableMergePaths = enableMergePaths,
         applyOpacityToLayers = applyOpacityToLayers,
-        assets = assets.await(),
-        fonts = fonts.await()
+        assets = assets.await().orEmpty(),
+        fonts = fonts.await().orEmpty()
     )
 }
 

@@ -144,12 +144,12 @@ fun App() {
 //            Res.readBytes("files/$DOT_WITH_IMAGE")
 //        )
 
-//        LottieCompositionSpec.ResourceString(ROBOT)
+        LottieCompositionSpec.ResourceString(ROBOT)
 //
-        LottieCompositionSpec.Url(
+//        LottieCompositionSpec.Url(
 //            "https://assets-v2.lottiefiles.com/a/a63d8606-1166-11ee-a7f8-83d9759dd8ff/hCTtJKM3Tu.lottie"
 //            "https://assets-v2.lottiefiles.com/a/d5654818-1168-11ee-a43f-870f05952f24/m5LUOQBrz9.lottie" // radial gr with angle
-            "https://assets-v2.lottiefiles.com/a/27cd3f04-1180-11ee-852d-8b2f8ce04afa/SB3d1oChh6.lottie", // rotationXYZ envelope
+//            "https://assets-v2.lottiefiles.com/a/27cd3f04-1180-11ee-852d-8b2f8ce04afa/SB3d1oChh6.lottie", // rotationXYZ envelope
 //            "https://assets-v2.lottiefiles.com/a/4a2c7f7e-1171-11ee-ae37-d7b32f8315b2/7qw6O5kPfv.lottie", // broken text pos
 //            "https://lottie.host/02723b80-a213-478e-9320-0e5c3adf88ff/zz4HlIqtSb.lottie",
 //            "https://assets-v2.lottiefiles.com/a/10956594-1169-11ee-98fe-ef3d9d71ad0f/WVFg2bDWGj.lottie",
@@ -159,7 +159,7 @@ fun App() {
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/august_view_pulse.zip",
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/anim_jpg.zip",
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/ZipInlineImage.zip",
-        )
+//        )
     }
 
     // If you want to be aware of loading errors

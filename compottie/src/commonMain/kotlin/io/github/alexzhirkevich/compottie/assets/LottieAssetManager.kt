@@ -22,27 +22,5 @@ interface LottieAssetsManager {
      * @param name asset name and extension (for example image.png)
      * */
     suspend fun image(image: LottieImage): ImageRepresentable?
-
-    companion object {
-
-        /**
-         * Combine asset managers.
-         *
-         * Asset will be loaded by all managers one-by-one until non-null
-         * asset will is received
-         * */
-        fun combine(
-            vararg managers: LottieAssetsManager
-        ) = object : LottieAssetsManager {
-            override suspend fun image(image: LottieImage): ImageRepresentable? {
-                return managers.firstNotNullOfOrNull { it.image(image) }
-            }
-        }
-
-        val Empty = object : LottieAssetsManager {
-
-            override suspend fun image(image: LottieImage): ImageRepresentable? = null
-        }
-    }
 }
 
