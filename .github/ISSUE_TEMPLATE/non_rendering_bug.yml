@@ -1,0 +1,47 @@
+name: Non-rendering Bug Report
+description: File a bug report that is not related to animation rendering. This can be loading, assets, fonts, dynamic properties bugs, etc.
+title: "[Bug]: "
+labels: ["non-rendering bug"]
+assignees:
+  - alexzhirkevich
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Please describe what happened and provide a code snippet or project to reproduce the issue
+      placeholder: Tell us what happened!
+      value: "A bug happened!"
+    validations:
+      required: true
+  - type: input
+    id: compottie-version
+    attributes:
+      label: What Compottie version do you experience the bug on?
+      placeholder: 2.x.x
+    validations:
+      required: true
+  - type: dropdown
+    id: platforms
+    attributes:
+      label: What platforms are you seeing the problem on?
+      multiple: true
+      options:
+        - All
+        - Android
+        - iOS
+        - Desktop
+        - Web (JS)
+        - Web (wasm)
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Does Compottie log anythyng to the stdout / your logger set with `Compottie.logger`?
+      description: This can be warning or exception. Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
