@@ -7,6 +7,9 @@ import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.utils.Math
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.preRotate
+import io.github.alexzhirkevich.compottie.internal.utils.preRotateX
+import io.github.alexzhirkevich.compottie.internal.utils.preRotateY
+import io.github.alexzhirkevich.compottie.internal.utils.preRotateZ
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
 import io.github.alexzhirkevich.compottie.internal.utils.setValues
@@ -21,6 +24,9 @@ internal abstract class AnimatedTransform {
     abstract val position: AnimatedVector2
     abstract val scale: AnimatedVector2
     abstract val rotation: AnimatedNumber
+    open val rotationX: AnimatedNumber? = null
+    open val rotationY: AnimatedNumber? = null
+    open val rotationZ: AnimatedNumber? = null
     abstract val opacity: AnimatedNumber
     abstract val skew: AnimatedNumber
     abstract val skewAxis: AnimatedNumber
@@ -92,6 +98,18 @@ internal abstract class AnimatedTransform {
             rotation?.let {
                 matrix.preRotate(it)
             }
+        }
+
+        rotationX?.let {
+            matrix.preRotateX(it.interpolated(state))
+        }
+
+        rotationY?.let {
+            matrix.preRotateY(it.interpolated(state))
+        }
+
+        rotationZ?.let {
+            matrix.preRotateZ(it.interpolated(state))
         }
 
         val skew = skew.interpolated(state).takeIf { it != 0f }

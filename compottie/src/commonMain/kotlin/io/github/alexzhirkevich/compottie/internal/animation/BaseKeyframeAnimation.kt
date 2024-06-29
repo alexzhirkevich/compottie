@@ -12,17 +12,19 @@ internal class BaseKeyframeAnimation<T, K, out KF : Keyframe<K>>(
 ) : KeyframeAnimation<T> {
 
     private val sortedKeyframes = keyframes
-        .sortedBy { it.time }
+        .sortedBy(Keyframe<*>::time)
         .takeIf { it != keyframes }
         ?: keyframes // ensure keyframes are sorted. don't store extra refs list if so
 
-    private val timeIntervals = (0..<sortedKeyframes.lastIndex).map {
-        sortedKeyframes[it].time..sortedKeyframes[it + 1].time
-    }
+    private val timeIntervals = if (keyframes.isNotEmpty()) {
+        (0..<sortedKeyframes.lastIndex).map {
+            sortedKeyframes[it].time..sortedKeyframes[it + 1].time
+        }
+    } else emptyList()
 
-    private val firstFrame: Float = sortedKeyframes.first().time
+    private val firstFrame: Float by lazy { sortedKeyframes.first().time }
 
-    private val lastFrame: Float = sortedKeyframes.last().time
+    private val lastFrame: Float by lazy { sortedKeyframes.last().time }
 
     private val initialValue by lazy {
         keyframes.first().run {
@@ -61,6 +63,9 @@ internal class BaseKeyframeAnimation<T, K, out KF : Keyframe<K>>(
 
 
     override fun interpolated(state: AnimationState): T {
+
+        if (sortedKeyframes.isEmpty())
+            return emptyValue
 
         val value = when {
             sortedKeyframes.isEmpty() -> emptyValue

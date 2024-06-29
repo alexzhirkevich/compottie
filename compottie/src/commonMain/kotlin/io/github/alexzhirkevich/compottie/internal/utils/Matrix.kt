@@ -78,8 +78,25 @@ internal fun Matrix.preRotate(degree : Float) {
     return rotateZ(degree)
 }
 
+internal fun Matrix.preRotateX(degree : Float) {
+    preConcat(tempMatrixTransform.apply {
+        reset()
+        rotateX(degree)
+    })
+}
 
-
+internal fun Matrix.preRotateY(degree : Float) {
+    preConcat(tempMatrixTransform.apply {
+        reset()
+        rotateY(degree)
+    })
+}
+internal fun Matrix.preRotateZ(degree : Float) {
+    preConcat(tempMatrixTransform.apply {
+        reset()
+        rotateZ(degree)
+    })
+}
 
 internal fun Matrix.preScale(x : Float, y : Float) {
 //    preConcat(tempMatrixTransform.apply {

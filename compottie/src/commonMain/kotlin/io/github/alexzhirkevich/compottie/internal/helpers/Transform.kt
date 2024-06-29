@@ -28,6 +28,15 @@ internal class Transform(
     @SerialName("r")
     override val rotation : AnimatedNumber = AnimatedNumber.defaultRotation(),
 
+    @SerialName("rx")
+    override val rotationX : AnimatedNumber? = null,
+
+    @SerialName("ry")
+    override val rotationY : AnimatedNumber? = null,
+
+    @SerialName("rz")
+    override val rotationZ : AnimatedNumber? = null,
+
     @SerialName("o")
     override val opacity : AnimatedNumber = AnimatedNumber.defaultOpacity(),
 
