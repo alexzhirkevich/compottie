@@ -155,7 +155,6 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
                         matteLayers.add(layers[i - 1])
                     }
                 }
-
             }
         }
 

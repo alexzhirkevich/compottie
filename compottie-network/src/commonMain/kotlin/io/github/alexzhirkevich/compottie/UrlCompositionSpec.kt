@@ -60,7 +60,7 @@ private class NetworkCompositionSpec(
                 try {
                     LottieComposition.getOrCreate(cacheKey) {
                         try {
-                            Compottie.logger?.info("Searching for animation in cache...")
+                            Compottie.logger?.info("Looking for animation in cache...")
                             cacheStrategy.load(url)?.let {
                                 Compottie.logger?.info("Animation was found in cache. Parsing...")
                                 return@getOrCreate it.decodeToLottieComposition(format).also {
@@ -72,7 +72,7 @@ private class NetworkCompositionSpec(
                         } catch (t : UnsupportedFileSystemException) {
                             Compottie.logger?.info("File system cache is disabled for this strategy on the current platform")
                         } catch (_: Throwable) {
-                            Compottie.logger?.info("Failed to load or decode animation from cache")
+                            Compottie.logger?.warn("Failed to load or decode animation from cache")
                         }
 
                         Compottie.logger?.info("Fetching animation from web...")
@@ -81,13 +81,13 @@ private class NetworkCompositionSpec(
                             val response = request(client, Url(url)).execute()
 
                             if (!response.status.isSuccess()) {
-                                Compottie.logger?.info("Animation request failed with ${response.status.value} status code")
+                                Compottie.logger?.warn("Animation request failed with ${response.status.value} status code")
                                 throw ClientRequestException(response, response.bodyAsText())
                             }
 
                             response.bodyAsChannel().toByteArray()
                         } catch (t : ClientRequestException){
-                            Compottie.logger?.info("Animation request failed with ${t.response.status.value} status code")
+                            Compottie.logger?.warn("Animation request failed with ${t.response.status.value} status code")
                             throw t
                         }
                         Compottie.logger?.info("Animation was loaded from web. Parsing...")

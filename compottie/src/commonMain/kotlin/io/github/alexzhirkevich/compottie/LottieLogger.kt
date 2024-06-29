@@ -6,6 +6,8 @@ interface LottieLogger {
 
     fun info(message: String)
 
+    fun warn(message: String)
+
     fun error(message: String, throwable: Throwable)
 
     /**
@@ -13,11 +15,15 @@ interface LottieLogger {
      * */
     object Default : LottieLogger {
         override fun info(message: String) {
-            println("[$TAG] $message")
+            println("ℹ\uFE0F [$TAG] $message")
+        }
+
+        override fun warn(message: String) {
+            println("⚠\uFE0F [$TAG] $message")
         }
 
         override fun error(message: String, throwable: Throwable) {
-            println("[$TAG] $message")
+            println("⛔ [$TAG] $message")
             throwable.printStackTrace()
         }
     }

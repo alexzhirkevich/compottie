@@ -4,6 +4,8 @@ import androidx.compose.ui.graphics.Matrix
 import io.github.alexzhirkevich.compottie.dynamic.DynamicTransformProvider
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.platform.ComposeBackend
+import io.github.alexzhirkevich.compottie.internal.platform.currentComposeBackend
 import io.github.alexzhirkevich.compottie.internal.utils.Math
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.preRotate
@@ -30,6 +32,7 @@ internal abstract class AnimatedTransform {
     abstract val opacity: AnimatedNumber
     abstract val skew: AnimatedNumber
     abstract val skewAxis: AnimatedNumber
+
 
     var dynamic : DynamicTransformProvider? = null
         set(value) {
@@ -100,12 +103,14 @@ internal abstract class AnimatedTransform {
             }
         }
 
-        rotationX?.let {
-            matrix.preRotateX(it.interpolated(state))
-        }
+        if (currentComposeBackend != ComposeBackend.Android) {
+            rotationX?.let {
+                matrix.preRotateX(it.interpolated(state))
+            }
 
-        rotationY?.let {
-            matrix.preRotateY(it.interpolated(state))
+            rotationY?.let {
+                matrix.preRotateY(it.interpolated(state))
+            }
         }
 
         rotationZ?.let {

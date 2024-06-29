@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.helpers
 
+import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
@@ -46,6 +47,12 @@ internal class Transform(
     @SerialName("sa")
     override val skewAxis: AnimatedNumber = AnimatedNumber.defaultSkewAxis(),
 ) : AnimatedTransform() {
+
+    init {
+        if (rotationX != null || rotationY != null){
+            Compottie.logger?.warn("Animations contains arbitrary transforms that are not supported on Android")
+        }
+    }
 
     fun deepCopy(): Transform {
         return Transform(

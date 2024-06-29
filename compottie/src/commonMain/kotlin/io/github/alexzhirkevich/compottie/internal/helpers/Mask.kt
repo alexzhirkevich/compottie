@@ -36,7 +36,7 @@ internal class Mask(
         }
 
         if (!mode.isSupported()){
-            Compottie.logger?.info("Animation contains unsupported mask type: $mode. It will be treated as an 'Add' mask")
+            Compottie.logger?.warn("Animation contains unsupported mask type: $mode. It will be treated as an 'Add' mask")
         }
     }
 

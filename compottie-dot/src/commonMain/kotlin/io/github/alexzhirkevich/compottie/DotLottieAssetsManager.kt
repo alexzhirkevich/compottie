@@ -31,7 +31,7 @@ internal class DotLottieAssetsManager(
         return load("/images", trimPath, trimName)?.let {
             ImageRepresentable.Bytes(it)
         } ?: run {
-            Compottie.logger?.info("Failed to decode dotLottie asset $trimName")
+            Compottie.logger?.warn("Failed to decode dotLottie asset $trimName")
             null
         }
     }
