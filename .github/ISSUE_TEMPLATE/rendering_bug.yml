@@ -49,7 +49,7 @@ body:
         - Desktop
         - Web (JS)
         - Web (wasm)
-     validations:
+    validations:
       required: true
   - type: textarea
     id: logs
