@@ -33,7 +33,7 @@ body:
     id: compottie-version
     attributes:
       label: What Compottie version do you experience the bug on?
-      description: Note: only Compottie 2.0+ rendering bugs can be fixed because Compottie was using platform renderers before
+      description: "Note: only Compottie 2.0+ rendering bugs can be fixed because Compottie was using platform renderers before"
       placeholder: 2.x.x
     validations:
       required: true
