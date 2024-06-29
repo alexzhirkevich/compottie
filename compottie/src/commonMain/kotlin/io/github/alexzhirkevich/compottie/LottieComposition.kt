@@ -19,6 +19,7 @@ import io.github.alexzhirkevich.compottie.internal.LottieJson
 import io.github.alexzhirkevich.compottie.internal.assets.CharacterData
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.helpers.Marker
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -182,6 +183,8 @@ class LottieComposition internal constructor(
 
     private var loadedFonts : Map<String, FontFamily> = emptyMap()
 
+    private val markersMap = animation.markers.associateBy(Marker::name)
+
     internal fun findGlyphs(family : String?) : Map<String, CharacterData>? {
         return charGlyphs[family] ?: run {
             val font = animation.fonts?.list
@@ -270,8 +273,7 @@ class LottieComposition internal constructor(
         )
     }
 
-    internal fun marker(name: String?) =
-        animation.markers.firstOrNull { it.name == name }
+    internal fun marker(name: String?) = markersMap[name]
 
     companion object {
 
@@ -292,7 +294,8 @@ class LottieComposition internal constructor(
         }
 
         /**
-         * Clear all previously cached compositions
+         * Clear all in-memory cached compositions.
+         * This will not clear the file system cache
          * */
         fun clearCache() = cache.clear()
 
