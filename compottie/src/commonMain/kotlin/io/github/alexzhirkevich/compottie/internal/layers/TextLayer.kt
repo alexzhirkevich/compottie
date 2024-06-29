@@ -24,6 +24,9 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEachIndexed
+import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
+import io.github.alexzhirkevich.compottie.dynamic.DynamicTextLayerProvider
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.animation.toColor
@@ -42,9 +45,9 @@ import io.github.alexzhirkevich.compottie.internal.platform.addCodePoint
 import io.github.alexzhirkevich.compottie.internal.platform.charCount
 import io.github.alexzhirkevich.compottie.internal.platform.codePointAt
 import io.github.alexzhirkevich.compottie.internal.platform.isModifier
-import io.github.alexzhirkevich.compottie.internal.util.toOffset
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
+import io.github.alexzhirkevich.compottie.internal.utils.toOffset
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -238,9 +241,18 @@ internal class TextLayer(
         outBounds.set(0f, 0f, composition.animation.width, composition.animation.height)
     }
 
+    override fun setDynamicProperties(
+        composition: DynamicCompositionProvider?,
+        state: AnimationState
+    ): DynamicLayerProvider? {
+        return super.setDynamicProperties(composition, state).also {
+            textData.document.dynamic(it as? DynamicTextLayerProvider)
+        }
+    }
+
     private fun configurePaint(document: TextDocument, parentAlpha: Float, state: AnimationState) {
 
-        val transformOpacity = transform.opacity?.interpolatedNorm(state) ?: 1f
+        val transformOpacity = transform.opacity.interpolatedNorm(state)
 
         val fillOpacity = textAnimation?.style?.fillOpacity?.interpolatedNorm(state) ?: 1f
 
@@ -330,7 +342,6 @@ internal class TextLayer(
                 lineHeight = lineHeight,
                 fontFamily = fontFamily,
                 letterSpacing = letterSpacing,
-                color = Color.Red,
                 fontWeight = weight,
                 fontStyle = style
             )

@@ -421,6 +421,7 @@ internal class DiskLruCache(
         return size
     }
 
+    @OptIn(InternalCompottieApi::class)
     private fun completeEdit(editor: Editor, success: Boolean) = synchronized(lock) {
         val entry = editor.entry
         check(entry.currentEditor == editor)
@@ -602,6 +603,7 @@ internal class DiskLruCache(
      * Closes the cache and deletes all of its stored values. This will delete all files in the
      * cache directory including files that weren't created by the cache.
      */
+    @OptIn(InternalCompottieApi::class)
     private fun delete() {
         close()
         fileSystem.deleteContents(directory)
@@ -694,6 +696,7 @@ internal class DiskLruCache(
          * Get the file to read from/write to for [index].
          * This file will become the new value for this index if committed.
          */
+        @OptIn(InternalCompottieApi::class)
         fun file(index: Int): Path {
             synchronized(lock) {
                 check(!closed) { "editor is closed" }

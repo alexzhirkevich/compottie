@@ -11,5 +11,9 @@ kotlin {
             implementation(compose.foundation)
             implementation(libs.serialization)
         }
+
+        androidMain.dependencies {
+            implementation(libs.androidx.startup)
+        }
     }
 }

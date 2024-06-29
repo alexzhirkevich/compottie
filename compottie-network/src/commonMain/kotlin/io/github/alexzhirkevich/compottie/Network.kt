@@ -37,7 +37,7 @@ internal suspend fun networkLoad(
                     return@withContext it to bytes
                 }
             } catch (e: Throwable) {
-                L.logger.error("${this::class.simpleName} failed to cache downloaded asset", e)
+                Compottie.logger?.error("${this::class.simpleName} failed to cache downloaded asset", e)
             }
             null to bytes
         } catch (t: Throwable) {

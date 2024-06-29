@@ -101,7 +101,7 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
     }
 
     override fun setDynamicProperties(
-        composition: DynamicCompositionProvider,
+        composition: DynamicCompositionProvider?,
         state: AnimationState
     ): DynamicLayerProvider? {
         val dynamic = super.setDynamicProperties(composition, state)

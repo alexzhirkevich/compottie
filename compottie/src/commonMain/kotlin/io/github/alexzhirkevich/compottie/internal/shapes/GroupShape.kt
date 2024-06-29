@@ -7,6 +7,7 @@ import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroupImpl
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
+import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.utils.firstInstanceOf
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -32,7 +33,7 @@ internal class GroupShape(
     name = name,
     hidden = null, // overrided
     contents = items,
-    transform = items.firstInstanceOf()
+    transform = items.firstInstanceOf() ?: Transform()
 ) {
 
     @Transient
@@ -42,11 +43,11 @@ internal class GroupShape(
         return dynamicShape?.hidden.derive(hidden, state)
     }
 
-    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
         if (name != null) {
             val path = layerPath(basePath, name)
-            dynamicShape = properties[path]
+            dynamicShape = properties?.get(path)
             items.forEach {
                 it.setDynamicProperties(path, properties)
             }

@@ -99,21 +99,18 @@ internal class ShapeLayer(
         name = CONTAINER_NAME,
         hidden = null, // will be managed by BaseLayer
         contents = shapes,
-        transform = shapes.firstInstanceOf<TransformShape>()
+        transform = shapes.firstInstanceOf<TransformShape>() ?: Transform()
     ).apply {
         setContents(emptyList(), emptyList())
     }
 
     override fun setDynamicProperties(
-        composition: DynamicCompositionProvider,
+        composition: DynamicCompositionProvider?,
         state: AnimationState
     ): DynamicLayerProvider? {
         val layer = super.setDynamicProperties(composition,state)
-        if (layer !is DynamicShapeLayerProvider)
-            return layer
-
         shapes.fastForEach {
-            it.setDynamicProperties(null, layer)
+            it.setDynamicProperties(null, layer as? DynamicShapeLayerProvider)
         }
         return layer
     }

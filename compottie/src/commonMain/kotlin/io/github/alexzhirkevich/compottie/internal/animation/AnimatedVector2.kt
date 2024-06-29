@@ -63,9 +63,9 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
     ) : AnimatedVector2() {
 
         @Transient
-        private val animationVector = Offset(value[0], value[1])
+        private val vec = Vec2(value[0], value[1])
 
-        override fun interpolatedInternal(state: AnimationState): Vec2 = animationVector
+        override fun interpolatedInternal(state: AnimationState): Vec2 = vec
 
         override fun copy(): AnimatedVector2 {
             return Default(
@@ -146,19 +146,33 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
     ) : AnimatedVector2() {
 
         override val expression: String? get() = null
+
         override val index: String? get() = null
+
         override fun copy(): AnimatedVector2 {
             return Split(x.copy(), y.copy())
         }
 
         override fun interpolatedInternal(state: AnimationState): Vec2 {
-            return Offset(
+            return Vec2(
                 x.interpolated(state),
                 y.interpolated(state)
             )
         }
     }
 }
+
+internal fun AnimatedVector2.Companion.defaultPosition() : AnimatedVector2 =
+    AnimatedVector2.Default(FloatList3)
+
+internal fun AnimatedVector2.Companion.defaultAnchorPoint() : AnimatedVector2 =
+    AnimatedVector2.Default(FloatList3)
+
+internal fun AnimatedVector2.Companion.defaultScale() : AnimatedVector2 =
+    AnimatedVector2.Default(FloatList3_100)
+
+private val FloatList3 = listOf(0f,0f,0f)
+private val FloatList3_100 = listOf(100f, 100f, 100f)
 
 
 internal fun AnimatedVector2.interpolatedNorm(state: AnimationState) = interpolated(state) / 100f

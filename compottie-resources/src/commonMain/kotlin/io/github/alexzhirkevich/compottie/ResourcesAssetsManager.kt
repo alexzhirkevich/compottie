@@ -8,20 +8,22 @@ import androidx.compose.runtime.rememberUpdatedState
 import io.github.alexzhirkevich.compottie.assets.ImageRepresentable
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.LottieImage
-import io.github.alexzhirkevich.compottie_resources.generated.resources.Res
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.MissingResourceException
 
 /**
  * Compose resources Lottie asset manager.
  *
- * Assess are stored in the _**composeResources/[directory]**_ directory.
+ * Assess must be stored in the _**composeResources/[directory]**_.
+ *
+ * [`Res.readBytes`](https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-images-resources.html#raw-files)
+ * should be used as a [readBytes] source
  *
  * Handles the following possible cases:
  * - path="/images/", name="image.png"
  * - path="images/", name="image.png"
  * - path="", name="/images/image.png"
  * - path="", name="images/image.png"
+ *
  * */
 @Composable
 @ExperimentalCompottieApi
@@ -40,21 +42,29 @@ fun rememberResourcesAssetsManager(
 }
 
 /**
- * Compose resources asset manager.
+ * Factory method to create Compose resources [LottieAssetsManager] from non-composable
+ * context.
  *
- * Assess are stored in the _**composeResources/[relativeTo]**_ directory.
+ * [`Res::readBytes`](https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-images-resources.html#raw-files)
+ * should be used as a [readBytes] source
  *
- * Handles the following possible cases:
- * - path="/images/", name="image.png"
- * - path="images/", name="image.png"
- * - path="", name="/images/image.png"
- * - path="", name="images/image.png"
+ * Use [rememberResourcesAssetsManager] to create it from the composition
+ *
  * */
-@OptIn(ExperimentalResourceApi::class)
-private class ResourcesAssetsManager(
-    private val relativeTo : String = "files",
-    private val readBytes : suspend (path : String) -> ByteArray = Res::readBytes,
+@ExperimentalCompottieApi
+@Stable
+fun ResourcesAssetsManager(
+    directory : String = "files",
+    readBytes : suspend (path : String) -> ByteArray,
+) : LottieAssetsManager = ResourcesAssetsManagerImpl(directory, readBytes)
+
+
+@Stable
+private class ResourcesAssetsManagerImpl(
+    private val directory : String = "files",
+    private val readBytes : suspend (path : String) -> ByteArray,
 ) : LottieAssetsManager by LottieAssetsManager.Empty {
+
     override suspend fun image(image: LottieImage): ImageRepresentable? {
         return try {
             val trimPath = image.path
@@ -68,7 +78,7 @@ private class ResourcesAssetsManager(
                 .takeIf(String::isNotEmpty)
 
             val fullPath = listOfNotNull(
-                relativeTo.takeIf(String::isNotEmpty),
+                directory.takeIf(String::isNotEmpty),
                 trimPath,
                 trimName
             ).joinToString("/")
@@ -79,5 +89,21 @@ private class ResourcesAssetsManager(
         }
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
 
+        other as ResourcesAssetsManagerImpl
+
+        if (directory != other.directory) return false
+        if (readBytes != other.readBytes) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = directory.hashCode()
+        result = 31 * result + readBytes.hashCode()
+        return result
+    }
 }

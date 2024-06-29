@@ -20,14 +20,14 @@ import androidx.compose.runtime.setValue
  * @param restartOnPlay If isPlaying switches from false to true, restartOnPlay determines whether
  * the progress and iteration gets reset.
  * @param reverseOnRepeat Defines what this animation should do when it reaches the end. This setting
- * is applied only when [iterations] is either greater than 0 or [LottieConstants.IterateForever].
+ * is applied only when [iterations] is either greater than 0 or [Compottie.IterateForever].
  * Defaults to `false`.
  * @param clipSpec A [LottieClipSpec] that specifies the bound the animation playback
  * should be clipped to.
  * @param speed The speed the animation should play at. Numbers larger than one will speed it up.
  * Numbers between 0 and 1 will slow it down. Numbers less than 0 will play it backwards.
  * @param iterations The number of times the animation should repeat before stopping. It must be
- * a positive number. [LottieConstants.IterateForever] can be used to repeat forever.
+ * a positive number. [Compottie.IterateForever] can be used to repeat forever.
  * @param cancellationBehavior The behavior that this animation should have when cancelled.
  * In most cases, you will want it to cancel immediately. However, if you have a state based
  * transition and you want an animation to finish playing before moving on to the next one then you

@@ -2,7 +2,6 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import okio.Closeable
 import okio.FileSystem
 import okio.Path

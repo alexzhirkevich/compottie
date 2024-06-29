@@ -15,7 +15,7 @@ internal sealed interface Shape : Content {
 
     val hidden: Boolean
 
-    fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {}
+    fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {}
 
     @Serializable
     class UnsupportedShape : Shape {

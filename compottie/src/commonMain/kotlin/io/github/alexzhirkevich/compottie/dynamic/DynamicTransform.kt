@@ -8,6 +8,8 @@ interface DynamicTransform {
     /**
      * Apply dynamic scale transform for layer.
      *
+     * Scale x and y must be in range (0..1)
+     *
      * Note: source is the relative layer scale derived from the layer transform (not absolute value).
      * Scale derived from this provide will be multiplied by parent layer scale
      * */
@@ -46,6 +48,8 @@ interface DynamicTransform {
 
     /**
      * Apply dynamic opacity transform
+     *
+     * Opacity must be in range (0..1)
      *
      * Note: source is the relative layer opacity derived from the layer transform (not absolute value).
      * Opacity derived from this provider will be multiplied by parent layer opacity

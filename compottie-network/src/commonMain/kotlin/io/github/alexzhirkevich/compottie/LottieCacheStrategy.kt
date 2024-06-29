@@ -26,5 +26,10 @@ interface LottieCacheStrategy {
     suspend fun load(
         url: String
     ): ByteArray?
+
+    /**
+     * Clear all ache
+     * */
+    suspend fun clear()
 }
 

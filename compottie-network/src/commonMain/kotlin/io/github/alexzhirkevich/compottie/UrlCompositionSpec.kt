@@ -7,7 +7,6 @@ import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Url
 import io.ktor.http.isSuccess
-import io.ktor.util.logging.Logger
 import io.ktor.util.toByteArray
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -44,7 +43,7 @@ private class NetworkCompositionSpec(
     private val url : String,
     private val format: LottieAnimationFormat,
     private val client : HttpClient,
-    private val cacheStrategy: LottieCacheStrategy = DiskCacheStrategy(),
+    private val cacheStrategy: LottieCacheStrategy,
     private val request : NetworkRequest,
 ) : LottieCompositionSpec {
 
@@ -61,48 +60,48 @@ private class NetworkCompositionSpec(
                 try {
                     LottieComposition.getOrCreate(cacheKey) {
                         try {
-                            L.logger.log("Searching for animation in cache...")
+                            Compottie.logger?.info("Searching for animation in cache...")
                             cacheStrategy.load(url)?.let {
-                                L.logger.log("Animation was found in cache. Parsing...")
-                                return@getOrCreate it.decodeLottieComposition(format).also {
-                                    L.logger.log("Animation was successfully loaded from cache")
+                                Compottie.logger?.info("Animation was found in cache. Parsing...")
+                                return@getOrCreate it.decodeToLottieComposition(format).also {
+                                    Compottie.logger?.info("Animation was successfully loaded from cache")
                                 }
                             } ?: run {
-                                L.logger.log("Animation wasn't found in cache")
+                                Compottie.logger?.info("Animation wasn't found in cache")
                             }
-                        } catch (t : CacheIsUnsupportedException) {
-                            L.logger.log("File system cache is disabled for this strategy on the current platform")
+                        } catch (t : UnsupportedFileSystemException) {
+                            Compottie.logger?.info("File system cache is disabled for this strategy on the current platform")
                         } catch (_: Throwable) {
-                            L.logger.log("Failed to load or decode animation from cache")
+                            Compottie.logger?.info("Failed to load or decode animation from cache")
                         }
 
-                        L.logger.log("Fetching animation from web...")
+                        Compottie.logger?.info("Fetching animation from web...")
 
                         val bytes = try {
                             val response = request(client, Url(url)).execute()
 
                             if (!response.status.isSuccess()) {
-                                L.logger.log("Animation request failed with ${response.status.value} status code")
+                                Compottie.logger?.info("Animation request failed with ${response.status.value} status code")
                                 throw ClientRequestException(response, response.bodyAsText())
                             }
 
                             response.bodyAsChannel().toByteArray()
                         } catch (t : ClientRequestException){
-                            L.logger.log("Animation request failed with ${t.response.status.value} status code")
+                            Compottie.logger?.info("Animation request failed with ${t.response.status.value} status code")
                             throw t
                         }
-                        L.logger.log("Animation was loaded from web. Parsing...")
+                        Compottie.logger?.info("Animation was loaded from web. Parsing...")
 
-                        val composition = bytes.decodeLottieComposition(format)
-                        L.logger.log("Animation was successfully loaded from web. Caching...")
+                        val composition = bytes.decodeToLottieComposition(format)
+                        Compottie.logger?.info("Animation was successfully loaded from web. Caching...")
 
                         try {
                             cacheStrategy.save(url, bytes)
-                            L.logger.log("Animation was successfully saved to cache")
-                        } catch (t : CacheIsUnsupportedException) {
-                          L.logger.log("File system cache is disabled for this strategy on the current platform")
+                            Compottie.logger?.info("Animation was successfully saved to cache")
+                        } catch (t : UnsupportedFileSystemException) {
+                          Compottie.logger?.info("File system cache is disabled for this strategy on the current platform")
                         } catch (t: Throwable) {
-                            L.logger.error(
+                            Compottie.logger?.error(
                                 "Failed to cache animation",
                                 t
                             )
@@ -155,19 +154,3 @@ private class NetworkCompositionSpec(
     }
 }
 
-
-private suspend fun ByteArray.decodeLottieComposition(
-    format: LottieAnimationFormat
-) : LottieComposition {
-    return when (format) {
-        LottieAnimationFormat.Json -> LottieCompositionSpec.JsonString(decodeToString()).load()
-        LottieAnimationFormat.DotLottie -> LottieCompositionSpec.DotLottie(this).load()
-        LottieAnimationFormat.Undefined -> {
-            try {
-                decodeLottieComposition(LottieAnimationFormat.Json)
-            } catch (t: Throwable) {
-                decodeLottieComposition(LottieAnimationFormat.DotLottie)
-            }
-        }
-    }
-}

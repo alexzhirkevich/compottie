@@ -4,11 +4,11 @@ package io.github.alexzhirkevich.compottie
 import org.khronos.webgl.Int8Array
 
 @OptIn(ExperimentalCompottieApi::class)
-internal actual suspend fun decompress(array: ByteArray, inflatedSize : Int) : ByteArray {
+internal actual suspend fun decompress(array: ByteArray, decompressedSize : Int) : ByteArray {
 
     val ds = DecompressionStream("deflate-raw")
 
-    val source = if (L.useStableWasmMemoryManagement) {
+    val source = if (Compottie.useStableWasmMemoryManagement) {
         createSourceStable(array.toInt8Array())
     } else {
         createSourceUnstable(array.toJsReference())
@@ -19,7 +19,8 @@ internal actual suspend fun decompress(array: ByteArray, inflatedSize : Int) : B
         .pipeThrough(ds)
         .getReader()
 
-    val inflatedResult = ArrayList<Byte>(inflatedSize)
+    val decompressed = ByteArray(decompressedSize)
+    var ind = 0
 
     while (true) {
         val result = reader.read().await()
@@ -27,9 +28,12 @@ internal actual suspend fun decompress(array: ByteArray, inflatedSize : Int) : B
             break
         }
 
-        inflatedResult += Int8Array(result.value.buffer).toByteArray()
+        val chunk = Int8Array(result.value.buffer).toByteArray()
+
+        chunk.copyInto(decompressed, ind)
+        ind += array.size
     }
 
-    return inflatedResult.toByteArray()
+    return decompressed
 }
 

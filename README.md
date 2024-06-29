@@ -11,19 +11,44 @@ Compose Multiplatform Adobe After Effects Bodymovin (Lottie) animations renderin
 ![Example](https://github.com/alexzhirkevich/compottie/assets/63979218/2735c77a-d940-4fd7-825c-208454b3960a)
 
 # Installation
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.alexzhirkevich/compottie/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.alexzhirkevich/compottie)
 
 > [!IMPORTANT]
 > Starting from v2.0 Compottie has its own multiplatform rendering engine without any platform delegates.
 > <br>The new engine is implemented from scratch and therefore may have bugs.
-> <br>Please [report](https://github.com/alexzhirkevich/compottie/issues) if you find any, preferably with a reproducible animation
+> <br>Please [report](https://github.com/alexzhirkevich/compottie/issues) if you find any, preferably with a reproducible animation.
+> <br>List of supported AE Lottie features is the same as for [lottie-android](https://lottiefiles.com/supported-features)
 
-| Module                | Description   | Artifact |
-| --------------------- | ------------- | -------------------------------------------------------- |
-| `compottie`           | Main module with rendering engine and `JsonString` animation spec. Currently has two branches - 1.x (with platform renderers - Skottie and lottie-android) and 2.x (with own renderer). 1.x is maintained until the new renderer becomes stable  | `io.github.alexzhirkevich:compottie-dot:<version>` |
-| `compottie-dot`       | Contains [dotLottie](https://dotlottie.io/) and ZIP animation spec. Depends on [Okio](https://square.github.io/okio/). For Compottie 2.x only | `io.github.alexzhirkevich:compottie-dot:<version>`         |
-| `compottie-network`   | Contains `Url` animation spec and asset/font managers (with [Ktor](https://ktor.io/) and local cache with [Okio](https://square.github.io/okio/)). Allows loading animations and assets from web. For Compottie 2.x only | `io.github.alexzhirkevich:compottie-network:<version>`     |
-| `compottie-resources` | Contains asset and font managers powered by official Compose resources. For Compottie 2.x only  | `io.github.alexzhirkevich:compottie-resources:<version>` |
+| Module | Description  | 
+| :----: | ------------- | 
+| `compottie`  | Main module with rendering engine and `JsonString` animation spec. Currently has two branches - 1.x (with platform renderers - Skottie and lottie-android) and 2.x (with own renderer). 1.x is maintained until the new renderer becomes stable  |
+| `compottie⁠-⁠dot` | Contains [dotLottie](https://dotlottie.io/) and ZIP animation spec. For Compottie 2.x only |
+| `compottie⁠-⁠network` | Contains `Url` animation spec and asset/font managers (with [Ktor](https://ktor.io/) and local cache with [Okio](https://square.github.io/okio/)). Allows loading animations and assets from web. For Compottie 2.x only |
+| `compottie⁠-⁠resources` | Contains asset and font managers powered by official Compose resources. For Compottie 2.x only | 
+
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.alexzhirkevich/compottie/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.alexzhirkevich/compottie)
+
+Add as a Gradle dependency
+```kotlin
+dependencies {
+    implementation("io.github.alexzhirkevich:compottie:<version>")
+    implementation("io.github.alexzhirkevich:compottie-dot:<version>")
+    implementation("io.github.alexzhirkevich:compottie-network:<version>")
+    implementation("io.github.alexzhirkevich:compottie-resources:<version>")
+}
+```
+
+or using the version catalog
+
+```toml
+[versions]
+compottie="<version>"
+
+[libraries]
+compottie = { module = "io.github.alexzhirkevich:compottie", version.ref = "compottie" }
+compottie-dot = { module = "io.github.alexzhirkevich:compottie-dot", version.ref = "compottie" }
+compottie-network = { module = "io.github.alexzhirkevich:compottie-network", version.ref = "compottie" }
+compottie-resources = { module = "io.github.alexzhirkevich:compottie-resources", version.ref = "compottie" }
+```
 
 # Usage
 The following docs describe the Compottie 2.x usage.
@@ -44,58 +69,56 @@ For Compottie 1.x docs please refer to the [airbnb docs](https://github.com/airb
 
 ## Basic Usage
 ```kotlin
-@Composable
-fun Loader() {
-    val composition by rememberLottieComposition {
-        LottieCompositionSpec.JsonString(
-            Res.readBytes("files/anim.json").decodeToString()
-        )
-    }
-    val progress by animateLottieCompositionAsState(composition)
-    
-    Image(
-        painter = rememberLottiePainter(
-            composition = composition,
-            progress = { progress },
-        ),
-        contentDescription = "Lottie animation"
-    )
-}
-```
-Or with the `rememberLottiePainter` overload that merges `rememberLottiePainter` and `animateLottieCompositionsState()`
-```kotlin
-@Composable
-fun Loader() {
-    val composition by rememberLottieComposition {
-        LottieCompositionSpec.JsonString(
-            Res.readBytes("files/anim.json").decodeToString()
-        )
-    }
-
-    Image(
-        painter = rememberLottiePainter(
-            composition = composition,
-            progress = { progress },
-        ),
-        contentDescription = "Lottie animation"
-    )
-}
-```
-
-## LottieComposition
-`LottieComposition` is the parsed version of your Lottie json file. It is stateless and can be cached/reused freely. Call `rememberLottieComposition(spec)` to create new composition. `LottieCompositionSpec` is an open interface that lets you select the source (string/zip, network/assets, etc.).
-
-For example:
-```kotlin
-val composition1 by rememberLottieComposition {
+val composition by rememberLottieComposition {
     LottieCompositionSpec.JsonString(
         Res.readBytes("files/anim.json").decodeToString()
     )
 }
-val composition2 by rememberLottieComposition {
-    LottieCompositionSpec.Url("https://...")
+val progress by animateLottieCompositionAsState(composition)
+
+Image(
+    painter = rememberLottiePainter(
+        composition = composition,
+        progress = { progress },
+    ),
+    contentDescription = "Lottie animation"
+)
+```
+Or with the `rememberLottiePainter` overload that merges `rememberLottiePainter` and `animateLottieCompositionsState()`
+```kotlin
+val composition by rememberLottieComposition {
+    LottieCompositionSpec.JsonString(
+        Res.readBytes("files/anim.json").decodeToString()
+    )
 }
-val composition3 by rememberLottieComposition {
+
+Image(
+    painter = rememberLottiePainter(
+        composition = composition,
+        iterations = Compottie.IterateForever
+    ),
+    contentDescription = "Lottie animation"
+)
+```
+
+## LottieComposition
+`LottieComposition` is the parsed version of your Lottie json file. It is stateless and can be 
+cached/reused freely. Call `rememberLottieComposition(spec)` to create new composition. 
+`LottieCompositionSpec` is an open interface that lets you select the animation source (string/zip, network/assets, etc.).
+
+For example:
+```kotlin
+val animFromJsonRes by rememberLottieComposition {
+    LottieCompositionSpec.JsonString(
+        Res.readBytes("files/anim.json").decodeToString()
+    )
+}
+
+val animFromUrl by rememberLottieComposition {
+    LottieCompositionSpec.Url("https://example.com/anim.lotie")
+}
+
+val animFromArchiveRes by rememberLottieComposition {
     LottieCompositionSpec.DotLottie(
         Res.readBytes("files/anim.lottie")
     )
@@ -143,7 +166,7 @@ val progress by animateLottieCompositionAsState(composition)
 ```kotlin
 val progress by animateLottieCompositionAsState(
     composition,
-    iterations = LottieConstants.IterateForever,
+    iterations = Compottie.IterateForever,
 )
 ```
 ```kotlin
@@ -167,7 +190,7 @@ val lottieAnimatable = rememberLottieAnimatable()
 LaunchedEffect(Unit) {
     lottieAnimatable.animate(
         composition,
-        iterations = LottieConstants.IterateForever,
+        iterations = Compottie.IterateForever,
         clipSpec = LottieClipSpec.Progress(0.5f, 0.75f),
     )
 }
@@ -185,6 +208,16 @@ You can also use `DotLottie` composition spec even without making a .lottie file
 your animation with assets using deflate algorithm. The only limitation - animation can't be named
 as "manifest.json" and should contain exactly one .json file.
 
+The `DotLottie` composition spec works both with dotLottie and simple ZIP files.
+For dotLottie files you can specify the animation to run if archive contains multiple animations
+
+```kotlin
+fun LottieCompositionSpec.Companion.DotLottie(
+    archive: ByteArray,
+    animationId: String?
+) : LottieCompositionSpec
+```
+
 ## Images
 
 Images should be avoided whenever possible. They are much larger, less performant, and can lead to pixelation. Whenever possible, try and make your animation consist solely of vectors. However, Lottie does support images in one of 4 ways:
@@ -197,16 +230,13 @@ Images should be avoided whenever possible. They are much larger, less performan
 `compottie-resources` provides ready-to-use implementation that loads assets from compose-resources:
 
 ```kotlin
-val composition = rememberLottieComposition(
+val painter = rememberLottiePainter(
+    composition = composition,
     assetsManager = rememberResourcesAssetsManager(
         directory = "files" // by default,
-                readBytes = Res::readBytes
+        readBytes = Res::readBytes
     )
-) {
-    LottieCompositionSpec.JsonString(
-        Res.readBytes("files/anim.json").decodeToString()
-    )
-}
+)
 ```
 
 ## Fonts
@@ -217,10 +247,6 @@ Text can be drawn in 2 ways: using fonts and using glyphs (when characters are b
 `compottie-resources` provides ready-to-use implementation that loads fonts from compose-resources:
 
 ```kotlin
-val composition by rememberLottieComposition() {
-    //...
-}
-
 val painter = rememberLottiePainter(
     composition = composition,
     fontManager = rememberResourcesFontManager { fontSpec ->
@@ -238,10 +264,10 @@ This module brings an additional composition spec called `LottieCompositionSpec.
 ```kotlin
 fun LottieCompositionSpec.Companion.Url(
     url : String,
-    format: LottieAnimationFormat = LottieAnimationFormat.Undefined,
-    client: HttpClient = DefaultHttpClient,
-    request : NetworkRequest = GetRequest,
-    cacheStrategy: LottieCacheStrategy = DiskCacheStrategy(),
+    format: LottieAnimationFormat,
+    client: HttpClient,
+    request : NetworkRequest,
+    cacheStrategy: LottieCacheStrategy,
 )
 ```
 that can be used to load JSON and dotLottie animations from the Internet.
@@ -258,7 +284,7 @@ The network module also brings the `NetworkAssetsManager` that have similar para
 If you are using Url composition spec then specifying `NetworkAssetsManager` is redundant.
 Url composition spec automatically prepares url assets
 
-There is no stable Ktor client for wasm so to use network module on this target you need to add 
+There is no stable Ktor client for wasm so to use network module on this target you need to add
 the following to the bottom of your build script:
 
 ```kotlin
@@ -276,10 +302,11 @@ configurations
 ```
 ## Dynamic Properties
 
-Lottie allows you to update Lottie animation properties at runtime. Some reasons you may want to do this are:
+Lottie allows you to update animation properties at runtime. Some reasons you may want to do this are:
 1. Change colors for day/night or other app theme.
-2. Change the progress of a specific layer to show download progress.
-3. Change the size and position of something in response to a gesture.
+2. Localize animation text
+3. Change the progress of a specific layer to show download progress.
+4. Change the size and position of something in response to a gesture.
 
 Dynamic properties are created with `rememberLottieDynamicProperties`
 
@@ -309,5 +336,3 @@ val painter = rememberLottiePainter(
 ```
 
 Note, that final property building blocks (such as rotations, color, alpha) are called on EACH ANIMATION FRAME and should be cached if they don't rely on progress and have allocations or hard computations.
-
-

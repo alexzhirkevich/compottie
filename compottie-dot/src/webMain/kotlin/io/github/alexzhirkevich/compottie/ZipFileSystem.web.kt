@@ -6,7 +6,7 @@ import okio.Path.Companion.toPath
 import okio.buffer
 import okio.use
 
-internal expect suspend fun decompress(array: ByteArray, inflatedSize : Int) : ByteArray
+internal expect suspend fun decompress(array: ByteArray, decompressedSize : Int) : ByteArray
 
 internal actual class ZipFileSystem actual constructor(
     private val parent : FileSystem,
@@ -26,7 +26,7 @@ internal actual class ZipFileSystem actual constructor(
         if (entry.compressionMethod == COMPRESSION_METHOD_STORED)
             return bytes
 
-        return decompress(bytes, entry.compressedSize.toInt())
+        return decompress(bytes, entry.size.toInt())
     }
 
     private val root = "/".toPath()

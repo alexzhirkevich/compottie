@@ -51,8 +51,3 @@ internal class VectorKeyframe(
         )
     }
 }
-
-private fun FloatArray.ofNulls() = all { it == 0f }
-
-
-

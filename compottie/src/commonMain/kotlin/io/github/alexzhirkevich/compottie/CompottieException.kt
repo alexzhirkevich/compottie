@@ -1,7 +1,6 @@
 package io.github.alexzhirkevich.compottie
 
-class CompottieException internal constructor(
+open class CompottieException @InternalCompottieApi constructor(
     msg : String,
     cause : Throwable? = null
-) : Exception(msg,cause) {
-}
+) : Exception(msg,cause)

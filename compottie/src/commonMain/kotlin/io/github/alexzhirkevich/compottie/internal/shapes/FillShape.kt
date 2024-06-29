@@ -2,7 +2,6 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
@@ -18,13 +17,13 @@ import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
+import io.github.alexzhirkevich.compottie.internal.animation.defaultOpacity
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsState
 import io.github.alexzhirkevich.compottie.internal.helpers.FillRule
 import io.github.alexzhirkevich.compottie.internal.helpers.asPathFillType
-import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.platform.GradientCache
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.utils.set
@@ -49,7 +48,7 @@ internal class FillShape(
     val direction : Int = 1,
 
     @SerialName("o")
-    val opacity : AnimatedNumber?,
+    val opacity : AnimatedNumber = AnimatedNumber.defaultOpacity(),
 
     @SerialName("c")
     val color : AnimatedColor,
@@ -96,7 +95,7 @@ internal class FillShape(
             name = name,
             hidden = hidden,
             direction = direction,
-            opacity = opacity?.copy(),
+            opacity = opacity.copy(),
             color = color.copy(),
             fillRule = fillRule
         )
@@ -156,11 +155,11 @@ internal class FillShape(
         )
     }
 
-    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
         if (name != null) {
-            dynamicFill = properties[layerPath(basePath, name)]
-            dynamicShape = properties[layerPath(basePath, name)]
+            dynamicFill = properties?.get(layerPath(basePath, name))
+            dynamicShape = properties?.get(layerPath(basePath, name))
         }
     }
 

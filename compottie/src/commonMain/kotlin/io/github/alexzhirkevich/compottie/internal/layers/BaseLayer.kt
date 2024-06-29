@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
-import io.github.alexzhirkevich.compottie.L
+import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
@@ -25,15 +25,14 @@ import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MaskMode
 import io.github.alexzhirkevich.compottie.internal.helpers.isInvert
 import io.github.alexzhirkevich.compottie.internal.helpers.isLuma
-import io.github.alexzhirkevich.compottie.internal.helpers.isSupported
 import io.github.alexzhirkevich.compottie.internal.platform.Luma
 import io.github.alexzhirkevich.compottie.internal.platform.drawRect
 import io.github.alexzhirkevich.compottie.internal.platform.isAndroidAtMost
 import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
 import io.github.alexzhirkevich.compottie.internal.platform.set
+import io.github.alexzhirkevich.compottie.internal.utils.fastSetFrom
 import io.github.alexzhirkevich.compottie.internal.utils.intersectOrReset
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
-import io.github.alexzhirkevich.compottie.internal.utils.set
 import io.github.alexzhirkevich.compottie.internal.utils.union
 
 internal abstract class BaseLayer : Layer {
@@ -104,11 +103,11 @@ internal abstract class BaseLayer : Layer {
         private set
 
     override fun setDynamicProperties(
-        composition: DynamicCompositionProvider,
+        composition: DynamicCompositionProvider?,
         state: AnimationState
     ) : DynamicLayerProvider? {
-        resolvingPath?.let {
-            dynamicLayer = composition[it]
+        dynamicLayer = resolvingPath?.let {
+            composition?.get(it)
         }
         transform.dynamic = dynamicLayer?.transform
         return dynamicLayer
@@ -137,14 +136,14 @@ internal abstract class BaseLayer : Layer {
 
                 buildParentLayerListIfNeeded()
 
-                matrix.setFrom(parentMatrix)
+                matrix.fastSetFrom(parentMatrix)
                 parentLayers?.fastForEachReversed {
                     matrix.preConcat(it.transform.matrix(state))
                 }
 
                 var alpha = 1f
 
-                transform.opacity?.interpolatedNorm(state)?.let {
+                transform.opacity.interpolatedNorm(state).let {
                     alpha = (alpha * it).coerceIn(0f, 1f)
                 }
 
@@ -215,7 +214,7 @@ internal abstract class BaseLayer : Layer {
                 }
             }
         } catch (t: Throwable) {
-            L.logger.error("Lottie crashed in draw :(", t)
+            Compottie.logger?.error("Lottie crashed in draw :(", t)
         }
     }
 
@@ -228,7 +227,7 @@ internal abstract class BaseLayer : Layer {
     ) {
         rect.set(0f, 0f, 0f, 0f)
         buildParentLayerListIfNeeded()
-        boundsMatrix.setFrom(parentMatrix)
+        boundsMatrix.fastSetFrom(parentMatrix)
 
         if (applyParents) {
             val p = parentLayers

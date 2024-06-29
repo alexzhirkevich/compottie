@@ -5,7 +5,7 @@ import androidx.compose.ui.geometry.lerp
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
-import io.github.alexzhirkevich.compottie.internal.util.toOffset
+import io.github.alexzhirkevich.compottie.internal.utils.toOffset
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -50,12 +50,12 @@ internal class Bezier(
                 val cp2 = inTangents[i]
                 val vertex = vertices[i]
 
-                val shapeCp1 = floatArrayOf(prevVertex[0] + cp1[0], prevVertex[1] + cp1[1])
-                val shapeCp2 = floatArrayOf(vertex[0] + cp2[0], vertex[1] + cp2[1])
+                val shapeCp1 = Offset(prevVertex[0] + cp1[0], prevVertex[1] + cp1[1])
+                val shapeCp2 = Offset(vertex[0] + cp2[0], vertex[1] + cp2[1])
                 curves.add(
                     CubicCurveData(
-                        shapeCp1.toOffset(),
-                        shapeCp2.toOffset(),
+                        shapeCp1,
+                        shapeCp2,
                         vertex.toOffset()
                     )
                 )
@@ -151,13 +151,13 @@ internal class Bezier(
         val cp1 = outTangents[vertices.lastIndex]
         val cp2 = inTangents[0]
 
-        val shapeCp1 = floatArrayOf(prevVertex[0] + cp1[0], prevVertex[1] + cp1[1])
-        val shapeCp2 = floatArrayOf(vertex[0] + cp2[0], vertex[1] + cp2[1])
+        val shapeCp1 = Offset(prevVertex[0] + cp1[0], prevVertex[1] + cp1[1])
+        val shapeCp2 = Offset(vertex[0] + cp2[0], vertex[1] + cp2[1])
 
         curves.add(
             CubicCurveData(
-                shapeCp1.toOffset(),
-                shapeCp2.toOffset(),
+                shapeCp1,
+                shapeCp2,
                 vertex.toOffset()
             )
         )

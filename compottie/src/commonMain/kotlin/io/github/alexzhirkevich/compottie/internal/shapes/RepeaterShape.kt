@@ -19,7 +19,9 @@ import io.github.alexzhirkevich.compottie.internal.content.ContentGroupImpl
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.GreedyContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
+import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
+import io.github.alexzhirkevich.compottie.internal.utils.fastSetFrom
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -33,10 +35,10 @@ internal class RepeaterShape(
     val copies : AnimatedNumber,
 
     @SerialName("o")
-    val offset : AnimatedNumber? = null,
+    val offset : AnimatedNumber = AnimatedNumber.Default(0f),
 
     @SerialName("tr")
-    val transform: RepeaterTransform,
+    val transform: RepeaterTransform = RepeaterTransform(),
 
     @SerialName("nm")
     override val name: String? = null,
@@ -58,7 +60,7 @@ internal class RepeaterShape(
     private val matrix = Matrix()
 
     @Transient
-    private var dynamicHidden : DynamicShapeProvider? = null
+    private var dynamicShape : DynamicShapeProvider? = null
 
     override fun draw(
         drawScope: DrawScope,
@@ -68,12 +70,12 @@ internal class RepeaterShape(
     ) {
         contentGroup?.let { contentGroup ->
             val copies = copies.interpolated(state)
-            val offset = offset?.interpolated(state) ?: 0f
+            val offset = offset.interpolated(state)
             val startOpacity = transform.startOpacity?.interpolatedNorm(state) ?: 1f
             val endOpacity = transform.endOpacity?.interpolatedNorm(state) ?: 1f
 
             for (i in copies.toInt() - 1 downTo 0) {
-                matrix.setFrom(parentMatrix)
+                matrix.fastSetFrom(parentMatrix)
                 matrix.preConcat(transform.repeaterMatrix(state, i + offset))
                 val newAlpha = parentAlpha * lerp(startOpacity, endOpacity, i / copies).coerceIn(0f, 1f)
                 contentGroup.draw(drawScope, matrix, newAlpha, state)
@@ -96,10 +98,10 @@ internal class RepeaterShape(
         val contentPath = contentGroup?.getPath(state) ?: return path
 
         val copies = copies.interpolated(state)
-        val offset = offset?.interpolated(state) ?: 0f
+        val offset = offset.interpolated(state)
 
         for (i in copies.toInt() - 1 downTo 0) {
-            matrix.setFrom(transform.repeaterMatrix(state, i + offset))
+            matrix.fastSetFrom(transform.repeaterMatrix(state, i + offset))
             path.addPath(contentPath, matrix)
         }
         return path
@@ -137,23 +139,23 @@ internal class RepeaterShape(
 
         contentGroup = ContentGroupImpl(
             name = name,
-            hidden = { dynamicHidden?.hidden.derive(hidden, it) },
+            hidden = { dynamicShape?.hidden.derive(hidden, it) },
             contents = contentsList,
-            transform = null,
+            transform = Transform(),
         )
     }
 
-    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
         if (name != null) {
-            dynamicHidden = properties[layerPath(basePath, name)]
+            dynamicShape = properties?.get(layerPath(basePath, name))
         }
     }
 
     override fun deepCopy(): Shape {
         return RepeaterShape(
             copies = copies.copy(),
-            offset = offset?.copy(),
+            offset = offset.copy(),
             transform = transform.deepCopy(),
             name = name,
             matchName = matchName,

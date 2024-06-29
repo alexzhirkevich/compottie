@@ -9,7 +9,7 @@ import org.jetbrains.compose.resources.getFontResourceBytes
 
 @OptIn(ExperimentalResourceApi::class)
 internal actual suspend fun loadFont(
-    context : LottieContext,
+    context : LottieContext?,
     environment: ResourceEnvironment,
     font: LottieFontSpec,
     resource: FontResource

@@ -8,6 +8,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.GradientColors
 import io.github.alexzhirkevich.compottie.internal.animation.GradientType
+import io.github.alexzhirkevich.compottie.internal.animation.defaultOpacity
 import io.github.alexzhirkevich.compottie.internal.helpers.StrokeDash
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
@@ -37,7 +38,7 @@ internal class GradientStrokeShape(
     override val strokeMiter : Float = 0f,
 
     @SerialName("o")
-    override val opacity : AnimatedNumber = AnimatedNumber.Default(100f),
+    override val opacity : AnimatedNumber = AnimatedNumber.defaultOpacity(),
 
     @SerialName("w")
     override val strokeWidth : AnimatedNumber,

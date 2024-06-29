@@ -6,6 +6,8 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import io.github.alexzhirkevich.compottie.Compottie
+import io.github.alexzhirkevich.compottie.assets.ImageRepresentable
 import io.github.alexzhirkevich.compottie.dynamic.DynamicImageLayerProvider
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
@@ -105,6 +107,12 @@ internal class ImageLayer(
 
         val asset = state.assets[refId] as? ImageAsset ?: return null
         val image = dynamic?.image?.invoke(state, asset.spec) ?: return asset
+
+
+        require(image.width == asset.spec.width && image.height == asset.spec.height) {
+            "Dynamic image must be exactly same size as requested in spec!"
+        }
+
         asset.setBitmap(image)
 
         return asset

@@ -12,11 +12,16 @@ import org.jetbrains.compose.resources.getResourceItemByEnvironment
 
 @OptIn(ExperimentalResourceApi::class, InternalResourceApi::class)
 internal actual suspend fun loadFont(
-    context : LottieContext,
+    context : LottieContext?,
     environment: ResourceEnvironment,
     font: LottieFontSpec,
     resource: FontResource
 ) : Font {
     val path =  resource.getResourceItemByEnvironment(environment).path
+
+    checkNotNull(context){
+        "Compottie failed to initializer"
+    }
+
     return Font(path, context.assets, font.weight, font.style)
 }

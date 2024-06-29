@@ -39,7 +39,7 @@ internal object UnspecifiedCompositionKey
  * Load and prepare [LottieComposition] for displaying.
  *
  * Instance produces by [spec] will be remembered until [key] is changed. Those instances
- * are cached across the whole application. Cache size can be configured with [L.compositionCacheLimit].
+ * are cached across the whole application. Cache size can be configured with [Compottie.compositionCacheLimit].
  * If key is not provided then [LottieCompositionSpec.key] will be used.
  * To disable caching null [key] must be passed explicitly.
  * [currentCompositeKeyHash] in appropriate place can be used as a key (inappropriate places are loops without key for example)
@@ -181,7 +181,7 @@ class LottieComposition internal constructor(
     private val assetsMutex = Mutex()
     private val fontsMutex = Mutex()
 
-    private var loadedFonts : Map<String, FontFamily> = emptyMap()
+    private var storedFonts : MutableMap<String, FontFamily> = mutableMapOf()
 
     private val markersMap = animation.markers.associateBy(Marker::name)
 
@@ -195,6 +195,7 @@ class LottieComposition internal constructor(
         }
     }
 
+
     @InternalCompottieApi
     suspend fun prepareAssets(assetsManager: LottieAssetsManager) {
         assetsMutex.withLock {
@@ -205,7 +206,7 @@ class LottieComposition internal constructor(
     @InternalCompottieApi
     suspend fun prepareFonts(fontsManager : LottieFontManager) {
         fontsMutex.withLock {
-            loadedFonts = loadFonts(fontsManager)
+            storedFonts.putAll(loadFontsInternal(fontsManager))
         }
     }
 
@@ -245,7 +246,13 @@ class LottieComposition internal constructor(
 
     internal suspend fun loadFonts(fontManager: LottieFontManager) : Map<String, FontFamily> {
         return coroutineScope {
-            loadedFonts + animation.fonts?.list
+            storedFonts + loadFontsInternal(fontManager)
+        }
+    }
+
+    private suspend fun loadFontsInternal(fontManager: LottieFontManager) : Map<String, FontFamily> {
+        return coroutineScope {
+            storedFonts + animation.fonts?.list
                 ?.map {
                     async {
                         val f = it.font ?: fontManager.font(it.spec)
@@ -300,6 +307,7 @@ class LottieComposition internal constructor(
         fun clearCache() = cache.clear()
 
         @OptIn(ExperimentalCompottieApi::class)
-        private val cache = LruMap<LottieComposition>(limit = L::compositionCacheLimit)
+        private val cache = LruMap<LottieComposition>(limit = Compottie::compositionCacheLimit)
     }
 }
+

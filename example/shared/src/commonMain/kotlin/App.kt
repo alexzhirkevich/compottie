@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -33,17 +32,21 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RenderEffect
+import androidx.compose.ui.layout.ScaleFactor
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.CompottieException
 import io.github.alexzhirkevich.compottie.DotLottie
 import io.github.alexzhirkevich.compottie.ExperimentalCompottieApi
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
-import io.github.alexzhirkevich.compottie.LottieConstants
+import io.github.alexzhirkevich.compottie.LottiePainter
 import io.github.alexzhirkevich.compottie.NetworkFontManager
+import io.github.alexzhirkevich.compottie.ResourcesFontManager
+import io.github.alexzhirkevich.compottie.Url
 import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
-import io.github.alexzhirkevich.compottie.dynamic.LottieGradient
 import io.github.alexzhirkevich.compottie.dynamic.rememberLottieDynamicProperties
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
@@ -51,8 +54,8 @@ import io.github.alexzhirkevich.compottie.rememberResourcesAssetsManager
 import io.github.alexzhirkevich.compottie.rememberResourcesFontManager
 import io.github.alexzhirkevich.shared.generated.resources.ComicNeue
 import io.github.alexzhirkevich.shared.generated.resources.Res
-import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.ExperimentalResourceApi
+import kotlin.random.Random
 
 private val GRADIENT_ELLIPSE = "gradient_ellipse.json"
 private val TEST = "test.json"
@@ -136,10 +139,18 @@ fun App() {
 
 
     val composition = rememberLottieComposition() {
-        LottieCompositionSpec.ResourceString(ROBOT)
+
+//        LottieCompositionSpec.DotLottie(
+//            Res.readBytes("files/$DOT_WITH_IMAGE")
+//        )
+
+//        LottieCompositionSpec.ResourceString(ROBOT)
 //
-//        LottieCompositionSpec.Url(
-//            "https://assets-v2.lottiefiles.com/a/e9cce796-ee9b-11ee-817f-5ff9e267b845/1IrfDLeScs.lottie",
+        LottieCompositionSpec.Url(
+            "https://assets-v2.lottiefiles.com/a/a63d8606-1166-11ee-a7f8-83d9759dd8ff/hCTtJKM3Tu.lottie"
+//            "https://assets-v2.lottiefiles.com/a/d5654818-1168-11ee-a43f-870f05952f24/m5LUOQBrz9.lottie" // radial gr with angle
+//            "https://assets-v2.lottiefiles.com/a/27cd3f04-1180-11ee-852d-8b2f8ce04afa/SB3d1oChh6.lottie", // broken envelope transform
+//            "https://assets-v2.lottiefiles.com/a/4a2c7f7e-1171-11ee-ae37-d7b32f8315b2/7qw6O5kPfv.lottie", // broken text pos
 //            "https://lottie.host/02723b80-a213-478e-9320-0e5c3adf88ff/zz4HlIqtSb.lottie",
 //            "https://assets-v2.lottiefiles.com/a/10956594-1169-11ee-98fe-ef3d9d71ad0f/WVFg2bDWGj.lottie",
 //            "https://assets-v2.lottiefiles.com/a/0e63252e-1153-11ee-9e35-dfc2b798a135/sYygPbem7R.lottie",
@@ -148,7 +159,7 @@ fun App() {
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/august_view_pulse.zip",
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/anim_jpg.zip",
 //            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/ZipInlineImage.zip",
-//        )
+        )
     }
 
     // If you want to be aware of loading errors
@@ -165,17 +176,16 @@ fun App() {
         contentAlignment = Alignment.Center
     ) {
 
-        val progress by animateLottieCompositionAsState(
-            iterations = LottieConstants.IterateForever,
+        val progress = animateLottieCompositionAsState(
+            iterations = Compottie.IterateForever,
             composition = composition.value
         )
-        val painter  = rememberLottiePainter(
+
+        val painter = rememberLottiePainter(
             composition = composition.value,
-            progress = { progress },
-            fontManager = remember {
-                NetworkFontManager()
-            },
-            //            fontManager = rememberResourcesFontManager { fontSpec ->
+            progress = progress::value,
+//            clipToCompositionBounds = false,
+//            fontManager = rememberResourcesFontManager { fontSpec ->
 //                when (fontSpec.family) {
 //                    "Comic Neue" -> Res.font.ComicNeue
 //                    else -> null
@@ -217,7 +227,7 @@ fun AllExamples(){
             Image(
                 painter = rememberLottiePainter(
                     composition = composition,
-                    iterations = LottieConstants.IterateForever,
+                    iterations = Compottie.IterateForever,
                     assetsManager = rememberResourcesAssetsManager(
                         readBytes = Res::readBytes
                     ),
@@ -320,7 +330,7 @@ fun LottieFontExample() {
                                 composition = rememberLottieComposition {
                                     LottieCompositionSpec.ResourceString("mobilo/BlinkingCursor.json")
                                 }.value,
-                                iterations = LottieConstants.IterateForever
+                                iterations = Compottie.IterateForever
                             ),
                             contentDescription = it.toString()
                         )
@@ -341,7 +351,7 @@ fun LottieList() {
 
             val painter = rememberLottiePainter(
                 composition.value,
-                iterations = LottieConstants.IterateForever
+                iterations = Compottie.IterateForever
             )
 
             Image(

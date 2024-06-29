@@ -2,7 +2,7 @@ package io.github.alexzhirkevich.compottie
 
 import org.khronos.webgl.Uint8Array
 
-internal actual suspend fun decompress(array: ByteArray, inflatedSize : Int) : ByteArray {
+internal actual suspend fun decompress(array: ByteArray, decompressedSize : Int) : ByteArray {
 
     val ds = DecompressionStream("deflate-raw")
 
@@ -19,7 +19,8 @@ internal actual suspend fun decompress(array: ByteArray, inflatedSize : Int) : B
         .pipeThrough(ds)
         .getReader()
 
-    val inflatedResult = ArrayList<Byte>(inflatedSize)
+    val decompressed = ByteArray(decompressedSize)
+    var ind = 0
 
     while (true) {
         val result = reader.read().await()
@@ -27,11 +28,12 @@ internal actual suspend fun decompress(array: ByteArray, inflatedSize : Int) : B
             break
         }
 
-        inflatedResult.addAll(
-            Uint8Array(result.value.buffer).unsafeCast<Array<Byte>>()
-        )
+        val chunk = Uint8Array(result.value.buffer).unsafeCast<ByteArray>()
+
+        chunk.copyInto(decompressed, ind)
+        ind += chunk.size
     }
 
-    return inflatedResult.toByteArray()
+    return decompressed
 }
 

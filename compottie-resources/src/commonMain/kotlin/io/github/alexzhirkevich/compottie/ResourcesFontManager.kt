@@ -10,8 +10,14 @@ import io.github.alexzhirkevich.compottie.assets.LottieFontManager
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.FontResource
 import org.jetbrains.compose.resources.ResourceEnvironment
+import org.jetbrains.compose.resources.getSystemResourceEnvironment
 import org.jetbrains.compose.resources.rememberResourceEnvironment
 
+/**
+ * Create and remember Compose resources [LottieFontManager]
+ *
+ * Warning: this manager uses internal Compose API on Android and should be considered unstable
+ * */
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 @ExperimentalCompottieApi
@@ -25,7 +31,7 @@ fun rememberResourcesFontManager(
     val context = currentLottieContext()
 
     return remember(environment, context) {
-        ResourcesFontManager(
+        ResourcesFontManagerImpl(
             context = context,
             environment = environment,
             resource = { factory(it) }
@@ -33,10 +39,29 @@ fun rememberResourcesFontManager(
     }
 }
 
+@OptIn(InternalCompottieApi::class, ExperimentalResourceApi::class)
+@ExperimentalCompottieApi
+/**
+ * Factory method to create Compose resources [LottieFontManager] from non-composable context.
+ *
+ * Use [rememberResourcesFontManager] to create it from composition.
+ *
+ * LottiePainter created with this font manager won't work with Android Studio preview.
+ *
+ * Warning: this manager uses internal Compose API on Android and should be considered unstable
+ * */
+fun ResourcesFontManager(
+    environment: ResourceEnvironment = getSystemResourceEnvironment(),
+    resource : (LottieFontSpec) -> FontResource?
+) : LottieFontManager = ResourcesFontManagerImpl(
+    context = Compottie.context,
+    environment = environment,
+    resource = resource
+)
 
 @OptIn(ExperimentalResourceApi::class)
-private class ResourcesFontManager(
-    private val context: LottieContext,
+private class ResourcesFontManagerImpl(
+    private val context: LottieContext?,
     private val environment: ResourceEnvironment,
     private val resource : (LottieFontSpec) -> FontResource?
 ) : LottieFontManager {
@@ -50,7 +75,7 @@ private class ResourcesFontManager(
 
 @OptIn(ExperimentalResourceApi::class)
 internal expect suspend fun loadFont(
-    context : LottieContext,
+    context : LottieContext?,
     environment: ResourceEnvironment,
     font: LottieFontSpec,
     resource: FontResource

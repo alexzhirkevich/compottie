@@ -10,7 +10,7 @@ kotlin {
             implementation(libs.serialization)
             api(libs.okio)
             api(libs.ktor.client.core)
-            implementation(project(":compottie"))
+            api(project(":compottie"))
             implementation(project(":compottie-dot"))
         }
     }

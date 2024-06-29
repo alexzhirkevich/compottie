@@ -46,6 +46,10 @@ class DiskCacheStrategy(
         }
     }
 
+    override suspend fun clear() {
+        diskCache.clear()
+    }
+
     override fun equals(other: Any?): Boolean {
         return diskCache == (other as? DiskCacheStrategy)?.diskCache
     }

@@ -19,6 +19,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.GradientColors
 import io.github.alexzhirkevich.compottie.internal.animation.GradientType
+import io.github.alexzhirkevich.compottie.internal.animation.defaultOpacity
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
@@ -50,7 +51,7 @@ internal class GradientFillShape(
     override val hidden : Boolean = false,
 
     @SerialName("o")
-    val opacity : AnimatedNumber? = null,
+    val opacity : AnimatedNumber = AnimatedNumber.defaultOpacity(),
 
     @SerialName("s")
     val startPoint : AnimatedVector2,
@@ -61,17 +62,11 @@ internal class GradientFillShape(
     @SerialName("t")
     val type : GradientType,
 
-    /**
-     * Gradient Highlight Length. Only if type is Radial
-     * */
-    @SerialName("h")
-    val highlightLength : AnimatedNumber? = null,
-
-    /**
-     * Highlight Angle. Only if type is Radial
-     * */
-    @SerialName("a")
-    val highlightAngle : AnimatedNumber? = null,
+//    @SerialName("h")
+//    val highlightLength : AnimatedNumber? = null,
+//
+//    @SerialName("a")
+//    val highlightAngle : AnimatedNumber? = null,
 
     @SerialName("g")
     val colors : GradientColors,
@@ -181,11 +176,11 @@ internal class GradientFillShape(
         )
     }
 
-    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
         if (name != null) {
-            dynamicFill = properties[layerPath(basePath, name)]
-            dynamicShape = properties[layerPath(basePath, name)]
+            dynamicFill = properties?.get(layerPath(basePath, name))
+            dynamicShape = properties?.get(layerPath(basePath, name))
         }
     }
 
@@ -200,12 +195,12 @@ internal class GradientFillShape(
             matchName = matchName,
             name = name,
             hidden = hidden,
-            opacity = opacity?.copy(),
+            opacity = opacity.copy(),
             startPoint = startPoint.copy(),
             endPoint = endPoint.copy(),
             type = type,
-            highlightLength = highlightLength?.copy(),
-            highlightAngle = highlightAngle?.copy(),
+//            highlightLength = highlightLength?.copy(),
+//            highlightAngle = highlightAngle?.copy(),
             colors = colors.copy(),
             fillRule = fillRule
         )

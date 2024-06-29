@@ -3,9 +3,17 @@ package io.github.alexzhirkevich.compottie
 import io.github.alexzhirkevich.compottie.internal.Animation
 import io.github.alexzhirkevich.compottie.internal.LottieJson
 
-object L {
+object Compottie {
 
-    var logger : LottieLogger = LottieLogger.Default
+    const val IterateForever = Int.MAX_VALUE
+
+    /**
+     * Logger used to inform about various events, errors, unsupported features, etc.
+     *
+     * Default instance uses stdout / stderr.
+     * You can set it to null for production
+     * */
+    var logger : LottieLogger? = LottieLogger.Default
 
     /**
      * Limit gradient shaders cache size.
@@ -27,9 +35,11 @@ object L {
     @ExperimentalCompottieApi
     var shaderCacheLimit : Int = 1000
 
+    /**
+     * Limit the number of in-memory cached lottie compositions.
+     * */
     @ExperimentalCompottieApi
-    var compositionCacheLimit : Int = 20
-
+    var compositionCacheLimit : Int = 15
 
     /**
      * Warmup JSON parser. The first animation parsing will be much faster
@@ -38,6 +48,10 @@ object L {
     fun warmup() {
         LottieJson.decodeFromString<Animation>(warmupAnim)
     }
+
+    @InternalCompottieApi
+    var context : LottieContext? = null
+        internal set
 }
 
 

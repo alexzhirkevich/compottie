@@ -75,13 +75,6 @@ internal fun List<Float>.toColor() = Color(
     alpha = getOrNull(3)?.toColorComponent() ?: 1f
 )
 
-internal fun FloatArray.toColor() = Color(
-    red = get(0).toColorComponent(),
-    green = get(1).toColorComponent(),
-    blue = get(2).toColorComponent(),
-    alpha = getOrNull(3)?.toColorComponent() ?: 1f
-)
-
 // Modern Lotties (v 4.1.9+) have color components in the [0, 1] range.
 // Older ones have components in the [0, 255] range.
 private fun Float.toColorComponent() : Float = when (this) {

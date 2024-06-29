@@ -30,18 +30,20 @@ internal class DotLottieAssetsManager(
 
         return load("/images", trimPath, trimName)?.let {
             ImageRepresentable.Bytes(it)
+        } ?: run {
+            Compottie.logger?.info("Failed to decode dotLottie asset $trimName")
+            null
         }
     }
 
     private suspend fun load(root: String?, trimPath: String?, trimName: String?): ByteArray? {
-        val fullPath = listOfNotNull(root, trimPath, trimName)
-            .joinToString("/")
-
         return try {
+            val fullPath = listOfNotNull(root, trimPath, trimName)
+                .joinToString("/")
+
             val r = this.root ?: "/".toPath()
             zipFileSystem.read(r.resolve(fullPath.toPath(true)))
-        } catch (t: IOException) {
-            L.logger.error("Failed to decode dotLottie asset $trimName", t)
+        } catch (t: Throwable) {
             return null
         }
     }

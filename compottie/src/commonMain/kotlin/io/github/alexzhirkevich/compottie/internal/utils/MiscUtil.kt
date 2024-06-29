@@ -1,7 +1,13 @@
 package io.github.alexzhirkevich.compottie.internal.utils
 
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import kotlin.math.max
 import kotlin.math.min
+
+internal fun FloatArray.toOffset() = Offset(this[0], this[1])
+internal fun List<Float>.toOffset() = Offset(this[0], this[1])
+internal fun List<Float>.toSize() = Size(this[0], this[1])
 
 fun floorMod(x: Float, y: Float): Int {
     return floorMod(x.toInt(), y.toInt())

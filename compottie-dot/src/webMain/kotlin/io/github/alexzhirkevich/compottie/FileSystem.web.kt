@@ -7,9 +7,9 @@ import okio.Path
 import okio.Sink
 import okio.Source
 
-internal actual fun defaultFileSystem() : FileSystem = ThrowingFileSystem
+@InternalCompottieApi
+actual fun defaultFileSystem() : FileSystem = ThrowingFileSystem
 
-/** A file system that throws if any of its methods are called. */
 private object ThrowingFileSystem : FileSystem() {
 
     override fun atomicMove(source: Path, target: Path) {
@@ -64,7 +64,9 @@ private object ThrowingFileSystem : FileSystem() {
         throwReadWriteIsUnsupported()
     }
 
+    @OptIn(InternalCompottieApi::class)
     private fun throwReadWriteIsUnsupported(): Nothing {
-        throw CacheIsUnsupportedException
+        throw UnsupportedFileSystemException()
     }
 }
+

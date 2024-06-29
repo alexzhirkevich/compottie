@@ -13,7 +13,6 @@ import io.github.alexzhirkevich.compottie.internal.platform.set
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundSimultaneousTrimPath
-import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -69,11 +68,11 @@ internal class PathShape(
         trimPaths = CompoundSimultaneousTrimPath(contentsBefore)
     }
 
-    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
 
         if (name != null) {
-            dynamicShape = properties[layerPath(basePath, name)]
+            dynamicShape = properties?.get(layerPath(basePath, name))
         }
     }
 

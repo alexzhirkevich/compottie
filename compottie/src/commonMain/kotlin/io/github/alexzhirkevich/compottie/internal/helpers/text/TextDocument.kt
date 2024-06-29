@@ -10,10 +10,10 @@ internal class TextDocument(
     var fontFamily : String? = null,
 
     @SerialName("fc")
-    var fillColor : FloatArray? = null,
+    var fillColor : List<Float>? = null,
 
     @SerialName("sc")
-    var strokeColor : FloatArray? = null,
+    var strokeColor : List<Float>? = null,
 
     @SerialName("sw")
     var strokeWidth : Float = 0f,
@@ -28,10 +28,10 @@ internal class TextDocument(
     var lineHeight : Float = fontSize,
 
     @SerialName("sz")
-    var wrapSize : FloatArray? = null,
+    var wrapSize : List<Float>? = null,
 
     @SerialName("ps")
-    var wrapPosition : FloatArray? = null,
+    var wrapPosition : List<Float>? = null,
 
     @SerialName("t")
     var text : String? = null,

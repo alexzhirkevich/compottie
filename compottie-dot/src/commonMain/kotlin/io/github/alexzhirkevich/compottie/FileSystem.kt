@@ -8,11 +8,14 @@ import okio.Path
 import kotlin.random.Random
 import kotlin.random.nextULong
 
-internal object CacheIsUnsupportedException : Exception()
+@InternalCompottieApi
+class UnsupportedFileSystemException : CompottieException("File system is not unsupported")
 
-internal expect fun defaultFileSystem() : FileSystem
+@InternalCompottieApi
+expect fun defaultFileSystem() : FileSystem
 
-internal fun Closeable.closeQuietly() {
+@InternalCompottieApi
+fun Closeable.closeQuietly() {
     try {
         close()
     } catch (e: RuntimeException) {
@@ -20,7 +23,8 @@ internal fun Closeable.closeQuietly() {
     } catch (_: Exception) {}
 }
 
-internal fun FileSystem.createFile(file: Path, mustCreate: Boolean = false) {
+@InternalCompottieApi
+fun FileSystem.createFile(file: Path, mustCreate: Boolean = false) {
     if (mustCreate) {
         sink(file, mustCreate = true).closeQuietly()
     } else if (!exists(file)) {
@@ -28,7 +32,8 @@ internal fun FileSystem.createFile(file: Path, mustCreate: Boolean = false) {
     }
 }
 
-internal fun FileSystem.createTempFile(): Path {
+@InternalCompottieApi
+fun FileSystem.createTempFile(): Path {
     var tempFile: Path
     do {
         tempFile = FileSystem.SYSTEM_TEMPORARY_DIRECTORY / "tmp_${Random.nextULong()}"
@@ -37,7 +42,8 @@ internal fun FileSystem.createTempFile(): Path {
     return tempFile
 }
 
-internal fun FileSystem.deleteContents(directory: Path) {
+@InternalCompottieApi
+fun FileSystem.deleteContents(directory: Path) {
     var exception: IOException? = null
     val files = try {
         list(directory)

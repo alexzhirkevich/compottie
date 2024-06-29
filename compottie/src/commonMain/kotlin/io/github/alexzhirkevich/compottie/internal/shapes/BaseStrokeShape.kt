@@ -192,11 +192,11 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         }
     }
 
-    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
         name?.let {
-            dynamicStroke = properties[layerPath(basePath, it)]
-            dynamicShape = properties[layerPath(basePath, it)]
+            dynamicStroke = properties?.get(layerPath(basePath, it))
+            dynamicShape = properties?.get(layerPath(basePath, it))
         }
     }
 

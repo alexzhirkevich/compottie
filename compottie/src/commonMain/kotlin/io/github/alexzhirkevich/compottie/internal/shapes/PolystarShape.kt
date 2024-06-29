@@ -3,23 +3,25 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
-import io.github.alexzhirkevich.compottie.dynamic.DynamicEllipseProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicPolystarProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.dynamic.layerPath
-import io.github.alexzhirkevich.compottie.dynamic.toOffset
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.animation.Vec2
+import io.github.alexzhirkevich.compottie.internal.animation.defaultPosition
+import io.github.alexzhirkevich.compottie.internal.animation.defaultRadius
+import io.github.alexzhirkevich.compottie.internal.animation.defaultRotation
+import io.github.alexzhirkevich.compottie.internal.animation.defaultRoundness
 import io.github.alexzhirkevich.compottie.internal.animation.dynamicOffset
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundSimultaneousTrimPath
-import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.utils.Math
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -55,25 +57,25 @@ internal class PolystarShape(
     override val hidden : Boolean = false,
 
     @SerialName("p")
-    val position : AnimatedVector2?,
+    val position : AnimatedVector2 = AnimatedVector2.defaultPosition(),
 
     @SerialName("d")
     val direction : Int = 1,
 
     @SerialName("is")
-    val innerRoundness : AnimatedNumber? = null,
+    val innerRoundness : AnimatedNumber = AnimatedNumber.defaultRoundness(),
 
     @SerialName("ir")
-    val innerRadius : AnimatedNumber? = null,
+    val innerRadius : AnimatedNumber = AnimatedNumber.defaultRadius(),
 
     @SerialName("or")
-    val outerRadius : AnimatedNumber? = null,
+    val outerRadius : AnimatedNumber = AnimatedNumber.defaultRadius(),
 
     @SerialName("os")
-    val outerRoundness : AnimatedNumber? = null,
+    val outerRoundness : AnimatedNumber = AnimatedNumber.defaultRoundness(),
 
     @SerialName("r")
-    val rotation : AnimatedNumber? = null,
+    val rotation : AnimatedNumber = AnimatedNumber.defaultRotation(),
 
     @SerialName("pt")
     val points : AnimatedNumber,
@@ -81,8 +83,6 @@ internal class PolystarShape(
     @SerialName("sy")
     val starType : StarType,
 ) : Shape, PathContent {
-
-
 
     @Transient
     private val path = Path()
@@ -122,20 +122,20 @@ internal class PolystarShape(
         trimPaths = CompoundSimultaneousTrimPath(contentsBefore)
     }
 
-    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider) {
+    override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
 
         if (name != null) {
-            dynamicShape = properties[layerPath(basePath, name)]
+            dynamicShape = properties?.get(layerPath(basePath, name))
             val dynamicPolystar = dynamicShape as? DynamicPolystarProvider?
 
-            position?.dynamicOffset(dynamicPolystar?.position)
+            position.dynamicOffset(dynamicPolystar?.position)
             points.dynamic(dynamicPolystar?.points)
-            rotation?.dynamic(dynamicPolystar?.rotation)
-            innerRadius?.dynamic(dynamicPolystar?.innerRadius)
-            innerRoundness?.dynamic(dynamicPolystar?.innerRoundness)
-            outerRadius?.dynamic(dynamicPolystar?.outerRadius)
-            outerRoundness?.dynamic(dynamicPolystar?.outerRoundness)
+            rotation.dynamic(dynamicPolystar?.rotation)
+            innerRadius.dynamic(dynamicPolystar?.innerRadius)
+            innerRoundness.dynamic(dynamicPolystar?.innerRoundness)
+            outerRadius.dynamic(dynamicPolystar?.outerRadius)
+            outerRoundness.dynamic(dynamicPolystar?.outerRoundness)
         }
     }
 
@@ -144,13 +144,13 @@ internal class PolystarShape(
             matchName = matchName,
             name = name,
             hidden = hidden,
-            position = position?.copy(),
+            position = position.copy(),
             direction = direction,
-            innerRoundness = innerRoundness?.copy(),
-            innerRadius = innerRadius?.copy(),
-            outerRadius = outerRadius?.copy(),
-            outerRoundness = outerRoundness?.copy(),
-            rotation = rotation?.copy(),
+            innerRoundness = innerRoundness.copy(),
+            innerRadius = innerRadius.copy(),
+            outerRadius = outerRadius.copy(),
+            outerRoundness = outerRoundness.copy(),
+            rotation = rotation.copy(),
             points = points.copy(),
             starType = starType
         )
@@ -159,7 +159,7 @@ internal class PolystarShape(
 
     private fun createStarPath(state: AnimationState) {
         val points = points.interpolated(state = state)
-        var currentAngle = Math.toRadians((rotation?.interpolated(state) ?: 0f) - 90f)
+        var currentAngle = Math.toRadians(rotation.interpolated(state) - 90f)
 
         // adjust current angle for partial points
         var anglePerPoint: Float = (TwoPI / points).toFloat()
@@ -172,11 +172,11 @@ internal class PolystarShape(
             currentAngle += (halfAnglePerPoint * (1f - partialPointAmount))
         }
 
-        val outerRadius = outerRadius?.interpolated(state) ?: 0f
-        val innerRadius = innerRadius?.interpolated(state) ?: 0f
+        val outerRadius = outerRadius.interpolated(state)
+        val innerRadius = innerRadius.interpolated(state)
 
-        val innerRoundedness = innerRoundness?.interpolatedNorm(state) ?: 0f
-        val outerRoundedness = outerRoundness?.interpolatedNorm(state) ?: 0f
+        val innerRoundedness = innerRoundness.interpolatedNorm(state)
+        val outerRoundedness = outerRoundness.interpolatedNorm(state)
 
         var x: Float
         var y: Float
@@ -263,7 +263,7 @@ internal class PolystarShape(
             longSegment = !longSegment
         }
 
-        position?.interpolated(state)?.let {
+        position.interpolated(state).takeIf { it != Vec2.Zero }?.let {
             path.translate(it)
         }
 
@@ -272,13 +272,13 @@ internal class PolystarShape(
 
     private fun createPolygonPath(state: AnimationState) {
         val points = floor(points.interpolated(state)).toInt()
-        var currentAngle = Math.toRadians((rotation?.interpolated(state) ?: 0f) - 90f)
+        var currentAngle = Math.toRadians((rotation.interpolated(state)) - 90f)
 
         // adjust current angle for partial points
         val anglePerPoint = (TwoPI / points).toFloat()
 
-        val roundedness = outerRoundness?.interpolatedNorm(state) ?: 0f
-        val radius = outerRadius?.interpolated(state) ?: 0f
+        val roundedness = outerRoundness.interpolatedNorm(state)
+        val radius = outerRadius.interpolated(state)
         var x: Float
         var y: Float
         var previousX: Float
@@ -351,7 +351,7 @@ internal class PolystarShape(
             currentAngle += anglePerPoint
         }
 
-        position?.interpolated(state)?.takeIf { it != Offset.Zero }?.let {
+        position.interpolated(state).takeIf { it != Offset.Zero }?.let {
             path.translate(it)
         }
         path.close()

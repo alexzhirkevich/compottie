@@ -77,8 +77,6 @@ private class NetworkFontManagerImpl(
         result = 31 * result + request.hashCode()
         return result
     }
-
-
 }
 
 internal expect suspend fun makeFont(spec: LottieFontSpec, path: Path, bytes: ByteArray) : Font
