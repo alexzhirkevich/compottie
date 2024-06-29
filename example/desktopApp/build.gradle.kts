@@ -1,7 +1,6 @@
 
 plugins {
     kotlin("multiplatform")
-    id("org.jetbrains.compose")
 }
 
 
@@ -17,7 +16,9 @@ kotlin {
             kotlin.srcDirs("src/main/kotlin")
             dependencies {
                 implementation(project(":example:shared"))
+                implementation(project(":compottie"))
 
+                implementation(libs.serialization)
                 implementation(compose.desktop.currentOs)
                 api(compose.runtime)
                 api(compose.foundation)

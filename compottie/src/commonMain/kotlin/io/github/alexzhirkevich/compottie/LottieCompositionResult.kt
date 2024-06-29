@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie
 
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
@@ -7,8 +8,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
 /**
  * A [LottieCompositionResult] subclass is returned from [rememberLottieComposition].
@@ -28,7 +32,7 @@ import kotlinx.coroutines.sync.withLock
  * @see LottieAnimation
  */
 @Stable
-expect interface LottieCompositionResult : State<LottieComposition?> {
+interface LottieCompositionResult : State<LottieComposition?> {
     /**
      * The composition or null if it hasn't yet loaded or failed to load.
      */
@@ -77,15 +81,49 @@ expect interface LottieCompositionResult : State<LottieComposition?> {
     suspend fun await(): LottieComposition
 }
 
-/**
- * Like [LottieCompositionResult.await] but returns null instead of throwing an exception if the animation fails
- * to load.
- */
-suspend fun LottieCompositionResult.awaitOrNull(): LottieComposition? {
-    return try {
-        await()
-    } catch (e: Throwable) {
-        null
+
+@Stable
+internal class LottieCompositionResultImpl() : LottieCompositionResult {
+
+    private var compositionDeferred = CompletableDeferred<LottieComposition>()
+
+    override var value: LottieComposition? by mutableStateOf(null)
+        private set
+
+    override var error by mutableStateOf<Throwable?>(null)
+        private set
+
+    override val isLoading by derivedStateOf { value == null && error == null }
+
+    override val isComplete by derivedStateOf { value != null || error != null }
+
+    override val isFailure by derivedStateOf { error != null }
+
+    override val isSuccess by derivedStateOf { value != null }
+
+    override suspend fun await(): LottieComposition {
+        return compositionDeferred.await()
+    }
+
+    private val mutex = Mutex()
+
+    // MAIN THREAD!!!
+    internal suspend fun complete(composition: LottieComposition) {
+        mutex.withLock {
+            if (isComplete) return@withLock
+
+            value = composition
+            compositionDeferred.complete(composition)
+        }
+    }
+
+    // MAIN THREAD!!!
+    internal suspend fun completeExceptionally(error: Throwable) {
+        mutex.withLock {
+            if (isComplete) return@withLock
+
+            this.error = error
+            compositionDeferred.completeExceptionally(error)
+        }
     }
 }
-

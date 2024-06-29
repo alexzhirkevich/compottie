@@ -1,5 +1,4 @@
 plugins {
-    id("org.jetbrains.compose")
     kotlin("multiplatform")
 }
 
@@ -22,4 +21,5 @@ kotlin {
     }
 }
 
-compose.experimental.web.application{}
+plugins.apply("ktorwasm.workaround")
+

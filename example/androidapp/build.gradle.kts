@@ -1,21 +1,22 @@
+
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.compose")
+    alias(libs.plugins.android.application)
 }
 
 val _jvmTarget = findProperty("jvmTarget") as String
 
 android {
-    namespace = "io.github.alexzhirkevich.compottie.example.android"
+    namespace = "$group.compottie.example.android"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "io.github.alexzhirkevich.compottie.example.android"
+        applicationId = namespace
         minSdk = 24
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = project.version.toString()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -32,11 +33,16 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+    buildFeatures { compose = true }
 }
 
 dependencies {
 
     implementation(project(":example:shared"))
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.activity:activity-compose:1.8.0")
+    implementation(project(":compottie"))
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.activity.compose)
+    implementation(compose.uiTooling)
+    implementation(compose.preview)
 }

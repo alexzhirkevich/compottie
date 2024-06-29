@@ -1,18 +1,16 @@
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.application
-import androidx.compose.ui.window.rememberWindowState
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.WindowState
+import androidx.compose.ui.window.singleWindowApplication
 
 fun main() {
-
-    application {
-        val windowState = rememberWindowState()
-
-        Window(
-            onCloseRequest = ::exitApplication,
-            title = "Compottie example",
-            state = windowState,
-        ) {
-           App()
-        }
+    singleWindowApplication(
+        title = "Compottie 2.0 Example",
+        state = WindowState(
+            size = DpSize(1295.dp, 500.dp)
+        )
+    ) {
+        App()
     }
 }
+

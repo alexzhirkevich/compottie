@@ -1,65 +1,382 @@
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import io.github.alexzhirkevich.compottie.LottieAnimation
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RenderEffect
+import androidx.compose.ui.layout.ScaleFactor
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import io.github.alexzhirkevich.compottie.Compottie
+import io.github.alexzhirkevich.compottie.CompottieException
+import io.github.alexzhirkevich.compottie.DotLottie
+import io.github.alexzhirkevich.compottie.ExperimentalCompottieApi
+import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
-import io.github.alexzhirkevich.compottie.LottieConstants
+import io.github.alexzhirkevich.compottie.LottiePainter
+import io.github.alexzhirkevich.compottie.NetworkFontManager
+import io.github.alexzhirkevich.compottie.ResourcesFontManager
+import io.github.alexzhirkevich.compottie.Url
 import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
+import io.github.alexzhirkevich.compottie.dynamic.rememberLottieDynamicProperties
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
+import io.github.alexzhirkevich.compottie.rememberResourcesAssetsManager
+import io.github.alexzhirkevich.compottie.rememberResourcesFontManager
+import io.github.alexzhirkevich.shared.generated.resources.ComicNeue
+import io.github.alexzhirkevich.shared.generated.resources.Res
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import kotlin.random.Random
 
-private const val lottieData = """
-{"v":"4.10.1","fr":60,"ip":0,"op":120,"w":800,"h":800,"nm":"loading_animation","ddd":0,"assets":[],"layers":[{"ddd":0,"ind":1,"ty":4,"nm":"Shape Layer 5","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"n":["0p667_1_0p333_0"],"t":23,"s":[20],"e":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"n":["0p667_1_0p333_0"],"t":34,"s":[100],"e":[20]},{"t":69}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[400,400,0],"ix":2},"a":{"a":0,"k":[0,0,0],"ix":1},"s":{"a":0,"k":[100,100,100],"ix":6}},"ao":0,"shapes":[{"ty":"gr","it":[{"d":1,"ty":"el","s":{"a":1,"k":[{"i":{"x":[0,0],"y":[1,1]},"o":{"x":[0.333,0.333],"y":[0,0]},"n":["0_1_0p333_0","0_1_0p333_0"],"t":23,"s":[400,400],"e":[440,440]},{"i":{"x":[0.009,0.009],"y":[1,1]},"o":{"x":[0.333,0.333],"y":[0,0]},"n":["0p009_1_0p333_0","0p009_1_0p333_0"],"t":34,"s":[440,440],"e":[400,400]},{"t":59}],"ix":2},"p":{"a":0,"k":[0,0],"ix":3},"nm":"Ellipse Path 1","mn":"ADBE Vector Shape - Ellipse","hd":false},{"ty":"tr","p":{"a":0,"k":[0,0],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transform"}],"nm":"Ellipse 1","np":4,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false},{"ty":"gs","o":{"a":0,"k":100,"ix":9},"w":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"n":["0p833_0p833_0p167_0p167"],"t":23,"s":[5],"e":[10]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"n":["0p833_0p833_0p167_0p167"],"t":34,"s":[10],"e":[5]},{"t":59}],"ix":10},"g":{"p":3,"k":{"a":0,"k":[0,0,0.627,1,0.5,0.496,0.314,1,1,0.992,0,1],"ix":8}},"s":{"a":0,"k":[0,0],"ix":4},"e":{"a":0,"k":[100,0],"ix":5},"t":1,"lc":1,"lj":1,"ml":4,"nm":"Gradient Stroke 1","mn":"ADBE Vector Graphic - G-Stroke","hd":false}],"ip":0,"op":120,"st":0,"bm":0},{"ddd":0,"ind":2,"ty":4,"nm":"Shape Layer 4","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"n":["0p667_1_0p333_0"],"t":16,"s":[20],"e":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"n":["0p667_1_0p333_0"],"t":27,"s":[100],"e":[20]},{"t":62}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[400,400,0],"ix":2},"a":{"a":0,"k":[0,0,0],"ix":1},"s":{"a":0,"k":[100,100,100],"ix":6}},"ao":0,"shapes":[{"ty":"gr","it":[{"d":1,"ty":"el","s":{"a":1,"k":[{"i":{"x":[0.667,0.667],"y":[1,1]},"o":{"x":[0.333,0.333],"y":[0,0]},"n":["0p667_1_0p333_0","0p667_1_0p333_0"],"t":16,"s":[320,320],"e":[360,360]},{"i":{"x":[0.025,0.025],"y":[1,1]},"o":{"x":[0.333,0.333],"y":[0,0]},"n":["0p025_1_0p333_0","0p025_1_0p333_0"],"t":27,"s":[360,360],"e":[320,320]},{"t":52}],"ix":2},"p":{"a":0,"k":[0,0],"ix":3},"nm":"Ellipse Path 1","mn":"ADBE Vector Shape - Ellipse","hd":false},{"ty":"tr","p":{"a":0,"k":[0,0],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transform"}],"nm":"Ellipse 1","np":3,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false},{"ty":"gs","o":{"a":0,"k":100,"ix":9},"w":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"n":["0p833_0p833_0p167_0p167"],"t":16,"s":[5],"e":[10]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"n":["0p833_0p833_0p167_0p167"],"t":27,"s":[10],"e":[5]},{"t":52}],"ix":10},"g":{"p":3,"k":{"a":0,"k":[0,0,0.627,1,0.5,0.496,0.314,1,1,0.992,0,1],"ix":8}},"s":{"a":0,"k":[0,0],"ix":4},"e":{"a":0,"k":[100,0],"ix":5},"t":1,"lc":1,"lj":1,"ml":4,"nm":"Gradient Stroke 1","mn":"ADBE Vector Graphic - G-Stroke","hd":false}],"ip":0,"op":120,"st":0,"bm":0},{"ddd":0,"ind":3,"ty":4,"nm":"Shape Layer 3","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"n":["0p667_1_0p333_0"],"t":9,"s":[20],"e":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"n":["0p667_1_0p333_0"],"t":20,"s":[100],"e":[20]},{"t":55}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[400,400,0],"ix":2},"a":{"a":0,"k":[0,0,0],"ix":1},"s":{"a":0,"k":[100,100,100],"ix":6}},"ao":0,"shapes":[{"ty":"gr","it":[{"d":1,"ty":"el","s":{"a":1,"k":[{"i":{"x":[0.667,0.667],"y":[1,1]},"o":{"x":[0.333,0.333],"y":[0,0]},"n":["0p667_1_0p333_0","0p667_1_0p333_0"],"t":9,"s":[240,240],"e":[280,280]},{"i":{"x":[0.051,0.051],"y":[1,1]},"o":{"x":[0.333,0.333],"y":[0,0]},"n":["0p051_1_0p333_0","0p051_1_0p333_0"],"t":20,"s":[280,280],"e":[240,240]},{"t":45}],"ix":2},"p":{"a":0,"k":[0,0],"ix":3},"nm":"Ellipse Path 1","mn":"ADBE Vector Shape - Ellipse","hd":false},{"ty":"tr","p":{"a":0,"k":[0,0],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transform"}],"nm":"Ellipse 1","np":3,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false},{"ty":"gs","o":{"a":0,"k":100,"ix":9},"w":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"n":["0p833_0p833_0p167_0p167"],"t":9,"s":[5],"e":[10]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"n":["0p833_0p833_0p167_0p167"],"t":20,"s":[10],"e":[5]},{"t":45}],"ix":10},"g":{"p":3,"k":{"a":0,"k":[0,0,0.627,1,0.5,0.496,0.314,1,1,0.992,0,1],"ix":8}},"s":{"a":0,"k":[0,0],"ix":4},"e":{"a":0,"k":[100,0],"ix":5},"t":1,"lc":1,"lj":1,"ml":4,"nm":"Gradient Stroke 1","mn":"ADBE Vector Graphic - G-Stroke","hd":false}],"ip":0,"op":120,"st":0,"bm":0},{"ddd":0,"ind":4,"ty":4,"nm":"Shape Layer 2","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"n":["0p667_1_0p333_0"],"t":2,"s":[20],"e":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"n":["0p667_1_0p333_0"],"t":13,"s":[100],"e":[20]},{"t":48}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[400,400,0],"ix":2},"a":{"a":0,"k":[0,0,0],"ix":1},"s":{"a":0,"k":[100,100,100],"ix":6}},"ao":0,"shapes":[{"ty":"gr","it":[{"d":1,"ty":"el","s":{"a":1,"k":[{"i":{"x":[0.667,0.667],"y":[1,1]},"o":{"x":[0.333,0.333],"y":[0,0]},"n":["0p667_1_0p333_0","0p667_1_0p333_0"],"t":2,"s":[160,160],"e":[200,200]},{"i":{"x":[0.034,0.034],"y":[1,1]},"o":{"x":[0.333,0.333],"y":[0,0]},"n":["0p034_1_0p333_0","0p034_1_0p333_0"],"t":13,"s":[200,200],"e":[160,160]},{"t":38}],"ix":2},"p":{"a":0,"k":[0,0],"ix":3},"nm":"Ellipse Path 1","mn":"ADBE Vector Shape - Ellipse","hd":false},{"ty":"tr","p":{"a":0,"k":[0,0],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transform"}],"nm":"Ellipse 1","np":3,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false},{"ty":"gs","o":{"a":0,"k":100,"ix":9},"w":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"n":["0p833_0p833_0p167_0p167"],"t":2,"s":[5],"e":[10]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"n":["0p833_0p833_0p167_0p167"],"t":13,"s":[10],"e":[5]},{"t":38}],"ix":10},"g":{"p":3,"k":{"a":0,"k":[0,0,0.627,1,0.5,0.496,0.314,1,1,0.992,0,1],"ix":8}},"s":{"a":0,"k":[0,0],"ix":4},"e":{"a":0,"k":[100,0],"ix":5},"t":1,"lc":1,"lj":1,"ml":4,"nm":"Gradient Stroke 1","mn":"ADBE Vector Graphic - G-Stroke","hd":false}],"ip":0,"op":120,"st":0,"bm":0},{"ddd":0,"ind":5,"ty":4,"nm":"Shape Layer 1","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"n":["0p667_1_0p333_0"],"t":0,"s":[20],"e":[100]},{"i":{"x":[0.667],"y":[1]},"o":{"x":[0.333],"y":[0]},"n":["0p667_1_0p333_0"],"t":11,"s":[100],"e":[20]},{"t":46}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[400,400,0],"ix":2},"a":{"a":0,"k":[0,0,0],"ix":1},"s":{"a":0,"k":[100,100,100],"ix":6}},"ao":0,"shapes":[{"ty":"gr","it":[{"d":1,"ty":"el","s":{"a":1,"k":[{"i":{"x":[0.667,0.667],"y":[1,1]},"o":{"x":[0.333,0.333],"y":[0,0]},"n":["0p667_1_0p333_0","0p667_1_0p333_0"],"t":0,"s":[80,80],"e":[120,120]},{"i":{"x":[0,0],"y":[1,1]},"o":{"x":[0.333,0.333],"y":[0,0]},"n":["0_1_0p333_0","0_1_0p333_0"],"t":11,"s":[120,120],"e":[80,80]},{"t":36}],"ix":2},"p":{"a":0,"k":[0,0],"ix":3},"nm":"Ellipse Path 1","mn":"ADBE Vector Shape - Ellipse","hd":false},{"ty":"tr","p":{"a":0,"k":[0,0],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transform"}],"nm":"Ellipse 1","np":3,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false},{"ty":"gs","o":{"a":0,"k":100,"ix":9},"w":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"n":["0p833_0p833_0p167_0p167"],"t":0,"s":[5],"e":[10]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"n":["0p833_0p833_0p167_0p167"],"t":11,"s":[10],"e":[5]},{"t":35}],"ix":10},"g":{"p":3,"k":{"a":0,"k":[0,0,0.627,1,0.5,0.496,0.314,1,1,0.992,0,1],"ix":8}},"s":{"a":0,"k":[0,0],"ix":4},"e":{"a":0,"k":[100,0],"ix":5},"t":1,"lc":1,"lj":1,"ml":4,"nm":"Gradient Stroke 1","mn":"ADBE Vector Graphic - G-Stroke","hd":false}],"ip":0,"op":120,"st":0,"bm":0}]}
-"""
+private val GRADIENT_ELLIPSE = "gradient_ellipse.json"
+private val TEST = "test.json"
+private val CHECKMARK = "checkmark.json"
+private val FADE_BALLS = "fade_balls.json"
+private val BOUNCING_BALL = "bouncing_ball.json"
+private val POLYSTAR = "polystar.json"
+private val RECT = "rect.json"
+private val ROUND_RECT = "roundrect.json"
+private val ROBOT = "robot.json"
+private val ROBOT_404 = "robot_404.json"
+private val ASTRONAUT = "astronaut.json"
+private val ANGEL = "angel.json"
+private val CONFETTI = "confetti.json"
+private val WONDERS = "wonders.json"
+private val PRECOMP_WITH_REMAPPING = "precomp_with_remapping.json"
+private val MASK_ADD = "mask_add.json"
+private val MATTE_LUMA = "luma_matte.json"
+private val DASH = "dash.json"
+private val ROUNDING_CORENERS = "rounding_corners.json"
+private val REPEATER = "repeater.json"
+private val AUTOORIENT = "autoorient.json"
+private val TEXT_WITH_PATH = "text_with_path.json"
+private val TEXT = "text.json"
+private val TEXT_GLYPHS = "text_glyphs.json"
+private val TEXT_OFFSET = "text_offset.json"
+private val IMAGE_ASSET = "image_asset.json"
+private val IMAGE_ASSET_EMBEDDED = "image_asset_embedded.json"
 
-@OptIn(ExperimentalLayoutApi::class)
+private val DOT = "dotlottie/dot.lottie"
+private val DOT_WITH_IMAGE = "dotlottie/dot_with_image.lottie"
+
+private val ALL = listOf(
+    GRADIENT_ELLIPSE,
+    CHECKMARK,
+    FADE_BALLS,
+    BOUNCING_BALL,
+    POLYSTAR,
+    RECT,
+    ROUND_RECT,
+    ROBOT,
+    ROBOT_404,
+    ASTRONAUT,
+    ANGEL,
+    CONFETTI,
+    WONDERS,
+    PRECOMP_WITH_REMAPPING,
+    MASK_ADD,
+    MATTE_LUMA,
+    DASH,
+    ROUNDING_CORENERS,
+    REPEATER,
+    AUTOORIENT,
+    TEXT_WITH_PATH,
+    TEXT,
+    TEXT_GLYPHS,
+    TEXT_OFFSET,
+    IMAGE_ASSET,
+    IMAGE_ASSET_EMBEDDED,
+)
+
+
+/**
+ * [LottieComposition] spec from composeResources/[dir]/[path] json asset
+ * */
+@OptIn(ExperimentalResourceApi::class)
+@Stable
+suspend fun LottieCompositionSpec.Companion.ResourceString(
+    path : String,
+    dir : String = "files",
+    readBytes: suspend (path: String) -> ByteArray = { Res.readBytes(it) }
+) : LottieCompositionSpec = JsonString(readBytes("$dir/$path").decodeToString())
+
+@OptIn(ExperimentalResourceApi::class, ExperimentalCompottieApi::class)
 @Composable
 fun App() {
 
+//    return LottieFontExample()
+//    return AllExamples()
+//    return LottieList()
+
+
+    val composition = rememberLottieComposition() {
+
+//        LottieCompositionSpec.DotLottie(
+//            Res.readBytes("files/$DOT_WITH_IMAGE")
+//        )
+
+//        LottieCompositionSpec.ResourceString(ROBOT)
+//
+        LottieCompositionSpec.Url(
+//            "https://assets-v2.lottiefiles.com/a/a63d8606-1166-11ee-a7f8-83d9759dd8ff/hCTtJKM3Tu.lottie"
+//            "https://assets-v2.lottiefiles.com/a/d5654818-1168-11ee-a43f-870f05952f24/m5LUOQBrz9.lottie" // radial gr with angle
+            "https://assets-v2.lottiefiles.com/a/27cd3f04-1180-11ee-852d-8b2f8ce04afa/SB3d1oChh6.lottie", // rotationXYZ envelope
+//            "https://assets-v2.lottiefiles.com/a/4a2c7f7e-1171-11ee-ae37-d7b32f8315b2/7qw6O5kPfv.lottie", // broken text pos
+//            "https://lottie.host/02723b80-a213-478e-9320-0e5c3adf88ff/zz4HlIqtSb.lottie",
+//            "https://assets-v2.lottiefiles.com/a/10956594-1169-11ee-98fe-ef3d9d71ad0f/WVFg2bDWGj.lottie",
+//            "https://assets-v2.lottiefiles.com/a/0e63252e-1153-11ee-9e35-dfc2b798a135/sYygPbem7R.lottie",
+//            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/dalek.json",
+//            "https://dotlottie.io/sample_files/animation-external-image.lottie",
+//            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/august_view_pulse.zip",
+//            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/anim_jpg.zip",
+//            "https://github.com/airbnb/lottie-android/raw/master/snapshot-tests/src/main/assets/Tests/ZipInlineImage.zip",
+        )
+    }
+
+    // If you want to be aware of loading errors
+    LaunchedEffect(composition) {
+        try {
+            composition.await()
+        } catch (t : CompottieException){
+            t.printStackTrace()
+        }
+    }
+
     Box(
-        modifier = Modifier.fillMaxSize(),
+        Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
 
-        val composition by rememberLottieComposition(LottieCompositionSpec.JsonString(lottieData))
-
         val progress = animateLottieCompositionAsState(
-            composition = composition,
-            iterations = LottieConstants.IterateForever,
+            iterations = Compottie.IterateForever,
+            composition = composition.value
         )
 
-        val painter = rememberLottiePainter(composition, progress.value)
+        val painter = rememberLottiePainter(
+            composition = composition.value,
+            progress = progress::value,
+//            clipToCompositionBounds = false,
+//            fontManager = rememberResourcesFontManager { fontSpec ->
+//                when (fontSpec.family) {
+//                    "Comic Neue" -> Res.font.ComicNeue
+//                    else -> null
+//                }
+//            },
+            assetsManager = rememberResourcesAssetsManager(
+                readBytes = Res::readBytes
+            ),
+        )
 
-        FlowRow {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Image(
-                    painter = painter,
-                    contentDescription = null,
-                )
-                Text("Image with LottiePainter")
+        Image(
+            modifier = Modifier
+                .fillMaxSize()
+                .opacityGrid()
+            ,painter = painter,
+            contentDescription = null
+        )
+
+        if (composition.value == null) {
+            CircularProgressIndicator()
+        }
+    }
+}
+
+@OptIn(ExperimentalResourceApi::class, ExperimentalCompottieApi::class)
+@Composable
+fun AllExamples(){
+    LazyVerticalGrid(
+        modifier = Modifier
+            .fillMaxSize()
+            .opacityGrid(),
+        columns = GridCells.FixedSize(150.dp),
+    ){
+        items(ALL) {
+            val composition by rememberLottieComposition() {
+                LottieCompositionSpec.ResourceString(it)
             }
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                LottieAnimation(
+
+            Image(
+                painter = rememberLottiePainter(
                     composition = composition,
-                    progress = { progress.value },
-                )
-                Text("LottieAnimation")
+                    iterations = Compottie.IterateForever,
+                    assetsManager = rememberResourcesAssetsManager(
+                        readBytes = Res::readBytes
+                    ),
+                    fontManager = rememberResourcesFontManager { fontSpec ->
+                        when (fontSpec.family) {
+                            "Comic Neue" -> Res.font.ComicNeue
+                            else -> null
+                        }
+                    },
+                ),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(150.dp)
+                    .border(1.dp, Color.Black )
+            )
+        }
+    }
+}
+
+private val ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ':, \n"
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun LottieFontExample() {
+    var text by remember {
+        mutableStateOf("")
+    }
+
+    val fontSize = 90.dp
+
+    val focus = remember {
+        FocusRequester()
+    }
+    LaunchedEffect(focus) {
+        focus.requestFocus()
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize()
+            .focusRequester(focus),
+        contentAlignment = Alignment.Center
+    ) {
+
+        BasicTextField(
+            modifier = Modifier.fillMaxSize(),
+            value = text,
+            onValueChange = {
+                text = it
+            },
+            decorationBox = {
+                Box(
+                    Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    FlowRow(
+                        modifier = Modifier
+                            .animateContentSize()
+                            .padding(100.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalArrangement = Arrangement.Center
+                    ){
+                        text.split(" ").forEach { word ->
+                            Row(
+                                modifier = Modifier,
+                                horizontalArrangement = Arrangement.spacedBy(
+                                    space = -fontSize / 3,
+                                    alignment = Alignment.CenterHorizontally
+                                ),
+                            ) {
+                                word.forEach { c ->
+                                    val anim = when (c) {
+
+                                        ':' -> "Colon"
+                                        ',' -> "Comma"
+                                        '\'' -> "Apostrophe"
+                                        else -> c.toString().uppercase()
+                                    }
+                                    Image(
+                                        modifier = Modifier
+                                            .height(fontSize)
+                                            .width(fontSize * 3 / 4f),
+                                        painter = rememberLottiePainter(
+                                            rememberLottieComposition {
+                                                // sometimes cmp resources freeze on simultaneous resources access
+                                                LottieCompositionSpec.ResourceString("mobilo/$anim.json")
+                                            }.value
+                                        ),
+                                        contentDescription = anim
+                                    )
+                                }
+                            }
+                        }
+
+                        Image(
+                            modifier = Modifier
+                                .height(fontSize)
+                                .padding(fontSize / 4)
+                                .offset(x = -fontSize / 3),
+                            painter = rememberLottiePainter(
+                                composition = rememberLottieComposition {
+                                    LottieCompositionSpec.ResourceString("mobilo/BlinkingCursor.json")
+                                }.value,
+                                iterations = Compottie.IterateForever
+                            ),
+                            contentDescription = it.toString()
+                        )
+                    }
+                }
             }
+        )
+    }
+}
+
+@Composable
+fun LottieList() {
+    LazyVerticalGrid(columns = GridCells.FixedSize(100.dp)) {
+        items(1000){
+            val composition = rememberLottieComposition() {
+                LottieCompositionSpec.ResourceString(ROBOT)
+            }
+
+            val painter = rememberLottiePainter(
+                composition.value,
+                iterations = Compottie.IterateForever
+            )
+
+            Image(
+                modifier = Modifier.height(100.dp),
+                painter = painter,
+                contentDescription = ""
+            )
+        }
+    }
+}
+
+private val DarkOpacity = Color(0xff7f7f7f)
+private val LightOpacity = Color(0xffb2b2b2)
+private fun Modifier.opacityGrid(cellSize : Dp = 30.dp) = drawBehind {
+
+    val sizePx = cellSize.toPx()
+    val s = Size(sizePx,sizePx)
+    repeat((size.width /sizePx).toInt() + 1){ i ->
+        repeat((size.height / sizePx).toInt() + 1){ j->
+
+            drawRect(
+                color = if (i % 2 ==  j % 2) DarkOpacity else LightOpacity,
+                topLeft = Offset(i * sizePx, j * sizePx),
+                size = s
+            )
         }
     }
 }

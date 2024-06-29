@@ -1,20 +1,14 @@
 package io.github.alexzhirkevich.compottie
 
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.createFontFamilyResolver
 
-/**
- * A composable that makes it easy to create a [LottiePainter] and update its properties.
- */
-@Composable
-actual fun rememberLottiePainter(
-    composition: LottieComposition?,
-    progress: Float,
-    clipToCompositionBounds: Boolean,
-): LottiePainter = com.airbnb.lottie.compose.rememberLottiePainter(
-    composition = composition,
-    progress = progress,
-    clipToCompositionBounds = clipToCompositionBounds,
-)
 
-actual typealias LottiePainter = com.airbnb.lottie.compose.LottiePainter
+@OptIn(InternalCompottieApi::class)
+internal actual fun makeFontFamilyResolver() : FontFamily.Resolver {
+    return createFontFamilyResolver(
+        requireNotNull(Compottie.context){
+            "Compottie failed to initialize"
+        }
+    )
+}

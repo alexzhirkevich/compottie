@@ -5,7 +5,7 @@ package io.github.alexzhirkevich.compottie
  *
  * @see rememberLottieAnimatable
  */
-expect enum class LottieCancellationBehavior {
+enum class LottieCancellationBehavior {
     /**
      * Stop animation immediately and return early.
      */
