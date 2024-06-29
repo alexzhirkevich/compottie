@@ -52,6 +52,6 @@ body:
   - type: textarea
     id: logs
     attributes:
-      label: Does Compottie logs anythyng to the sdtout / your logger set with `Compottie.logger`?
+      label: Does Compottie log anythyng to the stdout / your logger set with `Compottie.logger`?
       description: This can be warning or exception. Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
       render: shell
