@@ -31,6 +31,10 @@ internal class ExpressionEvaluator(
         val expr = statement.substringAfter("=")
     }
 
+    private fun setValue(variable : String, value : Any) {
+
+    }
+
     fun add(a : Any, b : Any) : Any {
         return when {
             a is Number && b is Number ->  a.toFloat() + b.toFloat()
