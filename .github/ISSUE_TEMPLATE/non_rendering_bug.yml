@@ -1,7 +1,7 @@
-name: Rendering Bug Report
-description: File a rendering bug report.
+name: Non-rendering Bug Report
+description: File a bug report that is not related to animation rendering. This can be loading, assets, fonts, dynamic properties bugs, etc.
 title: "[Bug]: "
-labels: ["rendering bug"]
+labels: ["non-rendering bug"]
 assignees:
   - alexzhirkevich
 body:
@@ -13,25 +13,15 @@ body:
     id: what-happened
     attributes:
       label: What happened?
-      description: Please describe what happened, attach the bug screenshot and the screenshot of what you expect to see (from AE or other Lottie player). You can attach images by clicking this area to highlight it and then dragging files in.
-      placeholder: Tell us what you see!
-      value: "A rendering bug happened!"
-    validations:
-      required: true
-  - type: checkboxes
-    id: unsupported-features
-    attributes:
-      label: Unsupported features 
-      description: Please check that your animation is not using [unsupported features](https://lottiefiles.com/supported-features) that are the same as for Lottie-Android. 
-      options:
-        - label: My animation doesn't use unsupported features
+      description: Please describe what happened and provide a code snippet or project to reproduce the issue
+      placeholder: Tell us what happened!
+      value: "A bug happened!"
     validations:
       required: true
   - type: input
     id: compottie-version
     attributes:
       label: What Compottie version do you experience the bug on?
-      description: "Note: only Compottie 2.0+ rendering bugs can be fixed because Compottie was using platform renderers before"
       placeholder: 2.x.x
     validations:
       required: true
