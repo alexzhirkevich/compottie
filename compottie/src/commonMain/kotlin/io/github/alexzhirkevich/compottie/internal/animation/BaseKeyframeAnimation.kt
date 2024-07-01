@@ -1,11 +1,10 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.evaluate
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionEvaluator
 
 
 internal class BaseKeyframeAnimation<T, K, out KF : Keyframe<K>>(
-    private val expression : String?,
     keyframes: List<KF>,
     private val emptyValue : T,
     private val map : KF.(start : K, end : K, progress: Float) -> T
@@ -67,7 +66,7 @@ internal class BaseKeyframeAnimation<T, K, out KF : Keyframe<K>>(
         if (sortedKeyframes.isEmpty())
             return emptyValue
 
-        val value = when {
+        return when {
             sortedKeyframes.isEmpty() -> emptyValue
             state.frame >= lastFrame -> targetValue
             state.frame <= firstFrame -> initialValue
@@ -104,12 +103,6 @@ internal class BaseKeyframeAnimation<T, K, out KF : Keyframe<K>>(
                 }
             }
         }
-
-        if (expression == null) {
-            return value
-        }
-
-        return evaluate(expression, state, value)
     }
 }
 

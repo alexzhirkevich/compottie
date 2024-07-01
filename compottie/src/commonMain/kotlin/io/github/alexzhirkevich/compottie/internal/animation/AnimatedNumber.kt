@@ -4,6 +4,7 @@ import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.dynamic.PropertyProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionEvaluator
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -16,10 +17,17 @@ import kotlinx.serialization.json.JsonTransformingSerializer
 import kotlinx.serialization.json.jsonObject
 
 @Serializable(with = AnimatedNumberSerializer::class)
-internal sealed class AnimatedNumber : KeyframeAnimation<Float>, Indexable {
+internal sealed class AnimatedNumber : KeyframeAnimation<Float> {
 
     protected var dynamic: PropertyProvider<Float>? = null
         private set
+
+    abstract val expression : String?
+
+    @Transient
+    private val expressionEvaluator by lazy {
+        expression?.let(::ExpressionEvaluator)
+    }
 
     fun dynamic(provider: PropertyProvider<Float>?) {
         dynamic = provider
@@ -30,9 +38,9 @@ internal sealed class AnimatedNumber : KeyframeAnimation<Float>, Indexable {
     abstract fun interpolatedInternal(state: AnimationState): Float
 
     final override fun interpolated(state: AnimationState): Float {
-        return interpolatedInternal(state).let {
-            dynamic.derive(it, state)
-        }
+        var v = interpolatedInternal(state)
+        v = expressionEvaluator?.evaluate(v, state) as? Float ?: v
+        return dynamic.derive(v, state)
     }
 
     @Serializable
@@ -44,8 +52,9 @@ internal sealed class AnimatedNumber : KeyframeAnimation<Float>, Indexable {
         override val expression: String? = null,
 
         @SerialName("ix")
-        override val index: String? = null
+        val index: String? = null
     ) : AnimatedNumber() {
+
         override fun copy(): AnimatedNumber {
             return Default(value, expression, index)
         }
@@ -62,12 +71,11 @@ internal sealed class AnimatedNumber : KeyframeAnimation<Float>, Indexable {
         override val expression: String? = null,
 
         @SerialName("ix")
-        override val index: String? = null
+        val index: String? = null
     ) : AnimatedNumber() {
 
         @Transient
         private val delegate = BaseKeyframeAnimation(
-            expression = expression,
             keyframes = value,
             emptyValue = 1f,
             map = { s, e, p ->

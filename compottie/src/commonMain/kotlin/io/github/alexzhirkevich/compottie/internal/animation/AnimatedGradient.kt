@@ -164,7 +164,6 @@ internal abstract class AnimatedGradient : KeyframeAnimation<ColorsWithStops> {
 
         @Transient
         private val delegate = BaseKeyframeAnimation(
-            expression = null,
             keyframes = keyframes,
             emptyValue = tempColors
         ) { s, e, p ->

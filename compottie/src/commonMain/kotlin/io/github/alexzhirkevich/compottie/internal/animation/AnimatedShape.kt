@@ -16,7 +16,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = AnimatedShapeSerializer::class)
-internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
+internal sealed interface AnimatedShape : KeyframeAnimation<Path> {
 
     fun interpolatedRaw(state: AnimationState): Path
 
@@ -27,10 +27,10 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
     @Serializable
     class Default(
         @SerialName("x")
-        override val expression: String? = null,
+        val expression: String? = null,
 
         @SerialName("ix")
-        override val index: String? = null,
+        val index: String? = null,
 
         @SerialName("k")
         val bezier: Bezier,
@@ -60,10 +60,10 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
     @Serializable
     class Animated(
         @SerialName("x")
-        override val expression: String? = null,
+        val expression: String? = null,
 
         @SerialName("ix")
-        override val index: String? = null,
+        val index: String? = null,
 
         @SerialName("k")
         val keyframes: List<BezierKeyframe>,
@@ -77,7 +77,6 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
 
         @Transient
         private var delegate = BaseKeyframeAnimation(
-            expression = expression,
             keyframes = keyframes,
             emptyValue = tmpPath,
             map = { s, e, p ->
@@ -89,7 +88,6 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
 
         @Transient
         private var rawDelegate = BaseKeyframeAnimation(
-            expression = expression,
             keyframes = keyframes,
             emptyValue = tmpPath,
             map = { s, e, p ->

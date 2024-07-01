@@ -54,7 +54,6 @@ internal class AnimatedTextDocument(
 
     @Transient
     private val delegate = BaseKeyframeAnimation(
-        expression = expression,
         keyframes = keyframes,
         emptyValue = document,
         map = { s, e, p ->

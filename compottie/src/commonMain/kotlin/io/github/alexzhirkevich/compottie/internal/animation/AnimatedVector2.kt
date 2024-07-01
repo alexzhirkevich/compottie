@@ -14,6 +14,7 @@ import io.github.alexzhirkevich.compottie.dynamic.toScaleFactor
 import io.github.alexzhirkevich.compottie.dynamic.toSize
 import io.github.alexzhirkevich.compottie.dynamic.toVec2
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionEvaluator
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -33,10 +34,17 @@ internal typealias Vec2 = Offset
 internal fun Vec2(x : Float, y : Float) : Vec2 = Offset(x,y)
 
 @Serializable(with = AnimatedVector2Serializer::class)
-internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
+internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2> {
+
+    abstract val expression : String?
 
     protected var dynamic: PropertyProvider<Vec2>? = null
         private set
+
+    @Transient
+    private val expressionEvaluator by lazy {
+        expression?.let(::ExpressionEvaluator)
+    }
 
     fun dynamic(provider: PropertyProvider<Vec2>?) {
         dynamic = provider
@@ -47,7 +55,9 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
     protected abstract fun interpolatedInternal(state: AnimationState) : Vec2
 
     final override fun interpolated(state: AnimationState): Vec2 {
-        return dynamic.derive(interpolatedInternal(state), state)
+        var v = interpolatedInternal(state)
+        v = expressionEvaluator?.evaluate(v, state) as Vec2? ?: v
+        return dynamic.derive(v, state)
     }
 
     @Serializable
@@ -59,7 +69,7 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
         override val expression: String? = null,
 
         @SerialName("ix")
-        override val index: String? = null
+        val index: String? = null
     ) : AnimatedVector2() {
 
         @Transient
@@ -85,7 +95,7 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
         override val expression: String? = null,
 
         @SerialName("ix")
-        override val index: String? = null,
+        val index: String? = null,
     ) : AnimatedVector2() {
 
         private val path = Path()
@@ -94,7 +104,6 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
 
         @Transient
         private val delegate: KeyframeAnimation<Vec2> = BaseKeyframeAnimation(
-            expression = expression,
             keyframes = value,
             emptyValue = Offset.Zero,
             map = { s, e, p ->
@@ -145,9 +154,8 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2>, Indexable {
         val y: AnimatedNumber,
     ) : AnimatedVector2() {
 
-        override val expression: String? get() = null
-
-        override val index: String? get() = null
+        override val expression: String?
+            get() = null
 
         override fun copy(): AnimatedVector2 {
             return Split(x.copy(), y.copy())

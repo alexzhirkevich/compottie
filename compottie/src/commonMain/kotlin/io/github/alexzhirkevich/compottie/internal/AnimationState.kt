@@ -18,6 +18,7 @@ class AnimationState @PublishedApi internal constructor(
     internal val assets: Map<String, LottieAsset>,
     internal val fonts: Map<String, FontFamily>,
     frame: Float,
+    val expressionsEnabled : Boolean = true,
     fontFamilyResolver: FontFamily.Resolver,
     applyOpacityToLayers : Boolean,
     clipToCompositionBounds: Boolean,
@@ -32,15 +33,27 @@ class AnimationState @PublishedApi internal constructor(
         .filterValues { it is ImageAsset && it.bitmap != null }
         .mapValues { (it.value as ImageAsset).bitmap!! }
 
+    /**
+     * Current animation frame
+     * */
     var frame = frame
         private set
 
+    /**
+     * Current animation progress from 0.0 to 1.0
+     * */
     val progress: Float
         get() {
             val p = (frame - composition.animation.inPoint) /
                     (composition.animation.outPoint - composition.animation.inPoint)
             return p.coerceIn(0f, 1f)
         }
+
+    /**
+     * Time elapsed from the start of animation in seconds
+     * */
+    val time : Float
+        get() = (progress * composition.duration.inWholeMilliseconds)/1000
 
     internal var clipToCompositionBounds by mutableStateOf(clipToCompositionBounds)
     internal var clipTextToBoundingBoxes by mutableStateOf(clipTextToBoundingBoxes)

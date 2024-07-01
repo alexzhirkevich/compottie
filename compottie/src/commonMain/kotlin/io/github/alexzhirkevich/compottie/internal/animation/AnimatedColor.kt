@@ -18,7 +18,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = AnimatedColorSerializer::class)
-internal sealed interface AnimatedColor : KeyframeAnimation<Color>, Indexable {
+internal sealed interface AnimatedColor : KeyframeAnimation<Color> {
 
     fun copy() : AnimatedColor
 
@@ -28,10 +28,10 @@ internal sealed interface AnimatedColor : KeyframeAnimation<Color>, Indexable {
         val value: List<Float>,
 
         @SerialName("x")
-        override val expression: String? = null,
+        val expression: String? = null,
 
         @SerialName("ix")
-        override val index: String? = null
+        val index: String? = null
     ) : AnimatedColor {
 
         @Transient
@@ -50,12 +50,11 @@ internal sealed interface AnimatedColor : KeyframeAnimation<Color>, Indexable {
         val value: List<VectorKeyframe>,
 
         @SerialName("x")
-        override val expression: String? = null,
+        val expression: String? = null,
 
         @SerialName("ix")
-        override val index: String? = null
+        val index: String? = null
     ) : AnimatedColor, KeyframeAnimation<Color> by BaseKeyframeAnimation(
-        expression = expression,
         keyframes = value,
         emptyValue = Color.Transparent,
         map = { s, e, p ->
