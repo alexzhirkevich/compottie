@@ -15,3 +15,9 @@ interface LottieFontManager {
      * */
     suspend fun font(font: LottieFontSpec): Font?
 }
+
+internal object EmptyFontManager : LottieFontManager {
+    override suspend fun font(font: LottieFontSpec): Font? {
+        return null
+    }
+}

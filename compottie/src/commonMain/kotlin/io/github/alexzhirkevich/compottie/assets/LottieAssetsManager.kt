@@ -1,8 +1,6 @@
 package io.github.alexzhirkevich.compottie.assets
 
 import androidx.compose.runtime.Stable
-import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.text.font.Font
 
 /**
  * Used to fetch lottie assets that are not embedded to the animation JSON file
@@ -22,5 +20,11 @@ interface LottieAssetsManager {
      * @param name asset name and extension (for example image.png)
      * */
     suspend fun image(image: LottieImage): ImageRepresentable?
+}
+
+internal object EmptyAssetsManager : LottieAssetsManager {
+    override suspend fun image(image: LottieImage): ImageRepresentable? {
+        return null
+    }
 }
 

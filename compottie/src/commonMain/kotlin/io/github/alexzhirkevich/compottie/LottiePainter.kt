@@ -21,6 +21,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.createFontFamilyResolver
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.lerp
+import io.github.alexzhirkevich.compottie.assets.EmptyAssetsManager
+import io.github.alexzhirkevich.compottie.assets.EmptyFontManager
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.LottieFontManager
 import io.github.alexzhirkevich.compottie.dynamic.LottieDynamicProperties
@@ -78,14 +80,10 @@ fun rememberLottiePainter(
     ) {
         if (composition != null) {
             val assets = async(ioDispatcher()) {
-                assetsManager?.let {
-                    composition.loadAssets(it, true)
-                }
+                composition.loadAssets(assetsManager ?: EmptyAssetsManager, true)
             }
             val fonts = async(ioDispatcher()) {
-                fontManager?.let {
-                    composition.loadFonts(it)
-                }
+                composition.loadFonts(fontManager ?: EmptyFontManager)
             }
 
             value = LottiePainter(
