@@ -82,10 +82,11 @@ internal object LottieOp {
         TODO()
     }
 
-    fun clamp(v : Any, from : Any, to : Any) : Any{
-        return (v as Number).toFloat().coerceIn(
-            (from as Number).toFloat(),
-            (to as Number).toFloat(),
-        )
+    fun clamp(v : Any, from : Any, to : Any) : Any {
+        require(v is Number && from is Number && to is Number) {
+            "Cant clamp ($v, $from, $to) : not a number"
+        }
+
+        return v.toFloat().coerceIn(from.toFloat(), to.toFloat(),)
     }
 }

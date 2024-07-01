@@ -55,13 +55,8 @@ internal class OperationParser(private val expr : String) {
         var x = parseFactorOp()
         while (true) {
             x = when {
-                eat('*') -> {
-                    LottieOp.op(x, parseFactorOp(), LottieOp::mul)
-                }
-
-                eat('/') -> {
-                    LottieOp.op(x, parseFactorOp(), LottieOp::div)
-                }
+                eat('*') -> LottieOp.op(x, parseFactorOp(), LottieOp::mul)
+                eat('/') -> LottieOp.op(x, parseFactorOp(), LottieOp::div)
 
                 else -> return x
             }
@@ -69,26 +64,26 @@ internal class OperationParser(private val expr : String) {
     }
 
     private fun parseFactorOp(): Operation {
-        if (eat('+')) {
-            val factor = parseFactorOp()
-            return Operation { v, vars, s ->
-                +(factor(v, vars, s) as Number).toFloat()
-            }
-        }
-        if (eat('-')) {
-            val factor = parseFactorOp()
-            return Operation { v, vars, s ->
-                -(factor(v, vars, s) as Number).toFloat()
-            }
-        }
-
         return when {
-            eat('(') -> {
-                val exp = parseExpressionOp()
-                require(eat(')')) {
-                    "Lottie expression: Missing ')'"
+            eat('+') -> { // unary +
+                val factor = parseFactorOp()
+                Operation { v, vars, s ->
+                    +(factor(v, vars, s) as Number).toFloat()
                 }
-                exp
+            }
+            eat('-') -> { // unary -
+                val factor = parseFactorOp()
+                Operation { v, vars, s ->
+                    -(factor(v, vars, s) as Number).toFloat()
+                }
+            }
+
+            eat('(') -> {
+                parseExpressionOp().also {
+                    require(eat(')')) {
+                        "Bad expression: Missing ')'"
+                    }
+                }
             }
 
             ch.isDigit() || ch == '.' -> {
@@ -108,7 +103,7 @@ internal class OperationParser(private val expr : String) {
                         add(parseExpressionOp())
                     } while (eat(','))
                     require(eat(']')) {
-                        "Missing ] in list creation"
+                        "Bad expression: missing ]"
                     }
                 }
                 makeList(arrayArgs)
@@ -132,7 +127,7 @@ internal class OperationParser(private val expr : String) {
                         } while (eat(','))
 
                         require(eat(')')) {
-                            ("Missing ')' after argument to $func")
+                            "Bad expression:Missing ')' after argument to $func"
                         }
                     }
 //                    else {
@@ -220,7 +215,7 @@ internal class OperationParser(private val expr : String) {
                 }
             }
 
-            else -> error("Unsupported Lottie expression")
+            else -> error("Unsupported Lottie expression: $expr")
         }
     }
 
