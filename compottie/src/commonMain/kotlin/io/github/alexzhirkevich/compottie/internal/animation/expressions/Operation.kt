@@ -6,7 +6,7 @@ internal fun interface Operation {
 
     operator fun invoke(
         value: Any,
-        variables: Map<String, Any>,
+        variables: MutableMap<String, Any>,
         state: AnimationState
     ): Any
 

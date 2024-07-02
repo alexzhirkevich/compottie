@@ -86,9 +86,10 @@ internal abstract class BaseLayer : Layer {
         }
     }
     private val rect = MutableRect(0f, 0f, 0f, 0f)
-    private var parentLayers: MutableList<BaseLayer>? = null
+    private var parentLayers: MutableList<Layer>? = null
 
-    private var parentLayer: BaseLayer? = null
+    override var parentLayer: Layer? = null
+
     private var matteLayer: BaseLayer? = null
 
     private val allMasksAreNone by lazy {
@@ -215,6 +216,7 @@ internal abstract class BaseLayer : Layer {
             }
         } catch (t: Throwable) {
             Compottie.logger?.error("Lottie crashed in draw :(", t)
+            throw t
         }
     }
 
@@ -236,7 +238,7 @@ internal abstract class BaseLayer : Layer {
                     boundsMatrix.preConcat(it.transform.matrix(state))
                 }
             } else {
-                parentLayer?.transform?.matrix(state)?.let {
+                this.parentLayer?.transform?.matrix(state)?.let {
                     boundsMatrix.preConcat(it)
                 }
             }
@@ -249,9 +251,6 @@ internal abstract class BaseLayer : Layer {
     final override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
     }
 
-    fun setParentLayer(layer: BaseLayer) {
-        this.parentLayer = layer
-    }
 
     fun setMatteLayer(layer: BaseLayer) {
         this.matteLayer = layer
@@ -261,13 +260,13 @@ internal abstract class BaseLayer : Layer {
         if (parentLayers != null) {
             return
         }
-        if (parentLayer == null) {
+        if (this.parentLayer == null) {
             parentLayers = mutableListOf()
             return
         }
 
         parentLayers = mutableListOf()
-        var layer: BaseLayer? = parentLayer
+        var layer = this.parentLayer
         while (layer != null) {
             parentLayers?.add(layer)
             layer = layer.parentLayer

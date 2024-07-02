@@ -1,10 +1,14 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.util.fastForEach
+import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
-import kotlin.math.exp
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpAdd
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpAssign
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpDiv
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpMul
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpSub
 
 internal class ExpressionEvaluator(
     expression : String
@@ -12,39 +16,52 @@ internal class ExpressionEvaluator(
 
     private val variables = mutableMapOf<String, Any>()
 
+    private var disabled: Boolean = false
+
+
     private val operations by lazy {
         expression
-            .replace("\\n", "")
-            .replace("\n", "")
             .replace("\t", "")
             .replace("\r", "")
+            .replace("\\\"", "\"")
             .replace("var", "")
             .replace(" ", "")
-            .split(";")
+            .split(";", "\n")
             .filter(String::isNotBlank)
             .mapNotNull {
-                if ('=' !in it) {
+                if (disabled) {
                     return@mapNotNull null
                 }
-                var variable = it.substringBefore("=")
-                val index = variableIdx(variable)
-                variable = variable.substringBefore("[")
-
-                val expr = it.substringAfter("=")
-
-                if (expr == "[]")
+                if ('=' !in it) {
+                    Compottie.logger?.warn("Expression '$it' doesn't contain assignments. It was skipped")
                     return@mapNotNull null
+                }
+                try {
+                    val name = it.substringBefore("=").trimEnd('+','-','*', '/')
+                    val merge: ((Any, Any) -> Any)? = when {
+                        "+=" in it -> OpAdd::invoke
+                        "-=" in it -> OpSub::invoke
+                        "*=" in it -> OpMul::invoke
+                        "/=" in it -> OpDiv::invoke
+                        ("==" !in it || it.indexOf("=") < it.indexOf("==")) -> null
 
-                val op = OperationParser(expr).parse()
+                        else -> error("Invalid assignment")
+                    }
+                    val value = OperationParser(it.substringAfter("=")).parse()
 
-                Operation { v, vars, s ->
-                    setVariable(variable, index, op(v, vars, s))
+                    OpAssign(name, value, merge)
+                } catch (t: Throwable) {
+                    Compottie.logger?.error(
+                        "Unsupported or invalid Lottie expression: $it", t
+                    )
+                    disabled = true
+                    null
                 }
             }
     }
 
     fun evaluate(value: Any, state: AnimationState): Any {
-        if (!state.expressionsEnabled) {
+        if (!state.expressionsEnabled || disabled) {
             return value
         }
         variables.clear()

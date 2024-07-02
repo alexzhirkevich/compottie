@@ -1,8 +1,9 @@
 {
   "v": "5.5.2",
+  "nm": "Animation",
   "fr": 60,
   "ip": 0,
-  "op": 60,
+  "op": 180,
   "w": 512,
   "h": 512,
   "ddd": 0,
@@ -11,19 +12,24 @@
       "id": "blep",
       "h": 512,
       "w": 512,
-      "p": "/images/blep.png",
+      "p": "/lottie-docs/examples/blep.png",
       "u": "",
       "e": 1
+    },
+    {
+      "id": "precomp0",
+      "nm": "Precomp",
+      "layers": []
     }
   ],
   "layers": [
     {
-      "nm": "foo",
-      "mn": "bar",
+      "nm": "Layer",
       "ddd": 0,
       "ty": 2,
       "sr": 1,
       "ks": {
+        "nm": "Transform",
         "a": {
           "k": [
             256,
@@ -37,7 +43,7 @@
             256
           ],
           "a": 0,
-          "x": "var $bm_rt = [];\n$bm_rt[0] = value[0] + Math.cos(2 * Math.PI * time) * 100;\n$bm_rt[1] = value[1];"
+          "x": "var $bm_rt = [256, 256]\nvar rotation = comp(\"Animation\").layer(\"Layer\").transform.rotation / 180 * Math.PI;"
         },
         "s": {
           "k": [
@@ -47,8 +53,39 @@
           "a": 0
         },
         "r": {
-          "k": 0,
-          "a": 0
+          "nm": "Rotation",
+          "ix": 123,
+          "a": 1,
+          "k": [
+            {
+              "t": 0,
+              "s": [
+                0
+              ],
+              "i": {
+                "x": [
+                  1
+                ],
+                "y": [
+                  1
+                ]
+              },
+              "o": {
+                "x": [
+                  1
+                ],
+                "y": [
+                  1
+                ]
+              }
+            },
+            {
+              "t": 180,
+              "s": [
+                360
+              ]
+            }
+          ]
         },
         "o": {
           "k": 100,
@@ -65,7 +102,7 @@
       },
       "ao": 0,
       "ip": 0,
-      "op": 60,
+      "op": 180,
       "st": 0,
       "bm": 0,
       "ind": 0,

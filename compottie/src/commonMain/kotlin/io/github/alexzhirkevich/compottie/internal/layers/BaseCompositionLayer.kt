@@ -137,7 +137,7 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
                 val p = layersWithIndex[pId]
 
                 if (p != null) {
-                    it.setParentLayer(p)
+                    it.parentLayer = p
                 }
             }
 

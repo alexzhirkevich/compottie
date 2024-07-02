@@ -1,7 +1,15 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
-import androidx.compose.ui.util.fastMap
-import io.github.alexzhirkevich.compottie.internal.animation.Vec2
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpGlobalContext
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpAdd
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpConstant
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpDiv
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpIndex
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpMakeList
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpMul
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpSub
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpUnaryMinus
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpUnaryPlus
 import kotlin.math.PI
 
 internal class OperationParser(private val expr : String) {
@@ -9,16 +17,19 @@ internal class OperationParser(private val expr : String) {
     private var ch: Char = ' '
 
     fun parse(): Operation {
+        println("Parsing $expr")
         nextChar()
-        val x = parseExpressionOp()
+        val x = parseExpressionOp(OpGlobalContext)
         require(pos <= expr.length) {
             "Unexpected Lottie expression $ch"
         }
-        return x
+        return x.also {
+            println("Expression parsed: $expr")
+        }
     }
 
 
-    private fun nextChar()  {
+    private fun nextChar() {
         ch = if (++pos < expr.length) expr[pos] else ';'
     }
 
@@ -32,213 +43,153 @@ internal class OperationParser(private val expr : String) {
         return false
     }
 
-    // Grammar:
-    // expression = term | expression `+` term | expression `-` term
-    // term = factor | term `*` factor | term `/` factor
-    // factor = `+` factor | `-` factor | `(` expression `)` | number
-    //        | functionName `(` expression `)` | functionName factor
-    //        | factor `^` factor
+//    private fun eat(str: String): Boolean {
+//        while (ch == ' ') nextChar()
+//
+//        var i = pos - 1
+//
+//        return if (str.all { pos + ++i < expr.length && expr[pos + i] == it }) {
+//            repeat(str.length) {
+//                nextChar()
+//            }
+//            true
+//        } else false
+//    }
 
 
-    private fun parseExpressionOp(): Operation {
-        var x = parseTermOp()
+    private fun parseExpressionOp(context: Operation): Operation {
+        var x = parseTermOp(context)
         while (true) {
             x = when {
-                eat('+') -> LottieOp.op(x, parseTermOp(), LottieOp::sum)
-                eat('-') -> LottieOp.op(x, parseTermOp(), LottieOp::sub)
+                eat('+') -> OpAdd(x, parseTermOp(context))
+                eat('-') -> OpSub(x, parseTermOp(context))
                 else -> return x
             }
         }
     }
 
-    private fun parseTermOp(): Operation {
-        var x = parseFactorOp()
+    private fun parseTermOp(context : Operation): Operation {
+        var x = parseFactorOp(context)
         while (true) {
             x = when {
-                eat('*') -> LottieOp.op(x, parseFactorOp(), LottieOp::mul)
-                eat('/') -> LottieOp.op(x, parseFactorOp(), LottieOp::div)
+                eat('*') -> OpMul(x, parseFactorOp(context))
+                eat('/') -> OpDiv(x, parseFactorOp(context))
 
                 else -> return x
             }
         }
     }
 
-    private fun parseFactorOp(): Operation {
+    private fun parseFactorOp(context: Operation): Operation {
         return when {
-            eat('+') -> { // unary +
-                val factor = parseFactorOp()
-                Operation { v, vars, s ->
-                    +(factor(v, vars, s) as Number).toFloat()
-                }
-            }
-            eat('-') -> { // unary -
-                val factor = parseFactorOp()
-                Operation { v, vars, s ->
-                    -(factor(v, vars, s) as Number).toFloat()
-                }
-            }
+            context is OpGlobalContext && eat('+') -> OpUnaryPlus(parseFactorOp(context))
+            context is OpGlobalContext && eat('-') -> OpUnaryMinus(parseFactorOp(context))
 
-            eat('(') -> {
-                parseExpressionOp().also {
+            context is OpGlobalContext && eat('(') -> {
+                parseExpressionOp(context).also {
                     require(eat(')')) {
                         "Bad expression: Missing ')'"
                     }
                 }
             }
 
-            ch.isDigit() || ch == '.' -> {
+            context is OpGlobalContext && ch.isDigit() || ch == '.' -> {
+                print("making number... ")
+                var float = false
                 val startPos = pos
                 do {
                     nextChar()
-                } while(ch.isDigit() || ch == '.')
+                    if (!float){
+                        float = ch == '.'
+                    }
+                } while (ch.isDigit() || ch == '.')
 
-                val num = expr.substring(startPos, pos).toFloat()
-
-                Operation { _, _, _ -> num }
+                val num = expr.substring(startPos, pos).let {
+                    if (float) it.toFloat() else it.toInt()
+                }
+                println(num)
+                OpConstant(num)
+            }
+            context is OpGlobalContext && ch == '\'' || ch == '"' -> {
+                print("making string... ")
+                val c = ch
+                val startPos = pos
+                do {
+                    nextChar()
+                } while (!eat(c))
+                val str = expr.substring(startPos, pos).drop(1).dropLast(1)
+                println(str)
+                return OpConstant(str)
             }
 
-            eat('[') -> {
+            context is OpGlobalContext && eat('[') -> { // make array
+                println("making array... ")
                 val arrayArgs = buildList {
                     do {
-                        add(parseExpressionOp())
+                        if (eat(']')){ // empty list
+                            return@buildList
+                        }
+                        add(parseExpressionOp(context))
                     } while (eat(','))
                     require(eat(']')) {
                         "Bad expression: missing ]"
                     }
                 }
-                makeList(arrayArgs)
+                OpMakeList(arrayArgs)
             }
-            ch.isFun(false) -> {
-                val startPos = pos
-                var inIndex = ch == '['
-                while (ch.isFun(inIndex)) {
-                    if (!inIndex) {
-                        inIndex = ch == '['
-                    } else if (inIndex) {
-                        inIndex = ch != ']'
+
+            context !is OpGlobalContext &&  eat('[') -> { // index
+                println("making index... ")
+                OpIndex(context, parseExpressionOp(OpGlobalContext)).also {
+                    require(eat(']')) {
+                        "Bad expression: Missing ']'"
                     }
-                    nextChar()
                 }
+            }
+
+            ch.isFun() -> {
+
+                val startPos = pos
+                do {
+                    nextChar()
+                } while (ch.isFun())
+
                 val func = expr.substring(startPos, pos)
                 val args = buildList {
-                    if (eat('(')) {
-                        do {
-                            add(parseExpressionOp())
-                        } while (eat(','))
+                    when {
+                        eat('(') -> {
+                            do {
+                                add(parseExpressionOp(OpGlobalContext))
+                            } while (eat(','))
 
-                        require(eat(')')) {
-                            "Bad expression:Missing ')' after argument to $func"
+                            require(eat(')')) {
+                                "Bad expression:Missing ')' after argument to $func"
+                            }
                         }
                     }
-//                    else {
-//                        try {
-//                            add(parseFactorOp())
-//                        } catch (t: Throwable) {
-//                        }
-//                    }
+                }
+                println("making fun $func")
+
+                val f = when (context) {
+                    is OperationContext -> context.evaluate(func, args)
+                    else -> error("Unsupported Lottie expression function: $func")
                 }
 
-                when (func) {
-                    "add" -> {
-                        checkArgs(args, 2, func)
-                        LottieOp.op(args[0], args[1], LottieOp::sum)
-                    }
-                    "sub" -> {
-                        checkArgs(args, 2, func)
-                        LottieOp.op(args[0], args[1], LottieOp::sub)
-                    }
-                    "mul" -> {
-                        checkArgs(args, 2, func)
-                        LottieOp.op(args[0], args[1], LottieOp::mul)
-                    }
-                    "div" -> {
-                        checkArgs(args, 2, func)
-                        LottieOp.op(args[0], args[1], LottieOp::div)
-                    }
-                    "mod" -> {
-                        checkArgs(args, 2, func)
-                        LottieOp.op(args[0], args[1], LottieOp::mod)
-                    }
-                    "clamp" -> {
-                        checkArgs(args, 3, func)
-                        LottieOp.op(args[0], args[1], args[2], LottieOp::clamp)
-                    }
-                    "Math.sqrt" -> {
-                        checkArgs(args, 1, func)
-                        LottieOp.op(args[0], LottieOp::sqrt)
-                    }
-                    "Math.sin" -> {
-                        checkArgs(args, 1, func)
-                        LottieOp.op(args[0], LottieOp::sin)
-                    }
-                    "Math.cos" -> {
-                        checkArgs(args, 1, func)
-                        LottieOp.op(args[0], LottieOp::cos)
-                    }
-                    "Math.PI" -> Operation { _, _, _ -> floatPI }
-                    "time" -> Operation { _, _, s -> s.time }
+                when {
+                    eat('.') || ch == '[' -> parseFactorOp(f)
 
-//                    "tan" -> tan(toRadians(x))
-//                    "ln" -> ln(x)
-                    else -> {
-                        require(args.isEmpty()) {
-                            "Unsupported Lottie expression function: $func"
-                        }
-
-                        when {
-                            // value without expression
-                            func.startsWith("value") -> {
-                                val idx = variableIdx(func)
-                                return Operation { v, _, _ ->
-                                    LottieOp.index(v, idx)
-                                }
-                            }
-                        }
-
-                        val property = func.split(".")
-
-                        return when (property[0]) {
-                            "thisLayer" -> thisLayer(func)
-                            "thisComp" -> thisComp(func)
-                            "thisProperty" -> thisProperty(func)
-                            else -> {
-                                require(property.size == 1){
-                                    "Unknown Lottie expression: $func"
-                                }
-
-                                Operation { v, vars, s ->
-                                    TODO()
-                                }
-                            }
-                        }
-                    }
+                    else -> f
                 }
             }
 
             else -> error("Unsupported Lottie expression: $expr")
         }
     }
+}
 
-    private fun thisProperty(property: String): Operation {
-        TODO()
-    }
-
-    private fun thisLayer(property: String): Operation {
-        TODO()
-    }
-
-    private fun thisComp(property: String): Operation {
-        TODO()
-    }
-
-    private fun checkArgs(args : List<*>, count : Int, func : String) {
-        require(args.size == count){
-            "$func takes $count arguments, but ${args.size} got"
-        }
-    }
-
-    fun toRadians(degree: Double): Double {
-        return degree * PI / 180
+internal fun checkArgs(args : List<*>, count : Int, func : String) {
+    require(args.size == count){
+        "$func takes $count arguments, but ${args.size} got"
     }
 }
 
@@ -254,20 +205,9 @@ internal fun variableIdx(prop : String) : Int? {
     return idx.toInt()
 }
 
-private fun makeList(ops : List<Operation>) : Operation {
-    return Operation { v, vars, s ->
-        val args = ops.fastMap { it.invoke(v, vars, s) }
-
-        if ((args.size == 2 || args.size == 3) && args.all { it is Number }) {
-            return@Operation Vec2((args[0] as Number).toFloat(), (args[1] as Number).toFloat())
-        }
-
-        error("Can't make a list of $args")
-    }
-}
 
 private val floatPI = PI.toFloat()
 
-private val funMap = (('a'..'z').toList() + ('A'..'Z').toList() + '.' + '[' +']').associateBy { it }
+private val funMap = (('a'..'z').toList() + ('A'..'Z').toList() + "$" ).associateBy { it }
 
-private fun Char.isFun(inIndex : Boolean) = funMap[this] != null || inIndex && isDigit()
+private fun Char.isFun() = funMap[this] != null

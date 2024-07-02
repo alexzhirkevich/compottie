@@ -122,7 +122,6 @@ fun rememberLottieComposition(
 class LottieComposition internal constructor(
     internal val animation: Animation,
 ) {
-
     /**
      * Frame when animation becomes visible
      * */
@@ -140,6 +139,12 @@ class LottieComposition internal constructor(
 
     val durationFrames : Float
         get() = animation.outPoint - animation.inPoint
+
+    /**
+     * Animation start time in seconds
+     * */
+    internal val startTime : Float
+        get() = animation.inPoint / animation.frameRate
 
     /**
      * Animation frame rate
