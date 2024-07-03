@@ -25,7 +25,11 @@ fun LottieAnimation(
     clipToCompositionBounds : Boolean = true,
 ) {
     Image(
-        painter = rememberLottiePainter(composition, progress),
+        painter = rememberLottiePainter(
+            composition = composition,
+            progress = progress,
+            enableExpressions = false
+        ),
         contentDescription = null,
         modifier = modifier,
         alignment = alignment,
@@ -64,7 +68,8 @@ fun LottieAnimation(
             clipSpec = clipSpec,
             speed = speed,
             iterations = iterations,
-            clipToCompositionBounds = clipToCompositionBounds
+            clipToCompositionBounds = clipToCompositionBounds,
+            enableExpressions = false
         ),
         contentDescription = null,
         modifier = modifier,

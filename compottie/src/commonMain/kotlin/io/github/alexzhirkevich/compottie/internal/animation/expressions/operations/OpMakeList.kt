@@ -2,19 +2,20 @@ package io.github.alexzhirkevich.compottie.internal.animation.expressions.operat
 
 import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.PropertyAnimation
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Operation
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 
 internal class OpMakeList(
-    private val items : List<Operation>
-) : Operation {
+    private val items : List<Expression>
+) : Expression {
 
     override fun invoke(
-        value: Any,
+        property: PropertyAnimation<Any>,
         variables: MutableMap<String, Any>,
         state: AnimationState,
     ): Any {
-        val args = items.fastMap { it.invoke(value, variables, state) }
+        val args = items.fastMap { it.invoke(property, variables, state) }
 
         if (args.isEmpty()) {
             return Vec2(0f, 0f)

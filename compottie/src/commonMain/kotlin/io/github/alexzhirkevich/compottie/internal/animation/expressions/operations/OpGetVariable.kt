@@ -1,12 +1,17 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Operation
+import io.github.alexzhirkevich.compottie.internal.animation.PropertyAnimation
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 
 internal class OpGetVariable(
     private val name : String
-) : Operation{
-    override fun invoke(value: Any, variables: MutableMap<String, Any>, state: AnimationState): Any {
+) : Expression{
+    override fun invoke(
+        property: PropertyAnimation<Any>,
+        variables: MutableMap<String, Any>,
+        state: AnimationState
+    ): Any {
         return checkNotNull(variables[name]){
             "Undefined variable: $name"
         }

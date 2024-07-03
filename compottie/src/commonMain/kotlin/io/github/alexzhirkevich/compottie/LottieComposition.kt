@@ -16,10 +16,14 @@ import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.LottieFontManager
 import io.github.alexzhirkevich.compottie.internal.Animation
 import io.github.alexzhirkevich.compottie.internal.LottieJson
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionComposition
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionCompositionFromAsset
 import io.github.alexzhirkevich.compottie.internal.assets.CharacterData
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.assets.PrecompositionAsset
 import io.github.alexzhirkevich.compottie.internal.helpers.Marker
+import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -122,6 +126,7 @@ fun rememberLottieComposition(
 class LottieComposition internal constructor(
     internal val animation: Animation,
 ) {
+
     /**
      * Frame when animation becomes visible
      * */
@@ -143,7 +148,7 @@ class LottieComposition internal constructor(
     /**
      * Animation start time in seconds
      * */
-    internal val startTime : Float
+    val startTime : Float
         get() = animation.inPoint / animation.frameRate
 
     /**
@@ -177,11 +182,37 @@ class LottieComposition internal constructor(
         @InternalCompottieApi
         set
 
+    internal val expressionComposition = object : ExpressionComposition {
+
+        override val name: String?
+            get() = animation.name
+        override val width: Float
+            get() = this@LottieComposition.width
+        override val height: Float
+            get() = this@LottieComposition.height
+        override val startTime: Float
+            get() = this@LottieComposition.startTime
+        override val durationFrames: Float
+            get() = this@LottieComposition.durationFrames
+
+        override val layers: Map<String, Layer> by lazy {
+            animation.layers.associateBy { it.name.orEmpty() }
+        }
+
+        override val layersCount: Int
+            get() = animation.layers.size
+    }
+
     private val charGlyphs: Map<String, Map<String, CharacterData>> =
         animation.chars
             .groupBy(CharacterData::fontFamily)
             .mapValues { it.value.associateBy(CharacterData::character) }
 
+    internal val precomps : Map<String, ExpressionComposition> by lazy {
+        animation.assets.filterIsInstance<PrecompositionAsset>()
+            .associateBy { it.name.orEmpty() }
+            .mapValues { ExpressionCompositionFromAsset(it.value) }
+    }
 
     private val assetsMutex = Mutex()
     private val fontsMutex = Mutex()

@@ -41,7 +41,7 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
 
     private val getLayerLock = SynchronizedObject()
 
-    private var loadedLayers: List<BaseLayer>? = null
+    protected var loadedLayers: List<BaseLayer>? = null
 
     abstract fun compose(state: AnimationState): List<Layer>
 

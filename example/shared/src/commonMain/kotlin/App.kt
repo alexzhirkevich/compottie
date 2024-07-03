@@ -144,8 +144,8 @@ fun App() {
 //            Res.readBytes("files/$DOT_WITH_IMAGE")
 //        )
 
-        LottieCompositionSpec.ResourceString("expr/move_horizontal.json")
-//        LottieCompositionSpec.ResourceString(TEST)
+//        LottieCompositionSpec.ResourceString("expr/move_horizontal.json")
+        LottieCompositionSpec.ResourceString(TEST)
 //
 //        LottieCompositionSpec.Url(
 //            "https://assets-v2.lottiefiles.com/a/a63d8606-1166-11ee-a7f8-83d9759dd8ff/hCTtJKM3Tu.lottie"
@@ -185,6 +185,7 @@ fun App() {
         val painter = rememberLottiePainter(
             composition = composition.value,
             progress = progress::value,
+            enableExpressions = true,
 //            clipToCompositionBounds = false,
 //            fontManager = rememberResourcesFontManager { fontSpec ->
 //                when (fontSpec.family) {

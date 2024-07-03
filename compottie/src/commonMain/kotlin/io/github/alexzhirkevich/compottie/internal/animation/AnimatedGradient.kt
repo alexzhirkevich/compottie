@@ -114,7 +114,7 @@ internal value class GradientType(val type : Byte) {
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonClassDiscriminator("a")
-internal abstract class AnimatedGradient : KeyframeAnimation<ColorsWithStops> {
+internal abstract class AnimatedGradient : PropertyAnimation<ColorsWithStops> {
 
     @Transient
     var numberOfColors: Int = 0
@@ -126,6 +126,9 @@ internal abstract class AnimatedGradient : KeyframeAnimation<ColorsWithStops> {
     class Default(
         @SerialName("k")
         val colorsVector: FloatArray,
+
+        @SerialName("ix")
+        override val index: Int? = null
     ) : AnimatedGradient() {
 
         private val tempColors by lazy {
@@ -139,7 +142,10 @@ internal abstract class AnimatedGradient : KeyframeAnimation<ColorsWithStops> {
         }
 
         override fun copy(): AnimatedGradient {
-            return Default(colorsVector.copyOf())
+            return Default(
+                colorsVector = colorsVector.copyOf(),
+                index = index
+            )
         }
     }
 
@@ -147,8 +153,10 @@ internal abstract class AnimatedGradient : KeyframeAnimation<ColorsWithStops> {
     @Serializable
     class Animated(
         @SerialName("k")
-        val keyframes: List<VectorKeyframe>,
-    ) : AnimatedGradient(), KeyframeAnimation<ColorsWithStops> {
+        override val keyframes: List<VectorKeyframe>,
+        @SerialName("ix")
+        override val index: Int? = null
+    ) : AnimatedGradient(), KeyframeAnimation<ColorsWithStops, VectorKeyframe> {
 
         private val tempColors by lazy {
             ColorsWithStops(numberOfColors)
@@ -164,6 +172,7 @@ internal abstract class AnimatedGradient : KeyframeAnimation<ColorsWithStops> {
 
         @Transient
         private val delegate = BaseKeyframeAnimation(
+            index = index,
             keyframes = keyframes,
             emptyValue = tempColors
         ) { s, e, p ->
@@ -178,7 +187,7 @@ internal abstract class AnimatedGradient : KeyframeAnimation<ColorsWithStops> {
         }
 
         override fun copy(): AnimatedGradient {
-            return Animated(keyframes)
+            return Animated(keyframes = keyframes, index = index)
         }
 
         override fun interpolated(state: AnimationState): ColorsWithStops {

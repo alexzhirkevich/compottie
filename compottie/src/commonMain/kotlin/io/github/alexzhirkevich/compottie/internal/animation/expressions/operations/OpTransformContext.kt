@@ -2,31 +2,21 @@ package io.github.alexzhirkevich.compottie.internal.animation.expressions.operat
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Operation
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.OperationContext
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 
-internal sealed class OpTransformContext : Operation, OperationContext {
+internal sealed class OpTransformContext : Expression, ExpressionContext<AnimatedTransform> {
 
-    override fun evaluate(op: String, args: List<Operation>): Operation {
+    override fun parse(op: String, args: List<Expression>): Expression {
         return when(op) {
-            "rotation" -> transformOp { _, _, s -> rotation.interpolated(s) }
-            "scale" -> transformOp { _, _, s -> scale.interpolated(s) }
-            "opacity" -> transformOp { _, _, s -> opacity.interpolated(s) }
-            "skew" -> transformOp { _, _, s -> skew.interpolated(s) }
-            "skewAxis" -> transformOp { _, _, s -> skewAxis.interpolated(s) }
-            "position" -> transformOp { _, _, s -> position.interpolated(s) }
+            "rotation" -> withContext { _, _, s -> rotation.interpolated(s) }
+            "scale" -> withContext { _, _, s -> scale.interpolated(s) }
+            "opacity" -> withContext { _, _, s -> opacity.interpolated(s) }
+            "skew" -> withContext { _, _, s -> skew.interpolated(s) }
+            "skewAxis" -> withContext { _, _, s -> skewAxis.interpolated(s) }
+            "position" -> withContext { _, _, s -> position.interpolated(s) }
 
             else -> error("Unknown transform property: $op")
         }
-    }
-
-    private fun transformOp(
-        block: AnimatedTransform.(
-            value: Any,
-            variables: Map<String, Any>,
-            state: AnimationState
-        ) -> Any
-    ) = Operation { value, variables, state ->
-        block(invoke(value, variables, state) as AnimatedTransform, value, variables, state)
     }
 }

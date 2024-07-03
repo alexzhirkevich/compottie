@@ -1,14 +1,14 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionEvaluator
 
 
-internal class BaseKeyframeAnimation<T, K, out KF : Keyframe<K>>(
-    keyframes: List<KF>,
+internal class BaseKeyframeAnimation<T : Any, K, out KF : Keyframe<K>>(
+    override val index: Int?,
+    override val keyframes: List<KF>,
     private val emptyValue : T,
     private val map : KF.(start : K, end : K, progress: Float) -> T
-) : KeyframeAnimation<T> {
+) : KeyframeAnimation<T, KF> {
 
     private val sortedKeyframes = keyframes
         .sortedBy(Keyframe<*>::time)

@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.font.FontFamily
 import io.github.alexzhirkevich.compottie.LottieComposition
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionComposition
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
@@ -18,12 +19,12 @@ class AnimationState @PublishedApi internal constructor(
     internal val assets: Map<String, LottieAsset>,
     internal val fonts: Map<String, FontFamily>,
     frame: Float,
-    val expressionsEnabled : Boolean = true,
     fontFamilyResolver: FontFamily.Resolver,
     applyOpacityToLayers : Boolean,
     clipToCompositionBounds: Boolean,
     clipTextToBoundingBoxes: Boolean,
     enableMergePaths: Boolean,
+    enableExpressions: Boolean,
     layer: Layer
 ) {
     /**
@@ -58,10 +59,14 @@ class AnimationState @PublishedApi internal constructor(
     internal var clipToCompositionBounds by mutableStateOf(clipToCompositionBounds)
     internal var clipTextToBoundingBoxes by mutableStateOf(clipTextToBoundingBoxes)
     internal var fontFamilyResolver by mutableStateOf(fontFamilyResolver)
-    internal var enableMergePaths by mutableStateOf(enableMergePaths)
     internal var applyOpacityToLayers by mutableStateOf(applyOpacityToLayers)
+    internal var enableMergePaths by mutableStateOf(enableMergePaths)
+    internal var enableExpressions by mutableStateOf(enableExpressions)
 
-    internal var layer = layer
+    internal var layer : Layer = layer
+        private set
+
+    internal var currentComposition : ExpressionComposition = composition.expressionComposition
         private set
 
     /**
@@ -95,6 +100,24 @@ class AnimationState @PublishedApi internal constructor(
             block(this)
         } finally {
             this.layer = prevLayer
+        }
+    }
+
+    @OptIn(ExperimentalContracts::class)
+    internal inline fun <R> onComposition(
+        comp: ExpressionComposition,
+        block: (AnimationState) -> R
+    ): R {
+        contract {
+            callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+        }
+
+        val prevComp = this.currentComposition
+        return try {
+            this.currentComposition = comp
+            block(this)
+        } finally {
+            this.currentComposition = prevComp
         }
     }
 

@@ -12,7 +12,7 @@
       "id": "blep",
       "h": 512,
       "w": 512,
-      "p": "/lottie-docs/examples/blep.png",
+      "p": "/images/blep.png",
       "u": "",
       "e": 1
     },
@@ -43,7 +43,7 @@
             256
           ],
           "a": 0,
-          "x": "var $bm_rt = [256, 256]\nvar rotation = comp(\"Animation\").layer(\"Layer\").transform.rotation / 180 * Math.PI;"
+          "x": "var $bm_rt = [256, 256]\nvar rotation = comp(\"Animation\").layer(\"Layer\").transform.rotation / 180 * Math.PI;\n$bm_rt[0] += Math.cos(rotation) * 200;\n$bm_rt[1] += Math.sin(rotation) * 200;"
         },
         "s": {
           "k": [

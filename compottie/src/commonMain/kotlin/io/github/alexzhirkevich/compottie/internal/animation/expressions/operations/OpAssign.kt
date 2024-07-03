@@ -1,35 +1,36 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.PropertyAnimation
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Operation
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.OperationParser
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionParser
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
 
 internal class OpAssign(
     private val variableName : String,
-    private val value : Operation,
+    private val assignableValue : Expression,
     private val merge : ((Any, Any) -> Any)?
-) : Operation {
+) : Expression {
 
-    private val indexOp: Operation? = variableName
+    private val indexOp: Expression? = variableName
         .substringAfter("[", "")
         .substringBeforeLast("]", "")
         .takeIf(String::isNotBlank)
         ?.let {
             println("Parsing assignment index: $it")
-            OperationParser(it).parse()
+            ExpressionParser(it, true).parse()
         }
 
     private val realVarName = variableName.substringBefore('[')
 
 
     override tailrec fun invoke(
-        value: Any,
+        property: PropertyAnimation<Any>,
         variables: MutableMap<String, Any>,
         state: AnimationState,
     ): Any {
-        val v = value(value, variables, state)
+        val v = assignableValue.invoke(property, variables, state)
         val current = variables[realVarName]
 
         check(merge == null || current != null) {
@@ -43,9 +44,9 @@ internal class OpAssign(
         } else {
             if (current == null) {
                 variables[realVarName] = Vec2(0f, 0f)
-                return invoke(value, variables, state)
+                return invoke(property, variables, state)
             } else {
-                val i = indexOp.invoke(value, variables, state)
+                val i = indexOp.invoke(property, variables, state)
                 val index = checkNotNull(i as? Number) {
                     "Unexpected index: $i"
                 }.toInt()

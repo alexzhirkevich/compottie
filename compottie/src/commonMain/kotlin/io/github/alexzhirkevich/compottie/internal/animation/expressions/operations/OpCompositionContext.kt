@@ -1,23 +1,23 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations
 
-import io.github.alexzhirkevich.compottie.LottieComposition
-import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Operation
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.OperationContext
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionComposition
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 
-internal sealed class OpCompositionContext : Operation, OperationContext {
+internal sealed class OpCompositionContext : ExpressionContext<ExpressionComposition> {
 
-    final override fun evaluate(
+    final override fun parse(
         op: String,
-        args : List<Operation>
-    ): Operation {
+        args : List<Expression>
+    ): Expression {
         return when (op) {
-            "numLayers" -> compOp { _, _, _ -> animation.layers.size }
-            "width" -> compOp { _, _, _ -> width }
-            "height" -> compOp { _, _, _ -> height }
-            "displayStartTime" -> compOp { _, _, _ -> startTime }
-            "frameDuration" -> compOp { _, _, _ -> durationFrames }
+            "numLayers" -> withContext { _, _, _ -> layersCount }
+            "width" -> withContext { _, _, _ -> width }
+            "height" -> withContext { _, _, _ -> height }
+            "displayStartTime" -> withContext { _, _, _ -> startTime }
+            "frameDuration" -> withContext { _, _, _ -> durationFrames }
             "layer" -> OpGetLayer(
+                comp = withContext { _, _, _ -> this },
                 name = { v, vars, s ->
                     val n = args.singleOrNull()?.invoke(v, vars, s) as? String
                     checkNotNull(n) {
@@ -28,14 +28,5 @@ internal sealed class OpCompositionContext : Operation, OperationContext {
 
             else -> error("Unknown composition property: $op")
         }
-    }
-    private fun compOp(
-        block: LottieComposition.(
-            value: Any,
-            variables: Map<String, Any>,
-            state: AnimationState
-        ) -> Any
-    ) = Operation { value, variables, state ->
-        block(invoke(value, variables, state) as LottieComposition, value, variables, state)
     }
 }

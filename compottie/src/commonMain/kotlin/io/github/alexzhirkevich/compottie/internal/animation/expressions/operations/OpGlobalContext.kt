@@ -1,30 +1,34 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Operation
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.OperationContext
+import io.github.alexzhirkevich.compottie.internal.animation.PropertyAnimation
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
 
-internal object OpGlobalContext : OperationContext, Operation{
+internal object OpGlobalContext : ExpressionContext<Nothing>, Expression{
 
-    override fun evaluate(op: String, args: List<Operation>): Operation {
+    override fun parse(op: String, args: List<Expression>): Expression {
         return when (op) {
             "Math" -> OpMath
             "time" -> OpGetTime
-            "value" -> OpGetValue
+            "value" -> OpPropertyValue()
             "thisComp" -> {
                 if (args.isEmpty()) {
                     OpGetComp(null)
                 } else {
-                    OpGetLayer(args.single())
+                    OpGetLayer(
+                        name = args.single()
+                    )
                 }
             }
             "comp" -> {
                 checkArgs(args, 1, op)
-
                 return OpGetComp(args[0])
             }
+            "thisLayer" -> OpGetLayer(null)
+            "thisProperty" -> OpGetProperty()
             "add","\$bm_sum", "sum" -> {
                 checkArgs(args, 2, op)
                 OpAdd(args[0], args[1])
@@ -55,6 +59,8 @@ internal object OpGlobalContext : OperationContext, Operation{
                 OpClamp(args[0], args[1], args[2])
             }
 
+            "if", "else" -> error("Compottie doesn't support conditions in expressions yet")
+
             else -> {
                 require(args.isEmpty()) {
                     "Unknown function: $op"
@@ -64,7 +70,11 @@ internal object OpGlobalContext : OperationContext, Operation{
         }
     }
 
-    override fun invoke(value: Any, variables: MutableMap<String, Any>, state: AnimationState): Any {
+    override fun invoke(
+        property: PropertyAnimation<Any>,
+        variables: MutableMap<String, Any>,
+        state: AnimationState
+    ): Any {
         return Undefined
     }
 }

@@ -9,7 +9,13 @@ import kotlinx.serialization.Serializable
 @SerialName("21")
 internal class FillEffect(
     @SerialName("ef")
-    override val values : List<EffectValue<@Contextual Any?>>
+    override val values : List<EffectValue<@Contextual Any?>>,
+
+    @SerialName("nm")
+    override val name : String? = null,
+
+    @SerialName("ix")
+    override val index : Int? = null,
 ) : LayerEffect {
 
     val color get() = values.getAs<EffectValue.Color>(2)?.value
