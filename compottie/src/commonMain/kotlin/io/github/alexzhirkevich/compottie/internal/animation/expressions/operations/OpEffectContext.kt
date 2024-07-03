@@ -11,7 +11,7 @@ internal sealed class OpEffectContext : ExpressionContext<LayerEffect> {
         return when(op){
 
 
-            else -> error("Unresolved property '$op' for Effect")
+            else -> unresolvedProperty(op, "Effect")
         }
     }
 }

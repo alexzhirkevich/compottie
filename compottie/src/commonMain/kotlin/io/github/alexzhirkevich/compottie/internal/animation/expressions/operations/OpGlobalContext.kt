@@ -18,16 +18,14 @@ internal object OpGlobalContext : ExpressionContext<Nothing>, Expression{
                 if (args.isEmpty()) {
                     OpGetComp(null)
                 } else {
-                    OpGetLayer(
-                        name = args.single()
-                    )
+                    OpGetLayer(name = args.single())
                 }
             }
             "comp" -> {
                 checkArgs(args, 1, op)
                 return OpGetComp(args[0])
             }
-            "thisLayer" -> OpGetLayer(null)
+            "thisLayer" -> OpGetLayer()
             "thisProperty" -> OpGetProperty()
             "add","\$bm_sum", "sum" -> {
                 checkArgs(args, 2, op)

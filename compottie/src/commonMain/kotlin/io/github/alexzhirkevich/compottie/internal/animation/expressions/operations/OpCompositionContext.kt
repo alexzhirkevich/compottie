@@ -15,9 +15,9 @@ internal sealed class OpCompositionContext : ExpressionContext<ExpressionComposi
             "width" -> withContext { _, _, _ -> width }
             "height" -> withContext { _, _, _ -> height }
             "displayStartTime" -> withContext { _, _, _ -> startTime }
-            "frameDuration" -> withContext { _, _, _ -> durationFrames }
+            "frameDuration" -> withContext { _, _, s -> s.composition.frameRate / 1000 }
             "layer" -> OpGetLayer(
-                comp = withContext { _, _, _ -> this },
+                comp = this,
                 name = { v, vars, s ->
                     val n = args.singleOrNull()?.invoke(v, vars, s) as? String
                     checkNotNull(n) {
@@ -26,7 +26,7 @@ internal sealed class OpCompositionContext : ExpressionContext<ExpressionComposi
                 }
             )
 
-            else -> error("Unknown composition property: $op")
+            else -> unresolvedProperty(op, "Composition")
         }
     }
 }

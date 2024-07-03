@@ -192,8 +192,6 @@ class LottieComposition internal constructor(
             get() = this@LottieComposition.height
         override val startTime: Float
             get() = this@LottieComposition.startTime
-        override val durationFrames: Float
-            get() = this@LottieComposition.durationFrames
 
         override val layers: Map<String, Layer> by lazy {
             animation.layers.associateBy { it.name.orEmpty() }

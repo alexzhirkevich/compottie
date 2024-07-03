@@ -16,7 +16,7 @@ internal sealed class OpTransformContext : Expression, ExpressionContext<Animate
             "skewAxis" -> withContext { _, _, s -> skewAxis.interpolated(s) }
             "position" -> withContext { _, _, s -> position.interpolated(s) }
 
-            else -> error("Unknown transform property: $op")
+            else -> unresolvedProperty(op, "Transform")
         }
     }
 }

@@ -29,7 +29,7 @@ internal sealed class OpPropertyContext : Expression, ExpressionContext<Property
             "smooth",
             "loopIn",
             "loopOut" -> error("$op for Property is not yet supported")
-            else -> error("Unknown property for Property: $op")
+            else -> unresolvedProperty(op, "Property")
         }
     }
 }

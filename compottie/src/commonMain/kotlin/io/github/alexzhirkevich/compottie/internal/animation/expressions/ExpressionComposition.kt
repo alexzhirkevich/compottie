@@ -13,8 +13,6 @@ internal interface ExpressionComposition {
 
     val startTime: Float
 
-    val durationFrames: Float
-
     val layers: Map<String, Layer>
 
     val layersCount : Int
@@ -30,8 +28,6 @@ internal class ExpressionCompositionFromAsset(
         get() = error("'height' property is available only for the main composition and thisComp")
     override val startTime: Float
         get() = error("'startTime' property is available only for the main composition and thisComp")
-    override val durationFrames: Float
-        get() = error("'durationFrames' property is available only for the main composition and thisComp")
 
     override val name: String?
         get() = asset.name

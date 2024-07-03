@@ -36,7 +36,7 @@ internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
             }
 
             "sourceRectAtTime" -> error("$op for Layer is not yet supported")
-            else -> error("Unknown layer property: $op")
+            else -> unresolvedProperty(op, "Layer")
         }
     }
 }

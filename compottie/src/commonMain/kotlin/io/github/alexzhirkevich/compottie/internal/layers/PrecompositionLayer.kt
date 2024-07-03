@@ -102,15 +102,10 @@ internal data class PrecompositionLayer(
             get() = this@PrecompositionLayer.height
         override val startTime: Float
             get() {
-                val dur = durationFrames.takeIf { it != 0f } ?: return 0f
-                return (this@PrecompositionLayer.startTime ?: 0f) / dur
-            }
-        override val durationFrames: Float
-            get() {
                 val ip = inPoint ?: return 0f
                 val op = outPoint ?: return 0f
-
-                return ip / op
+                val dur = (op-ip).takeIf { it != 0f } ?: return 0f
+                return (this@PrecompositionLayer.startTime ?: 0f) / dur
             }
 
         override val layers: Map<String, Layer> by lazy {
