@@ -1,7 +1,8 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.PropertyAnimation
+import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 
 internal class OpGetProperty(
@@ -9,12 +10,12 @@ internal class OpGetProperty(
 ) : OpPropertyContext() {
 
     override fun invoke(
-        property: PropertyAnimation<Any>,
-        variables: MutableMap<String, Any>,
+        property: RawProperty<Any>,
+        context: EvaluationContext,
         state: AnimationState
-    ): PropertyAnimation<Any> {
+    ): RawProperty<Any> {
         return if (this.property != null) {
-            this.property.invoke(property, variables, state) as PropertyAnimation<*>
+            this.property.invoke(property, context, state) as RawProperty<*>
         } else property
     }
 }

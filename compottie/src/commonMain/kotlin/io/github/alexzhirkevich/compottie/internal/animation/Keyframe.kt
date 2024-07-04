@@ -2,7 +2,6 @@ package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import kotlin.math.abs
 import kotlin.math.absoluteValue

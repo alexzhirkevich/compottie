@@ -1,14 +1,16 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.PropertyAnimation
+import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.EXPR_DEBUG_PRINT_ENABLED
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionParser
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ValueExpressionInterpreter
 
 internal class OpAssign(
-    private val variableName : String,
+    variableName : String,
     private val assignableValue : Expression,
     private val merge : ((Any, Any) -> Any)?
 ) : Expression {
@@ -18,35 +20,41 @@ internal class OpAssign(
         .substringBeforeLast("]", "")
         .takeIf(String::isNotBlank)
         ?.let {
-            println("Parsing assignment index: $it")
-            ExpressionParser(it, true).parse()
+            if (EXPR_DEBUG_PRINT_ENABLED) {
+                println("Parsing assignment index: $it")
+            }
+            ValueExpressionInterpreter(it).interpret()
         }
 
-    private val realVarName = variableName.substringBefore('[')
-
+    private val realVarName = variableName
+        .trim()
+        .removePrefix("var ")
+        .removePrefix("let ")
+        .removePrefix("const ")
+        .substringBefore('[')
 
     override tailrec fun invoke(
-        property: PropertyAnimation<Any>,
-        variables: MutableMap<String, Any>,
+        property: RawProperty<Any>,
+        context: EvaluationContext,
         state: AnimationState,
-    ): Any {
-        val v = assignableValue.invoke(property, variables, state)
-        val current = variables[realVarName]
+    ): Undefined {
+        val v = assignableValue.invoke(property, context, state)
+        val current = context.variables[realVarName]
 
         check(merge == null || current != null) {
             "Cant modify $realVarName as it is undefined"
         }
 
-        variables[realVarName] = if (indexOp == null) {
+        context.variables[realVarName] = if (indexOp == null) {
             if (current != null && merge != null) {
                 merge.invoke(current, v)
             } else v
         } else {
             if (current == null) {
-                variables[realVarName] = Vec2(0f, 0f)
-                return invoke(property, variables, state)
+                context.variables[realVarName] = Vec2(0f, 0f)
+                return invoke(property, context, state)
             } else {
-                val i = indexOp.invoke(property, variables, state)
+                val i = indexOp.invoke(property, context, state)
                 val index = checkNotNull(i as? Number) {
                     "Unexpected index: $i"
                 }.toInt()

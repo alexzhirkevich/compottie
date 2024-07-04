@@ -9,7 +9,7 @@ internal interface ExpressionContext<T> : Expression {
     fun withContext(
         block: T.(
             value: Any,
-            variables: Map<String, Any>,
+            variables: EvaluationContext,
             state: AnimationState
         ) -> Any
     ) = Expression { value, variables, state ->

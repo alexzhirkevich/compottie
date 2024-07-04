@@ -1,7 +1,8 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.PropertyAnimation
+import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
@@ -10,8 +11,8 @@ import io.github.alexzhirkevich.compottie.internal.utils.Math
 internal object OpMath : Expression, ExpressionContext<Math> {
 
     override fun invoke(
-        property: PropertyAnimation<Any>,
-        variables: MutableMap<String, Any>,
+        property: RawProperty<Any>,
+        context: EvaluationContext,
         state: AnimationState
     ): Any {
         return Math
@@ -45,11 +46,11 @@ internal object OpMath : Expression, ExpressionContext<Math> {
 
     class Cos(val source: Expression) : Expression {
         override fun invoke(
-            property: PropertyAnimation<Any>,
-            variables: MutableMap<String, Any>,
+            property: RawProperty<Any>,
+            context: EvaluationContext,
             state: AnimationState
-        ): Any {
-            val a = source(property, variables, state)
+        ): Float {
+            val a = source(property, context, state)
             require(a is Number) {
                 "Can't get Math.cos of $a"
             }
@@ -58,11 +59,12 @@ internal object OpMath : Expression, ExpressionContext<Math> {
     }
 
     class Sin(val source: Expression) : Expression {
+
         override fun invoke(
-            property: PropertyAnimation<Any>,
-            variables: MutableMap<String, Any>, state: AnimationState
-        ): Any {
-            val a = source(property, variables, state)
+            property: RawProperty<Any>,
+            context: EvaluationContext, state: AnimationState
+        ): Float {
+            val a = source(property, context, state)
             require(a is Number) {
                 "Can't get Math.sin of $a"
             }
@@ -71,12 +73,13 @@ internal object OpMath : Expression, ExpressionContext<Math> {
     }
 
     class Sqrt(val source: Expression) : Expression {
+
         override fun invoke(
-            property: PropertyAnimation<Any>,
-            variables: MutableMap<String, Any>,
+            property: RawProperty<Any>,
+            context: EvaluationContext,
             state: AnimationState
-        ): Any {
-            val a = source(property, variables, state)
+        ): Float {
+            val a = source(property, context, state)
             require(a is Number) {
                 "Can't get Math.sqrt of $a"
             }
@@ -85,13 +88,14 @@ internal object OpMath : Expression, ExpressionContext<Math> {
     }
 
     internal object PI : Expression {
+
         private const val floatPI = kotlin.math.PI.toFloat()
 
         override fun invoke(
-            property: PropertyAnimation<Any>,
-            variables: MutableMap<String, Any>,
+            property: RawProperty<Any>,
+            context: EvaluationContext,
             state: AnimationState
-        ): Any {
+        ): Float {
             return floatPI
         }
     }

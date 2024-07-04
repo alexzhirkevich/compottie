@@ -17,7 +17,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = AnimatedColorSerializer::class)
-internal sealed interface AnimatedColor : PropertyAnimation<Color> {
+internal sealed interface AnimatedColor : AnimatedProperty<Color> {
 
     fun copy() : AnimatedColor
 
@@ -43,7 +43,7 @@ internal sealed interface AnimatedColor : PropertyAnimation<Color> {
             )
         }
 
-        override fun interpolated(state: AnimationState) = color
+        override fun raw(state: AnimationState) = color
     }
 
     @Serializable
@@ -57,7 +57,7 @@ internal sealed interface AnimatedColor : PropertyAnimation<Color> {
 
         @SerialName("ix")
         override val index: Int? = null
-    ) : AnimatedColor, KeyframeAnimation<Color, VectorKeyframe> by BaseKeyframeAnimation(
+    ) : AnimatedColor, RawKeyframeProperty<Color, VectorKeyframe> by BaseKeyframeAnimation(
         index = index,
         keyframes = value,
         emptyValue = Color.Transparent,

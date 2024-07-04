@@ -34,6 +34,7 @@ import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlin.math.roundToInt
+import kotlin.time.measureTime
 
 /**
  * Create and remember Lottie painter
@@ -246,6 +247,7 @@ suspend fun LottiePainter(
 }
 
 internal expect fun makeFontFamilyResolver() : FontFamily.Resolver
+internal expect fun mockFontFamilyResolver() : FontFamily.Resolver
 
 private object EmptyPainter : Painter() {
 
@@ -307,7 +309,7 @@ private class LottiePainter(
         enableExpressions = enableExpressions
     )
 
-    fun setDynamicProperties(provider : DynamicCompositionProvider?) {
+    fun setDynamicProperties(provider: DynamicCompositionProvider?) {
         compositionLayer.setDynamicProperties(provider, animationState)
     }
 
@@ -353,4 +355,3 @@ private class LottiePainter(
         }
     }
 }
-

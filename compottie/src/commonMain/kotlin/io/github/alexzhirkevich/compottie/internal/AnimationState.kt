@@ -28,6 +28,7 @@ class AnimationState @PublishedApi internal constructor(
     enableExpressions: Boolean,
     layer: Layer
 ) {
+
     /**
      * All successfully loaded images for this animation by the asset id
      * */
@@ -56,6 +57,8 @@ class AnimationState @PublishedApi internal constructor(
      * */
     val time : Duration
         get() = composition.duration * progress.toDouble()
+
+
 
     internal var clipToCompositionBounds by mutableStateOf(clipToCompositionBounds)
     internal var clipTextToBoundingBoxes by mutableStateOf(clipTextToBoundingBoxes)

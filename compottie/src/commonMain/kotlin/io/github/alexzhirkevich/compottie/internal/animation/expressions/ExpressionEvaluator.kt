@@ -1,60 +1,43 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
-import androidx.compose.ui.util.fastForEach
-import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.PropertyAnimation
+import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 
-internal class ExpressionEvaluator(
-    expression : String
-) {
+internal interface ExpressionEvaluator<T : Any> {
+    fun RawProperty<T>.evaluate(state: AnimationState): T
+}
 
-    private val variables = mutableMapOf<String, Any>()
 
-    private var hasErrors: Boolean = false
+internal fun <T : Any> ExpressionEvaluator(expression: String) : ExpressionEvaluator<T> =
+    ExpressionEvaluatorImpl(expression)
 
-    private val operations by lazy {
-        expression
-            .replace("\t", "")
-            .replace("\r", "")
-            .replace("\\\"", "\"")
-            .replace("var", "")
-            .replace(" ", "")
-            .split(";", "\n")
-            .filter(String::isNotBlank)
-            .mapNotNull {
-                if (hasErrors) {
-                    return@mapNotNull null
-                }
-                try {
-                    ExpressionParser(it).parse()
-                } catch (t: Throwable) {
-                    Compottie.logger?.error(
-                        "Unsupported or invalid Lottie expression: $it", t
-                    )
-                    hasErrors = true
-                    null
-                }
-            }
-    }
+internal class RawExpressionEvaluator<T : Any> : ExpressionEvaluator<T> {
+    override fun RawProperty<T>.evaluate(state: AnimationState): T = raw(state)
+}
 
-    fun evaluate(property: PropertyAnimation<Any>, state: AnimationState): Any {
+
+private class ExpressionEvaluatorImpl<T : Any>(expr : String) : ExpressionEvaluator<T> {
+
+    private val context = DefaultEvaluatorContext()
+
+    private val expression: Expression = MainExpressionInterpreter(expr).interpret()
+
+    @Suppress("unchecked_cast")
+    override fun RawProperty<T>.evaluate(state: AnimationState): T {
         return try {
-            if (!state.enableExpressions || hasErrors) {
-                return property.rawInterpolated(state)
-            }
-            variables.clear()
-            operations.fastForEach {
-                it(property, variables, state)
-            }
-            checkNotNull(variables["\$bm_rt"]) {
-                "\$bm_rt is null"
-            }
+            if (state.enableExpressions) {
+                context.reset()
+                expression.invoke(this, context, state)
+                context.result
+            } else {
+                raw(state)
+            } as T
         } catch (t: Throwable) {
             throw ExpressionException(
-                "Error occurred in Lottie expression. Try disable expressions for Painter using enableExpressions=false",
+                "Error occurred in a Lottie expression. Try disable expressions for Painter using enableExpressions=false",
                 t
             )
         }
     }
 }
+

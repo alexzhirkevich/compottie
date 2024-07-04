@@ -1,8 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
-import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpAdd
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpAssign
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpConstant
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpDiv
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpGlobalContext
@@ -13,49 +11,27 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpUnaryMinus
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpUnaryPlus
 
-internal class ExpressionParser(
+internal class ValueExpressionInterpreter(
     private val expr : String,
-    private val isValue : Boolean = false
-) {
+) : ExpressionInterpreter{
     private var pos = -1
     private var ch: Char = ' '
 
-    fun parse(): Expression {
-        if (!isValue && '=' !in expr) {
-            Compottie.logger?.warn("Expression '$expr' doesn't contain assignments. It was skipped")
-            return Expression.NoOp
+    override fun interpret(): Expression {
+        pos = -1
+        ch = ' '
+        if (EXPR_DEBUG_PRINT_ENABLED) {
+            println("Parsing $expr")
         }
-
-        if (isValue) {
-            return parseValue()
-        }
-
-        return OpAssign(
-            variableName = expr
-                .substringBefore("=")
-                .trimEnd('+', '-', '*', '/'),
-            assignableValue = ExpressionParser(expr.substringAfter("="), true).parse(),
-            merge = when {
-                "+=" in expr -> OpAdd.Companion::invoke
-                "-=" in expr -> OpSub.Companion::invoke
-                "*=" in expr -> OpMul.Companion::invoke
-                "/=" in expr -> OpDiv.Companion::invoke
-                ("==" !in expr || expr.indexOf("=") < expr.indexOf("==")) -> null
-
-                else -> error("Invalid assignment")
-            }
-        )
-    }
-
-    private fun parseValue() : Expression {
-        println("Parsing $expr")
         nextChar()
         val x = parseExpressionOp(OpGlobalContext)
         require(pos <= expr.length) {
             "Unexpected Lottie expression $ch"
         }
         return x.also {
-            println("Expression parsed: $expr")
+            if (EXPR_DEBUG_PRINT_ENABLED) {
+                println("Expression parsed: $expr")
+            }
         }
     }
 
@@ -69,6 +45,19 @@ internal class ExpressionParser(
         if (ch == charToEat) {
             nextChar()
             return true
+        }
+        return false
+    }
+
+    private fun nextCharIs(condition : (Char) -> Boolean) : Boolean {
+        var i = pos
+
+        while (i < expr.length){
+            if (condition(expr[i]))
+                return true
+            if (expr[i] == ' ')
+                i++
+            else return false
         }
         return false
     }
@@ -112,40 +101,50 @@ internal class ExpressionParser(
                 }
             }
 
-            context is OpGlobalContext && ch.isDigit() || ch == '.' -> {
-                print("making const number... ")
+            context is OpGlobalContext && ch.isDigit() || nextCharIs('.'::equals) -> {
+                if (EXPR_DEBUG_PRINT_ENABLED) {
+                    print("making const number... ")
+                }
                 var dotsCount = 0
                 val startPos = pos
                 do {
                     nextChar()
-                    if (ch == '.') {
+                    if (nextCharIs('.'::equals)) {
                         require(dotsCount == 0){
                             "Invalid number at index $startPos: $expr"
                         }
                         dotsCount++
                     }
-                } while (ch.isDigit() || ch == '.')
+                } while (ch.isDigit() || nextCharIs('.'::equals))
 
                 val num = expr.substring(startPos, pos).let {
                     if (dotsCount == 1) it.toFloat() else it.toInt()
                 }
-                println(num)
+                if (EXPR_DEBUG_PRINT_ENABLED) {
+                    println(num)
+                }
                 OpConstant(num)
             }
-            context is OpGlobalContext && ch == '\'' || ch == '"' -> {
-                print("making const string... ")
+            context is OpGlobalContext && nextCharIs('\''::equals) || nextCharIs('"'::equals) -> {
+                if (EXPR_DEBUG_PRINT_ENABLED) {
+                    print("making const string... ")
+                }
                 val c = ch
                 val startPos = pos
                 do {
                     nextChar()
                 } while (!eat(c))
                 val str = expr.substring(startPos, pos).drop(1).dropLast(1)
-                println(str)
+                if (EXPR_DEBUG_PRINT_ENABLED) {
+                    println(str)
+                }
                 return OpConstant(str)
             }
 
             context is OpGlobalContext && eat('[') -> { // make array
-                println("making array... ")
+                if (EXPR_DEBUG_PRINT_ENABLED) {
+                    println("making array... ")
+                }
                 val arrayArgs = buildList {
                     do {
                         if (eat(']')){ // empty list
@@ -161,7 +160,9 @@ internal class ExpressionParser(
             }
 
             context !is OpGlobalContext &&  eat('[') -> { // index
-                println("making index... ")
+                if (EXPR_DEBUG_PRINT_ENABLED) {
+                    println("making index... ")
+                }
                 OpIndex(context, parseExpressionOp(OpGlobalContext)).also {
                     require(eat(']')) {
                         "Bad expression: Missing ']'"
@@ -190,8 +191,9 @@ internal class ExpressionParser(
                         }
                     }
                 }
-                println("making fun $func")
-
+                if (EXPR_DEBUG_PRINT_ENABLED) {
+                    println("making fun $func")
+                }
                 val parsedOp = when (context) {
                     is ExpressionContext<*> -> context.parse(func, args)
                     else -> error("Unsupported Lottie expression function: $func")
@@ -199,7 +201,7 @@ internal class ExpressionParser(
 
                 when {
                     // property || index
-                    eat('.') || ch == '[' ->
+                    eat('.') || nextCharIs('['::equals) ->
                         parseFactorOp(parsedOp) // continue with receiver
 
                     else -> parsedOp
@@ -218,6 +220,6 @@ internal fun checkArgs(args : List<*>, count : Int, func : String) {
 }
 
 
-private val funMap = (('a'..'z').toList() + ('A'..'Z').toList() + "$" ).associateBy { it }
+private val funMap = (('a'..'z').toList() + ('A'..'Z').toList() + '$' + '_' ).associateBy { it }
 
 private fun Char.isFun() = funMap[this] != null

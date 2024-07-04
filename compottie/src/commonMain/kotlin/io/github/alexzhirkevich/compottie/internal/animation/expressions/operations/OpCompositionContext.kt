@@ -3,12 +3,13 @@ package io.github.alexzhirkevich.compottie.internal.animation.expressions.operat
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionComposition
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
 
 internal sealed class OpCompositionContext : ExpressionContext<ExpressionComposition> {
 
     final override fun parse(
         op: String,
-        args : List<Expression>
+        args: List<Expression>
     ): Expression {
         return when (op) {
             "numLayers" -> withContext { _, _, _ -> layersCount }
@@ -16,15 +17,13 @@ internal sealed class OpCompositionContext : ExpressionContext<ExpressionComposi
             "height" -> withContext { _, _, _ -> height }
             "displayStartTime" -> withContext { _, _, _ -> startTime }
             "frameDuration" -> withContext { _, _, s -> s.composition.frameRate / 1000 }
-            "layer" -> OpGetLayer(
-                comp = this,
-                name = { v, vars, s ->
-                    val n = args.singleOrNull()?.invoke(v, vars, s) as? String
-                    checkNotNull(n) {
-                        "composition.layer(..) must take exactly one string parameter"
-                    }
-                }
-            )
+            "layer" -> {
+                checkArgs(args, 1, op)
+                OpGetLayer(
+                    comp = this,
+                    name = args[0]
+                )
+            }
 
             else -> unresolvedProperty(op, "Composition")
         }

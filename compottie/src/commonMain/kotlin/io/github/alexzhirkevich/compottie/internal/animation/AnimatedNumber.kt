@@ -2,13 +2,17 @@ package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.dynamic.PropertyProvider
-import io.github.alexzhirkevich.compottie.dynamic.derive
+import io.github.alexzhirkevich.compottie.dynamic.invoke
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionEvaluator
 import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -17,30 +21,25 @@ import kotlinx.serialization.json.JsonTransformingSerializer
 import kotlinx.serialization.json.jsonObject
 
 @Serializable(with = AnimatedNumberSerializer::class)
-internal sealed class AnimatedNumber : PropertyAnimation<Float> {
+internal sealed class AnimatedNumber : DynamicProperty<Float>() {
 
-    protected var dynamic: PropertyProvider<Float>? = null
-        private set
+    final override var dynamic: PropertyProvider<Float>? = null
 
     abstract val expression : String?
 
-    @Transient
-    private val expressionEvaluator by lazy {
-        expression?.let(::ExpressionEvaluator)
+    final override val expressionEvaluator : ExpressionEvaluator<Float> by lazy {
+        expression?.let(::ExpressionEvaluator) ?: super.expressionEvaluator
     }
 
     fun dynamic(provider: PropertyProvider<Float>?) {
         dynamic = provider
     }
 
-    abstract fun copy() : AnimatedNumber
-
-    final override fun interpolated(state: AnimationState): Float {
-        val v = expressionEvaluator
-            ?.evaluate(this, state) as? Float
-            ?: rawInterpolated(state)
-        return dynamic.derive(v, state)
+    protected fun prepareExpressionsEvaluator() {
+        expressionEvaluator
     }
+
+    abstract fun copy() : AnimatedNumber
 
     @Serializable
     class Default(
@@ -54,6 +53,10 @@ internal sealed class AnimatedNumber : PropertyAnimation<Float> {
         override val index: Int? = null
     ) : AnimatedNumber() {
 
+        init {
+            prepareExpressionsEvaluator()
+        }
+
         override fun copy(): AnimatedNumber {
             return Default(
                 value = value,
@@ -62,7 +65,7 @@ internal sealed class AnimatedNumber : PropertyAnimation<Float> {
             )
         }
 
-        override fun rawInterpolated(state: AnimationState): Float = value
+        override fun raw(state: AnimationState): Float = value
     }
 
     @Serializable
@@ -75,7 +78,11 @@ internal sealed class AnimatedNumber : PropertyAnimation<Float> {
 
         @SerialName("ix")
         override val index: Int? = null
-    ) : AnimatedNumber(), KeyframeAnimation<Float, ValueKeyframe> {
+    ) : AnimatedNumber(), AnimatedKeyframeProperty<Float, ValueKeyframe> {
+
+        init {
+            prepareExpressionsEvaluator()
+        }
 
         @Transient
         private val delegate = BaseKeyframeAnimation(
@@ -95,15 +102,15 @@ internal sealed class AnimatedNumber : PropertyAnimation<Float> {
             )
         }
 
-        override fun rawInterpolated(state: AnimationState): Float {
-            return delegate.interpolated(state)
+        override fun raw(state: AnimationState): Float {
+            return delegate.raw(state)
         }
     }
 }
 
 internal fun AnimatedNumber.dynamicNorm(provider: PropertyProvider<Float>?) {
     if (provider != null)
-        dynamic { provider(it) * 100f }
+        dynamic { provider.invoke(this, it) * 100f }
     else dynamic(null)
 }
 

@@ -6,3 +6,7 @@ import androidx.compose.ui.text.font.createFontFamilyResolver
 internal actual fun makeFontFamilyResolver() : FontFamily.Resolver {
     return createFontFamilyResolver()
 }
+
+internal actual fun mockFontFamilyResolver() : FontFamily.Resolver =
+    createFontFamilyResolver()
+

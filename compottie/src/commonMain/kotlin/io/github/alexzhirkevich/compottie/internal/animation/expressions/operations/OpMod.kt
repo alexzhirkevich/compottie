@@ -1,7 +1,8 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.PropertyAnimation
+import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 
 internal class OpMod(
@@ -9,12 +10,12 @@ internal class OpMod(
     private val b : Expression,
 ) : Expression {
     override fun invoke(
-        property: PropertyAnimation<Any>,
-        variables: MutableMap<String, Any>,
+        property: RawProperty<Any>,
+        context: EvaluationContext,
         state: AnimationState
     ): Any {
-        val a = a(property, variables, state)
-        val b = b(property, variables, state)
+        val a = a(property, context, state)
+        val b = b(property, context, state)
 
         require(a is Number && b is Number) {
             "Can't get mod of $a and $b"

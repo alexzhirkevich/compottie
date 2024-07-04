@@ -1,8 +1,9 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.PropertyAnimation
+import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 
 internal class OpSub(
@@ -10,13 +11,13 @@ internal class OpSub(
     private val b : Expression,
 ) : Expression {
     override fun invoke(
-        property: PropertyAnimation<Any>,
-        variables: MutableMap<String, Any>,
+        property: RawProperty<Any>,
+        context: EvaluationContext,
         state: AnimationState
     ): Any {
         return invoke(
-            a(property, variables, state),
-            b(property, variables, state)
+            a(property, context, state),
+            b(property, context, state)
         )
     }
 

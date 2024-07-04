@@ -1,8 +1,10 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.PropertyAnimation
+import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
+import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 
 internal class OpGetEffect(
@@ -11,13 +13,14 @@ internal class OpGetEffect(
 ) : OpEffectContext() {
 
     override fun invoke(
-        property: PropertyAnimation<Any>,
-        variables: MutableMap<String, Any>,
+        property: RawProperty<Any>,
+        context: EvaluationContext,
         state: AnimationState
-    ): Any {
-        val layer = layer(property, variables, state) as Layer
+    ): LayerEffect {
 
-        return when (val nameOrIndex = nameOrIndex(property, variables, state)) {
+        val layer = layer(property, context, state) as Layer
+
+        return when (val nameOrIndex = nameOrIndex(property, context, state)) {
             is String -> checkNotNull(layer.effects.firstOrNull { it.name == nameOrIndex }) {
                 "Effect with name $nameOrIndex wasn't found for layer ${layer.name}"
             }

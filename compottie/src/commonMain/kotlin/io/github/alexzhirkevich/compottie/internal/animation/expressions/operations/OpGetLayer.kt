@@ -1,7 +1,8 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.PropertyAnimation
+import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionComposition
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 
@@ -11,17 +12,17 @@ internal class OpGetLayer(
 ) : OpLayerContext() {
 
     override fun invoke(
-        property: PropertyAnimation<Any>,
-        variables: MutableMap<String, Any>,
+        property: RawProperty<Any>,
+        context: EvaluationContext,
         state: AnimationState
     ): Any {
         return if (name == null) {
             state.layer
         } else {
 
-            val n = name.invoke(property, variables, state) as String
+            val n = name.invoke(property, context, state) as String
 
-            val comp = comp?.invoke(property, variables, state)
+            val comp = comp?.invoke(property, context, state)
                 ?: state.composition.expressionComposition
 
             require(comp is ExpressionComposition){

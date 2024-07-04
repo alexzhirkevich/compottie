@@ -1,19 +1,21 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations
 
-import io.github.alexzhirkevich.compottie.internal.animation.KeyframeAnimation
-import io.github.alexzhirkevich.compottie.internal.animation.PropertyAnimation
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedKeyframeProperty
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedProperty
+import io.github.alexzhirkevich.compottie.internal.animation.RawKeyframeProperty
+import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
 
-internal sealed class OpPropertyContext : Expression, ExpressionContext<PropertyAnimation<*>> {
+internal sealed class OpPropertyContext : Expression, ExpressionContext<RawProperty<*>> {
 
     final override fun parse(op: String, args: List<Expression>): Expression {
         return when (op) {
             "value" -> OpPropertyValue()
             "numKeys" -> withContext { _, _, _ ->
-                if (this is KeyframeAnimation<*, *>) {
+                if (this is RawKeyframeProperty<*, *>) {
                     keyframes.size
                 } else 0
             }

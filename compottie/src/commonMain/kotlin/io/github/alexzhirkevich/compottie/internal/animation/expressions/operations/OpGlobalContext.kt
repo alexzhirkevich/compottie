@@ -1,13 +1,20 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations
 
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.EaseInOutBack
+import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.LinearEasing
+import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.PropertyAnimation
+import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
 
-internal object OpGlobalContext : ExpressionContext<Nothing>, Expression{
+internal object OpGlobalContext : ExpressionContext<Nothing>, Expression {
 
     override fun parse(op: String, args: List<Expression>): Expression {
         return when (op) {
@@ -57,6 +64,21 @@ internal object OpGlobalContext : ExpressionContext<Nothing>, Expression{
                 OpClamp(args[0], args[1], args[2])
             }
 
+            "seedRandom" -> OpSetRandomSeed(args[0], args.getOrNull(1))
+            "random", "gaussRandom" -> {
+                if (op == "gaussRandom"){
+                    Compottie.logger?.warn("Compottie doesn't support gaussRandom(). Default random will be used instead")
+                }
+                OpRandomNumber(
+                    args.getOrNull(0),
+                    args.getOrNull(1),
+                )
+            }
+            "linear" -> OpInterpolate.parse(LinearEasing, args)
+            "ease" -> OpInterpolate.parse(EaseInOut, args)
+            "easeIn" -> OpInterpolate.parse(EaseIn, args)
+            "easeOut" -> OpInterpolate.parse(EaseOut, args)
+
             "if", "else" -> error("Compottie doesn't support conditions in expressions yet")
 
             else -> {
@@ -69,8 +91,8 @@ internal object OpGlobalContext : ExpressionContext<Nothing>, Expression{
     }
 
     override fun invoke(
-        property: PropertyAnimation<Any>,
-        variables: MutableMap<String, Any>,
+        property: RawProperty<Any>,
+        context: EvaluationContext,
         state: AnimationState
     ): Any {
         return Undefined

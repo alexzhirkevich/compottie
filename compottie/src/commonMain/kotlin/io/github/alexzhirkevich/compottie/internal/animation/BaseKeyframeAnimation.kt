@@ -8,7 +8,7 @@ internal class BaseKeyframeAnimation<T : Any, K, out KF : Keyframe<K>>(
     override val keyframes: List<KF>,
     private val emptyValue : T,
     private val map : KF.(start : K, end : K, progress: Float) -> T
-) : KeyframeAnimation<T, KF> {
+) : RawKeyframeProperty<T, KF> {
 
     private val sortedKeyframes = keyframes
         .sortedBy(Keyframe<*>::time)
@@ -60,8 +60,7 @@ internal class BaseKeyframeAnimation<T : Any, K, out KF : Keyframe<K>>(
         }
     }
 
-
-    override fun interpolated(state: AnimationState): T {
+    override fun raw(state: AnimationState): T {
 
         if (sortedKeyframes.isEmpty())
             return emptyValue

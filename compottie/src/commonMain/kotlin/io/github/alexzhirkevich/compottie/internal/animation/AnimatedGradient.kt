@@ -114,7 +114,7 @@ internal value class GradientType(val type : Byte) {
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonClassDiscriminator("a")
-internal abstract class AnimatedGradient : PropertyAnimation<ColorsWithStops> {
+internal abstract class AnimatedGradient : AnimatedProperty<ColorsWithStops> {
 
     @Transient
     var numberOfColors: Int = 0
@@ -137,7 +137,7 @@ internal abstract class AnimatedGradient : PropertyAnimation<ColorsWithStops> {
             }
         }
 
-        override fun interpolated(state: AnimationState): ColorsWithStops {
+        override fun raw(state: AnimationState): ColorsWithStops {
             return tempColors
         }
 
@@ -156,7 +156,7 @@ internal abstract class AnimatedGradient : PropertyAnimation<ColorsWithStops> {
         override val keyframes: List<VectorKeyframe>,
         @SerialName("ix")
         override val index: Int? = null
-    ) : AnimatedGradient(), KeyframeAnimation<ColorsWithStops, VectorKeyframe> {
+    ) : AnimatedGradient(), AnimatedKeyframeProperty<ColorsWithStops, VectorKeyframe> {
 
         private val tempColors by lazy {
             ColorsWithStops(numberOfColors)
@@ -190,8 +190,8 @@ internal abstract class AnimatedGradient : PropertyAnimation<ColorsWithStops> {
             return Animated(keyframes = keyframes, index = index)
         }
 
-        override fun interpolated(state: AnimationState): ColorsWithStops {
-            return delegate.interpolated(state)
+        override fun raw(state: AnimationState): ColorsWithStops {
+            return delegate.raw(state)
         }
     }
 }

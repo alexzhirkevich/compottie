@@ -9,7 +9,7 @@ internal sealed class OpEffectContext : ExpressionContext<LayerEffect> {
     final override fun parse(op: String, args: List<Expression>): Expression {
 
         return when(op){
-
+            "active" -> withContext { _, _, _ -> enabled }
 
             else -> unresolvedProperty(op, "Effect")
         }

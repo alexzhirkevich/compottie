@@ -28,7 +28,7 @@ internal class AnimatedTextDocument(
 
     @SerialName("sid")
     val slotID : String? = null
-) : KeyframeAnimation<TextDocument, TextDocumentKeyframe> {
+) : AnimatedKeyframeProperty<TextDocument, TextDocumentKeyframe> {
 
     private val document = TextDocument()
 
@@ -66,45 +66,49 @@ internal class AnimatedTextDocument(
         }
     )
 
+    override fun raw(state: AnimationState): TextDocument {
+        return delegate.raw(state)
+    }
+
     override fun interpolated(state: AnimationState): TextDocument {
-        val interp = delegate.interpolated(state)
+        val raw = delegate.raw(state)
 
         return document.apply {
-            fontFamily = interp.fontFamily
+            fontFamily = raw.fontFamily
             fillColor = dynamic?.fillColor?.let {
-                it.derive(interp.fillColor?.toColor() ?: Color.Unspecified, state).let {
+                it.derive(raw.fillColor?.toColor() ?: Color.Unspecified, state).let {
                     fillColorList.fill(it)
                 }
-            } ?: interp.fillColor
+            } ?: raw.fillColor
             strokeColor = dynamic?.strokeColor?.let {
-                it.derive(interp.strokeColor?.toColor() ?: Color.Unspecified, state).let {
+                it.derive(raw.strokeColor?.toColor() ?: Color.Unspecified, state).let {
                     strokeColorList.fill(it)
                 }
-            } ?: interp.strokeColor
-            strokeWidth = dynamic?.strokeWidth.derive(interp.strokeWidth, state)
-            strokeOverFill = dynamic?.strokeOverFill.derive(interp.strokeOverFill, state)
-            fontSize = dynamic?.fontSize.derive(interp.fontSize, state)
-            lineHeight = dynamic?.lineHeight.derive(interp.lineHeight, state)
+            } ?: raw.strokeColor
+            strokeWidth = dynamic?.strokeWidth.derive(raw.strokeWidth, state)
+            strokeOverFill = dynamic?.strokeOverFill.derive(raw.strokeOverFill, state)
+            fontSize = dynamic?.fontSize.derive(raw.fontSize, state)
+            lineHeight = dynamic?.lineHeight.derive(raw.lineHeight, state)
             wrapSize = dynamic?.wrapSize?.let {
-                it.derive(interp.wrapSize?.toSize() ?: Size.Unspecified, state).let {
+                it.derive(raw.wrapSize?.toSize() ?: Size.Unspecified, state).let {
                     sizeList[0] = it.width
                     sizeList[1] = it.height
                     sizeList
                 }
-            } ?: interp.wrapSize
+            } ?: raw.wrapSize
             wrapPosition = dynamic?.wrapPosition?.let {
-                it.derive(interp.wrapPosition?.toOffset() ?: Offset.Unspecified, state).let {
+                it.derive(raw.wrapPosition?.toOffset() ?: Offset.Unspecified, state).let {
                     positionList[0] = it.x
                     positionList[1] = it.y
                     positionList
                 }
-            } ?: interp.wrapPosition
-            text = dynamic?.text.derive(interp.text.orEmpty(), state)
-            textJustify = dynamic?.textJustify.derive(interp.textJustify, state)
-            textTracking = dynamic?.tracking.derive(interp.textTracking ?: 0f, state)
+            } ?: raw.wrapPosition
+            text = dynamic?.text.derive(raw.text.orEmpty(), state)
+            textJustify = dynamic?.textJustify.derive(raw.textJustify, state)
+            textTracking = dynamic?.tracking.derive(raw.textTracking ?: 0f, state)
             baselineShift =
-                dynamic?.baselineShift.derive(interp.baselineShift ?: 0f, state)
-            textCaps = interp.textCaps
+                dynamic?.baselineShift.derive(raw.baselineShift ?: 0f, state)
+            textCaps = raw.textCaps
         }
     }
 
