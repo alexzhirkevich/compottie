@@ -9,7 +9,13 @@ import kotlinx.serialization.Serializable
 @SerialName("20")
 internal class TintEffect(
     @SerialName("ef")
-    override val values : List<EffectValue<@Contextual Any?>>
+    override val values : List<EffectValue<@Contextual Any?>>,
+
+    @SerialName("nm")
+    override val name : String? = null,
+
+    @SerialName("ix")
+    override val index : Int? = null,
 ) : LayerEffect {
 
     val black

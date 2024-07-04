@@ -1,18 +1,23 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.PropertyAnimation
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Operation
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 
 internal class OpIndex(
-    private val v : Operation,
-    private val idx : Operation?,
-) : Operation {
+    private val v : Expression,
+    private val idx : Expression?,
+) : Expression {
 
-    override fun invoke(value: Any, variables: MutableMap<String, Any>, state: AnimationState): Any {
+    override fun invoke(
+        property: PropertyAnimation<Any>,
+        variables: MutableMap<String, Any>,
+        state: AnimationState
+    ): Any {
 
-        val v = v(value, variables, state)
-        val idx = idx?.invoke(value, variables, state) ?: return v
+        val v = v(property, variables, state)
+        val idx = idx?.invoke(property, variables, state) ?: return v
 
         return when (v) {
             is Vec2 -> when (idx) {

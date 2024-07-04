@@ -1,17 +1,22 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.PropertyAnimation
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Operation
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 
 internal class OpAdd(
-    private val a : Operation,
-    private val b : Operation,
-) : Operation {
-    override fun invoke(value: Any, variables: MutableMap<String, Any>, state: AnimationState): Any {
+    private val a : Expression,
+    private val b : Expression,
+) : Expression {
+    override fun invoke(
+        property: PropertyAnimation<Any>,
+        variables: MutableMap<String, Any>,
+        state: AnimationState
+    ): Any {
         return invoke(
-            a(value, variables, state),
-            b(value, variables, state)
+            a(property, variables, state),
+            b(property, variables, state)
         )
     }
 

@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.createFontFamilyResolver
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.assets.EmptyAssetsManager
@@ -55,6 +54,8 @@ import kotlin.math.roundToInt
  * @param clipTextToBoundingBoxes if text should be clipped to its bounding boxes (if provided in animation)
  * @param enableMergePaths enable experimental merge paths feature. Most of the time animation doesn't need
  * it even if it contains merge paths. This feature should only be enabled for tested animations
+ * @param enableExpressions enable experimental expressions feature. Unsupported expressions will
+ * be skipped with warning.
  * */
 @OptIn(InternalCompottieApi::class)
 @Composable
@@ -68,6 +69,7 @@ fun rememberLottiePainter(
     clipToCompositionBounds : Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
     enableMergePaths: Boolean = false,
+    enableExpressions: Boolean = false,
 ) : Painter {
 
     val fontFamilyResolver = LocalFontFamilyResolver.current
@@ -97,9 +99,10 @@ fun rememberLottiePainter(
                 fontFamilyResolver = fontFamilyResolver,
                 clipToCompositionBounds = clipToCompositionBounds,
                 enableMergePaths = enableMergePaths,
+                enableExpressions = enableExpressions,
                 applyOpacityToLayers = applyOpacityToLayers,
-                assets = assets.await().orEmpty(),
-                fonts = fonts.await().orEmpty()
+                assets = assets.await(),
+                fonts = fonts.await()
             )
         }
     }
@@ -111,9 +114,11 @@ fun rememberLottiePainter(
         clipToCompositionBounds,
         applyOpacityToLayers,
         enableMergePaths,
-    ){
+        enableExpressions
+    ) {
         (painter as? LottiePainter)?.let {
             it.enableMergePaths = enableMergePaths
+            it.enableExpressions = enableExpressions
             it.applyOpacityToLayers = applyOpacityToLayers
             it.clipToCompositionBounds = clipToCompositionBounds
             it.clipTextToBoundingBoxes = clipTextToBoundingBoxes
@@ -159,6 +164,7 @@ fun rememberLottiePainter(
     clipToCompositionBounds: Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
     enableMergePaths: Boolean = false,
+    enableExpressions: Boolean = false,
 ) : Painter {
 
     val progress = animateLottieCompositionAsState(
@@ -182,7 +188,8 @@ fun rememberLottiePainter(
         applyOpacityToLayers = applyOpacityToLayers,
         clipToCompositionBounds = clipToCompositionBounds,
         clipTextToBoundingBoxes = clipTextToBoundingBoxes,
-        enableMergePaths = enableMergePaths
+        enableMergePaths = enableMergePaths,
+        enableExpressions = enableExpressions
     )
 }
 
@@ -207,6 +214,7 @@ suspend fun LottiePainter(
     clipToCompositionBounds : Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
     enableMergePaths: Boolean = false,
+    enableExpressions: Boolean = false,
 ) : Painter = coroutineScope {
     val assets = async(ioDispatcher()) {
         assetsManager?.let {
@@ -230,6 +238,7 @@ suspend fun LottiePainter(
         fontFamilyResolver = makeFontFamilyResolver(),
         clipToCompositionBounds = clipToCompositionBounds,
         enableMergePaths = enableMergePaths,
+        enableExpressions = enableExpressions,
         applyOpacityToLayers = applyOpacityToLayers,
         assets = assets.await().orEmpty(),
         fonts = fonts.await().orEmpty()
@@ -258,6 +267,7 @@ private class LottiePainter(
     clipTextToBoundingBoxes : Boolean,
     clipToCompositionBounds : Boolean,
     enableMergePaths : Boolean,
+    enableExpressions : Boolean,
 ) : Painter() {
 
 
@@ -293,7 +303,8 @@ private class LottiePainter(
         clipToCompositionBounds = clipToCompositionBounds,
         clipTextToBoundingBoxes = clipTextToBoundingBoxes,
         enableMergePaths = enableMergePaths,
-        layer = compositionLayer
+        layer = compositionLayer,
+        enableExpressions = enableExpressions
     )
 
     fun setDynamicProperties(provider : DynamicCompositionProvider?) {
@@ -304,11 +315,12 @@ private class LottiePainter(
         setDynamicProperties(dynamicProperties)
     }
 
-    var enableMergePaths: Boolean by animationState::enableMergePaths
     var applyOpacityToLayers: Boolean by animationState::applyOpacityToLayers
     var clipTextToBoundingBoxes: Boolean by animationState::clipTextToBoundingBoxes
     var clipToCompositionBounds: Boolean by animationState::clipToCompositionBounds
     var fontFamilyResolver: FontFamily.Resolver by animationState::fontFamilyResolver
+    var enableMergePaths: Boolean by animationState::enableMergePaths
+    var enableExpressions: Boolean by animationState::enableExpressions
 
     override fun applyAlpha(alpha: Float): Boolean {
         if (alpha !in 0f..1f)

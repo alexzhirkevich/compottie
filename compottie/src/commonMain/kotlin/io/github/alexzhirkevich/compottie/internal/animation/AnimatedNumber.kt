@@ -17,7 +17,7 @@ import kotlinx.serialization.json.JsonTransformingSerializer
 import kotlinx.serialization.json.jsonObject
 
 @Serializable(with = AnimatedNumberSerializer::class)
-internal sealed class AnimatedNumber : KeyframeAnimation<Float> {
+internal sealed class AnimatedNumber : PropertyAnimation<Float> {
 
     protected var dynamic: PropertyProvider<Float>? = null
         private set
@@ -35,11 +35,10 @@ internal sealed class AnimatedNumber : KeyframeAnimation<Float> {
 
     abstract fun copy() : AnimatedNumber
 
-    abstract fun interpolatedInternal(state: AnimationState): Float
-
     final override fun interpolated(state: AnimationState): Float {
-        var v = interpolatedInternal(state)
-        v = expressionEvaluator?.evaluate(v, state) as? Float ?: v
+        val v = expressionEvaluator
+            ?.evaluate(this, state) as? Float
+            ?: rawInterpolated(state)
         return dynamic.derive(v, state)
     }
 
@@ -52,31 +51,36 @@ internal sealed class AnimatedNumber : KeyframeAnimation<Float> {
         override val expression: String? = null,
 
         @SerialName("ix")
-        val index: String? = null
+        override val index: Int? = null
     ) : AnimatedNumber() {
 
         override fun copy(): AnimatedNumber {
-            return Default(value, expression, index)
+            return Default(
+                value = value,
+                expression = expression,
+                index = index
+            )
         }
 
-        override fun interpolatedInternal(state: AnimationState): Float = value
+        override fun rawInterpolated(state: AnimationState): Float = value
     }
 
     @Serializable
     class Animated(
         @SerialName("k")
-        val value: List<ValueKeyframe>,
+        override val keyframes: List<ValueKeyframe>,
 
         @SerialName("x")
         override val expression: String? = null,
 
         @SerialName("ix")
-        val index: String? = null
-    ) : AnimatedNumber() {
+        override val index: Int? = null
+    ) : AnimatedNumber(), KeyframeAnimation<Float, ValueKeyframe> {
 
         @Transient
         private val delegate = BaseKeyframeAnimation(
-            keyframes = value,
+            index = index,
+            keyframes = keyframes,
             emptyValue = 1f,
             map = { s, e, p ->
                 lerp(s[0], e[0], easingX.transform(p))
@@ -84,10 +88,14 @@ internal sealed class AnimatedNumber : KeyframeAnimation<Float> {
         )
 
         override fun copy(): AnimatedNumber {
-            return Animated(value, expression, index)
+            return Animated(
+                keyframes = keyframes,
+                expression = expression,
+                index = index
+            )
         }
 
-        override fun interpolatedInternal(state: AnimationState): Float {
+        override fun rawInterpolated(state: AnimationState): Float {
             return delegate.interpolated(state)
         }
     }

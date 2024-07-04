@@ -16,9 +16,9 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = AnimatedShapeSerializer::class)
-internal sealed interface AnimatedShape : KeyframeAnimation<Path> {
+internal sealed interface AnimatedShape : PropertyAnimation<Path> {
 
-    fun interpolatedRaw(state: AnimationState): Path
+    fun interpolatedMutable(state: AnimationState): Path
 
     fun copy() : AnimatedShape
 
@@ -30,7 +30,7 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path> {
         val expression: String? = null,
 
         @SerialName("ix")
-        val index: String? = null,
+        override val index: Int? = null,
 
         @SerialName("k")
         val bezier: Bezier,
@@ -48,12 +48,16 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path> {
             return tmpPath
         }
 
-        override fun interpolatedRaw(state: AnimationState): Path {
+        override fun interpolatedMutable(state: AnimationState): Path {
             return Path().apply { bezier.mapPath(this) }
         }
 
         override fun copy(): AnimatedShape {
-            return Default(expression = expression, index = index, bezier = bezier)
+            return Default(
+                expression = expression,
+                index = index,
+                bezier = bezier
+            )
         }
     }
 
@@ -63,11 +67,11 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path> {
         val expression: String? = null,
 
         @SerialName("ix")
-        val index: String? = null,
+        override val index: Int? = null,
 
         @SerialName("k")
-        val keyframes: List<BezierKeyframe>,
-    ) : AnimatedShape, KeyframeAnimation<Path> {
+        override val keyframes: List<BezierKeyframe>,
+    ) : AnimatedShape, KeyframeAnimation<Path, BezierKeyframe> {
 
         @Transient
         private val tmpPath = Path()
@@ -77,6 +81,7 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path> {
 
         @Transient
         private var delegate = BaseKeyframeAnimation(
+            index = index,
             keyframes = keyframes,
             emptyValue = tmpPath,
             map = { s, e, p ->
@@ -88,6 +93,7 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path> {
 
         @Transient
         private var rawDelegate = BaseKeyframeAnimation(
+            index = index,
             keyframes = keyframes,
             emptyValue = tmpPath,
             map = { s, e, p ->
@@ -106,12 +112,16 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path> {
             }
         }
 
-        override fun interpolatedRaw(state: AnimationState): Path {
+        override fun interpolatedMutable(state: AnimationState): Path {
             return rawDelegate.interpolated(state)
         }
 
         override fun copy(): AnimatedShape {
-            return Animated(expression = expression, index = index, keyframes = keyframes)
+            return Animated(
+                expression = expression,
+                index = index,
+                keyframes = keyframes
+            )
         }
 
         override fun interpolated(state: AnimationState): Path {

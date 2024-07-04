@@ -1,40 +1,42 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Operation
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.OperationContext
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.layers.PrecompositionLayer
 
-internal sealed class OpLayerContext : Operation, OperationContext {
+internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
 
-    override fun evaluate(op: String, args: List<Operation>): Operation {
+    override fun parse(op: String, args: List<Expression>): Expression {
 
         return when (op) {
-            "index" -> layerOp { _, _, _ -> index ?: Undefined }
-            "inPoint" -> layerOp { _, _, s -> inPoint?.div(s.composition.frameRate) ?: Undefined }
-            "outPoint" -> layerOp { _, _, s -> outPoint?.div(s.composition.frameRate) ?: Undefined }
-            "startTime" -> layerOp { _, _, s ->
+            "index" -> withContext { _, _, _ -> index ?: Undefined }
+            "inPoint" -> withContext { _, _, s ->
+                inPoint?.div(s.composition.frameRate) ?: Undefined
+            }
+            "outPoint" -> withContext { _, _, s ->
+                outPoint?.div(s.composition.frameRate) ?: Undefined
+            }
+            "startTime" -> withContext { _, _, s ->
                 startTime?.div(s.composition.frameRate) ?: Undefined
             }
 
-            "source" -> layerOp { _, _, _ -> if (this is PrecompositionLayer) refId else Undefined }
-            "hasParent" -> layerOp { _, _, _ -> parentLayer != null }
-            "parent" -> layerOp { _, _, _ -> parentLayer ?: Undefined }
+            "source" -> withContext { _, _, _ ->
+                if (this is PrecompositionLayer) refId else Undefined
+            }
+            "hasParent" -> withContext { _, _, _ -> parentLayer != null }
+            "parent" -> withContext { _, _, _ -> parentLayer ?: Undefined }
             "transform" -> OpGetLayerTransform(this)
+            "effect" -> {
+                checkArgs(args, 1, op)
+                OpGetEffect(layer = this, nameOrIndex = args[0])
+            }
 
-            else -> error("Unknown layer property: $op")
+            "sourceRectAtTime" -> error("$op for Layer is not yet supported")
+            else -> unresolvedProperty(op, "Layer")
         }
-    }
-
-    private fun layerOp(
-        block: Layer.(
-            value: Any,
-            variables: Map<String, Any>,
-            state: AnimationState
-        ) -> Any
-    ) = Operation { value, variables, state ->
-        block(invoke(value, variables, state) as Layer, value, variables, state)
     }
 }

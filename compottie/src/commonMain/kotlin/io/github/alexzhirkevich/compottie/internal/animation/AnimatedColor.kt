@@ -5,7 +5,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -18,7 +17,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = AnimatedColorSerializer::class)
-internal sealed interface AnimatedColor : KeyframeAnimation<Color> {
+internal sealed interface AnimatedColor : PropertyAnimation<Color> {
 
     fun copy() : AnimatedColor
 
@@ -31,13 +30,17 @@ internal sealed interface AnimatedColor : KeyframeAnimation<Color> {
         val expression: String? = null,
 
         @SerialName("ix")
-        val index: String? = null
+        override val index: Int? = null
     ) : AnimatedColor {
 
         @Transient
         private val color: Color = value.toColor()
         override fun copy(): AnimatedColor {
-            return Default(value = value, expression = expression, index = index)
+            return Default(
+                value = value,
+                expression = expression,
+                index = index
+            )
         }
 
         override fun interpolated(state: AnimationState) = color
@@ -53,8 +56,9 @@ internal sealed interface AnimatedColor : KeyframeAnimation<Color> {
         val expression: String? = null,
 
         @SerialName("ix")
-        val index: String? = null
-    ) : AnimatedColor, KeyframeAnimation<Color> by BaseKeyframeAnimation(
+        override val index: Int? = null
+    ) : AnimatedColor, KeyframeAnimation<Color, VectorKeyframe> by BaseKeyframeAnimation(
+        index = index,
         keyframes = value,
         emptyValue = Color.Transparent,
         map = { s, e, p ->
@@ -62,7 +66,11 @@ internal sealed interface AnimatedColor : KeyframeAnimation<Color> {
         }
     ) {
         override fun copy(): AnimatedColor {
-            return Animated(value = value, expression = expression, index = index)
+            return Animated(
+                value = value,
+                expression = expression,
+                index = index
+            )
         }
     }
 }

@@ -34,7 +34,7 @@ internal typealias Vec2 = Offset
 internal fun Vec2(x : Float, y : Float) : Vec2 = Offset(x,y)
 
 @Serializable(with = AnimatedVector2Serializer::class)
-internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2> {
+internal sealed class AnimatedVector2 : PropertyAnimation<Vec2> {
 
     abstract val expression : String?
 
@@ -52,11 +52,11 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2> {
 
     abstract fun copy() : AnimatedVector2
 
-    protected abstract fun interpolatedInternal(state: AnimationState) : Vec2
 
     final override fun interpolated(state: AnimationState): Vec2 {
-        var v = interpolatedInternal(state)
-        v = expressionEvaluator?.evaluate(v, state) as Vec2? ?: v
+        val v = expressionEvaluator
+            ?.evaluate(this, state) as Vec2?
+            ?: rawInterpolated(state)
         return dynamic.derive(v, state)
     }
 
@@ -69,13 +69,13 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2> {
         override val expression: String? = null,
 
         @SerialName("ix")
-        val index: String? = null
+        override val index: Int? = null
     ) : AnimatedVector2() {
 
         @Transient
         private val vec = Vec2(value[0], value[1])
 
-        override fun interpolatedInternal(state: AnimationState): Vec2 = vec
+        override fun rawInterpolated(state: AnimationState): Vec2 = vec
 
         override fun copy(): AnimatedVector2 {
             return Default(
@@ -89,22 +89,23 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2> {
     @Serializable
     class Animated(
         @SerialName("k")
-        val value: List<VectorKeyframe>,
+        override val keyframes: List<VectorKeyframe>,
 
         @SerialName("x")
         override val expression: String? = null,
 
         @SerialName("ix")
-        val index: String? = null,
-    ) : AnimatedVector2() {
+        override val index: Int? = null
+    ) : AnimatedVector2(), KeyframeAnimation<Vec2, VectorKeyframe> {
 
         private val path = Path()
 
         private val pathMeasure = PathMeasure()
 
         @Transient
-        private val delegate: KeyframeAnimation<Vec2> = BaseKeyframeAnimation(
-            keyframes = value,
+        private val delegate: PropertyAnimation<Vec2> = BaseKeyframeAnimation(
+            index = index,
+            keyframes = keyframes,
             emptyValue = Offset.Zero,
             map = { s, e, p ->
                 if (inTangent != null && outTangent != null && s != e) {
@@ -133,15 +134,13 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2> {
             }
         )
 
-        override fun interpolatedInternal(state: AnimationState): Offset {
-            return delegate.interpolated(state).let {
-                dynamic.derive(it, state)
-            }
+        override fun rawInterpolated(state: AnimationState): Offset {
+            return delegate.interpolated(state)
         }
 
         override fun copy(): AnimatedVector2 {
             return Animated(
-                value = value,
+                keyframes = keyframes,
                 expression = expression,
                 index = index
             )
@@ -157,11 +156,13 @@ internal sealed class AnimatedVector2 : KeyframeAnimation<Vec2> {
         override val expression: String?
             get() = null
 
+        override val index: Int? = null
+
         override fun copy(): AnimatedVector2 {
             return Split(x.copy(), y.copy())
         }
 
-        override fun interpolatedInternal(state: AnimationState): Vec2 {
+        override fun rawInterpolated(state: AnimationState): Vec2 {
             return Vec2(
                 x.interpolated(state),
                 y.interpolated(state)

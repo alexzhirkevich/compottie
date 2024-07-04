@@ -18,14 +18,17 @@ import kotlin.collections.ArrayList
 internal class AnimatedTextDocument(
 
     @SerialName("k")
-    val keyframes : List<TextDocumentKeyframe>,
+    override val keyframes : List<TextDocumentKeyframe>,
 
     @SerialName("x")
     val expression : String? = null,
 
+    @SerialName("ix")
+    override val index: Int? = null,
+
     @SerialName("sid")
     val slotID : String? = null
-) : KeyframeAnimation<TextDocument> {
+) : KeyframeAnimation<TextDocument, TextDocumentKeyframe> {
 
     private val document = TextDocument()
 
@@ -54,6 +57,7 @@ internal class AnimatedTextDocument(
 
     @Transient
     private val delegate = BaseKeyframeAnimation(
+        index = index,
         keyframes = keyframes,
         emptyValue = document,
         map = { s, e, p ->
@@ -107,7 +111,8 @@ internal class AnimatedTextDocument(
     fun copy() = AnimatedTextDocument(
         keyframes = keyframes,
         expression = expression,
-        slotID = slotID
+        slotID = slotID,
+        index = index
     )
 }
 
