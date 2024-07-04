@@ -12,6 +12,7 @@ import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.time.Duration
 
 class AnimationState @PublishedApi internal constructor(
     val composition: LottieComposition,
@@ -50,10 +51,10 @@ class AnimationState @PublishedApi internal constructor(
         }
 
     /**
-     * Time elapsed from the start of animation in seconds
+     * Time elapsed from the start of animation
      * */
-    val time : Float
-        get() = (progress * composition.duration.inWholeMilliseconds)/1000
+    val time : Duration
+        get() = composition.duration * progress.toDouble()
 
     internal var clipToCompositionBounds by mutableStateOf(clipToCompositionBounds)
     internal var clipTextToBoundingBoxes by mutableStateOf(clipTextToBoundingBoxes)

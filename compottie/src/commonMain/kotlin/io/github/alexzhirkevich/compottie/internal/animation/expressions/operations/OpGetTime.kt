@@ -5,6 +5,6 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Operati
 
 internal object OpGetTime : Operation {
     override fun invoke(value: Any, variables: MutableMap<String, Any>, state: AnimationState): Any {
-        return state.time
+        return state.time.inWholeMilliseconds / 1_000f
     }
 }
