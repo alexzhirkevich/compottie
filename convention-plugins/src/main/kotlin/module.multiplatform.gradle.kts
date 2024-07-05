@@ -18,6 +18,10 @@ kotlin {
                 withIos()
                 withMacos()
             }
+            group("java"){
+                withJvm()
+                withAndroidTarget()
+            }
             group("web") {
                 withJs()
                 withWasmJs()
@@ -44,7 +48,6 @@ kotlin {
     iosSimulatorArm64()
     macosX64()
     macosArm64()
-
 
     jvm("desktop") {
         compilerOptions {

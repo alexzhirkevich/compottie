@@ -7,7 +7,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkAr
 
 internal sealed class OpCompositionContext : ExpressionContext<ExpressionComposition> {
 
-    final override fun parse(
+    final override fun interpret(
         op: String,
         args: List<Expression>
     ): Expression {

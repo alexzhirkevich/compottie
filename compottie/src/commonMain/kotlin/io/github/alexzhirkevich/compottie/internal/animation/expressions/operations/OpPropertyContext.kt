@@ -11,7 +11,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkAr
 
 internal sealed class OpPropertyContext : Expression, ExpressionContext<RawProperty<*>> {
 
-    final override fun parse(op: String, args: List<Expression>): Expression {
+    final override fun interpret(op: String, args: List<Expression>): Expression {
         return when (op) {
             "value" -> OpPropertyValue()
             "numKeys" -> withContext { _, _, _ ->

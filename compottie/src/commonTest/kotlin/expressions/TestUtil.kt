@@ -16,6 +16,23 @@ internal inline fun <reified T : Any> RawProperty<T>.testValue(
     expected : T,
 ) = testExpression("$ret = $expr", expected)
 
+internal inline fun RawProperty<Float>.testFloatApprox(
+    expr : String,
+    expected : Float,
+) = testFloatApproxExpression("$ret = $expr", expected)
+
+internal fun <T : Any> RawProperty<T>.testFloatApproxExpression(
+    expr : String,
+    expected : Float,
+) {
+    val state = MockAnimationState(0f)
+    val ev = ExpressionEvaluator<T>(expr)
+
+    val evaluated = ev.run { evaluate(state) } as Float
+
+    assertEquals(expected, (evaluated * 10000).toInt()/10000f)
+}
+
 internal fun <T : Any> RawProperty<T>.testExpression(
     expr : String,
     expected : T,

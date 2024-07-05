@@ -18,7 +18,7 @@ internal object OpMath : Expression, ExpressionContext<Math> {
         return Math
     }
 
-    override fun parse(
+    override fun interpret(
         op: String,
         args: List<Expression>
     ): Expression {
@@ -35,6 +35,11 @@ internal object OpMath : Expression, ExpressionContext<Math> {
             }
 
             "sqrt" -> {
+                checkArgs(args, 1, op)
+                Sqrt(args[0])
+            }
+
+            "tan" -> {
                 checkArgs(args, 1, op)
                 Sqrt(args[0])
             }

@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
+import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 
@@ -22,6 +23,8 @@ private class ExpressionEvaluatorImpl<T : Any>(expr : String) : ExpressionEvalua
 
     private val expression: Expression = MainExpressionInterpreter(expr).interpret()
 
+    private var warned : Boolean = false
+
     @Suppress("unchecked_cast")
     override fun RawProperty<T>.evaluate(state: AnimationState): T {
         return try {
@@ -33,10 +36,13 @@ private class ExpressionEvaluatorImpl<T : Any>(expr : String) : ExpressionEvalua
                 raw(state)
             } as T
         } catch (t: Throwable) {
-            throw ExpressionException(
-                "Error occurred in a Lottie expression. Try disable expressions for Painter using enableExpressions=false",
-                t
-            )
+            if (!warned){
+                warned = true
+                Compottie.logger?.warn(
+                    "Error occurred in a Lottie expression. Try disable expressions for Painter using enableExpressions=false: ${t.message}"
+                )
+            }
+            raw(state)
         }
     }
 }

@@ -7,8 +7,8 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Evaluat
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 
 internal class OpIndex(
-    private val v : Expression,
-    private val idx : Expression?,
+    val variable : Expression,
+    val index : Expression,
 ) : Expression {
 
     override fun invoke(
@@ -17,8 +17,8 @@ internal class OpIndex(
         state: AnimationState
     ): Any {
 
-        val v = v(property, context, state)
-        val idx = idx?.invoke(property, context, state) ?: return v
+        val v = variable(property, context, state)
+        val idx = index.invoke(property, context, state)
 
         return when (v) {
             is Vec2 -> when (idx) {

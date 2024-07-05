@@ -7,7 +7,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Express
 
 internal sealed class OpTransformContext : Expression, ExpressionContext<AnimatedTransform> {
 
-    override fun parse(op: String, args: List<Expression>): Expression {
+    override fun interpret(op: String, args: List<Expression>): Expression {
         return when(op) {
             "rotation" -> withContext { _, _, s -> rotation.interpolated(s) }
             "scale" -> withContext { _, _, s -> scale.interpolated(s) }

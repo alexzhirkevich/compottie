@@ -4,7 +4,7 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 
 internal interface ExpressionContext<T> : Expression {
 
-    fun parse(op: String, args: List<Expression>): Expression
+    fun interpret(op: String, args: List<Expression>): Expression
 
     fun withContext(
         block: T.(

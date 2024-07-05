@@ -13,7 +13,4 @@ internal fun interface Expression {
         state: AnimationState
     ): Any
 
-    companion object {
-        val NoOp = Expression { _, _, _ -> }
-    }
 }

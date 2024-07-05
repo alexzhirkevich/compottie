@@ -3,18 +3,7 @@ package io.github.alexzhirkevich.compottie.internal.animation.expressions
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import kotlin.random.Random
 
-internal interface RandomSource {
-
-    fun setSeed(seed: Int, timeless: Boolean)
-
-    fun random(): Float
-
-    fun random(maxValOrArray : Any): Any
-
-    fun random(maxValOrArray1 : Any, maxValOrArray2 : Any): Any
-}
-
-internal class DefaultRandomSource : RandomSource {
+internal class RandomSource {
 
     private var value: Float? = null
 
@@ -22,7 +11,7 @@ internal class DefaultRandomSource : RandomSource {
 
     private var prevSeed: Int? = null
 
-    override fun setSeed(seed: Int, timeless: Boolean) {
+    fun setSeed(seed: Int, timeless: Boolean) {
         if (prevSeed != seed) {
             random = Random(seed)
             prevSeed = seed
@@ -33,11 +22,11 @@ internal class DefaultRandomSource : RandomSource {
         } else null
     }
 
-    override fun random(): Float {
+    fun random(): Float {
         return value ?: random.nextFloat()
     }
 
-    override fun random(maxValOrArray: Any): Any {
+    fun random(maxValOrArray: Any): Any {
         return when (maxValOrArray) {
             is Number -> value ?: (random.nextFloat() * maxValOrArray.toFloat())
             is Vec2 -> Vec2(
@@ -49,7 +38,7 @@ internal class DefaultRandomSource : RandomSource {
         }
     }
 
-    override fun random(maxValOrArray1: Any, maxValOrArray2: Any): Any {
+    fun random(maxValOrArray1: Any, maxValOrArray2: Any): Any {
         return when {
             maxValOrArray1 is Number && maxValOrArray2 is Number ->
                 value ?: (random.nextFloat() * maxValOrArray2.toFloat() + maxValOrArray1.toFloat())

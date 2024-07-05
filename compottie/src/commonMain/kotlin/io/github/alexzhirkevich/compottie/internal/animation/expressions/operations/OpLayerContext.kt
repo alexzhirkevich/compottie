@@ -10,7 +10,7 @@ import io.github.alexzhirkevich.compottie.internal.layers.PrecompositionLayer
 
 internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
 
-    override fun parse(op: String, args: List<Expression>): Expression {
+    override fun interpret(op: String, args: List<Expression>): Expression {
 
         return when (op) {
             "index" -> withContext { _, _, _ -> index ?: Undefined }

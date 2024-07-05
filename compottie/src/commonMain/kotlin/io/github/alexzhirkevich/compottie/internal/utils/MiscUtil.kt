@@ -5,9 +5,13 @@ import androidx.compose.ui.geometry.Size
 import kotlin.math.max
 import kotlin.math.min
 
+internal expect fun currentTimeMs() : Long
+
 internal fun FloatArray.toOffset() = Offset(this[0], this[1])
 internal fun List<Float>.toOffset() = Offset(this[0], this[1])
 internal fun List<Float>.toSize() = Size(this[0], this[1])
+
+
 
 fun floorMod(x: Float, y: Float): Int {
     return floorMod(x.toInt(), y.toInt())

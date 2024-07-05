@@ -8,6 +8,7 @@ import androidx.compose.animation.core.LinearEasing
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.EXPR_DEBUG_PRINT_ENABLED
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
@@ -16,8 +17,9 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkAr
 
 internal object OpGlobalContext : ExpressionContext<Nothing>, Expression {
 
-    override fun parse(op: String, args: List<Expression>): Expression {
+    override fun interpret(op: String, args: List<Expression>): Expression {
         return when (op) {
+            "var", "let", "const" -> OpVar
             "Math" -> OpMath
             "time" -> OpGetTime
             "value" -> OpPropertyValue()
@@ -79,11 +81,19 @@ internal object OpGlobalContext : ExpressionContext<Nothing>, Expression {
             "easeIn" -> OpInterpolate.parse(EaseIn, args)
             "easeOut" -> OpInterpolate.parse(EaseOut, args)
 
-            "if", "else" -> error("Compottie doesn't support conditions in expressions yet")
+            "wiggle" -> OpWiggle(args[0], args[1], args.getOrNull(2), args.getOrNull(3))
 
+            "if" -> {
+                OpIfCondition(condition = args.single())
+            }//error("Compottie doesn't support conditions in expressions yet")
+            "true" -> OpConstant(true)
+            "false" -> OpConstant(false)
             else -> {
                 require(args.isEmpty()) {
                     "Unknown function: $op"
+                }
+                if (EXPR_DEBUG_PRINT_ENABLED){
+                    println("made variable $op")
                 }
                 OpGetVariable(op)
             }

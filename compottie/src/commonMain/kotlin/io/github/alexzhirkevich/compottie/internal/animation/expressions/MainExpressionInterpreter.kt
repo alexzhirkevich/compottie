@@ -16,22 +16,20 @@ internal class MainExpressionInterpreter(expr : String) : ExpressionInterpreter 
             var i = 0
 
             while (i < lines.size) {
-                val line = lines[i]
-                when (line.last { it != ' ' }) {
-                    '=', '+', '-', '*', '/' -> {
-                        check(i < lines.lastIndex) {
-                            "Unexpected end of line: $line"
-                        }
-                        add(line)
-                        add(lines[i + 1])
-                        i += 2
-                    }
 
-                    else -> {
-                        add(line)
-                        i++
+                var line = lines[i]
+
+                while (line.endsWithExpressionChar() || line.countOpenedBlocks()> 0) {
+
+                    check(i < lines.lastIndex) {
+                        "Unexpected end of line: $line"
                     }
+                    line += ";" + lines[i + 1]
+                    i++
                 }
+
+                add(line)
+                i++
             }
         }.map {
             try {
@@ -59,4 +57,28 @@ internal class MainExpressionInterpreter(expr : String) : ExpressionInterpreter 
             }
         }
     }
+}
+
+private val expressionChars = setOf('=', '+', '-', '*', '/')
+private fun String.endsWithExpressionChar() = last { it != ' ' } in expressionChars
+private fun String.countOpenedBlocks() : Int {
+    var inString : Char? = null
+    var openedBlocks = 0
+    forEach {
+        when {
+            inString == null && it == '\'' || it == '"' -> {
+                inString = it
+            }
+            it == inString -> {
+                inString = null
+            }
+            it == '{' -> {
+                openedBlocks++
+            }
+            it == '}' -> {
+                openedBlocks--
+            }
+        }
+    }
+    return openedBlocks
 }

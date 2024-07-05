@@ -7,7 +7,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 
-internal class OpMakeList(
+internal class OpMakeArray(
     private val items : List<Expression>
 ) : Expression {
 

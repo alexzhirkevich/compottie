@@ -19,6 +19,7 @@ internal class AddExpressionTest {
         floatProp.testValue("13 + 17", 30f)
         floatProp.testValue("-13+ 17", 4f)
         floatProp.testValue("-13+ -17", -30f)
+        floatProp.testValue("-13+ -17 + 10 - 4", -24f)
 
         floatProp.testValue("13+17.0", 30f)
         floatProp.testValue("13 + 17.0", 30f)
