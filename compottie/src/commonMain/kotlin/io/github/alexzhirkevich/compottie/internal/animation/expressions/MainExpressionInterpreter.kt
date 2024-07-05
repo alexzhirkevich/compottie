@@ -36,7 +36,7 @@ internal class MainExpressionInterpreter(expr : String) : ExpressionInterpreter 
                 SingleExpressionInterpreter(it).interpret()
             } catch (t: Throwable) {
                 Compottie.logger?.warn(
-                    "Unsupported or invalid Lottie expression: $it. You can ignore it if animation runs fine or expressions are disabled"
+                    "Unsupported or invalid Lottie expression: $it. You can ignore it if animation runs fine or expressions are disabled (${t.message})"
                 )
 //                    Compottie.logger?.error(
 //                        "Unsupported or invalid Lottie expression: $it. You can ignore it if animation runs fine or expressions are disabled",

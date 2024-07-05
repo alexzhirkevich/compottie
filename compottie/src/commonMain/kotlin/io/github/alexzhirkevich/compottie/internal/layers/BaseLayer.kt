@@ -216,7 +216,6 @@ internal abstract class BaseLayer : Layer {
             }
         } catch (t: Throwable) {
             Compottie.logger?.error("Lottie crashed in draw :(", t)
-            throw t
         }
     }
 

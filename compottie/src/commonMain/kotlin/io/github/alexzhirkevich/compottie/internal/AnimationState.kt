@@ -42,6 +42,9 @@ class AnimationState @PublishedApi internal constructor(
     var frame = frame
         private set
 
+    internal var absoluteFrame = frame
+        private set
+
     /**
      * Current animation progress from 0.0 to 1.0
      * */
@@ -52,13 +55,21 @@ class AnimationState @PublishedApi internal constructor(
             return p.coerceIn(0f, 1f)
         }
 
+    internal val absoluteProgress: Float
+        get() {
+            val p = (absoluteFrame - composition.animation.inPoint) /
+                    (composition.animation.outPoint - composition.animation.inPoint)
+            return p.coerceIn(0f, 1f)
+        }
+
     /**
      * Time elapsed from the start of animation
      * */
     val time : Duration
         get() = composition.duration * progress.toDouble()
 
-
+    internal val absoluteTime : Duration
+        get() = composition.duration * absoluteProgress.toDouble()
 
     internal var clipToCompositionBounds by mutableStateOf(clipToCompositionBounds)
     internal var clipTextToBoundingBoxes by mutableStateOf(clipTextToBoundingBoxes)

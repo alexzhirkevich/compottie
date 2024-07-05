@@ -1,23 +1,23 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpAdd
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpAssign
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpAssignByIndex
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpBlock
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpConstant
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpDiv
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpEquals
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpGetVariable
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpAdd
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpAssign
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpAssignByIndex
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpBlock
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpConstant
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpDiv
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpEquals
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpGetVariable
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpGlobalContext
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpIfCondition
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpIndex
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpMakeArray
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpMul
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpNot
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpSub
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpUnaryMinus
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpUnaryPlus
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpVar
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpIfCondition
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpIndex
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpMakeArray
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpMul
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpNot
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpSub
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpUnaryMinus
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpUnaryPlus
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpVar
 
 internal class SingleExpressionInterpreter(
     private val expr : String,
@@ -305,6 +305,9 @@ internal class SingleExpressionInterpreter(
                 val args = buildList {
                     when {
                         eat('(') -> {
+                            if (eat(')')){
+                                return@buildList //empty args
+                            }
                             do {
                                 add(parseExpressionOp(OpGlobalContext))
                             } while (eat(','))

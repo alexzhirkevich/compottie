@@ -11,29 +11,26 @@ import kotlin.test.assertEquals
 
 internal const val ret = "\$bm_rt"
 
-internal inline fun <reified T : Any> RawProperty<T>.testValue(
+
+internal  fun < T : Any> RawProperty<T>.assertValueEquals(
     expr : String,
     expected : T,
-) = testExpression("$ret = $expr", expected)
+) = assertExpressionReturns("$ret = $expr", expected)
 
-internal inline fun RawProperty<Float>.testFloatApprox(
-    expr : String,
-    expected : Float,
-) = testFloatApproxExpression("$ret = $expr", expected)
-
-internal fun <T : Any> RawProperty<T>.testFloatApproxExpression(
+internal fun RawProperty<Float>.assertFloatApproxEquals(
     expr : String,
     expected : Float,
 ) {
     val state = MockAnimationState(0f)
-    val ev = ExpressionEvaluator<T>(expr)
+    val ev = ExpressionEvaluator<Float>("$ret = $expr")
 
     val evaluated = ev.run { evaluate(state) } as Float
 
     assertEquals(expected, (evaluated * 10000).toInt()/10000f)
 }
 
-internal fun <T : Any> RawProperty<T>.testExpression(
+
+internal fun <T : Any> RawProperty<T>.assertExpressionReturns(
     expr : String,
     expected : T,
 ) {
@@ -47,7 +44,8 @@ internal fun <T : Any> RawProperty<T>.testExpression(
 }
 
 internal fun MockAnimationState(
-    frame : Float
+    frame : Float,
+    durationFrames : Float = 120f
 ) = AnimationState(
     composition = LottieComposition(
         Animation(
@@ -56,7 +54,7 @@ internal fun MockAnimationState(
             height = 1024f,
             version = "5.0.0",
             inPoint = 0f,
-            outPoint = 240f,
+            outPoint = durationFrames,
             name = "Animation"
         )
     ),

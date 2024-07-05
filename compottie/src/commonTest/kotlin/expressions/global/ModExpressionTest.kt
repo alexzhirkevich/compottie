@@ -1,10 +1,8 @@
 package expressions.global
 
-import expressions.testFloatApprox
-import expressions.testValue
+import expressions.assertFloatApproxEquals
+import expressions.assertValueEquals
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
-import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import kotlin.test.Test
 
 
@@ -14,8 +12,8 @@ internal class ModExpressionTest {
 
     @Test
     fun mod_num(){
-        floatProp.testValue("mod(25,4)",1f)
-        floatProp.testFloatApprox("mod(25.1,4)",1.1f)
+        floatProp.assertValueEquals("mod(25,4)",1f)
+        floatProp.assertFloatApproxEquals("mod(25.1,4)",1.1f)
     }
 }
 

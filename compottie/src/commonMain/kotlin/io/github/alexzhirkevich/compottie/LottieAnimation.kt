@@ -28,7 +28,8 @@ fun LottieAnimation(
         painter = rememberLottiePainter(
             composition = composition,
             progress = progress,
-            enableExpressions = false
+            enableExpressions = false,
+            enableMergePaths = false
         ),
         contentDescription = null,
         modifier = modifier,
@@ -69,7 +70,8 @@ fun LottieAnimation(
             speed = speed,
             iterations = iterations,
             clipToCompositionBounds = clipToCompositionBounds,
-            enableExpressions = false
+            enableExpressions = false,
+            enableMergePaths = false
         ),
         contentDescription = null,
         modifier = modifier,

@@ -1,6 +1,6 @@
 package expressions.global
 
-import expressions.testFloatApprox
+import expressions.assertFloatApproxEquals
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import kotlin.test.Test
 
@@ -10,8 +10,8 @@ class MathExpressionTest {
 
     @Test
     fun sin() {
-        floatProp.testFloatApprox("Math.sin(Math.PI/2)", 1f)
-        floatProp.testFloatApprox("Math.cos(Math.PI)", -1f)
-        floatProp.testFloatApprox("Math.sqrt(16)", 4f)
+        floatProp.assertFloatApproxEquals("Math.sin(Math.PI/2)", 1f)
+        floatProp.assertFloatApproxEquals("Math.cos(Math.PI)", -1f)
+        floatProp.assertFloatApproxEquals("Math.sqrt(16)", 4f)
     }
 }

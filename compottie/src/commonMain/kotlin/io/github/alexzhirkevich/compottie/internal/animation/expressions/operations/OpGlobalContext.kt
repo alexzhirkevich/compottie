@@ -2,7 +2,6 @@ package io.github.alexzhirkevich.compottie.internal.animation.expressions.operat
 
 import androidx.compose.animation.core.EaseIn
 import androidx.compose.animation.core.EaseInOut
-import androidx.compose.animation.core.EaseInOutBack
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.LinearEasing
 import io.github.alexzhirkevich.compottie.Compottie
@@ -14,6 +13,32 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Express
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpGetComp
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpGetLayer
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpGetProperty
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpIfCondition
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpAdd
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpClamp
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpDiv
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.vec.OpDot
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpMath
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpMod
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpMul
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpSub
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random.OpNoise
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random.OpRandomNumber
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random.OpSetRandomSeed
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random.OpWiggle
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpFramesToTime
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpGetTime
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpInterpolate
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpTimeToFrames
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpConstant
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpGetVariable
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpPropertyValue
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpVar
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.vec.OpLength
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.vec.OpNormalize
 
 internal object OpGlobalContext : ExpressionContext<Nothing>, Expression {
 
@@ -30,28 +55,42 @@ internal object OpGlobalContext : ExpressionContext<Nothing>, Expression {
                     OpGetLayer(name = args.single())
                 }
             }
+
             "comp" -> {
                 checkArgs(args, 1, op)
                 return OpGetComp(args[0])
             }
+
             "thisLayer" -> OpGetLayer()
             "thisProperty" -> OpGetProperty()
-            "add","\$bm_sum", "sum" -> {
+            "add", "\$bm_sum", "sum" -> {
                 checkArgs(args, 2, op)
                 OpAdd(args[0], args[1])
             }
 
-            "sub","\$bm_sub" -> {
+            "dot" -> {
+                checkArgs(args, 2, op)
+                OpDot(args[0], args[1])
+            }
+
+            "length" -> OpLength(args[0], args.getOrNull(1))
+            "normalize" -> {
+                checkArgs(args, 1, op)
+                OpNormalize(args[0])
+            }
+
+            "cross" -> error("cross is not supported yet") //todo: support OpCross
+            "sub", "\$bm_sub" -> {
                 checkArgs(args, 2, op)
                 OpSub(args[0], args[1])
             }
 
-            "mul","\$bm_mul" -> {
+            "mul", "\$bm_mul" -> {
                 checkArgs(args, 2, op)
                 OpMul(args[0], args[1])
             }
 
-            "div","\$bm_div" -> {
+            "div", "\$bm_div" -> {
                 checkArgs(args, 2, op)
                 OpDiv(args[0], args[1])
             }
@@ -66,15 +105,19 @@ internal object OpGlobalContext : ExpressionContext<Nothing>, Expression {
                 OpClamp(args[0], args[1], args[2])
             }
 
+            "timeToFrames" -> OpTimeToFrames(args.getOrNull(0), args.getOrNull(1))
+            "framesToTime" -> OpFramesToTime(args.getOrNull(0), args.getOrNull(1))
             "seedRandom" -> OpSetRandomSeed(args[0], args.getOrNull(1))
             "random", "gaussRandom" -> {
-                if (op == "gaussRandom"){
-                    Compottie.logger?.warn("Compottie doesn't support gaussRandom(). Default random will be used instead")
-                }
                 OpRandomNumber(
                     args.getOrNull(0),
                     args.getOrNull(1),
+                    isGauss = op == "gaussRandom"
                 )
+            }
+            "noise" -> {
+                checkArgs(args,1, op)
+                OpNoise(args[0])
             }
             "linear" -> OpInterpolate.parse(LinearEasing, args)
             "ease" -> OpInterpolate.parse(EaseInOut, args)
@@ -92,7 +135,7 @@ internal object OpGlobalContext : ExpressionContext<Nothing>, Expression {
                 require(args.isEmpty()) {
                     "Unknown function: $op"
                 }
-                if (EXPR_DEBUG_PRINT_ENABLED){
+                if (EXPR_DEBUG_PRINT_ENABLED) {
                     println("made variable $op")
                 }
                 OpGetVariable(op)
