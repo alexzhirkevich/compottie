@@ -335,7 +335,7 @@ private class LottiePainter(
     override fun DrawScope.onDraw() {
         matrix.reset()
 
-        val scale = ContentScale.Fit.computeScaleFactor(intrinsicSize, size)
+        val scale = ContentScale.FillBounds.computeScaleFactor(intrinsicSize, size)
 
         val offset = Alignment.Center.align(
             size = intIntrinsicSize,
