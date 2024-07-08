@@ -13,6 +13,7 @@ import kotlin.math.pow
 import kotlin.random.Random
 
 internal class OpWiggle(
+    private val property: Expression,
     private val freq : Expression,
     private val amp : Expression,
     private val octaves : Expression? = null,
@@ -29,12 +30,14 @@ internal class OpWiggle(
         context: EvaluationContext,
         state: AnimationState
     ): Any {
-        val freq = (freq(property, context, state) as Number).toFloat()
-        val amp = (amp(property, context, state) as Number).toFloat()
-        val octaves = (octaves?.invoke(property, context, state) as Number?)?.toInt() ?: 1
-        val ampMult = (ampMult?.invoke(property, context, state) as Number?)?.toFloat() ?: .5f
+        val prop = property(property, context, state) as RawProperty<Any>
 
-        var value = property.raw(state)
+        val freq = (freq(prop, context, state) as Number).toFloat()
+        val amp = (amp(prop, context, state) as Number).toFloat()
+        val octaves = (octaves?.invoke(prop, context, state) as Number?)?.toInt() ?: 1
+        val ampMult = (ampMult?.invoke(prop, context, state) as Number?)?.toFloat() ?: .5f
+
+        var value = prop.raw(state)
 
         repeat(octaves) {
             val octAmp = amp / (if (it == 0) 1f else ampMult.pow(it))

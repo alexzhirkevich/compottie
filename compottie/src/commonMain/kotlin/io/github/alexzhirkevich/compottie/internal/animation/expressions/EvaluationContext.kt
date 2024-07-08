@@ -1,10 +1,10 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
 internal interface EvaluationContext {
+
     val variables : MutableMap<String, Any>
 
     val randomSource : RandomSource
-
 }
 
 internal class DefaultEvaluatorContext(

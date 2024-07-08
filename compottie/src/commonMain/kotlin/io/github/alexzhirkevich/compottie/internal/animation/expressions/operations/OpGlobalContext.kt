@@ -34,6 +34,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpGetTime
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpInterpolate
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpLoopIn
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpLoopOut
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpTimeToFrames
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpConstant
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpGetVariable
@@ -106,6 +107,7 @@ internal object OpGlobalContext : ExpressionContext<Nothing>, Expression {
                 checkArgs(args, 3, op)
                 OpClamp(args[0], args[1], args[2])
             }
+
             "degreesToRadians" -> {
                 checkArgs(args, 1, op)
                 OpDegreesToRadians(args[0])
@@ -126,23 +128,43 @@ internal object OpGlobalContext : ExpressionContext<Nothing>, Expression {
                     isGauss = op == "gaussRandom"
                 )
             }
+
             "noise" -> {
-                checkArgs(args,1, op)
+                checkArgs(args, 1, op)
                 OpNoise(args[0])
             }
-            "wiggle" -> OpWiggle(args[0], args[1], args.getOrNull(2), args.getOrNull(3))
-            "loopIn" -> OpLoopIn(null, args.getOrNull(0), args.getOrNull(1))
+
+            "wiggle" -> OpWiggle(
+                property = OpGetProperty(null),
+                freq = args[0],
+                amp = args[1],
+                octaves = args.getOrNull(2),
+                ampMult = args.getOrNull(3)
+            )
+            "loopIn","loopInDuration" -> OpLoopIn(
+                property = OpGetProperty(null),
+                name = args.getOrNull(0),
+                numKf = args.getOrNull(1),
+                isDuration = op == "loopInDuration"
+            )
+            "loopOut", "loopOutDuration" -> OpLoopOut(
+                property = OpGetProperty(null),
+                name = args.getOrNull(0),
+                numKf = args.getOrNull(1),
+                isDuration = op == "loopOutDuration"
+            )
             "linear" -> OpInterpolate.interpret(LinearEasing, args)
             "ease" -> OpInterpolate.interpret(easeInOut, args)
             "easeIn" -> OpInterpolate.interpret(easeIn, args)
             "easeOut" -> OpInterpolate.interpret(easeOut, args)
 
             "hslToRgb" -> {
-                checkArgs(args,1,op)
+                checkArgs(args, 1, op)
                 OpHslToRgb(args[0])
             }
+
             "rgbToHsl" -> {
-                checkArgs(args,1,op)
+                checkArgs(args, 1, op)
                 OpRgbToHsl(args[0])
             }
 
