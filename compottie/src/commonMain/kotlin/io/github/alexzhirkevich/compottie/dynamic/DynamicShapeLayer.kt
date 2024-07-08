@@ -4,6 +4,12 @@ interface DynamicShapeLayer: DynamicLayer {
 
     /**
      * Configure generic dynamic shape.
+     *
+     * @param path is a path to the shape relative to the shape layer.
+     * If [path] is not set, the [builder] configuration will be be applied to the all shapes in
+     * the current layer/[group] recursively
+     *
+     * @param builder shape dynamic configuration
      * */
     fun shape(
         vararg path: String,
@@ -12,6 +18,9 @@ interface DynamicShapeLayer: DynamicLayer {
 
     /**
      * Shortcut useful if you want to configure multiple shapes in the same group
+     *
+     * @param path is a path to the group shape relative to the shape layer.
+     * @param builder shape dynamic configuration
      *
      * Example:
      *
@@ -31,6 +40,12 @@ interface DynamicShapeLayer: DynamicLayer {
 
     /**
      * Configure dynamic stroke.
+     *
+     * @param path is a path to the stroke shape relative to the shape layer.
+     * If [path] is not set, the [builder] configuration will be be applied to the all strokes in
+     * the current layer/[group] recursively
+     *
+     * @param builder shape dynamic configuration
      * */
     fun stroke(
         vararg path: String,
@@ -39,6 +54,12 @@ interface DynamicShapeLayer: DynamicLayer {
 
     /**
      * Configure dynamic fill.
+     *
+     * @param path is a path to the fill shape relative to the shape layer.
+     * If [path] is not set, the [builder] configuration will be be applied to the all fills in
+     * the current layer/[group] recursively
+     *
+     * @param builder shape dynamic configuration
      * */
     fun fill(
         vararg path: String,
@@ -47,6 +68,12 @@ interface DynamicShapeLayer: DynamicLayer {
 
     /**
      * Configure dynamic ellipse.
+     *
+     * @param path is a path to the ellipse shape relative to the shape layer.
+     * If [path] is not set, the [builder] configuration will be be applied to the all ellipses in
+     * the current layer/[group] recursively
+     *
+     * @param builder shape dynamic configuration
      * */
     fun ellipse(
         vararg path: String,
@@ -55,6 +82,12 @@ interface DynamicShapeLayer: DynamicLayer {
 
     /**
      * Configure dynamic rect.
+     *
+     * @param path is a path to the rect shape relative to the shape layer.
+     * If [path] is not set, the [builder] configuration will be be applied to the all rects in
+     * the current layer/[group] recursively
+     *
+     * @param builder shape dynamic configuration
      * */
     fun rect(
         vararg path: String,
@@ -63,6 +96,12 @@ interface DynamicShapeLayer: DynamicLayer {
 
     /**
      * Configure dynamic rect.
+     *
+     * @param path is a path to the polystar shape relative to the shape layer.
+     * If [path] is not set, the [builder] configuration will be be applied to the all polystars in
+     * the current layer/[group] recursively
+     *
+     * @param builder shape dynamic configuration
      * */
     fun polystar(
         vararg path: String,
