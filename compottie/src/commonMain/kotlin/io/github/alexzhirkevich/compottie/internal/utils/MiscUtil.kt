@@ -6,8 +6,6 @@ import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.min
 
-internal expect fun currentTimeMs() : Long
-
 internal fun FloatArray.toOffset() = Offset(this[0], this[1])
 internal fun List<Float>.toOffset() = Offset(this[0], this[1])
 internal fun List<Float>.toSize() = Size(this[0], this[1])
