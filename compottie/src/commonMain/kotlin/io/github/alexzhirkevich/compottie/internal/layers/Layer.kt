@@ -68,6 +68,11 @@ internal sealed interface Layer : DrawingContent {
     fun setDynamicProperties(composition: DynamicCompositionProvider?, state: AnimationState): DynamicLayerProvider?
 
     fun deepCopy() : Layer
+
+    fun isHidden(state: AnimationState) : Boolean
+
+    fun isActive(state: AnimationState) : Boolean
+
 }
 
 @JvmInline

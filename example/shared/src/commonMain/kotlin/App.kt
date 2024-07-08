@@ -32,14 +32,17 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.CompottieException
 import io.github.alexzhirkevich.compottie.ExperimentalCompottieApi
+import io.github.alexzhirkevich.compottie.LottieClipSpec
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
+import io.github.alexzhirkevich.compottie.dynamic.rememberLottieDynamicProperties
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import io.github.alexzhirkevich.compottie.rememberResourcesAssetsManager
@@ -128,7 +131,6 @@ fun App() {
 //    return AllExamples()
 //    return LottieList()
 
-
     val composition = rememberLottieComposition() {
 
 //        LottieCompositionSpec.DotLottie(
@@ -138,7 +140,7 @@ fun App() {
 //        LottieCompositionSpec.ResourceString("expr/move_horizontal.json")
 //        LottieCompositionSpec.ResourceString("expr/wiggle.json")
         LottieCompositionSpec.ResourceString("expr/noise.json")
-//        LottieCompositionSpec.ResourceString(CONFETTI)
+//        LottieCompositionSpec.ResourceString(ANGEL)
 //
 //        LottieCompositionSpec.Url(
 //            "https://assets-v2.lottiefiles.com/a/a63d8606-1166-11ee-a7f8-83d9759dd8ff/hCTtJKM3Tu.lottie"
@@ -172,13 +174,14 @@ fun App() {
 
         val progress = animateLottieCompositionAsState(
             iterations = Compottie.IterateForever,
-            composition = composition.value
+            composition = composition.value,
         )
 
         val painter = rememberLottiePainter(
             composition = composition.value,
             progress = progress::value,
             enableExpressions = true,
+
 //            clipToCompositionBounds = false,
 //            fontManager = rememberResourcesFontManager { fontSpec ->
 //                when (fontSpec.family) {

@@ -17,6 +17,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpSub
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpUnaryMinus
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpUnaryPlus
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.unresolvedReference
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpVar
 
 internal class SingleExpressionInterpreter(
@@ -324,6 +325,12 @@ internal class SingleExpressionInterpreter(
 
                 val parsedOp = when (context) {
                     is ExpressionContext<*> -> context.interpret(func, args)
+                        ?: unresolvedReference(
+                            ref = func,
+                            obj = context::class.simpleName
+                                ?.substringAfter("Op")
+                                ?.substringBefore("Context")
+                        )
                     else -> error("Unsupported Lottie expression function: $func")
                 }
 

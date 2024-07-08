@@ -3,8 +3,10 @@ package io.github.alexzhirkevich.compottie.internal.animation.expressions.operat
 import androidx.compose.ui.graphics.Color
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 
-internal fun unresolvedProperty(property : String, obj : String) : Nothing =
-    error("Unresolved property '$property' for $obj")
+internal fun unresolvedReference(ref : String, obj : String?) : Nothing =
+    if (obj != null)
+        error("Unresolved reference '$ref' for $obj")
+    else error("Unresolved reference")
 
 
 internal operator fun Any.get(index : Int) : Any {

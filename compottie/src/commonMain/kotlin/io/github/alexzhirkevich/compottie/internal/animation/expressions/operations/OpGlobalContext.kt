@@ -15,6 +15,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpGetComp
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpGetLayer
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpGetProperty
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpPropertyContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpIfCondition
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpAdd
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpClamp
@@ -29,28 +30,27 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random.OpNoise
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random.OpRandomNumber
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random.OpSetRandomSeed
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random.OpWiggle
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpFramesToTime
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpGetTime
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpInterpolate
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpLoopIn
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpLoopOut
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpTimeToFrames
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpConstant
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpGetVariable
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpPropertyValue
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpVar
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.vec.OpLength
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.vec.OpNormalize
 
-internal object OpGlobalContext : ExpressionContext<Nothing>, Expression {
+internal object OpGlobalContext : ExpressionContext<Undefined>, Expression {
 
-    override fun interpret(op: String, args: List<Expression>): Expression {
+    // global context extends thisProperty context
+    private val thisProperty = object : OpPropertyContext(), Expression by OpGetProperty() {}
+
+    override fun interpret(op: String, args: List<Expression>): Expression? {
+
         return when (op) {
             "var", "let", "const" -> OpVar
             "Math" -> OpMath
             "time" -> OpGetTime
-            "value" -> OpPropertyValue()
             "thisComp" -> {
                 if (args.isEmpty()) {
                     OpGetComp(null)
@@ -65,7 +65,7 @@ internal object OpGlobalContext : ExpressionContext<Nothing>, Expression {
             }
 
             "thisLayer" -> OpGetLayer()
-            "thisProperty" -> OpGetProperty()
+            "thisProperty" -> thisProperty
             "add", "\$bm_sum", "sum" -> {
                 checkArgs(args, 2, op)
                 OpAdd(args[0], args[1])
@@ -134,25 +134,6 @@ internal object OpGlobalContext : ExpressionContext<Nothing>, Expression {
                 OpNoise(args[0])
             }
 
-            "wiggle" -> OpWiggle(
-                property = OpGetProperty(null),
-                freq = args[0],
-                amp = args[1],
-                octaves = args.getOrNull(2),
-                ampMult = args.getOrNull(3)
-            )
-            "loopIn","loopInDuration" -> OpLoopIn(
-                property = OpGetProperty(null),
-                name = args.getOrNull(0),
-                numKf = args.getOrNull(1),
-                isDuration = op == "loopInDuration"
-            )
-            "loopOut", "loopOutDuration" -> OpLoopOut(
-                property = OpGetProperty(null),
-                name = args.getOrNull(0),
-                numKf = args.getOrNull(1),
-                isDuration = op == "loopOutDuration"
-            )
             "linear" -> OpInterpolate.interpret(LinearEasing, args)
             "ease" -> OpInterpolate.interpret(easeInOut, args)
             "easeIn" -> OpInterpolate.interpret(easeIn, args)
@@ -174,13 +155,16 @@ internal object OpGlobalContext : ExpressionContext<Nothing>, Expression {
             "true" -> OpConstant(true)
             "false" -> OpConstant(false)
             else -> {
-                require(args.isEmpty()) {
-                    "Unknown function: $op"
+                thisProperty.interpret(op, args) ?: run {
+                    if (args.isEmpty()) {
+                        if (EXPR_DEBUG_PRINT_ENABLED) {
+                            println("making GetVariable $op...")
+                        }
+                        OpGetVariable(op)
+                    } else {
+                        null
+                    }
                 }
-                if (EXPR_DEBUG_PRINT_ENABLED) {
-                    println("made variable $op")
-                }
-                OpGetVariable(op)
             }
         }
     }
@@ -189,9 +173,7 @@ internal object OpGlobalContext : ExpressionContext<Nothing>, Expression {
         property: RawProperty<Any>,
         context: EvaluationContext,
         state: AnimationState
-    ): Any {
-        return Undefined
-    }
+    ): Any = Undefined
 }
 
 internal val easeInOut = CubicBezierEasing(0.33f, 0f, 0.667f, 1f)

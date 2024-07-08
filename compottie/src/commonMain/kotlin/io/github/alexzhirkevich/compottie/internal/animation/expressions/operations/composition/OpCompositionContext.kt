@@ -4,14 +4,13 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Express
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionComposition
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.unresolvedProperty
 
 internal sealed class OpCompositionContext : ExpressionContext<ExpressionComposition> {
 
     final override fun interpret(
         op: String,
         args: List<Expression>
-    ): Expression {
+    ): Expression? {
         return when (op) {
             "numLayers" -> withContext { _, _, _ -> layersCount }
             "width" -> withContext { _, _, _ -> width }
@@ -26,7 +25,7 @@ internal sealed class OpCompositionContext : ExpressionContext<ExpressionComposi
                 )
             }
 
-            else -> unresolvedProperty(op, "Composition")
+            else -> null
         }
     }
 }

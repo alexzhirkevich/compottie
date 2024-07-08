@@ -8,6 +8,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Evaluat
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 
 internal class OpPropertyValue(
+    private val property: Expression,
     private val timeRemapping : Expression? = null
 ) : Expression {
     override fun invoke(
@@ -15,10 +16,12 @@ internal class OpPropertyValue(
         context: EvaluationContext,
         state: AnimationState
     ): Any {
+        val prop = property(property, context, state) as RawProperty<*>
+
         return if (timeRemapping == null) {
-            property.raw(state).toExpressionType()
+            prop.raw(state).toExpressionType()
         } else {
-            val time = timeRemapping.invoke(property, context, state)
+            val time = timeRemapping.invoke(prop, context, state)
 
             require(time is Number) {
                 "Internal error. Unable to cast $time to Number"
@@ -28,7 +31,7 @@ internal class OpPropertyValue(
                     state.composition.frameRate
 
             state.onFrame(frame) {
-                property.raw(it).toExpressionType()
+                prop.raw(it).toExpressionType()
             }
         }
     }

@@ -121,6 +121,16 @@ internal abstract class BaseLayer : Layer {
         state: AnimationState,
     )
 
+    override fun isHidden(state: AnimationState): Boolean {
+       return dynamicLayer?.hidden.derive(hidden, state)
+    }
+
+    override fun isActive(state: AnimationState): Boolean {
+        return !isHidden(state)
+                && state.frame in (inPoint ?: Float.MIN_VALUE)..(outPoint ?: Float.MAX_VALUE)
+    }
+
+
     final override fun draw(
         drawScope: DrawScope,
         parentMatrix: Matrix,
@@ -130,10 +140,8 @@ internal abstract class BaseLayer : Layer {
         try {
             state.onLayer(this) {
 
-                if (dynamicLayer?.hidden.derive(hidden, state)
-                    || (inPoint ?: Float.MIN_VALUE) > state.frame
-                    || (outPoint ?: Float.MAX_VALUE) < state.frame
-                ) return@onLayer
+                if (!isActive(state))
+                    return@onLayer
 
                 buildParentLayerListIfNeeded()
 
