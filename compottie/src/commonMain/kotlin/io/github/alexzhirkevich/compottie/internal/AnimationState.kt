@@ -24,6 +24,7 @@ class AnimationState @PublishedApi internal constructor(
     applyOpacityToLayers : Boolean,
     clipToCompositionBounds: Boolean,
     clipTextToBoundingBoxes: Boolean,
+    enableTextGrouping : Boolean,
     enableMergePaths: Boolean,
     enableExpressions: Boolean,
     layer: Layer
@@ -77,6 +78,7 @@ class AnimationState @PublishedApi internal constructor(
     internal var applyOpacityToLayers by mutableStateOf(applyOpacityToLayers)
     internal var enableMergePaths by mutableStateOf(enableMergePaths)
     internal var enableExpressions by mutableStateOf(enableExpressions)
+    internal var enableTextGrouping by mutableStateOf(enableTextGrouping)
 
     internal var layer : Layer = layer
         private set

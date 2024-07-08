@@ -193,8 +193,12 @@ class LottieComposition internal constructor(
         override val startTime: Float
             get() = this@LottieComposition.startTime
 
-        override val layers: Map<String, Layer> by lazy {
+        override val layersByName: Map<String, Layer> by lazy {
             animation.layers.associateBy { it.name.orEmpty() }
+        }
+
+        override val layersByIndex: Map<Int, Layer> by lazy {
+            animation.layers.associateBy { it.index ?: Int.MIN_VALUE }
         }
 
         override val layersCount: Int

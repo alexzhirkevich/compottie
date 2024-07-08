@@ -5,6 +5,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.AnimatedGradient
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVectorN
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.assets.PrecompositionAsset
@@ -139,6 +140,11 @@ internal val LottieJson by lazy{
                 subclass(AnimatedVector2.Default::class)
                 subclass(AnimatedVector2.Animated::class)
                 subclass(AnimatedVector2.Split::class)
+            }
+
+            polymorphic(AnimatedVectorN::class) {
+                subclass(AnimatedVectorN.Default::class)
+                subclass(AnimatedVectorN.Animated::class)
             }
         }
     }

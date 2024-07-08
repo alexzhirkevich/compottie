@@ -11,6 +11,7 @@ internal class OpPropertyValue(
     private val property: Expression,
     private val timeRemapping : Expression? = null
 ) : Expression {
+
     override fun invoke(
         property: RawProperty<Any>,
         context: EvaluationContext,
@@ -37,7 +38,7 @@ internal class OpPropertyValue(
     }
 }
 
-private fun Any.toExpressionType() : Any {
+internal fun Any.toExpressionType() : Any {
     return when (this) {
         is Vec2 -> listOf(x, y)
         is Color -> listOf(red, green, blue, alpha)

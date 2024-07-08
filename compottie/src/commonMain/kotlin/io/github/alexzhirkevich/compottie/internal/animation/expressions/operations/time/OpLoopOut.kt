@@ -38,7 +38,6 @@ internal class OpLoopOut(
         if (state.frame <= lastKeyFrame) {
             return prop.raw(state)
         }
-        val durationFlag = false //TODO: ???
         val cycleDuration: Float
         val firstKeyFrame: Float
 

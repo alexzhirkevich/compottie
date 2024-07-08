@@ -34,7 +34,6 @@ import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlin.math.roundToInt
-import kotlin.time.measureTime
 
 /**
  * Create and remember Lottie painter
@@ -53,6 +52,8 @@ import kotlin.time.measureTime
  * the animation have translucent overlapping shapes and always test if it works fine for your animation
  * @param clipToCompositionBounds if drawing should be clipped to the [composition].width X [composition].height rect
  * @param clipTextToBoundingBoxes if text should be clipped to its bounding boxes (if provided in animation)
+ * @param enableTextGrouping disable line-to-char splitting. Enable this to correctly render texts
+ * in locales such as Arabic. This feature forces to use fonts over glyphs and disables text tracking.
  * @param enableMergePaths enable experimental merge paths feature. Most of the time animation doesn't need
  * it even if it contains merge paths. This feature should only be enabled for tested animations
  * @param enableExpressions enable experimental expressions feature. Unsupported expressions will
@@ -69,6 +70,7 @@ fun rememberLottiePainter(
     applyOpacityToLayers : Boolean = false,
     clipToCompositionBounds : Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
+    enableTextGrouping : Boolean = false,
     enableMergePaths: Boolean = false,
     enableExpressions: Boolean = true,
 ) : Painter {
@@ -99,6 +101,7 @@ fun rememberLottiePainter(
                 clipTextToBoundingBoxes = clipTextToBoundingBoxes,
                 fontFamilyResolver = fontFamilyResolver,
                 clipToCompositionBounds = clipToCompositionBounds,
+                enableTextGrouping = enableTextGrouping,
                 enableMergePaths = enableMergePaths,
                 enableExpressions = enableExpressions,
                 applyOpacityToLayers = applyOpacityToLayers,
@@ -214,6 +217,7 @@ suspend fun LottiePainter(
     applyOpacityToLayers : Boolean = false,
     clipToCompositionBounds : Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
+    enableTextGrouping: Boolean = false,
     enableMergePaths: Boolean = false,
     enableExpressions: Boolean = true,
 ) : Painter = coroutineScope {
@@ -236,6 +240,7 @@ suspend fun LottiePainter(
             null -> null
         },
         clipTextToBoundingBoxes = clipTextToBoundingBoxes,
+        enableTextGrouping = enableTextGrouping,
         fontFamilyResolver = makeFontFamilyResolver(),
         clipToCompositionBounds = clipToCompositionBounds,
         enableMergePaths = enableMergePaths,
@@ -267,6 +272,7 @@ private class LottiePainter(
     fontFamilyResolver : FontFamily.Resolver,
     applyOpacityToLayers : Boolean,
     clipTextToBoundingBoxes : Boolean,
+    enableTextGrouping : Boolean,
     clipToCompositionBounds : Boolean,
     enableMergePaths : Boolean,
     enableExpressions : Boolean,
@@ -306,7 +312,8 @@ private class LottiePainter(
         clipTextToBoundingBoxes = clipTextToBoundingBoxes,
         enableMergePaths = enableMergePaths,
         layer = compositionLayer,
-        enableExpressions = enableExpressions
+        enableExpressions = enableExpressions,
+        enableTextGrouping = enableTextGrouping
     )
 
     fun setDynamicProperties(provider: DynamicCompositionProvider?) {

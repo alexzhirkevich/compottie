@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.effects
 
+import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanIntSerializer
 import kotlinx.serialization.Contextual
@@ -11,36 +12,46 @@ import kotlinx.serialization.json.JsonClassDiscriminator
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonClassDiscriminator("ty")
-internal sealed interface LayerEffect {
+internal sealed class LayerEffect {
 
-    val enabled : Boolean
+    abstract val enabled: Boolean
+    abstract val name: String?
+    abstract val index: Int?
+    abstract val values: List<EffectValue<*>>
 
-    val name : String?
+    val valueByName by lazy {
+        values.associateBy { it.name.orEmpty() }
+    }
 
-    val index : Int?
+    val valueByIndex by lazy {
+        values.associateBy { it.index ?: Int.MIN_VALUE }
+    }
 
-    val values : List<EffectValue<*>>
-
-    fun copy() : LayerEffect
+    abstract fun copy(): LayerEffect
 
     @Serializable
     class UnsupportedEffect(
         @SerialName("ef")
-        override val values: List<EffectValue<@Contextual Any?>> = emptyList(),
+        override val values: List<EffectValue<@Contextual RawProperty<@Contextual Any>>>,
 
         @SerialName("nm")
-        override val name : String? = null,
+        override val name: String? = null,
 
         @SerialName("ix")
-        override val index : Int? = null,
+        override val index: Int? = null,
 
         @SerialName("en")
         @Serializable(with = BooleanIntSerializer::class)
-        override val enabled : Boolean = true,
-    ) : LayerEffect {
+        override val enabled: Boolean = true,
+    ) : LayerEffect() {
 
         override fun copy(): LayerEffect {
-            return UnsupportedEffect()
+            return UnsupportedEffect(
+                values = values.map(EffectValue<RawProperty<*>>::copy),
+                name = name,
+                index = index,
+                enabled = enabled
+            )
         }
     }
 }

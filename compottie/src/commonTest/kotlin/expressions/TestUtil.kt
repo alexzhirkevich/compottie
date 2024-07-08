@@ -11,6 +11,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Express
 import io.github.alexzhirkevich.compottie.internal.layers.NullLayer
 import io.github.alexzhirkevich.compottie.mockFontFamilyResolver
 import kotlin.test.assertEquals
+import kotlin.test.fail
 
 internal const val ret = "\$bm_rt"
 
@@ -58,5 +59,6 @@ internal fun MockAnimationState(
     clipToCompositionBounds = true,
     clipTextToBoundingBoxes = true,
     enableMergePaths = true,
+    enableTextGrouping = false,
     layer = NullLayer()
 )

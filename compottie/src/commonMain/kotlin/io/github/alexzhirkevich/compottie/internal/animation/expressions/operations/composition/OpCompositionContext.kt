@@ -21,7 +21,7 @@ internal sealed class OpCompositionContext : ExpressionContext<ExpressionComposi
                 checkArgs(args, 1, op)
                 OpGetLayer(
                     comp = this,
-                    name = args[0]
+                    nameOrIndex = args[0]
                 )
             }
 

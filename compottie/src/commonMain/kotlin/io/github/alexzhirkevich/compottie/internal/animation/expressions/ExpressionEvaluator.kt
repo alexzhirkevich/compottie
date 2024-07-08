@@ -5,6 +5,7 @@ import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
+import kotlin.time.measureTime
 
 internal interface ExpressionEvaluator {
     fun RawProperty<*>.evaluate(state: AnimationState): Any

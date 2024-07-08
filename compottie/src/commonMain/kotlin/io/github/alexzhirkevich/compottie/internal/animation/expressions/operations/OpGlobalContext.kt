@@ -15,6 +15,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpGetComp
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpGetLayer
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpGetProperty
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpLayerToComp
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpPropertyContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpIfCondition
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpAdd
@@ -55,7 +56,7 @@ internal object OpGlobalContext : ExpressionContext<Undefined>, Expression {
                 if (args.isEmpty()) {
                     OpGetComp(null)
                 } else {
-                    OpGetLayer(name = args.single())
+                    OpGetLayer(nameOrIndex = args.single())
                 }
             }
 

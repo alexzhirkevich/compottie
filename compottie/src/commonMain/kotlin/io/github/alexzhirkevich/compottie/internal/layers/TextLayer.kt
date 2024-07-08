@@ -17,6 +17,7 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.BaselineShift
@@ -211,7 +212,7 @@ internal class TextLayer(
 
             val hasFontFamily = configureTextStyle(drawScope, document, state)
 
-            if (hasFontFamily) {
+            if (hasFontFamily || state.enableTextGrouping) {
                 drawTextWithFonts(state, drawScope, document)
             } else {
                 val glyphs = state.composition.findGlyphs(document.fontFamily)
@@ -350,7 +351,11 @@ internal class TextLayer(
         fontFamily != null
     }
 
-    private fun getTextMeasurer(state: AnimationState, density: Density, layoutDirection: LayoutDirection): TextMeasurer {
+    private fun getTextMeasurer(
+        fontFamilyResolver: FontFamily.Resolver,
+        density: Density,
+        layoutDirection: LayoutDirection
+    ): TextMeasurer {
         textMeasurer?.let {
             if (lastDensity == density && lastLayoutDirection == layoutDirection) {
                 return it
@@ -360,7 +365,7 @@ internal class TextLayer(
         val tm = TextMeasurer(
             defaultDensity = density,
             defaultLayoutDirection = layoutDirection,
-            defaultFontFamilyResolver = state.fontFamilyResolver
+            defaultFontFamilyResolver = fontFamilyResolver
         )
 
         lastLayoutDirection = layoutDirection
@@ -375,8 +380,11 @@ internal class TextLayer(
         drawScope: DrawScope,
         document: TextDocument
     ) {
-        val measurer = getTextMeasurer(state, drawScope, drawScope.layoutDirection)
-
+        val measurer = getTextMeasurer(
+            state.fontFamilyResolver,
+            drawScope,
+            drawScope.layoutDirection
+        )
         var tracking = document.textTracking?.div(10f) ?: 0f
 
         val text = document.text ?: return
@@ -406,7 +414,8 @@ internal class TextLayer(
                         document,
                         drawScope,
                         canvas,
-                        tracking
+                        tracking,
+                        state.enableTextGrouping
                     )
                 }
 
@@ -425,7 +434,11 @@ internal class TextLayer(
         val textLines = getTextLines(document.text ?: return)
         val tracking = (document.textTracking ?: 0f) / 10f
 
-        val measurer = getTextMeasurer(state, drawScope, drawScope.layoutDirection)
+        val measurer = getTextMeasurer(
+            state.fontFamilyResolver,
+            drawScope,
+            drawScope.layoutDirection
+        )
 
         val canvas = drawScope.drawContext.canvas
 
@@ -596,8 +609,14 @@ internal class TextLayer(
         documentData: TextDocument,
         drawScope: DrawScope,
         canvas: Canvas,
-        tracking: Float
+        tracking: Float,
+        drawFullLine : Boolean
     ) {
+
+        if (drawFullLine) {
+            drawCharacterFromFont(textMeasurer.measure(text, textStyle), documentData, drawScope)
+            return
+        }
 
         var i = 0
         while (i < text.length) {

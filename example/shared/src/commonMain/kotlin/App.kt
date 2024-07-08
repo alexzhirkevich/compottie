@@ -139,8 +139,8 @@ fun App() {
 
 //        LottieCompositionSpec.ResourceString("expr/move_horizontal.json")
 //        LottieCompositionSpec.ResourceString("expr/wiggle.json")
-        LottieCompositionSpec.ResourceString("expr/noise.json")
-//        LottieCompositionSpec.ResourceString(ANGEL)
+//        LottieCompositionSpec.ResourceString("expr/noise.json")
+        LottieCompositionSpec.ResourceString(CONFETTI)
 //
 //        LottieCompositionSpec.Url(
 //            "https://assets-v2.lottiefiles.com/a/a63d8606-1166-11ee-a7f8-83d9759dd8ff/hCTtJKM3Tu.lottie"
@@ -181,6 +181,7 @@ fun App() {
             composition = composition.value,
             progress = progress::value,
             enableExpressions = true,
+            enableTextGrouping = true,
 
 //            clipToCompositionBounds = false,
 //            fontManager = rememberResourcesFontManager { fontSpec ->

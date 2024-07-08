@@ -104,18 +104,28 @@ internal data class PrecompositionLayer(
             get() {
                 val ip = inPoint ?: return 0f
                 val op = outPoint ?: return 0f
-                val dur = (op-ip).takeIf { it != 0f } ?: return 0f
+                val dur = (op - ip).takeIf { it != 0f } ?: return 0f
                 return (this@PrecompositionLayer.startTime ?: 0f) / dur
             }
 
-        override val layers: Map<String, Layer> by lazy {
+        override val layersByName: Map<String, Layer> by lazy {
             this@PrecompositionLayer.loadedLayers
                 .orEmpty()
                 .associateBy { it.name.orEmpty() }
         }
 
+        override val layersByIndex: Map<Int, Layer> by lazy {
+            this@PrecompositionLayer.loadedLayers
+                .orEmpty()
+                .associateBy { it.index ?: Int.MIN_VALUE }
+        }
+
         override val layersCount: Int
             get() = loadedLayers?.size ?: 0
+
+        override fun transformMatrix(state: AnimationState): Matrix {
+            return totalTransformMatrix(state)
+        }
     }
 
     override fun compose(state: AnimationState): List<Layer> {

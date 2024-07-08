@@ -8,7 +8,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Express
 
 internal class OpGetLayer(
     private val comp : Expression? = null,
-    private val name : Expression? = null
+    private val nameOrIndex : Expression? = null
 ) : OpLayerContext() {
 
     override fun invoke(
@@ -16,20 +16,27 @@ internal class OpGetLayer(
         context: EvaluationContext,
         state: AnimationState
     ): Any {
-        return if (name == null) {
+        return if (nameOrIndex == null) {
             state.layer
         } else {
 
-            val n = name.invoke(property, context, state) as String
+            val n = nameOrIndex.invoke(property, context, state)
 
             val comp = comp?.invoke(property, context, state)
                 ?: state.composition.expressionComposition
 
-            require(comp is ExpressionComposition){
+            require(comp is ExpressionComposition) {
                 "Failed to cast $comp to Composition"
             }
-            return checkNotNull(comp.layers[n]) {
-                "Layer with name '$name' wasn't found in composition ${comp.name}"
+
+            val layer = when (n) {
+                is String -> comp.layersByName[n]
+                is Number -> comp.layersByIndex[n.toInt()]
+                else -> error("layer(.) takes string or number argument but got $n")
+            }
+
+            return checkNotNull(layer) {
+                "Layer with name(index) '$nameOrIndex' wasn't found in composition ${comp.name}"
             }
         }
     }
