@@ -7,7 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import io.github.alexzhirkevich.compottie.assets.ImageRepresentable
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
-import io.github.alexzhirkevich.compottie.assets.LottieImage
+import io.github.alexzhirkevich.compottie.assets.LottieImageSpec
 import org.jetbrains.compose.resources.MissingResourceException
 
 /**
@@ -65,7 +65,7 @@ private class ResourcesAssetsManagerImpl(
     private val readBytes : suspend (path : String) -> ByteArray,
 ) : LottieAssetsManager {
 
-    override suspend fun image(image: LottieImage): ImageRepresentable? {
+    override suspend fun image(image: LottieImageSpec): ImageRepresentable? {
         return try {
             val trimPath = image.path
                 .removePrefix("/")

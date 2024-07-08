@@ -2,14 +2,9 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Stable
 import io.github.alexzhirkevich.compottie.assets.ImageRepresentable
-import io.github.alexzhirkevich.compottie.assets.LottieImage
+import io.github.alexzhirkevich.compottie.assets.LottieImageSpec
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.ktor.client.HttpClient
-import io.ktor.client.statement.bodyAsChannel
-import io.ktor.http.URLParserException
-import io.ktor.http.Url
-import io.ktor.util.toByteArray
-import kotlinx.coroutines.withContext
 
 /**
  * Asset manager that load images from web using [request] with [client].
@@ -38,7 +33,7 @@ private class NetworkAssetsManagerImpl(
     private val request : NetworkRequest,
 ) : LottieAssetsManager {
 
-    override suspend fun image(image: LottieImage): ImageRepresentable? {
+    override suspend fun image(image: LottieImageSpec): ImageRepresentable? {
         return networkLoad(
             client = client,
             cacheStrategy = cacheStrategy,

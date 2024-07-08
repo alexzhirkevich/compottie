@@ -3,20 +3,16 @@ package io.github.alexzhirkevich.compottie.assets
 import androidx.compose.runtime.Immutable
 
 @Immutable
-class LottieImage internal constructor(
+class LottieImageSpec internal constructor(
     val id : String,
     val path: String,
     val name : String
 ) {
-    enum class AssetType {
-        Image
-    }
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
 
-        other as LottieImage
+        other as LottieImageSpec
 
         if (id != other.id) return false
         if (path != other.path) return false

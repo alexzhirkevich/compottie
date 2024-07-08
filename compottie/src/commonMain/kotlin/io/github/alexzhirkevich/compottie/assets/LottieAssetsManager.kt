@@ -19,11 +19,11 @@ interface LottieAssetsManager {
      *
      * @param name asset name and extension (for example image.png)
      * */
-    suspend fun image(image: LottieImage): ImageRepresentable?
+    suspend fun image(image: LottieImageSpec): ImageRepresentable?
 }
 
 internal object EmptyAssetsManager : LottieAssetsManager {
-    override suspend fun image(image: LottieImage): ImageRepresentable? {
+    override suspend fun image(image: LottieImageSpec): ImageRepresentable? {
         return null
     }
 }

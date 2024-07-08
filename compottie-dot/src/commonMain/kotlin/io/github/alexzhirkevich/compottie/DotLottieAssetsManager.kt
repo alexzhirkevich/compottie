@@ -1,9 +1,8 @@
 package io.github.alexzhirkevich.compottie
 
 import io.github.alexzhirkevich.compottie.assets.ImageRepresentable
-import io.github.alexzhirkevich.compottie.assets.LottieImage
+import io.github.alexzhirkevich.compottie.assets.LottieImageSpec
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
-import okio.IOException
 import okio.Path
 import okio.Path.Companion.toPath
 
@@ -12,7 +11,7 @@ internal class DotLottieAssetsManager(
     private val root : Path? = null
 ) : LottieAssetsManager {
 
-    override suspend fun image(image: LottieImage): ImageRepresentable? {
+    override suspend fun image(image: LottieImageSpec): ImageRepresentable? {
 
         val trimPath = image.path
             .removePrefix("/")

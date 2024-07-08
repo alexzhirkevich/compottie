@@ -11,7 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.font.FontFamily
-import io.github.alexzhirkevich.compottie.assets.LottieImage
+import io.github.alexzhirkevich.compottie.assets.LottieImageSpec
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.LottieFontManager
 import io.github.alexzhirkevich.compottie.internal.Animation
@@ -259,7 +259,7 @@ class LottieComposition internal constructor(
                         if (asset.bitmap == null) {
                             launch(Dispatchers.Default) {
                                 assetsManager.image(
-                                    LottieImage(
+                                    LottieImageSpec(
                                         id = asset.id,
                                         path = asset.path,
                                         name = asset.fileName
