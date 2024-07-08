@@ -70,7 +70,7 @@ fun rememberLottiePainter(
     clipToCompositionBounds : Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
     enableMergePaths: Boolean = false,
-    enableExpressions: Boolean = false,
+    enableExpressions: Boolean = true,
 ) : Painter {
 
     val fontFamilyResolver = LocalFontFamilyResolver.current
@@ -165,7 +165,7 @@ fun rememberLottiePainter(
     clipToCompositionBounds: Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
     enableMergePaths: Boolean = false,
-    enableExpressions: Boolean = false,
+    enableExpressions: Boolean = true,
 ) : Painter {
 
     val progress = animateLottieCompositionAsState(
@@ -215,7 +215,7 @@ suspend fun LottiePainter(
     clipToCompositionBounds : Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
     enableMergePaths: Boolean = false,
-    enableExpressions: Boolean = false,
+    enableExpressions: Boolean = true,
 ) : Painter = coroutineScope {
     val assets = async(ioDispatcher()) {
         assetsManager?.let {
