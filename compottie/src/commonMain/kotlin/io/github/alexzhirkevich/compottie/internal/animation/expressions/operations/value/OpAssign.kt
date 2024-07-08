@@ -12,23 +12,22 @@ internal class OpAssign(
     private val merge : ((Any, Any) -> Any)?
 ) : Expression {
 
-
     override fun invoke(
         property: RawProperty<Any>,
         context: EvaluationContext,
         state: AnimationState,
     ): Undefined {
         val v = assignableValue.invoke(property, context, state)
+
         val current = context.variables[variableName]
 
         check(merge == null || current != null) {
             "Cant modify $variableName as it is undefined"
         }
 
-        context.variables[variableName] =  if (current != null && merge != null) {
+        context.variables[variableName] = if (current != null && merge != null) {
             merge.invoke(current, v)
         } else v
-
 
         return Undefined
     }

@@ -16,7 +16,7 @@ import io.github.alexzhirkevich.compottie.internal.platform.effects.applyNativeD
 import io.github.alexzhirkevich.compottie.internal.platform.effects.makeNativeDropShadowEffect
 import io.github.alexzhirkevich.compottie.internal.platform.effects.resetEffects
 import io.github.alexzhirkevich.compottie.internal.platform.setBlurMaskFilter
-import io.github.alexzhirkevich.compottie.internal.utils.Math
+import io.github.alexzhirkevich.compottie.internal.utils.degreeToRadians
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -134,7 +134,7 @@ internal fun Paint.applyDropShadowEffect(
     effectState: LayerEffectsState,
 ) {
 
-    val directionRad = Math.toRadians(effect.angle?.interpolated(animationState) ?: 0f)
+    val directionRad = degreeToRadians(effect.angle?.interpolated(animationState) ?: 0f)
 
     val distance = effect.distance?.interpolated(animationState) ?: 0f
     val x = (sin(directionRad)) * distance

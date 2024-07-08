@@ -22,7 +22,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.dynamicOffset
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundSimultaneousTrimPath
-import io.github.alexzhirkevich.compottie.internal.utils.Math
+import io.github.alexzhirkevich.compottie.internal.utils.degreeToRadians
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -130,12 +130,12 @@ internal class PolystarShape(
             val dynamicPolystar = dynamicShape as? DynamicPolystarProvider?
 
             position.dynamicOffset(dynamicPolystar?.position)
-            points.dynamic(dynamicPolystar?.points)
-            rotation.dynamic(dynamicPolystar?.rotation)
-            innerRadius.dynamic(dynamicPolystar?.innerRadius)
-            innerRoundness.dynamic(dynamicPolystar?.innerRoundness)
-            outerRadius.dynamic(dynamicPolystar?.outerRadius)
-            outerRoundness.dynamic(dynamicPolystar?.outerRoundness)
+            points.dynamic = dynamicPolystar?.points
+            rotation.dynamic = dynamicPolystar?.rotation
+            innerRadius.dynamic = dynamicPolystar?.innerRadius
+            innerRoundness.dynamic = dynamicPolystar?.innerRoundness
+            outerRadius.dynamic = dynamicPolystar?.outerRadius
+            outerRoundness.dynamic = dynamicPolystar?.outerRoundness
         }
     }
 
@@ -159,7 +159,7 @@ internal class PolystarShape(
 
     private fun createStarPath(state: AnimationState) {
         val points = points.interpolated(state = state)
-        var currentAngle = Math.toRadians(rotation.interpolated(state) - 90f)
+        var currentAngle = degreeToRadians(rotation.interpolated(state) - 90f)
 
         // adjust current angle for partial points
         var anglePerPoint: Float = (TwoPI / points).toFloat()
@@ -272,7 +272,7 @@ internal class PolystarShape(
 
     private fun createPolygonPath(state: AnimationState) {
         val points = floor(points.interpolated(state)).toInt()
-        var currentAngle = Math.toRadians((rotation.interpolated(state)) - 90f)
+        var currentAngle = degreeToRadians((rotation.interpolated(state)) - 90f)
 
         // adjust current angle for partial points
         val anglePerPoint = (TwoPI / points).toFloat()

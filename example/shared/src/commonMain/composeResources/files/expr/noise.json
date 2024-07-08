@@ -41,7 +41,7 @@
         "r": {
           "a": 0,
           "k": 0,
-          "x":"var $bm_rt=180*noise()"
+          "x":"var $bm_rt=180*noise(time)"
         },
         "o": {
           "a": 0,

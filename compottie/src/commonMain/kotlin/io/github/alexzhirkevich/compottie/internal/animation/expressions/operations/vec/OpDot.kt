@@ -26,7 +26,11 @@ internal class OpDot(
 
         operator fun invoke(a : Any, b : Any) : Any {
             return when {
-                a is Vec2 && b is Vec2 -> a.x * b.x + a.y * b.y
+                a is List<*> && b is List<*> -> {
+                    a as List<Number>
+                    b as List<Number>
+                    a[0].toFloat() * b[0].toFloat() + a[1].toFloat() * b[1].toFloat()
+                }
 
                 else -> error("Cant calculate the dot() of $a and $b")
             }

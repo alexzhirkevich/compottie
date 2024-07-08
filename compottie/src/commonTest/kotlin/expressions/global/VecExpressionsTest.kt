@@ -1,32 +1,31 @@
 package expressions.global
 
-import expressions.assertValueEquals
+import expressions.assertExprReturns
+import expressions.assertExprValueEquals
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import kotlin.math.hypot
+import kotlin.test.Ignore
 import kotlin.test.Test
 
 
 internal class VecExpressionsTest {
 
-    private val floatProp = AnimatedNumber.Default(0f)
-
     @Test
     fun dot() {
-        floatProp.assertValueEquals("dot([5,6], [7,8])", 5 * 7 + 6 * 8f)
-        floatProp.assertValueEquals("dot([-15,6], [7, (8+20)])", -15 * 7 + 6 * (8f + 20))
+        "dot([5,6], [7,8])".assertExprValueEquals(83f)
+        "dot([-15,6], [7, (8+20)])".assertExprValueEquals(63f)
     }
 
     @Test
     fun length() {
-        floatProp.assertValueEquals("length([5,6])", hypot(5f, 6f))
-        floatProp.assertValueEquals("length([5,6], [7,8])", hypot(5f - 7, 6f - 8f))
+        "length([5,6])".assertExprValueEquals(hypot(5f, 6f))
+        "length([5,6], [7,8])".assertExprValueEquals(hypot(5f - 7, 6f - 8f))
     }
 
     @Test
     fun normalize() {
-        floatProp.assertValueEquals("normalize([5,6])", Vec2(5f, 6f) / hypot(5f, 6f))
+        "normalize([5,6])".assertExprValueEquals(Vec2(5f, 6f) / hypot(5f, 6f))
     }
-
 }
 

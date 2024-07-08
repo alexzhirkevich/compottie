@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie.internal.utils
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.min
 
@@ -11,13 +12,23 @@ internal fun FloatArray.toOffset() = Offset(this[0], this[1])
 internal fun List<Float>.toOffset() = Offset(this[0], this[1])
 internal fun List<Float>.toSize() = Size(this[0], this[1])
 
+private val PiDiv180 = PI / 180
 
 
-fun floorMod(x: Float, y: Float): Int {
+fun degreeToRadians(degree : Float) : Float {
+    return (degree * PiDiv180).toFloat()
+}
+
+fun radiansToDegree(radians : Float) : Float {
+    return  (radians / PiDiv180).toFloat()
+}
+
+
+internal fun floorMod(x: Float, y: Float): Int {
     return floorMod(x.toInt(), y.toInt())
 }
 
-fun floorMod(x: Int, y: Int): Int {
+internal fun floorMod(x: Int, y: Int): Int {
     return x - y * floorDiv(x, y)
 }
 

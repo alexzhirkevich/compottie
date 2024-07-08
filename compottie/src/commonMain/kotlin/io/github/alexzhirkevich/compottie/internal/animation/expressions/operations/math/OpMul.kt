@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math
 
+import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
@@ -15,7 +16,6 @@ internal class OpMul(
         context: EvaluationContext,
         state: AnimationState
     ): Any {
-
         return invoke(
             a(property, context, state),
             b(property, context, state)
@@ -23,13 +23,24 @@ internal class OpMul(
     }
 
     companion object {
+
         operator fun invoke(a : Any, b : Any) : Any {
             return when {
                 (a is Number && b is Number) -> a.toFloat() * b.toFloat()
-                (a is Vec2 && b is Number) -> a * b.toFloat()
-                (a is Number && b is Vec2) -> b * a.toFloat()
+                (a is List<*> && b is Number) -> {
+                    a as List<Number>
+                    val bf = b.toFloat()
+                    a.fastMap { it.toFloat() * bf }
+                }
+                (a is Number && b is List<*>) -> {
+                    b as List<Number>
+                    val af = a.toFloat()
+                    b.fastMap { it.toFloat() * af }
+                }
                 else -> error("Cant multiply $a by $b")
             }
         }
     }
 }
+
+internal operator fun Any.times(other : Any) : Any  = OpMul.invoke(this, other)

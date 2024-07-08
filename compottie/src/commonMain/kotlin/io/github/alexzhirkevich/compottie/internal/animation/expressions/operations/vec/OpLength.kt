@@ -29,8 +29,12 @@ internal class OpLength(
 
         operator fun invoke(a : Any, b : Any? = null) : Any {
             return when {
-                a is Vec2 && b == null -> hypot(a.x, a.y)
-                a is Vec2 && b is Vec2 -> hypot(b.x - a.x, b.y - a.y)
+                a is List<*> && b == null -> hypot((a[0] as Number).toFloat(), (a[1] as Number).toFloat())
+                a is List<*> && b is List<*> -> {
+                    a as List<Number>
+                    b as List<Number>
+                    hypot(b[0].toFloat() - a[0].toFloat(), b[1].toFloat() - a[1].toFloat())
+                }
 
                 else -> error("Cant calculate the normalize() of $a and $b")
             }

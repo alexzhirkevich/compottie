@@ -1,17 +1,25 @@
 package expressions.global
 
-import expressions.assertFloatApproxEquals
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
+import expressions.assertExprValueEquals
+import kotlin.math.PI
 import kotlin.test.Test
 
-class MathExpressionTest {
-
-    private val floatProp = AnimatedNumber.Default(0f)
+internal class MathExpressionTest {
 
     @Test
-    fun sin() {
-        floatProp.assertFloatApproxEquals("Math.sin(Math.PI/2)", 1f)
-        floatProp.assertFloatApproxEquals("Math.cos(Math.PI)", -1f)
-        floatProp.assertFloatApproxEquals("Math.sqrt(16)", 4f)
+    fun math() {
+        "Math.sin(Math.PI/2)".assertExprValueEquals(1f)
+        "Math.sin(Math.PI)".assertExprValueEquals(0f)
+        "Math.sin(0)".assertExprValueEquals(0f)
+        "Math.sin(0.0)".assertExprValueEquals(0f)
+        "Math.cos(Math.PI)".assertExprValueEquals(-1f)
+        "Math.cos(0)".assertExprValueEquals(1f)
+        "Math.cos(0.0)".assertExprValueEquals(1f)
+        "Math.sqrt(16)".assertExprValueEquals(4f)
+        "Math.sqrt(16.0)".assertExprValueEquals(4f)
+        "radiansToDegrees(Math.PI)".assertExprValueEquals(180f)
+        "radiansToDegrees(-Math.PI)".assertExprValueEquals(-180f)
+        "degreesToRadians(90)".assertExprValueEquals(PI.toFloat()/2)
+        "degreesToRadians(-180)".assertExprValueEquals(-PI.toFloat())
     }
 }

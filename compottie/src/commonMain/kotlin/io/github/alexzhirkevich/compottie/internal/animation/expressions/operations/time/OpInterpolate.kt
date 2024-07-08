@@ -42,10 +42,10 @@ internal class OpInterpolate(
         }
     }
 
-    private fun fraction(a : Float, b : Float, time : Float) =
-        easing.transform((time-a) / (b-a))
+    private fun fraction(a: Float, b: Float, time: Float) =
+        easing.transform((time - a) / (b - a))
 
-    private fun interpolate(value1 : Any, value2 : Any, fraction : Float) : Any {
+    private fun interpolate(value1: Any, value2: Any, fraction: Float): Any {
         return when {
             value1 is Number && value2 is Number ->
                 return numLerp(value1.toFloat(), value2.toFloat(), fraction)
@@ -58,7 +58,7 @@ internal class OpInterpolate(
     }
 
     companion object {
-        fun parse(easing : Easing, args : List<Expression>) : OpInterpolate = when(args.size) {
+        fun interpret(easing: Easing, args: List<Expression>): OpInterpolate = when (args.size) {
             3 -> OpInterpolate(
                 t = args[0],
                 tMin = OpConstant(0f),
@@ -67,6 +67,7 @@ internal class OpInterpolate(
                 value2 = args[2],
                 easing = easing
             )
+
             5 -> OpInterpolate(
                 t = args[0],
                 tMin = args[1],
@@ -75,6 +76,7 @@ internal class OpInterpolate(
                 value2 = args[4],
                 easing = easing
             )
+
             else -> error("interpolation function can take 3 or 5 arguments but got ${args.size}")
         }
     }

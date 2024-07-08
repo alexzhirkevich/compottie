@@ -5,6 +5,7 @@ import io.github.alexzhirkevich.compottie.dynamic.PropertyProvider
 import io.github.alexzhirkevich.compottie.dynamic.invoke
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionEvaluator
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.RawExpressionEvaluator
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
@@ -25,18 +26,20 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
 
     final override var dynamic: PropertyProvider<Float>? = null
 
-    abstract val expression : String?
-
-    final override val expressionEvaluator : ExpressionEvaluator<Float> by lazy {
-        expression?.let(::ExpressionEvaluator) ?: super.expressionEvaluator
-    }
-
-    fun dynamic(provider: PropertyProvider<Float>?) {
-        dynamic = provider
+    final override val expressionEvaluator : ExpressionEvaluator by lazy {
+        expression?.let(::ExpressionEvaluator) ?: RawExpressionEvaluator
     }
 
     protected fun prepareExpressionsEvaluator() {
         expressionEvaluator
+    }
+
+    override fun mapEvaluated(e: Any): Float {
+        return when (e){
+            is Number -> e.toFloat()
+            is List<*> -> (e[0] as Number).toFloat()
+            else -> error("Failed to cast $e to number")
+        }
     }
 
     abstract fun copy() : AnimatedNumber
@@ -109,9 +112,9 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
 }
 
 internal fun AnimatedNumber.dynamicNorm(provider: PropertyProvider<Float>?) {
-    if (provider != null)
-        dynamic { provider.invoke(this, it) * 100f }
-    else dynamic(null)
+    dynamic = if (provider != null) PropertyProvider {
+        provider.invoke(this, it) * 100f
+    } else null
 }
 
 internal fun AnimatedNumber.Companion.defaultRotation() : AnimatedNumber =

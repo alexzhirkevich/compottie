@@ -155,7 +155,7 @@ internal class RectShape(
 
             position.dynamicOffset(dynamicRect?.position)
             size.dynamicSize(dynamicRect?.size)
-            roundedCorners?.dynamic(dynamicRect?.roundCorners)
+            roundedCorners?.dynamic = dynamicRect?.roundCorners
         }
     }
 

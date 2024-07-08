@@ -5,6 +5,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
+import kotlin.math.min
 
 internal class OpAdd(
     private val a : Expression,
@@ -24,15 +25,25 @@ internal class OpAdd(
 
     companion object {
 
-        operator fun invoke(a : Any, b : Any) : Any {
+        operator fun invoke(a: Any, b: Any): Any {
             return when {
                 a is Number && b is Number -> a.toFloat() + b.toFloat()
-                a is Vec2 && b is Vec2 -> a + b
-                a is Vec2 && b is Number -> a.x + b.toFloat()
-                a is Number && b is Vec2 -> a.toFloat() + b.x
+                a is List<*> && b is List<*> -> {
+                    a as List<Number>
+                    b as List<Number>
+
+                    return List(min(a.size, b.size)) {
+                        a[it].toFloat() + b[it].toFloat()
+                    }
+                }
+
+                a is List<*> && b is Number -> (a as List<Number>).first().toFloat() + b.toFloat()
+                a is Number && b is List<*> -> a.toFloat() + (b as List<Number>).first().toFloat()
 
                 else -> error("Cant calculate the sum of $a and $b")
             }
         }
     }
 }
+
+internal operator fun Any.plus(other : Any) : Any = OpAdd.invoke(this, other)

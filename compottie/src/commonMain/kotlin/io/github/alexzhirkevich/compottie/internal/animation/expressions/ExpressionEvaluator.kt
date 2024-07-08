@@ -1,23 +1,25 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
+import androidx.compose.ui.graphics.Color
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
+import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 
-internal interface ExpressionEvaluator<T : Any> {
-    fun RawProperty<T>.evaluate(state: AnimationState): T
+internal interface ExpressionEvaluator {
+    fun RawProperty<*>.evaluate(state: AnimationState): Any
 }
 
 
-internal fun <T : Any> ExpressionEvaluator(expression: String) : ExpressionEvaluator<T> =
+internal fun ExpressionEvaluator(expression: String) : ExpressionEvaluator =
     ExpressionEvaluatorImpl(expression)
 
-internal class RawExpressionEvaluator<T : Any> : ExpressionEvaluator<T> {
-    override fun RawProperty<T>.evaluate(state: AnimationState): T = raw(state)
+internal object RawExpressionEvaluator : ExpressionEvaluator {
+    override fun RawProperty<*>.evaluate(state: AnimationState): Any = raw(state)
 }
 
 
-private class ExpressionEvaluatorImpl<T : Any>(expr : String) : ExpressionEvaluator<T> {
+private class ExpressionEvaluatorImpl(expr : String) : ExpressionEvaluator {
 
     private val context = DefaultEvaluatorContext()
 
@@ -25,16 +27,15 @@ private class ExpressionEvaluatorImpl<T : Any>(expr : String) : ExpressionEvalua
 
     private var warned : Boolean = false
 
-    @Suppress("unchecked_cast")
-    override fun RawProperty<T>.evaluate(state: AnimationState): T {
+    override fun RawProperty<*>.evaluate(state: AnimationState): Any {
         return try {
             if (state.enableExpressions) {
                 context.reset()
                 expression.invoke(this, context, state)
-                context.result
+                context.result.toListOrThis()
             } else {
                 raw(state)
-            } as T
+            }
         } catch (t: Throwable) {
             if (!warned){
                 warned = true
@@ -44,6 +45,16 @@ private class ExpressionEvaluatorImpl<T : Any>(expr : String) : ExpressionEvalua
             }
             raw(state)
         }
+    }
+}
+
+private fun Any.toListOrThis() : Any{
+    return when (this){
+        is Map<*,*> -> values.toList()
+        is Vec2 -> listOf(x,y)
+        is Color -> listOf(red,green,blue,alpha)
+        is Array<*> -> toList()
+        else -> this
     }
 }
 

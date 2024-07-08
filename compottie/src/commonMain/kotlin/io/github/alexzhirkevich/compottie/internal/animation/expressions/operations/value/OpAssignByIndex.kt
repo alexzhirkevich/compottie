@@ -23,45 +23,47 @@ internal class OpAssignByIndex(
         val v = assignableValue.invoke(property, context, state)
         val current = context.variables[variableName]
 
+
         check(merge == null || current != null) {
             "Cant modify $variableName as it is undefined"
         }
 
-        context.variables[variableName] = if (current == null) {
-            context.variables[variableName] = Vec2(0f, 0f)
+        if (current == null) {
+            context.variables[variableName] = mutableListOf<Any>()
             return invoke(property, context, state)
         } else {
             val i = index.invoke(property, context, state)
+
             val index = checkNotNull(i as? Number) {
                 "Unexpected index: $i"
             }.toInt()
 
             when (current) {
-                is Vec2 -> {
-                    check(v is Number) {
-                        "Cant assign $v to $index "
+
+                is MutableList<*> -> {
+                    current as MutableList<Any>
+
+                    while (current.lastIndex < index) {
+                        current.add(Undefined)
                     }
-                    when (index) {
-                        0 -> current.copy(
-                            x = if (merge == null)
-                                v.toFloat()
-                            else merge.invoke(current.x, v.toFloat()) as Float
-                        )
 
-                        1 -> current.copy(
-                            y = if (merge == null)
-                                v.toFloat()
-                            else merge.invoke(current.y, v.toFloat()) as Float
-                        )
+                    val c = current[index]
 
-                        else -> error("Cant get $index index. Array length is 2")
+                    current[index] = if (current[index] !is Undefined && merge != null){
+                        merge.invoke(c,v)
+                    } else {
+                        v
                     }
                 }
 
-                else -> error("Can't assign '$current' index to $index")
+                is List<*> -> {
+                    context.variables[variableName] = current.toMutableList()
+                    return invoke(property, context, state)
+                }
+
+                else -> error("Can't assign '$current' by index ($index)")
             }
         }
-
 
         return Undefined
     }

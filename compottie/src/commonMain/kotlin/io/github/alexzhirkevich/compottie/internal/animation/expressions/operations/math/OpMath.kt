@@ -6,16 +6,15 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Evaluat
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
-import io.github.alexzhirkevich.compottie.internal.utils.Math
 
-internal object OpMath : Expression, ExpressionContext<Math> {
+internal object OpMath : Expression, ExpressionContext<OpMath> {
 
     override fun invoke(
         property: RawProperty<Any>,
         context: EvaluationContext,
         state: AnimationState
     ): Any {
-        return Math
+        return OpMath
     }
 
     override fun interpret(

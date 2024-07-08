@@ -1,10 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations
 
-import androidx.compose.animation.core.EaseIn
-import androidx.compose.animation.core.EaseInOut
-import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.LinearEasing
-import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EXPR_DEBUG_PRINT_ENABLED
@@ -13,17 +10,21 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Express
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.color.OpHslToRgb
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.color.OpRgbToHsl
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpGetComp
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpGetLayer
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpGetProperty
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpIfCondition
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpAdd
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpClamp
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpDegreesToRadians
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpDiv
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.vec.OpDot
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpMath
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpMod
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpMul
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpRadiansToDegree
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpSub
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random.OpNoise
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random.OpRandomNumber
@@ -32,6 +33,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpFramesToTime
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpGetTime
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpInterpolate
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpLoopIn
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpTimeToFrames
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpConstant
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpGetVariable
@@ -104,6 +106,15 @@ internal object OpGlobalContext : ExpressionContext<Nothing>, Expression {
                 checkArgs(args, 3, op)
                 OpClamp(args[0], args[1], args[2])
             }
+            "degreesToRadians" -> {
+                checkArgs(args, 1, op)
+                OpDegreesToRadians(args[0])
+            }
+
+            "radiansToDegrees" -> {
+                checkArgs(args, 1, op)
+                OpRadiansToDegree(args[0])
+            }
 
             "timeToFrames" -> OpTimeToFrames(args.getOrNull(0), args.getOrNull(1))
             "framesToTime" -> OpFramesToTime(args.getOrNull(0), args.getOrNull(1))
@@ -119,12 +130,21 @@ internal object OpGlobalContext : ExpressionContext<Nothing>, Expression {
                 checkArgs(args,1, op)
                 OpNoise(args[0])
             }
-            "linear" -> OpInterpolate.parse(LinearEasing, args)
-            "ease" -> OpInterpolate.parse(EaseInOut, args)
-            "easeIn" -> OpInterpolate.parse(EaseIn, args)
-            "easeOut" -> OpInterpolate.parse(EaseOut, args)
-
             "wiggle" -> OpWiggle(args[0], args[1], args.getOrNull(2), args.getOrNull(3))
+            "loopIn" -> OpLoopIn(null, args.getOrNull(0), args.getOrNull(1))
+            "linear" -> OpInterpolate.interpret(LinearEasing, args)
+            "ease" -> OpInterpolate.interpret(easeInOut, args)
+            "easeIn" -> OpInterpolate.interpret(easeIn, args)
+            "easeOut" -> OpInterpolate.interpret(easeOut, args)
+
+            "hslToRgb" -> {
+                checkArgs(args,1,op)
+                OpHslToRgb(args[0])
+            }
+            "rgbToHsl" -> {
+                checkArgs(args,1,op)
+                OpRgbToHsl(args[0])
+            }
 
             "if" -> {
                 OpIfCondition(condition = args.single())
@@ -151,3 +171,7 @@ internal object OpGlobalContext : ExpressionContext<Nothing>, Expression {
         return Undefined
     }
 }
+
+internal val easeInOut = CubicBezierEasing(0.33f, 0f, 0.667f, 1f)
+internal val easeOut = CubicBezierEasing(0.167f, 0.167f, 0.667f, 1f)
+internal val easeIn = CubicBezierEasing(0.333f, 0f, 0.833f, 0.833f)

@@ -1,7 +1,9 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value
 
+import androidx.compose.ui.graphics.Color
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
+import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 
@@ -14,7 +16,7 @@ internal class OpPropertyValue(
         state: AnimationState
     ): Any {
         return if (timeRemapping == null) {
-            property.raw(state)
+            property.raw(state).toExpressionType()
         } else {
             val time = timeRemapping.invoke(property, context, state)
 
@@ -26,8 +28,16 @@ internal class OpPropertyValue(
                     state.composition.frameRate
 
             state.onFrame(frame) {
-                property.raw(it)
+                property.raw(it).toExpressionType()
             }
         }
+    }
+}
+
+private fun Any.toExpressionType() : Any {
+    return when (this) {
+        is Vec2 -> listOf(x, y)
+        is Color -> listOf(red, green, blue, alpha)
+        else -> this
     }
 }

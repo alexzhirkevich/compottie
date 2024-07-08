@@ -14,6 +14,7 @@ import io.github.alexzhirkevich.compottie.dynamic.toSize
 import io.github.alexzhirkevich.compottie.dynamic.toVec2
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionEvaluator
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.RawExpressionEvaluator
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -35,21 +36,23 @@ internal fun Vec2(x : Float, y : Float) : Vec2 = Offset(x,y)
 @Serializable(with = AnimatedVector2Serializer::class)
 internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
 
-    abstract val expression : String?
-
     final override var dynamic: PropertyProvider<Vec2>? = null
 
     @Transient
-    final override val expressionEvaluator : ExpressionEvaluator<Vec2> by lazy {
-        expression?.let(::ExpressionEvaluator) ?: super.expressionEvaluator
+    final override val expressionEvaluator : ExpressionEvaluator by lazy {
+        expression?.let(::ExpressionEvaluator) ?: RawExpressionEvaluator
     }
 
     protected fun prepareExpressionsEvaluator() {
         expressionEvaluator
     }
 
-    fun dynamic(provider: PropertyProvider<Vec2>?) {
-        dynamic = provider
+    override fun mapEvaluated(e: Any): Vec2 {
+        return when (e) {
+            is Vec2 -> e
+            is List<*> -> Vec2((e[0] as Number).toFloat(), (e[1] as Number).toFloat())
+            else -> error("Failed to cast $e to Vec2")
+        }
     }
 
     abstract fun copy() : AnimatedVector2
@@ -196,21 +199,20 @@ internal fun AnimatedVector2.interpolatedNorm(state: AnimationState) = interpola
 internal fun AnimatedVector2.dynamicOffset(
     provider: PropertyProvider<Offset>?
 ) {
-    dynamic(provider?.map(from = Offset::toVec2, to = Vec2::toOffset))
+    dynamic = provider?.map(from = Offset::toVec2, to = Vec2::toOffset)
 
 }
 
 internal fun AnimatedVector2.dynamicSize(
     provider: PropertyProvider<Size>?
 ) {
-    dynamic(provider?.map(from = Size::toVec2, to = Vec2::toSize))
-
+    dynamic = provider?.map(from = Size::toVec2, to = Vec2::toSize)
 }
 
 internal fun AnimatedVector2.dynamicScale(
     provider: PropertyProvider<ScaleFactor>?
 ) {
-    dynamic(provider?.map(from = ScaleFactor::toVec2, to = Vec2::toScaleFactor))
+    dynamic = provider?.map(from = ScaleFactor::toVec2, to = Vec2::toScaleFactor)
 }
 
 internal class AnimatedVector2Serializer : JsonContentPolymorphicSerializer<AnimatedVector2>(AnimatedVector2::class) {

@@ -2,7 +2,6 @@ package io.github.alexzhirkevich.compottie.internal.animation.expressions.operat
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
-import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 
@@ -16,8 +15,8 @@ internal class OpUnaryPlus(
     ): Any {
 
         return when (val v = v(property, context, state)) {
-            is Number -> +v.toFloat()
-            is Vec2 -> v
+            is Number -> v
+            is List<*> -> v
             else -> error("Cant apply unary plus to $v")
         }
     }

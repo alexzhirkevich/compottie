@@ -246,7 +246,7 @@ internal class TextLayer(
         state: AnimationState
     ): DynamicLayerProvider? {
         return super.setDynamicProperties(composition, state).also {
-            textData.document.dynamic(it as? DynamicTextLayerProvider)
+            textData.document.dynamic =it as? DynamicTextLayerProvider
         }
     }
 

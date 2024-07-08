@@ -33,7 +33,7 @@ internal class AnimatedTextDocument(
     private val document = TextDocument()
 
     @Transient
-    private var dynamic :DynamicTextLayerProvider? = null
+    var dynamic :DynamicTextLayerProvider? = null
 
     private val fillColorList by lazy {
         ArrayList<Float>(4)
@@ -51,9 +51,6 @@ internal class AnimatedTextDocument(
         ArrayList<Float>(2)
     }
 
-    fun dynamic(provider : DynamicTextLayerProvider?){
-        dynamic = provider
-    }
 
     @Transient
     private val delegate = BaseKeyframeAnimation(

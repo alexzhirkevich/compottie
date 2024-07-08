@@ -1,21 +1,20 @@
-package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value
+package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math
 
-import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
-import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
+import io.github.alexzhirkevich.compottie.internal.utils.degreeToRadians
 
-internal class OpMakeArray(
-    private val items : List<Expression>
+internal class OpDegreesToRadians(
+    private val degrees : Expression
 ) : Expression {
 
     override fun invoke(
         property: RawProperty<Any>,
         context: EvaluationContext,
-        state: AnimationState,
+        state: AnimationState
     ): Any {
-        return items.fastMap { it.invoke(property, context, state) }
+        return degreeToRadians((degrees(property, context,state) as Number).toFloat())
     }
 }

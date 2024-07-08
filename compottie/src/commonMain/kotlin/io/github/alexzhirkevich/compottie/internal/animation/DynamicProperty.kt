@@ -10,13 +10,17 @@ import kotlinx.serialization.Serializable
 @Serializable
 internal abstract class DynamicProperty<T : Any> : AnimatedProperty<T> {
 
-    open val expressionEvaluator: ExpressionEvaluator<T> = RawExpressionEvaluator()
+    abstract val expression : String?
+
+    abstract val  expressionEvaluator: ExpressionEvaluator
 
     abstract val dynamic: PropertyProvider<T>?
 
+    abstract fun mapEvaluated(e: Any): T
+
     final override fun interpolated(state: AnimationState): T {
         val evaluator = expressionEvaluator
-        val v = evaluator.run { evaluate(state) }
+        val v = mapEvaluated(evaluator.run { evaluate(state) })
         return dynamic.derive(v, state)
     }
 }

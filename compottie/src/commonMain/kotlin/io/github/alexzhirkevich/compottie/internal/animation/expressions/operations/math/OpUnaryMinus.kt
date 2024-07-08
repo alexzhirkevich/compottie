@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math
 
+import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
@@ -17,7 +18,11 @@ internal class OpUnaryMinus(
 
         return when (val v = v(property, context, state)) {
             is Number -> -v.toFloat()
-            is Vec2 -> -v
+            is List<*> -> {
+                v as List<Number>
+                v.fastMap { -it.toFloat() }
+            }
+
             else -> error("Cant apply unary minus to $v")
         }
     }
