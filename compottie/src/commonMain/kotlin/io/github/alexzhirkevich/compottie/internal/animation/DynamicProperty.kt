@@ -4,23 +4,18 @@ import io.github.alexzhirkevich.compottie.dynamic.PropertyProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionEvaluator
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionInterpreter
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.MainExpressionInterpreter
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.RawExpressionEvaluator
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
-@Serializable
-internal abstract class DynamicProperty<T : Any> : AnimatedProperty<T> {
+internal abstract class DynamicProperty<T : Any> : ExpressionProperty<T>() {
 
-    abstract val expression : String?
+    @Transient
+    var dynamic: PropertyProvider<T>? = null
 
-    abstract val  expressionEvaluator: ExpressionEvaluator
-
-    abstract val dynamic: PropertyProvider<T>?
-
-    abstract fun mapEvaluated(e: Any): T
-
-    final override fun interpolated(state: AnimationState): T {
-        val evaluator = expressionEvaluator
-        val v = mapEvaluated(evaluator.run { evaluate(state) })
-        return dynamic.derive(v, state)
+    override fun interpolated(state: AnimationState): T {
+        return dynamic.derive(super.interpolated(state), state)
     }
 }

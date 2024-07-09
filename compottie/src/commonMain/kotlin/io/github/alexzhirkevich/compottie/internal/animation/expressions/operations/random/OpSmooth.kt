@@ -61,14 +61,14 @@ internal class OpSmooth(
             width /= 2f
 
             val currentTime = OpGetTime.invoke(state)
-            val initFrame = currentTime - width
-            val endFrame = currentTime + width
-            val sampleFrequency = endFrame-initFrame
+            val initTime = currentTime - width
+            val endTime = currentTime + width
+            val sampleFrequency = endTime-initTime
 
             var value : Any? = null
 
             repeat (samples) { i ->
-                val sampleValue = state.onTime(initFrame + i * sampleFrequency, prop::raw)
+                val sampleValue = state.onTime(initTime + i * sampleFrequency, prop::raw)
 
                 when {
                     value is Number? && sampleValue is Number -> {
@@ -79,26 +79,28 @@ internal class OpSmooth(
                         }
                     }
                     value is List<*>? && sampleValue is List<*> -> {
-                        sampleValue as List<Number>?
-                        value as MutableList<Number>?
+                        val v = value
 
-                        if (value == null){
+                        if (v == null){
                             value = sampleValue.toMutableList()
                         } else {
-                            for (i in (value as MutableList<Number>).indices) {
-                                (value as MutableList<Number>)[i] = (value as MutableList<Number>)[i].toFloat() + sampleValue[i].toFloat()
+                            v as MutableList<Number>
+                            sampleValue as List<Number>
+
+                            for (i in v.indices) {
+                                v[i] = v[i].toFloat() + sampleValue[i].toFloat()
                             }
                         }
                     }
                 }
             }
 
-            when (value) {
-                is Number -> value = (value as Number).toFloat() / samples
+            when (val v = value) {
+                is Number -> value = v.toFloat() / samples
                 is MutableList<*> -> {
-                    repeat((value as List<*>).lastIndex) {
-                        (value as MutableList<Float>)[it] =
-                            (value as MutableList<Float>)[it] / samples
+                    v as MutableList<Float>
+                    repeat(v.lastIndex) {
+                        v[it] = v[it] / samples
                     }
                 }
             }

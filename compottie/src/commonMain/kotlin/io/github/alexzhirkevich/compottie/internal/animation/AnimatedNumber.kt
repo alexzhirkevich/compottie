@@ -24,15 +24,6 @@ import kotlinx.serialization.json.jsonObject
 @Serializable(with = AnimatedNumberSerializer::class)
 internal sealed class AnimatedNumber : DynamicProperty<Float>() {
 
-    final override var dynamic: PropertyProvider<Float>? = null
-
-    final override val expressionEvaluator : ExpressionEvaluator by lazy {
-        expression?.let(::ExpressionEvaluator) ?: RawExpressionEvaluator
-    }
-
-    protected fun prepareExpressionsEvaluator() {
-        expressionEvaluator
-    }
 
     override fun mapEvaluated(e: Any): Float {
         return when (e){
@@ -57,7 +48,7 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
     ) : AnimatedNumber() {
 
         init {
-            prepareExpressionsEvaluator()
+            prepare()
         }
 
         override fun copy(): AnimatedNumber {
@@ -84,7 +75,7 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
     ) : AnimatedNumber(), AnimatedKeyframeProperty<Float, ValueKeyframe> {
 
         init {
-            prepareExpressionsEvaluator()
+            prepare()
         }
 
         @Transient

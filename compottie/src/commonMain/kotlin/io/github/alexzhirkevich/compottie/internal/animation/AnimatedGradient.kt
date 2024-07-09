@@ -1,8 +1,8 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.helpers.ColorsWithStops
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -10,125 +10,49 @@ import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonClassDiscriminator
 import kotlin.jvm.JvmInline
 
-internal class ColorsWithStops(
-    size: Int
-) {
-    val colorStops: List<Float> get() = mColorStops
-    val colors: List<Color> get() = mColors
 
-    private val mColorStops: MutableList<Float> = ArrayList(size)
-    private val mColors: MutableList<Color> = ArrayList(size)
-
-    fun fill(colors: FloatArray, numberOfColors: Int) {
-        resizeTo(numberOfColors)
-
-        repeat(numberOfColors) {
-            mColorStops[it] = colors[it * 4]
-
-            val alpha = if (colors.size == numberOfColors * 6) {
-                colors[colors.lastIndex - numberOfColors * 2 + (it + 1) * 2]
-            } else 1f
-
-
-            mColors[it] =
-                Color(
-                    red = colors[it * 4 + 1],
-                    green = colors[it * 4 + 2],
-                    blue = colors[it * 4 + 3],
-                    alpha = alpha
-                )
-        }
-    }
-
-    fun fill(colors: List<Float>, numberOfColors: Int) {
-        resizeTo(numberOfColors)
-
-        repeat(numberOfColors) {
-            mColorStops[it] = colors[it * 4]
-
-            val alpha = if (colors.size == numberOfColors * 6) {
-                colors[colors.lastIndex - numberOfColors * 2 + (it + 1) * 2]
-            } else 1f
-
-
-            mColors[it] =
-                Color(
-                    red = colors[it * 4 + 1],
-                    green = colors[it * 4 + 2],
-                    blue = colors[it * 4 + 3],
-                    alpha = alpha
-                )
-        }
-    }
-
-
-    fun interpolateBetween(a: ColorsWithStops, b: ColorsWithStops, progress: Float) {
-        val n = minOf(a.colors.size, b.colors.size)
-
-        resizeTo(n)
-
-        repeat(n) { i ->
-            mColors[i] = lerp(a.colors[i], b.colors[i], progress)
-            mColorStops[i] = androidx.compose.ui.util.lerp(a.colorStops[i], b.colorStops[i], progress)
-        }
-    }
-
-    private fun resizeTo(size: Int) {
-        while (colorStops.size < size) {
-            mColorStops.add(0f)
-            mColors.add(Color.Transparent)
-        }
-        while (colorStops.size > size) {
-            mColorStops.removeLast()
-            mColors.removeLast()
-        }
-    }
-}
-
-
-@Serializable
-internal class GradientColors(
-
-    @SerialName("k")
-    val colors: AnimatedGradient,
-
-    @SerialName("p")
-    val numberOfColors: Int = 0
-) {
-    fun copy()  = GradientColors(
-        colors = colors.copy(),
-        numberOfColors = numberOfColors
-    )
-
-}
-
-@Serializable
-@JvmInline
-internal value class GradientType(val type : Byte) {
-    companion object {
-        val Linear = GradientType(1)
-        val Radial = GradientType(2)
-    }
-}
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonClassDiscriminator("a")
-internal abstract class AnimatedGradient : AnimatedProperty<ColorsWithStops> {
+internal abstract class AnimatedGradient : ExpressionProperty<ColorsWithStops>() {
 
     @Transient
     var numberOfColors: Int = 0
 
+
+    private val tempExpressionColors by lazy {
+        ColorsWithStops(numberOfColors)
+    }
+
     abstract fun copy() : AnimatedGradient
+
+    override fun mapEvaluated(e: Any): ColorsWithStops {
+        return when (e) {
+            is ColorsWithStops -> e
+            is List<*> -> {
+                tempExpressionColors.fill(
+                    (e as List<Number>).fastMap(Number::toFloat),
+                    numberOfColors
+                )
+                tempExpressionColors
+            }
+
+            else -> error("Failed to cast $e to gradient vector")
+        }
+    }
 
     @SerialName("0")
     @Serializable
     class Default(
         @SerialName("k")
-        val colorsVector: FloatArray,
+        val colorsVector: List<Float>,
 
         @SerialName("ix")
-        override val index: Int? = null
+        override val index: Int? = null,
+
+        @SerialName("x")
+        override val expression: String? = null
     ) : AnimatedGradient() {
 
         private val tempColors by lazy {
@@ -143,8 +67,9 @@ internal abstract class AnimatedGradient : AnimatedProperty<ColorsWithStops> {
 
         override fun copy(): AnimatedGradient {
             return Default(
-                colorsVector = colorsVector.copyOf(),
-                index = index
+                colorsVector = colorsVector,
+                index = index,
+                expression = expression
             )
         }
     }
@@ -155,7 +80,9 @@ internal abstract class AnimatedGradient : AnimatedProperty<ColorsWithStops> {
         @SerialName("k")
         override val keyframes: List<VectorKeyframe>,
         @SerialName("ix")
-        override val index: Int? = null
+        override val index: Int? = null,
+        @SerialName("x")
+        override val expression: String? = null
     ) : AnimatedGradient(), AnimatedKeyframeProperty<ColorsWithStops, VectorKeyframe> {
 
         private val tempColors by lazy {
@@ -187,7 +114,11 @@ internal abstract class AnimatedGradient : AnimatedProperty<ColorsWithStops> {
         }
 
         override fun copy(): AnimatedGradient {
-            return Animated(keyframes = keyframes, index = index)
+            return Animated(
+                keyframes = keyframes,
+                index = index,
+                expression = expression
+            )
         }
 
         override fun raw(state: AnimationState): ColorsWithStops {

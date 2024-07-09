@@ -22,16 +22,6 @@ import kotlin.math.min
 @Serializable(with = AnimatedVectorNSerializer::class)
 internal sealed class AnimatedVectorN : DynamicProperty<List<Float>>() {
 
-    final override var dynamic: PropertyProvider<List<Float>>? = null
-
-    @Transient
-    final override val expressionEvaluator : ExpressionEvaluator by lazy {
-        expression?.let(::ExpressionEvaluator) ?: RawExpressionEvaluator
-    }
-
-    protected fun prepareExpressionsEvaluator() {
-        expressionEvaluator
-    }
 
     override fun mapEvaluated(e: Any): List<Float> {
         return when (e) {
@@ -56,7 +46,7 @@ internal sealed class AnimatedVectorN : DynamicProperty<List<Float>>() {
     ) : AnimatedVectorN() {
 
         init {
-            prepareExpressionsEvaluator()
+            prepare()
         }
 
         @Transient
@@ -86,7 +76,7 @@ internal sealed class AnimatedVectorN : DynamicProperty<List<Float>>() {
     ) : AnimatedVectorN(), AnimatedKeyframeProperty<List<Float>, VectorKeyframe> {
 
         init {
-            prepareExpressionsEvaluator()
+            prepare()
         }
 
         @Transient

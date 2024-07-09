@@ -36,17 +36,6 @@ internal fun Vec2(x : Float, y : Float) : Vec2 = Offset(x,y)
 @Serializable(with = AnimatedVector2Serializer::class)
 internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
 
-    final override var dynamic: PropertyProvider<Vec2>? = null
-
-    @Transient
-    final override val expressionEvaluator : ExpressionEvaluator by lazy {
-        expression?.let(::ExpressionEvaluator) ?: RawExpressionEvaluator
-    }
-
-    protected fun prepareExpressionsEvaluator() {
-        expressionEvaluator
-    }
-
     override fun mapEvaluated(e: Any): Vec2 {
         return when (e) {
             is Vec2 -> e
@@ -71,7 +60,7 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
     ) : AnimatedVector2() {
 
         init {
-            prepareExpressionsEvaluator()
+            prepare()
         }
 
         @Transient
@@ -101,7 +90,7 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
     ) : AnimatedVector2(), AnimatedKeyframeProperty<Vec2, VectorKeyframe> {
 
         init {
-            prepareExpressionsEvaluator()
+            prepare()
         }
 
         private val path = Path()
@@ -160,7 +149,7 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
     ) : AnimatedVector2() {
 
         init {
-            prepareExpressionsEvaluator()
+            prepare()
         }
 
         override val expression: String?

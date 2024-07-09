@@ -3,17 +3,15 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
-import io.github.alexzhirkevich.compottie.internal.animation.GradientColors
-import io.github.alexzhirkevich.compottie.internal.animation.GradientType
 import io.github.alexzhirkevich.compottie.internal.animation.defaultOpacity
+import io.github.alexzhirkevich.compottie.internal.helpers.GradientColors
+import io.github.alexzhirkevich.compottie.internal.helpers.GradientType
 import io.github.alexzhirkevich.compottie.internal.helpers.StrokeDash
-import io.github.alexzhirkevich.compottie.internal.layers.Layer
+import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 
 @Serializable
 @SerialName("gs")

@@ -17,24 +17,38 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = AnimatedColorSerializer::class)
-internal sealed interface AnimatedColor : AnimatedProperty<Color> {
+internal sealed class AnimatedColor : ExpressionProperty<Color>() {
 
-    fun copy() : AnimatedColor
+    abstract fun copy() : AnimatedColor
 
-    @Serializable()
+    override fun mapEvaluated(e: Any): Color {
+        return when (e){
+            is Color -> e
+            is List<*> -> (e as List<Number>).toColor2()
+
+            else -> error("Can't convert $e to color")
+        }
+    }
+
+    @Serializable
     class Default(
         @SerialName("k")
         val value: List<Float>,
 
         @SerialName("x")
-        val expression: String? = null,
+        override val expression: String? = null,
 
         @SerialName("ix")
         override val index: Int? = null
-    ) : AnimatedColor {
+    ) : AnimatedColor() {
+
+        init {
+            prepare()
+        }
 
         @Transient
         private val color: Color = value.toColor()
+
         override fun copy(): AnimatedColor {
             return Default(
                 value = value,
@@ -53,11 +67,11 @@ internal sealed interface AnimatedColor : AnimatedProperty<Color> {
         val value: List<VectorKeyframe>,
 
         @SerialName("x")
-        val expression: String? = null,
+        override val expression: String? = null,
 
         @SerialName("ix")
         override val index: Int? = null
-    ) : AnimatedColor, RawKeyframeProperty<Color, VectorKeyframe> by BaseKeyframeAnimation(
+    ) : AnimatedColor(), RawKeyframeProperty<Color, VectorKeyframe> by BaseKeyframeAnimation(
         index = index,
         keyframes = value,
         emptyValue = Color.Transparent,
@@ -65,6 +79,11 @@ internal sealed interface AnimatedColor : AnimatedProperty<Color> {
             lerp(s.toColor(), e.toColor(), easingX.transform(p))
         }
     ) {
+
+        init {
+            prepare()
+        }
+
         override fun copy(): AnimatedColor {
             return Animated(
                 value = value,
@@ -80,6 +99,13 @@ internal fun List<Float>.toColor() = Color(
     green = get(1).toColorComponent(),
     blue = get(2).toColorComponent(),
     alpha = getOrNull(3)?.toColorComponent() ?: 1f
+)
+
+internal fun List<Number>.toColor2() = Color(
+    red = get(0).toFloat().toColorComponent(),
+    green = get(1).toFloat().toColorComponent(),
+    blue = get(2).toFloat().toColorComponent(),
+    alpha = getOrNull(3)?.toFloat()?.toColorComponent() ?: 1f
 )
 
 // Modern Lotties (v 4.1.9+) have color components in the [0, 1] range.
