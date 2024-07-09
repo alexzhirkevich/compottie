@@ -9,15 +9,14 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Evaluat
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.argAt
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.getForNameOrIndex
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.argForNameOrIndex
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.color.OpHslToRgb
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.color.OpRgbToHsl
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpGetComp
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpGetLayer
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpGetProperty
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpLayerToComp
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpPropertyContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpIfCondition
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpAdd
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpClamp
@@ -45,9 +44,11 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 internal object OpGlobalContext : ExpressionContext<Undefined>, Expression {
 
     // global context extends thisProperty context
-    private val thisProperty = object : OpPropertyContext(), Expression by OpGetProperty() {}
+    private val thisProperty = OpGetProperty()
+    private val thisLayer = OpGetLayer()
+    private val thisComp = OpGetComp(null)
 
-    override fun interpret(op: String, args: List<Expression>): Expression? {
+    override fun interpret(op: String?, args: List<Expression>): Expression? {
 
         return when (op) {
             "var", "let", "const" -> OpVar
@@ -63,7 +64,7 @@ internal object OpGlobalContext : ExpressionContext<Undefined>, Expression {
 
             "comp" -> {
                 checkArgs(args, 1, op)
-                return OpGetComp(args[0])
+                return OpGetComp(args.argAt(0))
             }
 
             "thisLayer" -> OpGetLayer()
@@ -71,104 +72,104 @@ internal object OpGlobalContext : ExpressionContext<Undefined>, Expression {
             "add", "\$bm_sum", "sum" -> {
                 checkArgs(args, 2, op)
                 OpAdd(
-                    args.getForNameOrIndex(0, "vec1")!!,
-                    args.getForNameOrIndex(1, "vec2")!!,
+                    args.argForNameOrIndex(0, "vec1")!!,
+                    args.argForNameOrIndex(1, "vec2")!!,
                 )
             }
 
             "sub", "\$bm_sub" -> {
                 checkArgs(args, 2, op)
                 OpSub(
-                    args.getForNameOrIndex(0, "vec1")!!,
-                    args.getForNameOrIndex(1, "vec2")!!,
+                    args.argForNameOrIndex(0, "vec1")!!,
+                    args.argForNameOrIndex(1, "vec2")!!,
                 )
             }
 
             "mul", "\$bm_mul" -> {
                 checkArgs(args, 2, op)
                 OpMul(
-                    args.getForNameOrIndex(0, "vec")!!,
-                    args.getForNameOrIndex(1, "amount")!!,
+                    args.argForNameOrIndex(0, "vec")!!,
+                    args.argForNameOrIndex(1, "amount")!!,
                 )
             }
 
             "div", "\$bm_div" -> {
                 checkArgs(args, 2, op)
                 OpDiv(
-                    args.getForNameOrIndex(0, "vec")!!,
-                    args.getForNameOrIndex(1, "amount")!!,
+                    args.argForNameOrIndex(0, "vec")!!,
+                    args.argForNameOrIndex(1, "amount")!!,
                 )
             }
 
             "mod" -> {
                 checkArgs(args, 2, op)
                 OpMod(
-                    args.getForNameOrIndex(0, "vec")!!,
-                    args.getForNameOrIndex(1, "amount")!!,
+                    args.argForNameOrIndex(0, "vec")!!,
+                    args.argForNameOrIndex(1, "amount")!!,
                 )
             }
 
             "clamp" -> {
                 checkArgs(args, 3, op)
                 OpClamp(
-                    args.getForNameOrIndex(0, "value")!!,
-                    args.getForNameOrIndex(1, "limit1")!!,
-                    args.getForNameOrIndex(2, "limit2")!!,
+                    args.argForNameOrIndex(0, "value")!!,
+                    args.argForNameOrIndex(1, "limit1")!!,
+                    args.argForNameOrIndex(2, "limit2")!!,
                 )
             }
 
             "dot" -> {
                 checkArgs(args, 2, op)
                 OpDot(
-                    args.getForNameOrIndex(0, "vec1")!!,
-                    args.getForNameOrIndex(1, "vec2")!!,
+                    args.argForNameOrIndex(0, "vec1")!!,
+                    args.argForNameOrIndex(1, "vec2")!!,
                 )
             }
 
             "length" -> OpLength(
-                args.getForNameOrIndex(0, "vec", "point1")!!,
-                args.getForNameOrIndex(1, "point2"),
+                args.argForNameOrIndex(0, "vec", "point1")!!,
+                args.argForNameOrIndex(1, "point2"),
             )
             "normalize" -> {
                 checkArgs(args, 1, op)
-                OpNormalize(args[0])
+                OpNormalize(args.argAt(0))
             }
 
             "cross" -> error("cross is not supported yet") //todo: support OpCross
 
             "degreesToRadians" -> {
                 checkArgs(args, 1, op)
-                OpDegreesToRadians(args[0])
+                OpDegreesToRadians(args.argAt(0))
             }
 
             "radiansToDegrees" -> {
                 checkArgs(args, 1, op)
-                OpRadiansToDegree(args[0])
+                OpRadiansToDegree(args.argAt(0))
             }
 
             "timeToFrames" -> OpTimeToFrames(
-                args.getForNameOrIndex(0,"t"),
-                args.getForNameOrIndex(1,"fps"),
+                args.argForNameOrIndex(0,"t"),
+                args.argForNameOrIndex(1,"fps"),
             )
             "framesToTime" -> OpFramesToTime(
-                args.getForNameOrIndex(0,"frames"),
-                args.getForNameOrIndex(1,"fps"),
+                args.argForNameOrIndex(0,"frames"),
+                args.argForNameOrIndex(1,"fps"),
             )
             "seedRandom" -> OpSetRandomSeed(
-                args.getForNameOrIndex(0,"offset")!!,
-                args.getForNameOrIndex(1,"timeless"),
+                args.argForNameOrIndex(0,"offset")!!,
+                args.argForNameOrIndex(1,"timeless"),
             )
             "random", "gaussRandom" -> {
                 OpRandomNumber(
-                    args.getForNameOrIndex(0,"maxValOrArray1"),
-                    args.getForNameOrIndex(1,"maxValOrArray2"),
+                    args.argForNameOrIndex(0,"maxValOrArray1"),
+                    args.argForNameOrIndex(1,"maxValOrArray2"),
                     isGauss = op == "gaussRandom"
                 )
             }
 
             "noise" -> {
                 checkArgs(args, 1, op)
-                OpNoise(args[0])
+                OpNoise(args.argAt(0))
             }
 
             "linear" -> OpInterpolate.interpret(LinearEasing, args)
@@ -178,12 +179,12 @@ internal object OpGlobalContext : ExpressionContext<Undefined>, Expression {
 
             "hslToRgb" -> {
                 checkArgs(args, 1, op)
-                OpHslToRgb(args[0])
+                OpHslToRgb(args.argAt(0))
             }
 
             "rgbToHsl" -> {
                 checkArgs(args, 1, op)
-                OpRgbToHsl(args[0])
+                OpRgbToHsl(args.argAt(0))
             }
 
             "if" -> {
@@ -192,16 +193,19 @@ internal object OpGlobalContext : ExpressionContext<Undefined>, Expression {
             "true" -> OpConstant(true)
             "false" -> OpConstant(false)
             else -> {
-                thisProperty.interpret(op, args) ?: run {
-                    if (args.isEmpty()) {
-                        if (EXPR_DEBUG_PRINT_ENABLED) {
-                            println("making GetVariable $op...")
+                thisProperty.interpret(op, args)
+                    ?: thisLayer.interpret(op, args)
+                    ?: thisComp.interpret(op, args)
+                    ?: run {
+                        if (args.isEmpty() && op != null) {
+                            if (EXPR_DEBUG_PRINT_ENABLED) {
+                                println("making GetVariable $op...")
+                            }
+                            OpGetVariable(op)
+                        } else {
+                            null
                         }
-                        OpGetVariable(op)
-                    } else {
-                        null
                     }
-                }
             }
         }
     }

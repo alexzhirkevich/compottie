@@ -13,4 +13,11 @@ internal fun interface Expression {
         state: AnimationState
     ): Any
 
+    object UndefinedExpression: Expression {
+        override fun invoke(
+            property: RawProperty<Any>,
+            context: EvaluationContext,
+            state: AnimationState,
+        ) = Undefined
+    }
 }

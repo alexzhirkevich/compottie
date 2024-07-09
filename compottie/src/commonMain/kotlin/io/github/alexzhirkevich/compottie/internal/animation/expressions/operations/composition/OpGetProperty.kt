@@ -15,6 +15,7 @@ internal class OpGetProperty(
         context: EvaluationContext,
         state: AnimationState
     ): RawProperty<Any> {
+
         return if (this.property != null)
             this.property.invoke(property, context, state) as RawProperty<*>
         else property

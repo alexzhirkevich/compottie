@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.CompottieException
+import io.github.alexzhirkevich.compottie.DotLottie
 import io.github.alexzhirkevich.compottie.ExperimentalCompottieApi
 import io.github.alexzhirkevich.compottie.LottieClipSpec
 import io.github.alexzhirkevich.compottie.LottieComposition
@@ -190,9 +191,9 @@ fun App() {
 //                    else -> null
 //                }
 //            },
-            assetsManager = rememberResourcesAssetsManager(
-                readBytes = Res::readBytes
-            ),
+//            assetsManager = rememberResourcesAssetsManager(
+//                readBytes = Res::readBytes
+//            ),
         )
 
         Image(

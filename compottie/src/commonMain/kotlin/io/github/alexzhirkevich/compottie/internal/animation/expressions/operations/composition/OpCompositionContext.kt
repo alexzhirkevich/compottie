@@ -3,12 +3,13 @@ package io.github.alexzhirkevich.compottie.internal.animation.expressions.operat
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionComposition
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.argAt
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
 
 internal sealed class OpCompositionContext : ExpressionContext<ExpressionComposition> {
 
     final override fun interpret(
-        op: String,
+        op: String?,
         args: List<Expression>
     ): Expression? {
         return when (op) {
@@ -21,7 +22,7 @@ internal sealed class OpCompositionContext : ExpressionContext<ExpressionComposi
                 checkArgs(args, 1, op)
                 OpGetLayer(
                     comp = this,
-                    nameOrIndex = args[0]
+                    nameOrIndex = args.argAt(0)
                 )
             }
 

@@ -3,16 +3,16 @@ package io.github.alexzhirkevich.compottie.internal.animation.expressions.operat
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.argAt
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.getForNameOrIndex
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.argForNameOrIndex
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpConstant
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.layers.PrecompositionLayer
 
 internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
 
-    override fun interpret(op: String, args: List<Expression>): Expression? {
-
+    override fun interpret(op: String?, args: List<Expression>): Expression? {
         return when (op) {
             "index" -> withContext { _, _, _ -> index ?: Undefined }
             "name" -> withContext { _, _, _ -> name ?: Undefined }
@@ -39,7 +39,7 @@ internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
             "transform" -> OpGetLayerTransform(this)
             "effect" -> {
                 checkArgs(args, 1, op)
-                return OpGetEffect(layer = this, nameOrIndex = args[0])
+                return OpGetEffect(layer = this, nameOrIndex = args.argAt(0))
             }
 
             "rotation" -> withContext { _, _, _ ->
@@ -68,8 +68,8 @@ internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
                 checkArgs(args, 1, op)
                 OpLayerToComp(
                     layer = this,
-                    point = args.getForNameOrIndex(0,"point")!!,
-                    time = args.getForNameOrIndex(1,"t"),
+                    point = args.argForNameOrIndex(0,"point")!!,
+                    time = args.argForNameOrIndex(1,"t"),
                     reverse = false
                 )
             }
@@ -77,8 +77,8 @@ internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
             "fromComp" -> {
                 OpLayerToComp(
                     layer = this,
-                    point = args.getForNameOrIndex(0,"point")!!,
-                    time = args.getForNameOrIndex(1,"t"),
+                    point = args.argForNameOrIndex(0,"point")!!,
+                    time = args.argForNameOrIndex(1,"t"),
                     reverse = true
                 )
             }
@@ -86,8 +86,8 @@ internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
             "toWorld" -> {
                 OpLayerToWorld(
                     layer = this,
-                    point = args.getForNameOrIndex(0,"point")!!,
-                    time = args.getForNameOrIndex(1,"t"),
+                    point = args.argForNameOrIndex(0,"point")!!,
+                    time = args.argForNameOrIndex(1,"t"),
                     reverse = false
                 )
             }
@@ -96,8 +96,8 @@ internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
                 checkArgs(args, 1, op)
                 OpLayerToWorld(
                     layer = this,
-                    point = args.getForNameOrIndex(0, "point")!!,
-                    time = args.getForNameOrIndex(1, "t"),
+                    point = args.argForNameOrIndex(0, "point")!!,
+                    time = args.argForNameOrIndex(1, "t"),
                     reverse = true
                 )
             }

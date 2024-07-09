@@ -6,6 +6,8 @@ import androidx.compose.ui.graphics.Color
 import io.github.alexzhirkevich.compottie.dynamic.DynamicTextLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionEvaluator
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.RawExpressionEvaluator.evaluate
 import io.github.alexzhirkevich.compottie.internal.helpers.text.TextDocument
 import io.github.alexzhirkevich.compottie.internal.utils.toOffset
 import io.github.alexzhirkevich.compottie.internal.utils.toSize
@@ -32,8 +34,10 @@ internal class AnimatedTextDocument(
 
     private val document = TextDocument()
 
+    private val evaluator = expression?.let(::ExpressionEvaluator)
+
     @Transient
-    var dynamic :DynamicTextLayerProvider? = null
+    var dynamic : DynamicTextLayerProvider? = null
 
     private val fillColorList by lazy {
         ArrayList<Float>(4)
@@ -70,6 +74,8 @@ internal class AnimatedTextDocument(
     override fun interpolated(state: AnimationState): TextDocument {
         val raw = delegate.raw(state)
 
+        val evaluatedText = evaluator?.run { evaluate(state) } as? String ?: raw.text
+
         return document.apply {
             fontFamily = raw.fontFamily
             fillColor = dynamic?.fillColor?.let {
@@ -100,7 +106,7 @@ internal class AnimatedTextDocument(
                     positionList
                 }
             } ?: raw.wrapPosition
-            text = dynamic?.text.derive(raw.text.orEmpty(), state)
+            text = dynamic?.text.derive(evaluatedText.orEmpty(), state)
             textJustify = dynamic?.textJustify.derive(raw.textJustify, state)
             textTracking = dynamic?.tracking.derive(raw.textTracking ?: 0f, state)
             baselineShift =

@@ -6,7 +6,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 
 internal interface ExpressionContext<T> : Expression {
 
-    fun interpret(op: String, args: List<Expression>): Expression?
+    fun interpret(op: String?, args: List<Expression>): Expression?
 
     fun withContext(
         block: T.(
@@ -39,16 +39,38 @@ internal interface ExpressionContext<T> : Expression {
     }
 }
 
-internal fun List<Expression>.getForNameOrIndex(
+internal fun List<Expression>.argForNameOrIndex(
     index : Int,
     vararg name : String,
 ) : Expression? {
 
     forEach { op ->
-        if (op is OpAssign && name.any { op.variableName == it } ) {
+        if (op is OpAssign && name.any { op.variableName == it }) {
             return op.assignableValue
         }
     }
 
-    return getOrNull(index)
+    return argAtOrNull(index)
+}
+
+internal fun List<Expression>.argAt(
+    index : Int,
+) : Expression {
+
+    return get(index).let {
+        if (it is OpAssign)
+            it.assignableValue
+        else it
+    }
+}
+
+internal fun List<Expression>.argAtOrNull(
+    index : Int,
+) : Expression? {
+
+    return getOrNull(index).let {
+        if (it is OpAssign)
+            it.assignableValue
+        else it
+    }
 }

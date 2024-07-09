@@ -9,8 +9,10 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefin
 
 internal object OpVar : Expression, ExpressionContext<Any> {
 
-    override fun interpret(op: String, args: List<Expression>): Expression {
-        return OpGetVariable(op, declare = true)
+    override fun interpret(op: String?, args: List<Expression>): Expression {
+        return if (op == null)
+            Expression.UndefinedExpression
+        else OpGetVariable(op, declare = true)
     }
 
     override fun invoke(

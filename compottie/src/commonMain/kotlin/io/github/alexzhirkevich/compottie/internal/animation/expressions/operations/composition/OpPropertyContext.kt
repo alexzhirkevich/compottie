@@ -1,13 +1,16 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition
 
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
 import io.github.alexzhirkevich.compottie.internal.animation.RawKeyframeProperty
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.argAt
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.getForNameOrIndex
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.argForNameOrIndex
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random.OpSmooth
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random.OpTemporalWiggle
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random.OpWiggle
@@ -18,7 +21,13 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 
 internal abstract class OpPropertyContext : Expression, ExpressionContext<RawProperty<*>> {
 
-    final override fun interpret(op: String, args: List<Expression>): Expression? {
+    override fun invoke(
+        property: RawProperty<Any>,
+        context: EvaluationContext,
+        state: AnimationState
+    ): RawProperty<Any> = TODO()
+
+    final override fun interpret(op: String?, args: List<Expression>): Expression? {
         return when (op) {
             "value" -> OpPropertyValue(this)
             "numKeys" -> withContext { _, _, _ ->
@@ -42,41 +51,41 @@ internal abstract class OpPropertyContext : Expression, ExpressionContext<RawPro
             }
 
             "createPath" -> OpCreatePath(
-                points = args.getForNameOrIndex(0, "points"),
-                inTangents = args.getForNameOrIndex(1, "inTangents"),
-                outTangents = args.getForNameOrIndex(2, "outTangents"),
-                isClosed = args.getForNameOrIndex(3, "is_closed"),
+                points = args.argForNameOrIndex(0, "points"),
+                inTangents = args.argForNameOrIndex(1, "inTangents"),
+                outTangents = args.argForNameOrIndex(2, "outTangents"),
+                isClosed = args.argForNameOrIndex(3, "is_closed"),
             )
 
             "propertyIndex" -> withContext { _, _, _ -> index ?: Undefined }
 
             "valueAtTime" -> {
                 checkArgs(args, 1, op)
-                OpPropertyValue(this, timeRemapping = args[0])
+                OpPropertyValue(this, timeRemapping = args.argAt(0))
             }
 
             "wiggle" -> OpWiggle(
                 property = this,
-                freq = args.getForNameOrIndex(0, "freq")!!,
-                amp = args.getForNameOrIndex(1, "amp")!!,
-                octaves = args.getForNameOrIndex(2, "octaves"),
-                ampMult = args.getForNameOrIndex(3, "amp_mult"),
-                time = args.getForNameOrIndex(4, "t"),
+                freq = args.argForNameOrIndex(0, "freq")!!,
+                amp = args.argForNameOrIndex(1, "amp")!!,
+                octaves = args.argForNameOrIndex(2, "octaves"),
+                ampMult = args.argForNameOrIndex(3, "amp_mult"),
+                time = args.argForNameOrIndex(4, "t"),
             )
 
             "temporalWiggle" -> OpTemporalWiggle(
-                freq = args.getForNameOrIndex(0, "freq")!!,
-                amp = args.getForNameOrIndex(1, "amp")!!,
-                octaves = args.getForNameOrIndex(2, "octaves"),
-                ampMult = args.getForNameOrIndex(3, "amp_mult"),
-                time = args.getForNameOrIndex(4, "t"),
+                freq = args.argForNameOrIndex(0, "freq")!!,
+                amp = args.argForNameOrIndex(1, "amp")!!,
+                octaves = args.argForNameOrIndex(2, "octaves"),
+                ampMult = args.argForNameOrIndex(3, "amp_mult"),
+                time = args.argForNameOrIndex(4, "t"),
             )
 
             "smooth" -> OpSmooth(
                 prop = this,
-                width = args.getForNameOrIndex(0, "width"),
-                samples = args.getForNameOrIndex(1, "samples"),
-                time = args.getForNameOrIndex(2, "t")
+                width = args.argForNameOrIndex(0, "width"),
+                samples = args.argForNameOrIndex(1, "samples"),
+                time = args.argForNameOrIndex(2, "t")
             )
 
             "loopIn", "loopInDuration" -> OpLoopIn(
@@ -88,8 +97,8 @@ internal abstract class OpPropertyContext : Expression, ExpressionContext<RawPro
 
             "loopOut", "loopOutDuration" -> OpLoopOut(
                 property = this,
-                name = args.getForNameOrIndex(0, "type"),
-                numKf = args.getForNameOrIndex(1, "numKeyframes"),
+                name = args.argForNameOrIndex(0, "type"),
+                numKf = args.argForNameOrIndex(1, "numKeyframes"),
                 isDuration = op == "loopOutDuration"
             )
 

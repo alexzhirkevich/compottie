@@ -1,23 +1,21 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition
 
-import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.toExpressionType
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 
 internal class OpGetEffectParam(
     private val effect : Expression,
     private val nameOrIndex : Expression,
-) : Expression {
+) : OpPropertyContext(), Expression {
 
     override fun invoke(
         property: RawProperty<Any>,
         context: EvaluationContext,
         state: AnimationState
-    ): Any {
+    ): RawProperty<Any> {
 
         val effect = effect(property, context, state) as LayerEffect
 
@@ -29,6 +27,6 @@ internal class OpGetEffectParam(
 
         return checkNotNull(value?.value) {
             "Effect value with name or index '$nameOrIndex' wasn't found in Effect"
-        }.raw(state)
+        }
     }
 }

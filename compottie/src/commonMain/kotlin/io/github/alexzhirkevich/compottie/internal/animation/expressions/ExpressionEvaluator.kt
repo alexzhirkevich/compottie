@@ -26,24 +26,19 @@ private class ExpressionEvaluatorImpl(expr : String) : ExpressionEvaluator {
 
     private val expression: Expression = MainExpressionInterpreter(expr).interpret()
 
-    private var warned : Boolean = false
-
     override fun RawProperty<*>.evaluate(state: AnimationState): Any {
-        return try {
-            if (state.enableExpressions) {
+        return if (state.enableExpressions) {
+            try {
                 context.reset()
                 expression.invoke(this, context, state)
                 context.result.toListOrThis()
-            } else {
+            } catch (t: Throwable) {
+                Compottie.logger?.warn(
+                    "Error occurred in a Lottie expression. Try to disable expressions for Painter using enableExpressions=false: ${t.message}"
+                )
                 raw(state)
             }
-        } catch (t: Throwable) {
-            if (!warned){
-                warned = true
-                Compottie.logger?.warn(
-                    "Error occurred in a Lottie expression. Try disable expressions for Painter using enableExpressions=false: ${t.message}"
-                )
-            }
+        } else {
             raw(state)
         }
     }

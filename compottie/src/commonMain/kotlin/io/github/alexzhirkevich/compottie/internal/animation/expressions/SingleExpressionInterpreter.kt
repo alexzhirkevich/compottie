@@ -9,6 +9,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpEquals
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpGetVariable
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpGlobalContext
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.js.JsContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpIfCondition
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpIndex
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpMakeArray
@@ -303,50 +304,63 @@ internal class SingleExpressionInterpreter(
                 } while (ch.isFun())
 
                 val func = expr.substring(startPos, pos)
-                val args = buildList {
-                    when {
-                        eat('(') -> {
-                            if (eat(')')){
-                                return@buildList //empty args
-                            }
-                            do {
-                                add(parseAssignment(OpGlobalContext))
-                            } while (eat(','))
 
-                            require(eat(')')) {
-                                "Bad expression:Missing ')' after argument to $func"
-                            }
-                        }
-                    }
-                }
-                if (EXPR_DEBUG_PRINT_ENABLED) {
-                    println("making fun $func")
-                }
-
-                val parsedOp = when (context) {
-                    is ExpressionContext<*> -> context.interpret(func, args)
-                        ?: unresolvedReference(
-                            ref = func,
-                            obj = context::class.simpleName
-                                ?.substringAfter("Op")
-                                ?.substringBefore("Context")
-                        )
-                    else -> error("Unsupported Lottie expression function: $func")
-                }
-
-                when {
-                    // begin condition || property || index
-                    parsedOp is OpVar ||
-                    parsedOp is OpIfCondition
-                            || eat('.')
-                            || nextCharIs('['::equals) ->
-                        parseFactorOp(parsedOp) // continue with receiver
-
-                    else -> parsedOp
-                }
+                parseFunction(context, func)
             }
 
             else -> error("Unsupported Lottie expression: $expr")
+        }
+    }
+
+    private fun parseFunction(context: Expression, func : String?) : Expression {
+        val args = buildList {
+            when {
+                eat('(') -> {
+                    if (eat(')')){
+                        return@buildList //empty args
+                    }
+                    do {
+                        add(parseAssignment(OpGlobalContext))
+                    } while (eat(','))
+
+                    require(eat(')')) {
+                        "Bad expression:Missing ')' after argument to $func"
+                    }
+                }
+            }
+        }
+        if (EXPR_DEBUG_PRINT_ENABLED) {
+            println("making fun $func")
+        }
+
+        val parsedOp = when (context) {
+            is ExpressionContext<*> -> context.interpret(func, args)
+                ?: unresolvedReference(
+                    ref = func ?: "null",
+                    obj = context::class.simpleName
+                        ?.substringAfter("Op")
+                        ?.substringBefore("Context")
+                )
+
+            else -> {
+                JsContext.interpret(context, func, args)
+                    ?: error("Unsupported Lottie expression function: $func")
+            }
+        }
+
+        return when {
+            // inplace function invocation
+            parsedOp is ExpressionContext<*> && nextCharIs { it == '(' } -> {
+                parseFunction(parsedOp, null)
+            }
+            // begin condition || property || index
+            parsedOp is OpVar ||
+                    parsedOp is OpIfCondition
+                    || eat('.')
+                    || nextCharIs('['::equals) ->
+                parseFactorOp(parsedOp) // continue with receiver
+
+            else -> parsedOp
         }
     }
 

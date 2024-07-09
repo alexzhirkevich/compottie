@@ -5,6 +5,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.argAt
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
 
 internal object OpMath : Expression, ExpressionContext<OpMath> {
@@ -18,29 +19,29 @@ internal object OpMath : Expression, ExpressionContext<OpMath> {
     }
 
     override fun interpret(
-        op: String,
+        op: String?,
         args: List<Expression>
     ): Expression {
         return when (op) {
             "PI" -> PI
             "cos" -> {
                 checkArgs(args, 1, op)
-                Cos(args[0])
+                Cos(args.argAt(0))
             }
 
             "sin" -> {
                 checkArgs(args, 1, op)
-                Sin(args[0])
+                Sin(args.argAt(0))
             }
 
             "sqrt" -> {
                 checkArgs(args, 1, op)
-                Sqrt(args[0])
+                Sqrt(args.argAt(0))
             }
 
             "tan" -> {
                 checkArgs(args, 1, op)
-                Sqrt(args[0])
+                Sqrt(args.argAt(0))
             }
 
             else -> error("Unsupported Math operation: $op")

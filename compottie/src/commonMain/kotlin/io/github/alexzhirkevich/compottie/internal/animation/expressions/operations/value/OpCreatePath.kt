@@ -33,7 +33,7 @@ internal class OpCreatePath(
         property: RawProperty<Any>,
         context: EvaluationContext,
         state: AnimationState,
-    ): Any {
+    ): RawProperty<Any> {
 
         val points = points?.invoke(property, context, state) as List<List<Float>>?
             ?: DefaultPoints
