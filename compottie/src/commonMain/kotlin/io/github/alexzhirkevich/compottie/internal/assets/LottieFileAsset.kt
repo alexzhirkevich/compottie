@@ -6,5 +6,4 @@ internal interface LottieFileAsset : LottieAsset {
     val path : String
     val fileName : String?
     val embedded : BooleanInt
-    val slotId : String?
 }

@@ -20,9 +20,12 @@ internal sealed interface AnimatedShape : AnimatedProperty<Path> {
 
     fun interpolatedMutable(state: AnimationState): Path
 
+    fun rawBezier(state: AnimationState) : Bezier
+
     fun copy(): AnimatedShape
 
     fun setClosed(closed: Boolean)
+
 
     @Serializable
     class Default(
@@ -41,6 +44,10 @@ internal sealed interface AnimatedShape : AnimatedProperty<Path> {
 
         override fun setClosed(closed: Boolean) {
             bezier.setIsClosed(closed)
+        }
+
+        override fun rawBezier(state: AnimationState): Bezier {
+            return bezier
         }
 
         override fun raw(state: AnimationState): Path {
@@ -80,6 +87,17 @@ internal sealed interface AnimatedShape : AnimatedProperty<Path> {
         private val tmpBezier = Bezier()
 
         @Transient
+        private var bezierDelegate = BaseKeyframeAnimation(
+            index = index,
+            keyframes = keyframes,
+            emptyValue = Bezier(),
+            map = { s, e, p ->
+                tmpBezier.interpolateBetween(s, e, easingX.transform(p))
+                tmpBezier
+            }
+        )
+
+        @Transient
         private var delegate = BaseKeyframeAnimation(
             index = index,
             keyframes = keyframes,
@@ -114,6 +132,10 @@ internal sealed interface AnimatedShape : AnimatedProperty<Path> {
 
         override fun interpolatedMutable(state: AnimationState): Path {
             return mutableDelegate.raw(state)
+        }
+
+        override fun rawBezier(state: AnimationState): Bezier {
+            return bezierDelegate.raw(state)
         }
 
         override fun copy(): AnimatedShape {

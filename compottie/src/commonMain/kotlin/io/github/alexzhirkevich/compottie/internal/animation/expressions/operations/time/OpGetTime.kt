@@ -14,4 +14,7 @@ internal object OpGetTime : Expression {
     ): Any {
         return state.time.inWholeMilliseconds / 1_000f
     }
+
+    fun invoke(state: AnimationState) =
+        state.time.inWholeMilliseconds / 1_000f
 }

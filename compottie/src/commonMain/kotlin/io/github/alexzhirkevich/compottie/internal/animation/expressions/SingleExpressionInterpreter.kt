@@ -120,7 +120,7 @@ internal class SingleExpressionInterpreter(
     private fun parseAssignment(context: Expression): Expression {
         var x = parseExpressionOp(context)
         if (EXPR_DEBUG_PRINT_ENABLED){
-            println("Parsed ${x::class} as assignment")
+            println("Parsed ${x::class.simpleName} as assignment")
         }
         while (true) {
             x = when {
@@ -310,7 +310,7 @@ internal class SingleExpressionInterpreter(
                                 return@buildList //empty args
                             }
                             do {
-                                add(parseExpressionOp(OpGlobalContext))
+                                add(parseAssignment(OpGlobalContext))
                             } while (eat(','))
 
                             require(eat(')')) {
@@ -374,6 +374,5 @@ internal fun checkArgs(args : List<*>, count : Int, func : String) {
 
 private val funMap = (('a'..'z').toList() + ('A'..'Z').toList() + '$' + '_' ).associateBy { it }
 
-private fun Char.isFun() = funMap[this] != null
+private fun Char.isFun() = isDigit() || funMap[this] != null
 
-private fun Char.isSignExpression() = funMap[this] != null

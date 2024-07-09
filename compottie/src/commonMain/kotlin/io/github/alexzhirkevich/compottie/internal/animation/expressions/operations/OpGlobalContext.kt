@@ -10,6 +10,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Express
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.getForNameOrIndex
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.color.OpHslToRgb
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.color.OpRgbToHsl
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpGetComp
@@ -69,45 +70,71 @@ internal object OpGlobalContext : ExpressionContext<Undefined>, Expression {
             "thisProperty" -> thisProperty
             "add", "\$bm_sum", "sum" -> {
                 checkArgs(args, 2, op)
-                OpAdd(args[0], args[1])
+                OpAdd(
+                    args.getForNameOrIndex(0, "vec1")!!,
+                    args.getForNameOrIndex(1, "vec2")!!,
+                )
+            }
+
+            "sub", "\$bm_sub" -> {
+                checkArgs(args, 2, op)
+                OpSub(
+                    args.getForNameOrIndex(0, "vec1")!!,
+                    args.getForNameOrIndex(1, "vec2")!!,
+                )
+            }
+
+            "mul", "\$bm_mul" -> {
+                checkArgs(args, 2, op)
+                OpMul(
+                    args.getForNameOrIndex(0, "vec")!!,
+                    args.getForNameOrIndex(1, "amount")!!,
+                )
+            }
+
+            "div", "\$bm_div" -> {
+                checkArgs(args, 2, op)
+                OpDiv(
+                    args.getForNameOrIndex(0, "vec")!!,
+                    args.getForNameOrIndex(1, "amount")!!,
+                )
+            }
+
+            "mod" -> {
+                checkArgs(args, 2, op)
+                OpMod(
+                    args.getForNameOrIndex(0, "vec")!!,
+                    args.getForNameOrIndex(1, "amount")!!,
+                )
+            }
+
+            "clamp" -> {
+                checkArgs(args, 3, op)
+                OpClamp(
+                    args.getForNameOrIndex(0, "value")!!,
+                    args.getForNameOrIndex(1, "limit1")!!,
+                    args.getForNameOrIndex(2, "limit2")!!,
+                )
             }
 
             "dot" -> {
                 checkArgs(args, 2, op)
-                OpDot(args[0], args[1])
+                OpDot(
+                    args.getForNameOrIndex(0, "vec1")!!,
+                    args.getForNameOrIndex(1, "vec2")!!,
+                )
             }
 
-            "length" -> OpLength(args[0], args.getOrNull(1))
+            "length" -> OpLength(
+                args.getForNameOrIndex(0, "vec", "point1")!!,
+                args.getForNameOrIndex(1, "point2"),
+            )
             "normalize" -> {
                 checkArgs(args, 1, op)
                 OpNormalize(args[0])
             }
 
             "cross" -> error("cross is not supported yet") //todo: support OpCross
-            "sub", "\$bm_sub" -> {
-                checkArgs(args, 2, op)
-                OpSub(args[0], args[1])
-            }
-
-            "mul", "\$bm_mul" -> {
-                checkArgs(args, 2, op)
-                OpMul(args[0], args[1])
-            }
-
-            "div", "\$bm_div" -> {
-                checkArgs(args, 2, op)
-                OpDiv(args[0], args[1])
-            }
-
-            "mod" -> {
-                checkArgs(args, 2, op)
-                OpMod(args[0], args[1])
-            }
-
-            "clamp" -> {
-                checkArgs(args, 3, op)
-                OpClamp(args[0], args[1], args[2])
-            }
 
             "degreesToRadians" -> {
                 checkArgs(args, 1, op)
@@ -119,13 +146,22 @@ internal object OpGlobalContext : ExpressionContext<Undefined>, Expression {
                 OpRadiansToDegree(args[0])
             }
 
-            "timeToFrames" -> OpTimeToFrames(args.getOrNull(0), args.getOrNull(1))
-            "framesToTime" -> OpFramesToTime(args.getOrNull(0), args.getOrNull(1))
-            "seedRandom" -> OpSetRandomSeed(args[0], args.getOrNull(1))
+            "timeToFrames" -> OpTimeToFrames(
+                args.getForNameOrIndex(0,"t"),
+                args.getForNameOrIndex(1,"fps"),
+            )
+            "framesToTime" -> OpFramesToTime(
+                args.getForNameOrIndex(0,"frames"),
+                args.getForNameOrIndex(1,"fps"),
+            )
+            "seedRandom" -> OpSetRandomSeed(
+                args.getForNameOrIndex(0,"offset")!!,
+                args.getForNameOrIndex(1,"timeless"),
+            )
             "random", "gaussRandom" -> {
                 OpRandomNumber(
-                    args.getOrNull(0),
-                    args.getOrNull(1),
+                    args.getForNameOrIndex(0,"maxValOrArray1"),
+                    args.getForNameOrIndex(1,"maxValOrArray2"),
                     isGauss = op == "gaussRandom"
                 )
             }

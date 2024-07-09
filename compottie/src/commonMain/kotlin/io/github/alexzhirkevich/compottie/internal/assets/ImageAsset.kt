@@ -26,9 +26,6 @@ internal class ImageAsset(
     @SerialName("u")
     override val path: String ="",
 
-    @SerialName("sid")
-    override val slotId: String? = null,
-
     @SerialName("nm")
     val name: String? = null,
 
@@ -58,11 +55,13 @@ internal class ImageAsset(
     @OptIn(ExperimentalEncodingApi::class)
     @Transient
     var bitmap: ImageBitmap? = fileName
-        .takeIf(String::isBase64Data::get)
+        .takeIf { embedded.toBoolean() || it.isBase64Data }
         ?.substringAfter("base64,")
         ?.trim()
         ?.let {
-            ImageBitmap.fromBytes(Base64.decode(it))
+            runCatching {
+                ImageBitmap.fromBytes(Base64.decode(it))
+            }.getOrNull()
         }?.let(::transformBitmap)
         private set
 
@@ -81,7 +80,6 @@ internal class ImageAsset(
             id = id,
             fileName = fileName,
             path = path,
-            slotId = slotId,
             name = name,
             embedded = embedded,
             w = w,

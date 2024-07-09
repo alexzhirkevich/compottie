@@ -53,6 +53,8 @@ internal class SubExpressionTest {
         "sub([-13, 17] , [-17, 13]);".assertExprValueEquals(Vec2(4f, 4f))
         "sub([13.0, 17.0] , [17, 13]);".assertExprValueEquals(Vec2(-4f, 4f))
         "sub([-13, 17.0] , [-17.0, 13]);".assertExprValueEquals(Vec2(4f, 4f))
+
+        "sub(vec2=[20.0, 15], vec1=[10, 10]);".assertExprValueEquals(Vec2(-10f, -5f))
     }
 }
 

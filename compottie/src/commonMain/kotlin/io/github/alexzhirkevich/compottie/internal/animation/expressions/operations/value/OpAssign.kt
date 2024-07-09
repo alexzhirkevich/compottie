@@ -7,8 +7,8 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Express
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
 
 internal class OpAssign(
-    private val variableName : String,
-    private val assignableValue : Expression,
+    val variableName : String,
+    val assignableValue : Expression,
     private val merge : ((Any, Any) -> Any)?
 ) : Expression {
 

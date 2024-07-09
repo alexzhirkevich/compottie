@@ -28,10 +28,7 @@ internal class OpPropertyValue(
                 "Internal error. Unable to cast $time to Number"
             }
 
-            val frame = (time.toFloat() - state.composition.startTime) *
-                    state.composition.frameRate
-
-            state.onFrame(frame) {
+            state.onTime(time.toFloat()) {
                 prop.raw(it).toExpressionType()
             }
         }

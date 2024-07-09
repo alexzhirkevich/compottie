@@ -33,7 +33,7 @@ class AnimationState @PublishedApi internal constructor(
     /**
      * All successfully loaded images for this animation by the asset id
      * */
-    val images : Map<String, ImageBitmap> = assets
+    val images: Map<String, ImageBitmap> = assets
         .filterValues { it is ImageAsset && it.bitmap != null }
         .mapValues { (it.value as ImageAsset).bitmap!! }
 
@@ -66,10 +66,10 @@ class AnimationState @PublishedApi internal constructor(
     /**
      * Time elapsed from the start of animation
      * */
-    val time : Duration
+    val time: Duration
         get() = composition.duration * progress.toDouble()
 
-    internal val absoluteTime : Duration
+    internal val absoluteTime: Duration
         get() = composition.duration * absoluteProgress.toDouble()
 
     internal var clipToCompositionBounds by mutableStateOf(clipToCompositionBounds)
@@ -80,10 +80,10 @@ class AnimationState @PublishedApi internal constructor(
     internal var enableExpressions by mutableStateOf(enableExpressions)
     internal var enableTextGrouping by mutableStateOf(enableTextGrouping)
 
-    internal var layer : Layer = layer
+    internal var layer: Layer = layer
         private set
 
-    internal var currentComposition : ExpressionComposition = composition.expressionComposition
+    internal var currentComposition: ExpressionComposition = composition.expressionComposition
         private set
 
     /**
@@ -92,9 +92,8 @@ class AnimationState @PublishedApi internal constructor(
      * */
     @OptIn(ExperimentalContracts::class)
     internal inline fun <R> onFrame(frame: Float, block: (AnimationState) -> R): R {
-        contract {
-            callsInPlace(block, InvocationKind.EXACTLY_ONCE)
-        }
+        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+
         val initial = this.frame
 
         return try {
@@ -106,10 +105,19 @@ class AnimationState @PublishedApi internal constructor(
     }
 
     @OptIn(ExperimentalContracts::class)
+    internal fun <R> onTime(time: Float, block: (AnimationState) -> R): R {
+        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+
+        val start = kotlin.runCatching {
+            currentComposition.startTime
+        }.getOrElse { composition.startTime }
+
+        return onFrame((time - start) * composition.frameRate, block)
+    }
+
+    @OptIn(ExperimentalContracts::class)
     internal inline fun <R> onLayer(layer: Layer, block: (AnimationState) -> R): R {
-        contract {
-            callsInPlace(block, InvocationKind.EXACTLY_ONCE)
-        }
+        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
 
         val prevLayer = this.layer
         return try {
@@ -125,9 +133,7 @@ class AnimationState @PublishedApi internal constructor(
         comp: ExpressionComposition,
         block: (AnimationState) -> R
     ): R {
-        contract {
-            callsInPlace(block, InvocationKind.EXACTLY_ONCE)
-        }
+        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
 
         val prevComp = this.currentComposition
         return try {
@@ -167,6 +173,4 @@ class AnimationState @PublishedApi internal constructor(
         result = 31 * result + enableMergePaths.hashCode()
         return result
     }
-
-
 }

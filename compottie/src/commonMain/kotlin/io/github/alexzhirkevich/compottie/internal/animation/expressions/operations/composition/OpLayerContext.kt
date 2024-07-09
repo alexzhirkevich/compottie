@@ -4,6 +4,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Express
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.getForNameOrIndex
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpConstant
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.layers.PrecompositionLayer
@@ -59,9 +60,7 @@ internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
 
             "timeRemap" -> withContext { _, _, _ ->
                 OpGetProperty { _, _, _ ->
-                    if (this is PrecompositionLayer) {
-                        timeRemapping ?: Undefined
-                    } else Undefined
+                    (this as? PrecompositionLayer)?.timeRemapping ?: Undefined
                 }
             }
 
@@ -69,7 +68,8 @@ internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
                 checkArgs(args, 1, op)
                 OpLayerToComp(
                     layer = this,
-                    point = args[0],
+                    point = args.getForNameOrIndex(0,"point")!!,
+                    time = args.getForNameOrIndex(1,"t"),
                     reverse = false
                 )
             }
@@ -77,7 +77,8 @@ internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
             "fromComp" -> {
                 OpLayerToComp(
                     layer = this,
-                    point = args[0],
+                    point = args.getForNameOrIndex(0,"point")!!,
+                    time = args.getForNameOrIndex(1,"t"),
                     reverse = true
                 )
             }
@@ -85,7 +86,8 @@ internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
             "toWorld" -> {
                 OpLayerToWorld(
                     layer = this,
-                    point = args[0],
+                    point = args.getForNameOrIndex(0,"point")!!,
+                    time = args.getForNameOrIndex(1,"t"),
                     reverse = false
                 )
             }
@@ -94,7 +96,8 @@ internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
                 checkArgs(args, 1, op)
                 OpLayerToWorld(
                     layer = this,
-                    point = args[0],
+                    point = args.getForNameOrIndex(0, "point")!!,
+                    time = args.getForNameOrIndex(1, "t"),
                     reverse = true
                 )
             }

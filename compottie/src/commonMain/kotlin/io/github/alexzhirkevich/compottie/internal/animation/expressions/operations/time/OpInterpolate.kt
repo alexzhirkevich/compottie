@@ -9,6 +9,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.getForNameOrIndex
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpConstant
 
 internal class OpInterpolate(
@@ -60,20 +61,20 @@ internal class OpInterpolate(
     companion object {
         fun interpret(easing: Easing, args: List<Expression>): OpInterpolate = when (args.size) {
             3 -> OpInterpolate(
-                t = args[0],
+                t = args.getForNameOrIndex(0, "t")!!,
                 tMin = OpConstant(0f),
                 tMax = OpConstant(1f),
-                value1 = args[1],
-                value2 = args[2],
+                value1 = args.getForNameOrIndex(1, "value1")!!,
+                value2 = args.getForNameOrIndex(2, "value2")!!,
                 easing = easing
             )
 
             5 -> OpInterpolate(
-                t = args[0],
-                tMin = args[1],
-                tMax = args[2],
-                value1 = args[3],
-                value2 = args[4],
+                t = args.getForNameOrIndex(0, "t")!!,
+                tMin = args.getForNameOrIndex(1, "tMin")!!,
+                tMax = args.getForNameOrIndex(2, "tMax")!!,
+                value1 = args.getForNameOrIndex(3, "value1")!!,
+                value2 = args.getForNameOrIndex(4, "value2")!!,
                 easing = easing
             )
 
