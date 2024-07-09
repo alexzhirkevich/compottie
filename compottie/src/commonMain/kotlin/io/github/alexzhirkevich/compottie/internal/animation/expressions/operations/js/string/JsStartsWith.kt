@@ -15,13 +15,13 @@ internal class JsStartsWith(
         property: RawProperty<Any>,
         context: EvaluationContext,
         state: AnimationState,
-    ): Any {
+    ): Boolean {
         val string = string(property,context,state) as String
         val searchString = searchString(property, context, state) as String
         val position = position?.invoke(property, context, state) as? Number?
 
         return if (position == null){
-            string.endsWith(searchString)
+            string.startsWith(searchString)
         } else {
             string.drop(position.toInt()).startsWith(searchString)
         }

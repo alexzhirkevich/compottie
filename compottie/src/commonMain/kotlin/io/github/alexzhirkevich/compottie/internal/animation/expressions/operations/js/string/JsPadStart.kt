@@ -17,13 +17,14 @@ internal class JsPadStart(
         state: AnimationState,
     ): Any {
         val string = string(property, context, state) as String
-        val padString = padString?.invoke(property, context, state) as String? ?: ""
+        val padString = padString?.invoke(property, context, state) as String? ?: " "
         val targetLength = (targetLength(property, context, state) as Number).toInt()
 
         val toAppend = targetLength - string.length
+
         return buildString(targetLength) {
             while (length < toAppend) {
-                append(0, padString.take(toAppend - length))
+                append(padString.take(toAppend - length))
             }
             append(string)
         }

@@ -72,7 +72,7 @@ internal class AnimatedTextDocument(
     }
 
     override fun interpolated(state: AnimationState): TextDocument {
-        val raw = delegate.raw(state)
+        val raw = raw(state)
 
         val evaluatedText = evaluator?.run { evaluate(state) } as? String ?: raw.text
 

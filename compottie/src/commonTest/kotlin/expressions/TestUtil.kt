@@ -4,6 +4,7 @@ import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.internal.Animation
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTextDocument
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
@@ -14,6 +15,18 @@ import kotlin.test.assertEquals
 import kotlin.test.fail
 
 internal const val ret = "\$bm_rt"
+
+internal fun String.assertExprReturns(expected : Any) {
+    val value = AnimatedNumber.Default(0f, this)
+    val state = MockAnimationState(0f)
+    val evaluator = ExpressionEvaluator(this)
+
+    assertEquals(expected, value.run { evaluator.run { evaluate(state) } })
+}
+
+internal fun String.assertExprValueEquals(expected : Any) {
+    "$ret = $this".assertExprReturns(expected)
+}
 
 
 internal fun String.assertExprReturns(expected : Float) {
@@ -26,12 +39,21 @@ internal fun String.assertExprValueEquals(expected : Float) {
     "$ret = $this".assertExprReturns(expected)
 }
 
+internal fun String.assertExprReturns(expected : String) {
+    val value = AnimatedTextDocument(expression = this, keyframes = emptyList())
+    val state = MockAnimationState(0f)
+    assertEquals(expected, value.interpolated(state).text)
+}
+
 internal fun String.assertExprReturns(expected : Vec2) {
     val value = AnimatedVector2.Default(listOf(0f,0f), this)
     val state = MockAnimationState(0f)
     assertEquals(expected, value.interpolated(state))
 }
 internal fun String.assertExprValueEquals(expected : Vec2) {
+    "$ret = $this".assertExprReturns(expected)
+}
+internal fun String.assertExprValueEquals(expected : String) {
     "$ret = $this".assertExprReturns(expected)
 }
 

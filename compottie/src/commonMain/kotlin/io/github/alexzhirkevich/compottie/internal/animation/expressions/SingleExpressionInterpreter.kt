@@ -20,6 +20,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpUnaryPlus
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.unresolvedReference
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpVar
+import kotlin.math.exp
 
 internal class SingleExpressionInterpreter(
     private val expr : String,
@@ -47,6 +48,10 @@ internal class SingleExpressionInterpreter(
 
     private fun nextChar() {
         ch = if (++pos < expr.length) expr[pos] else ';'
+    }
+
+    private fun prevChar() {
+        ch = if (--pos > 0 && pos < expr.length) expr[pos] else ';'
     }
 
     private fun eat(charToEat: Char): Boolean {
@@ -186,7 +191,7 @@ internal class SingleExpressionInterpreter(
     }
 
     private fun parseFactorOp(context: Expression): Expression {
-        return when {
+        val parsedOp = when {
             context is OpGlobalContext && eat('+') ->
                 OpUnaryPlus(parseFactorOp(context))
 
@@ -204,24 +209,28 @@ internal class SingleExpressionInterpreter(
                 }
             }
 
-            context is OpGlobalContext && ch.isDigit() || nextCharIs('.'::equals) -> {
+            context is OpGlobalContext && ch.isDigit() || nextCharIs('.'::equals)  -> {
                 if (EXPR_DEBUG_PRINT_ENABLED) {
                     print("making const number... ")
                 }
-                var dotsCount = 0
+                var isFloat = false
                 val startPos = pos
                 do {
                     nextChar()
                     if (nextCharIs('.'::equals)) {
-                        require(dotsCount == 0) {
-                            "Invalid number at index $startPos: $expr"
+                        if (isFloat){
+                            break
                         }
-                        dotsCount++
+                        isFloat = true
                     }
                 } while (ch.isDigit() || nextCharIs('.'::equals))
 
                 val num = expr.substring(startPos, pos).let {
-                    if (dotsCount == 1) it.toFloat() else it.toInt()
+                    if (it.endsWith('.')){
+                        prevChar()
+                        isFloat = false
+                    }
+                    if (isFloat) it.toFloat() else it.trimEnd('.').toInt()
                 }
                 if (EXPR_DEBUG_PRINT_ENABLED) {
                     println(num)
@@ -242,7 +251,7 @@ internal class SingleExpressionInterpreter(
                 if (EXPR_DEBUG_PRINT_ENABLED) {
                     println(str)
                 }
-                return OpConstant(str)
+                OpConstant(str)
             }
 
             context is OpGlobalContext && eat('[') -> { // make array
@@ -310,6 +319,25 @@ internal class SingleExpressionInterpreter(
 
             else -> error("Unsupported Lottie expression: $expr")
         }
+
+        return parsedOp.finish()
+    }
+
+    private fun Expression.finish() : Expression {
+        return when {
+            // inplace function invocation
+            this is ExpressionContext<*> && nextCharIs { it == '(' } -> {
+                parseFunction(this, null)
+            }
+            // begin condition || property || index
+            this is OpVar ||
+                    this is OpIfCondition && this.onTrue == null
+                    || eat('.')
+                    || nextCharIs('['::equals) ->
+                parseFactorOp(this) // continue with receiver
+
+            else -> this
+        }
     }
 
     private fun parseFunction(context: Expression, func : String?) : Expression {
@@ -333,7 +361,7 @@ internal class SingleExpressionInterpreter(
             println("making fun $func")
         }
 
-        val parsedOp = when (context) {
+        return when (context) {
             is ExpressionContext<*> -> context.interpret(func, args)
                 ?: unresolvedReference(
                     ref = func ?: "null",
@@ -346,21 +374,6 @@ internal class SingleExpressionInterpreter(
                 JsContext.interpret(context, func, args)
                     ?: error("Unsupported Lottie expression function: $func")
             }
-        }
-
-        return when {
-            // inplace function invocation
-            parsedOp is ExpressionContext<*> && nextCharIs { it == '(' } -> {
-                parseFunction(parsedOp, null)
-            }
-            // begin condition || property || index
-            parsedOp is OpVar ||
-                    parsedOp is OpIfCondition
-                    || eat('.')
-                    || nextCharIs('['::equals) ->
-                parseFactorOp(parsedOp) // continue with receiver
-
-            else -> parsedOp
         }
     }
 

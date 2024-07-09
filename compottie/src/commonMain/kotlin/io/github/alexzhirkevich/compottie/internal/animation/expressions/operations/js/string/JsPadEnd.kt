@@ -17,7 +17,7 @@ internal class JsPadEnd(
         state: AnimationState,
     ): Any {
         val string = string(property, context, state) as String
-        val padString = padString?.invoke(property, context, state) as String? ?: ""
+        val padString = padString?.invoke(property, context, state) as String? ?: " "
         val targetLength = (targetLength(property, context, state) as Number).toInt()
 
         return buildString(targetLength) {

@@ -17,6 +17,7 @@ internal class OpUnaryMinus(
     ): Any {
 
         return when (val v = v(property, context, state)) {
+            is Int -> -v
             is Number -> -v.toFloat()
             is List<*> -> {
                 v as List<Number>

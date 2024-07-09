@@ -22,15 +22,11 @@ internal class JsToPrecision(
         val number = (number(property, context, state) as? Number?)?.toFloat()
             ?: unresolvedReference("toFixed")
 
-        val digits = (digits?.invoke(property, context, state) as Number?)?.toInt() ?: 0
+        val digits = (digits?.invoke(property, context, state) as Number?)?.toInt()
+            ?.takeIf { it > 0 }
+            ?: return number
 
-        return invoke(number, digits)
-    }
-
-    companion object {
-        fun invoke(number : Float, precision: Int) : Float {
-            return number.roundTo(precision)
-        }
+        return number.roundTo(digits-1)
     }
 }
 private val pow10 by lazy {
@@ -38,8 +34,9 @@ private val pow10 by lazy {
 }
 
 internal fun Float.roundTo(digit : Int) : Float {
-    if(digit == 0)
+    if(digit <= 0)
         return roundToInt().toFloat()
-    val pow = pow10[digit] ?: return this
-    return (this * pow).roundToInt() / pow
+
+    val pow = pow10[digit-1] ?: return this
+    return ((this * pow).roundToInt() / pow)
 }

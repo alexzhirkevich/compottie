@@ -27,7 +27,7 @@ internal class JsToFixed(
             return number.roundToInt().toString()
         }
 
-        val stringNumber = JsToPrecision.invoke(number,digits).toString()
+        val stringNumber = number.roundTo(digits).toString()
 
         val intPart = stringNumber.substringBefore(".")
         val floatPart = stringNumber.substringAfter(".", "").take(digits)

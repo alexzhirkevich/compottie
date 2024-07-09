@@ -14,7 +14,7 @@ internal class JsEndsWith(
         property: RawProperty<Any>,
         context: EvaluationContext,
         state: AnimationState,
-    ): Any {
+    ): Boolean {
         val string = string(property,context,state) as String
         val searchString = searchString(property, context, state) as String
         val position = position?.invoke(property, context, state) as? Number?

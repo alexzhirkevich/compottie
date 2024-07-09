@@ -18,7 +18,8 @@ internal class JsSubstring(
     ): Any {
         val string = string(property,context,state) as String
         val start = (start(property, context, state) as Number).toInt()
-        val end = (end?.invoke(property, context, state) as? Number?)?.toInt() ?: string.length
+        val end = (end?.invoke(property, context, state) as? Number?)?.toInt()
+            ?.coerceAtMost(string.length) ?: string.length
 
         return string.substring(start, end)
     }
