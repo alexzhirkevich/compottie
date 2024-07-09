@@ -61,7 +61,7 @@ import kotlin.math.roundToInt
  * */
 @OptIn(InternalCompottieApi::class)
 @Composable
-fun rememberLottiePainter(
+public fun rememberLottiePainter(
     composition : LottieComposition?,
     progress : () -> Float,
     assetsManager: LottieAssetsManager? = null,
@@ -151,7 +151,7 @@ fun rememberLottiePainter(
  * Shortcut that combines [rememberLottiePainter] and [animateLottieCompositionAsState]
  * */
 @Composable
-fun rememberLottiePainter(
+public fun rememberLottiePainter(
     composition : LottieComposition?,
     assetsManager: LottieAssetsManager? = null,
     fontManager: LottieFontManager? = null,
@@ -208,7 +208,7 @@ fun rememberLottiePainter(
  * Use [LottieCompositionSpec.load] to get [LottieComposition] instance from [LottieCompositionSpec].
  * */
 @OptIn(InternalCompottieApi::class)
-suspend fun LottiePainter(
+public suspend fun LottiePainter(
     composition : LottieComposition,
     progress : () -> Float,
     assetsManager: LottieAssetsManager? = null,

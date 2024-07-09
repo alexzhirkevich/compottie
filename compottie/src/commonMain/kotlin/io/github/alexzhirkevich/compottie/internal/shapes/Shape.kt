@@ -31,4 +31,4 @@ internal sealed interface Shape : Content {
     fun deepCopy(): Shape
 }
 
-const val DIRECTION_REVERSED = 3
+internal const val DIRECTION_REVERSED : Int = 3

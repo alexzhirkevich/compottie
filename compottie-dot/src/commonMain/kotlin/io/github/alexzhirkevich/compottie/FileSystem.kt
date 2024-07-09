@@ -9,13 +9,13 @@ import kotlin.random.Random
 import kotlin.random.nextULong
 
 @InternalCompottieApi
-class UnsupportedFileSystemException : CompottieException("File system is not unsupported")
+public  class UnsupportedFileSystemException : CompottieException("File system is not unsupported")
 
 @InternalCompottieApi
-expect fun defaultFileSystem() : FileSystem
+public  expect fun defaultFileSystem() : FileSystem
 
 @InternalCompottieApi
-fun Closeable.closeQuietly() {
+public fun Closeable.closeQuietly() {
     try {
         close()
     } catch (e: RuntimeException) {
@@ -24,7 +24,7 @@ fun Closeable.closeQuietly() {
 }
 
 @InternalCompottieApi
-fun FileSystem.createFile(file: Path, mustCreate: Boolean = false) {
+public fun FileSystem.createFile(file: Path, mustCreate: Boolean = false) {
     if (mustCreate) {
         sink(file, mustCreate = true).closeQuietly()
     } else if (!exists(file)) {
@@ -33,7 +33,7 @@ fun FileSystem.createFile(file: Path, mustCreate: Boolean = false) {
 }
 
 @InternalCompottieApi
-fun FileSystem.createTempFile(): Path {
+public fun FileSystem.createTempFile(): Path {
     var tempFile: Path
     do {
         tempFile = FileSystem.SYSTEM_TEMPORARY_DIRECTORY / "tmp_${Random.nextULong()}"
@@ -43,7 +43,7 @@ fun FileSystem.createTempFile(): Path {
 }
 
 @InternalCompottieApi
-fun FileSystem.deleteContents(directory: Path) {
+public fun FileSystem.deleteContents(directory: Path) {
     var exception: IOException? = null
     val files = try {
         list(directory)

@@ -6,7 +6,7 @@ import okio.Path
 import okio.use
 
 @Stable
-class DiskCacheStrategy(
+public class DiskCacheStrategy(
     private val diskCache: DiskCache = SharedDiskCache
 ) : LottieCacheStrategy {
 

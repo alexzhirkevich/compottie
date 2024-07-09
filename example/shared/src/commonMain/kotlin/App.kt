@@ -118,7 +118,7 @@ private val ALL = listOf(
  * */
 @OptIn(ExperimentalResourceApi::class)
 @Stable
-suspend fun LottieCompositionSpec.Companion.ResourceString(
+public suspend fun LottieCompositionSpec.Companion.ResourceString(
     path : String,
     dir : String = "files",
     readBytes: suspend (path: String) -> ByteArray = { Res.readBytes(it) }
@@ -126,7 +126,7 @@ suspend fun LottieCompositionSpec.Companion.ResourceString(
 
 @OptIn(ExperimentalResourceApi::class, ExperimentalCompottieApi::class)
 @Composable
-fun App() {
+public fun App() {
 
 //    return LottieFontExample()
 //    return AllExamples()
@@ -211,7 +211,7 @@ fun App() {
 
 @OptIn(ExperimentalResourceApi::class, ExperimentalCompottieApi::class)
 @Composable
-fun AllExamples(){
+public fun AllExamples(){
     LazyVerticalGrid(
         modifier = Modifier
             .fillMaxSize()
@@ -250,7 +250,7 @@ private val ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ':, \n"
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun LottieFontExample() {
+public fun LottieFontExample() {
     var text by remember {
         mutableStateOf("")
     }
@@ -341,7 +341,7 @@ fun LottieFontExample() {
 }
 
 @Composable
-fun LottieList() {
+public fun LottieList() {
     LazyVerticalGrid(columns = GridCells.FixedSize(100.dp)) {
         items(1000){
             val composition = rememberLottieComposition() {

@@ -16,7 +16,7 @@ import androidx.compose.ui.layout.ContentScale
         "io.github.alexzhirkevich.compottie.rememberLottiePainter"
     )
 )
-fun LottieAnimation(
+public fun LottieAnimation(
     composition : LottieComposition?,
     progress : () -> Float,
     modifier: Modifier = Modifier,
@@ -47,7 +47,7 @@ fun LottieAnimation(
     ),
 )
 @Composable
-fun LottieAnimation(
+public fun LottieAnimation(
     composition: LottieComposition?,
     modifier: Modifier = Modifier,
     isPlaying: Boolean = true,

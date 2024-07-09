@@ -13,23 +13,23 @@ import io.github.alexzhirkevich.compottie.internal.assets.resize
 import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
 import androidx.compose.ui.graphics.painter.Painter as ComposePainter
 
-interface ImageRepresentable {
+public interface ImageRepresentable {
 
-    fun toBitmap(width: Int, height: Int): ImageBitmap
+    public fun toBitmap(width: Int, height: Int): ImageBitmap
 
-    class Bytes(private val bytes: ByteArray) : ImageRepresentable {
+    public class Bytes(private val bytes: ByteArray) : ImageRepresentable {
         override fun toBitmap(width: Int, height: Int): ImageBitmap {
             return ImageBitmap.fromBytes(bytes).resize(width, height)
         }
     }
 
-    class Painter(private val painter: ComposePainter) : ImageRepresentable {
+    public class Painter(private val painter: ComposePainter) : ImageRepresentable {
         override fun toBitmap(width: Int, height: Int): ImageBitmap {
             return painter.toBitmap(width, height)
         }
     }
 
-    class Bitmap(private val bitmap: ImageBitmap) : ImageRepresentable {
+    public class Bitmap(private val bitmap: ImageBitmap) : ImageRepresentable {
         override fun toBitmap(width: Int, height: Int): ImageBitmap {
             return bitmap.resize(width, height)
         }

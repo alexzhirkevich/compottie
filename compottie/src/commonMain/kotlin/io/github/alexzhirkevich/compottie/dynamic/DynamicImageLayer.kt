@@ -1,9 +1,10 @@
 package io.github.alexzhirkevich.compottie.dynamic
 
 import androidx.compose.ui.graphics.ImageBitmap
+import io.github.alexzhirkevich.compottie.assets.LottieImageSpec
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 
-interface DynamicImageLayer: DynamicLayer {
+public interface DynamicImageLayer: DynamicLayer {
 
     /**
      * Dynamically provide image for this layer.
@@ -33,6 +34,6 @@ interface DynamicImageLayer: DynamicLayer {
      * }
      * ```
      */
-    fun image(image: AnimationState.(spec : ImageSpec?) -> ImageBitmap)
+    public fun image(image: AnimationState.(spec : LottieImageSpec?) -> ImageBitmap)
 }
 

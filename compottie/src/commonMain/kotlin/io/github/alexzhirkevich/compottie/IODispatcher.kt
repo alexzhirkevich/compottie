@@ -4,4 +4,4 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 
 @InternalCompottieApi
-expect fun ioDispatcher() : CoroutineDispatcher
+public expect fun ioDispatcher() : CoroutineDispatcher

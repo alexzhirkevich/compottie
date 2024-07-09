@@ -15,26 +15,26 @@ import androidx.compose.runtime.State
  * @see animateLottieCompositionAsState
  */
 @Stable
-interface LottieAnimationState : State<Float> {
-    val isPlaying: Boolean
+public interface LottieAnimationState : State<Float> {
+    public val isPlaying: Boolean
 
-    val progress: Float
+    public val progress: Float
 
-    val iteration: Int
+    public val iteration: Int
 
-    val iterations: Int
+    public val iterations: Int
 
-    val reverseOnRepeat: Boolean
+    public val reverseOnRepeat: Boolean
 
-    val clipSpec: LottieClipSpec?
+    public val clipSpec: LottieClipSpec?
 
-    val speed: Float
+    public val speed: Float
 
-    val useCompositionFrameRate: Boolean
+    public val useCompositionFrameRate: Boolean
 
-    val composition: LottieComposition?
+    public val composition: LottieComposition?
 
-    val lastFrameNanos: Long get() = AnimationConstants.UnspecifiedTime
+    public val lastFrameNanos: Long get() = AnimationConstants.UnspecifiedTime
 
-    val isAtEnd: Boolean
+    public val isAtEnd: Boolean
 }

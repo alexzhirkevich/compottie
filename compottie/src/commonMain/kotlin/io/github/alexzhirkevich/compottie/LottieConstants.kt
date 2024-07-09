@@ -8,9 +8,9 @@ package io.github.alexzhirkevich.compottie
         "io.github.alexzhirkevich.compottie.Compottie"
     )
 )
-object LottieConstants {
+public object LottieConstants {
     /**
      * Use this with [animateLottieCompositionAsState]'s iterations parameter to repeat forever.
      */
-    const val IterateForever = Int.MAX_VALUE
+    public const val IterateForever: Int = Int.MAX_VALUE
 }

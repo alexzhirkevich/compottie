@@ -1,4 +1,4 @@
 package io.github.alexzhirkevich.compottie.dynamic
 
 
-sealed interface DynamicFill : DynamicDraw
+public sealed interface DynamicFill : DynamicDraw

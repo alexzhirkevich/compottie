@@ -13,11 +13,11 @@ internal fun List<Float>.toSize() = Size(this[0], this[1])
 private val PiDiv180 = PI / 180
 
 
-fun degreeToRadians(degree : Float) : Float {
+internal fun degreeToRadians(degree : Float) : Float {
     return (degree * PiDiv180).toFloat()
 }
 
-fun radiansToDegree(radians : Float) : Float {
+internal fun radiansToDegree(radians : Float) : Float {
     return  (radians / PiDiv180).toFloat()
 }
 

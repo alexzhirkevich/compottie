@@ -2,18 +2,18 @@ package io.github.alexzhirkevich.compottie
 
 private const val TAG = "COMPOTTIE"
 
-interface LottieLogger {
+public interface LottieLogger {
 
-    fun info(message: String)
+    public fun info(message: String)
 
-    fun warn(message: String)
+    public fun warn(message: String)
 
-    fun error(message: String, throwable: Throwable)
+    public fun error(message: String, throwable: Throwable)
 
     /**
      * Uses stdout / stderr.
      * */
-    object Default : LottieLogger {
+    public object Default : LottieLogger {
         override fun info(message: String) {
             println("ℹ\uFE0F [$TAG] $message")
         }

@@ -23,6 +23,6 @@ internal val DefaultHttpClient by lazy {
  *
  * See [HttpClient.prepareRequest], [HttpClient.prepareGet],
  * */
-typealias NetworkRequest = suspend (HttpClient, Url) -> HttpStatement
+public typealias NetworkRequest = suspend (HttpClient, Url) -> HttpStatement
 
 internal val GetRequest : NetworkRequest = { c, u -> c.prepareGet(u) }

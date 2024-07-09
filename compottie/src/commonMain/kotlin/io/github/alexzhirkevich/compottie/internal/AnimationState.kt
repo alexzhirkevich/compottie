@@ -15,8 +15,8 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.time.Duration
 
-class AnimationState @PublishedApi internal constructor(
-    val composition: LottieComposition,
+public class AnimationState @PublishedApi internal constructor(
+    public val composition: LottieComposition,
     internal val assets: Map<String, LottieAsset>,
     internal val fonts: Map<String, FontFamily>,
     frame: Float,
@@ -33,14 +33,14 @@ class AnimationState @PublishedApi internal constructor(
     /**
      * All successfully loaded images for this animation by the asset id
      * */
-    val images: Map<String, ImageBitmap> = assets
+    public val images: Map<String, ImageBitmap> = assets
         .filterValues { it is ImageAsset && it.bitmap != null }
         .mapValues { (it.value as ImageAsset).bitmap!! }
 
     /**
      * Current animation frame
      * */
-    var frame = frame
+    public var frame : Float = frame
         private set
 
     internal var absoluteFrame = frame
@@ -49,7 +49,7 @@ class AnimationState @PublishedApi internal constructor(
     /**
      * Current animation progress from 0.0 to 1.0
      * */
-    val progress: Float
+    public val progress: Float
         get() {
             val p = (frame - composition.animation.inPoint) /
                     (composition.animation.outPoint - composition.animation.inPoint)
@@ -66,7 +66,7 @@ class AnimationState @PublishedApi internal constructor(
     /**
      * Time elapsed from the start of animation
      * */
-    val time: Duration
+    public val time: Duration
         get() = composition.duration * progress.toDouble()
 
     internal val absoluteTime: Duration

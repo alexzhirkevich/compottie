@@ -8,15 +8,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 
-sealed interface DynamicDraw : DynamicShape {
+public sealed interface DynamicDraw : DynamicShape {
 
-    fun opacity(provider: PropertyProvider<Float>)
+    public fun opacity(provider: PropertyProvider<Float>)
 
-    fun colorFilter(provider: PropertyProvider<ColorFilter?>)
+    public fun colorFilter(provider: PropertyProvider<ColorFilter?>)
 
-    fun blendMode(provider: PropertyProvider<BlendMode>)
+    public fun blendMode(provider: PropertyProvider<BlendMode>)
 
-    fun color(provider: PropertyProvider<Color>)
+    public fun color(provider: PropertyProvider<Color>)
 
     /**
      * Dynamic gradient provider.
@@ -35,20 +35,20 @@ sealed interface DynamicDraw : DynamicShape {
      * }
      * ```
      * */
-    fun gradient(provider: GradientProvider)
+    public fun gradient(provider: GradientProvider)
 }
 
-typealias GradientProvider = AnimationState.(Rect) -> LottieGradient
+public typealias GradientProvider = AnimationState.(Rect) -> LottieGradient
 
-sealed interface LottieGradient {
+public sealed interface LottieGradient {
 
-    data class Linear(
+    public data class Linear(
         val colorStops : List<Pair<Float, Color>>,
         val start : Offset = Offset.Unspecified,
         val end: Offset = Offset.Unspecified,
     ) : LottieGradient
 
-    data class Radial(
+    public data class Radial(
         val colorStops : List<Pair<Float, Color>>,
         val center : Offset = Offset.Unspecified,
         val radius : Float = Float.NaN,

@@ -1,10 +1,10 @@
 package io.github.alexzhirkevich.compottie.dynamic
 
-sealed interface DynamicLayer {
+public sealed interface DynamicLayer {
 
-    fun hidden(provider : PropertyProvider<Boolean>)
+    public fun hidden(provider : PropertyProvider<Boolean>)
 
-    fun transform(builder: DynamicTransform.() -> Unit)
+    public fun transform(builder: DynamicTransform.() -> Unit)
 }
 
 

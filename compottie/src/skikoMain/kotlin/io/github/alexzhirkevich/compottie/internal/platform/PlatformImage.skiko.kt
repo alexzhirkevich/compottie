@@ -4,6 +4,6 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import org.jetbrains.skia.Image
 
-actual fun ImageBitmap.Companion.fromBytes(bytes: ByteArray) : ImageBitmap {
+public actual fun ImageBitmap.Companion.fromBytes(bytes: ByteArray) : ImageBitmap {
     return Image.makeFromEncoded(bytes).toComposeImageBitmap()
 }

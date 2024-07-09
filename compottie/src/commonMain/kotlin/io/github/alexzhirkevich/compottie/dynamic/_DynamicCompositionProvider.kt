@@ -48,7 +48,7 @@ internal class DynamicCompositionProvider : LottieDynamicProperties {
 }
 
 @PublishedApi
-internal const val LayerPathSeparator = "/"
+internal const val LayerPathSeparator : String = "/"
 
 internal fun layerPath(base : String?, name : String) : String = listOfNotNull(base, name)
     .joinToString(LayerPathSeparator)

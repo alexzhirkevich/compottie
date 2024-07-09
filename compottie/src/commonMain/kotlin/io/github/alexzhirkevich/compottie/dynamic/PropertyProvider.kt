@@ -6,11 +6,11 @@ import androidx.compose.ui.layout.ScaleFactor
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 
-fun interface PropertyProvider<T> {
-    operator fun AnimationState.invoke(source : T) : T
+public fun interface PropertyProvider<T> {
+    public operator fun AnimationState.invoke(source : T) : T
 }
 
-operator fun <T> PropertyProvider<T>.invoke(state: AnimationState, source: T) : T =
+internal operator fun <T> PropertyProvider<T>.invoke(state: AnimationState, source: T) : T =
     state.run { invoke(source) }
 
 internal fun <F, T> PropertyProvider<F>.map(

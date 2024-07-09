@@ -14,7 +14,7 @@ import io.ktor.client.HttpClient
  * @param cacheStrategy caching strategy. Caching to system temp dir by default
  * */
 @Stable
-fun NetworkAssetsManager(
+public fun NetworkAssetsManager(
     client: HttpClient = DefaultHttpClient,
     request : NetworkRequest = GetRequest,
     cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,

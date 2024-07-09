@@ -27,7 +27,7 @@ import org.jetbrains.compose.resources.MissingResourceException
  * */
 @Composable
 @ExperimentalCompottieApi
-fun rememberResourcesAssetsManager(
+public fun rememberResourcesAssetsManager(
     directory : String = "files",
     readBytes : suspend (path : String) -> ByteArray,
 ) : LottieAssetsManager {
@@ -53,7 +53,7 @@ fun rememberResourcesAssetsManager(
  * */
 @ExperimentalCompottieApi
 @Stable
-fun ResourcesAssetsManager(
+public fun ResourcesAssetsManager(
     directory : String = "files",
     readBytes : suspend (path : String) -> ByteArray,
 ) : LottieAssetsManager = ResourcesAssetsManagerImpl(directory, readBytes)

@@ -32,7 +32,7 @@ import kotlin.coroutines.CoroutineContext
  * @see LottieAnimation
  */
 @Stable
-interface LottieCompositionResult : State<LottieComposition?> {
+public interface LottieCompositionResult : State<LottieComposition?> {
     /**
      * The composition or null if it hasn't yet loaded or failed to load.
      */
@@ -41,28 +41,28 @@ interface LottieCompositionResult : State<LottieComposition?> {
     /**
      * The exception that was thrown while trying to load and parse the composition.
      */
-    val error: Throwable?
+    public val error: Throwable?
 
     /**
      * Whether or not the composition is still being loaded and parsed.
      */
-    val isLoading: Boolean
+    public val isLoading: Boolean
 
     /**
      * Whether or not the composition is in the process of being loaded or parsed.
      */
-    val isComplete: Boolean
+    public val isComplete: Boolean
 
     /**
      * Whether or not the composition failed to load. This is terminal. It only occurs after
      * returning false from [rememberLottieComposition]'s onRetry lambda.
      */
-    val isFailure: Boolean
+    public val isFailure: Boolean
 
     /**
      * Whether or not the composition has succeeded yet.
      */
-    val isSuccess: Boolean
+    public val isSuccess: Boolean
 
     /**
      * Suspend until the composition has finished parsing.
@@ -78,7 +78,7 @@ interface LottieCompositionResult : State<LottieComposition?> {
      * * [LottieCompositionSpec.Url]
      * * [LottieCompositionSpec.File]
      */
-    suspend fun await(): LottieComposition
+    public suspend fun await(): LottieComposition
 }
 
 

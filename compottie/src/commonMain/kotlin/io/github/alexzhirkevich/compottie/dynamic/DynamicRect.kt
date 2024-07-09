@@ -3,12 +3,12 @@ package io.github.alexzhirkevich.compottie.dynamic
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 
-interface DynamicRect : DynamicShape {
+public interface DynamicRect : DynamicShape {
 
-    fun size(provider : PropertyProvider<Size>)
+    public fun size(provider : PropertyProvider<Size>)
 
-    fun position(provider : PropertyProvider<Offset>)
+    public fun position(provider : PropertyProvider<Offset>)
 
-    fun roundCorners(provider: PropertyProvider<Float>)
+    public fun roundCorners(provider: PropertyProvider<Float>)
 }
 

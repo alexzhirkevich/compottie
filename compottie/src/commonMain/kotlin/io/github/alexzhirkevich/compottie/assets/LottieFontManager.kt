@@ -8,12 +8,12 @@ import androidx.compose.ui.text.font.Font
  * will be used
  * */
 @Stable
-interface LottieFontManager {
+public interface LottieFontManager {
 
     /**
      * Load [font] by requirements
      * */
-    suspend fun font(font: LottieFontSpec): Font?
+    public suspend fun font(font: LottieFontSpec): Font?
 }
 
 internal object EmptyFontManager : LottieFontManager {

@@ -1,6 +1,6 @@
 package io.github.alexzhirkevich.compottie.dynamic
 
-sealed interface DynamicStroke : DynamicDraw {
-    fun width(provider: PropertyProvider<Float>) {}
+public sealed interface DynamicStroke : DynamicDraw {
+    public fun width(provider: PropertyProvider<Float>) {}
 }
 

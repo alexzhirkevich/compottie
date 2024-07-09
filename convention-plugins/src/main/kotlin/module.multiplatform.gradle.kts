@@ -9,6 +9,8 @@ plugins {
 val _jvmTarget = findProperty("jvmTarget")!! as String
 
 kotlin {
+    explicitApi()
+
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     applyDefaultHierarchyTemplate {
         common {

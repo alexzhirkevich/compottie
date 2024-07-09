@@ -4,18 +4,18 @@ import androidx.compose.runtime.Stable
 import okio.Path
 
 @Stable
-interface LottieCacheStrategy {
+public interface LottieCacheStrategy {
 
     /**
      * Returns path to the cached file that was downloaded from [url]
      * */
-    fun path(url: String) : Path?
+    public fun path(url: String) : Path?
 
     /**
      * Saves [bytes] downloaded from [url] to cache.
      * Returns path to the saved file
      * */
-    suspend fun save(
+    public suspend fun save(
         url: String,
         bytes: ByteArray
     ): Path?
@@ -23,13 +23,13 @@ interface LottieCacheStrategy {
     /**
      * Loads bytes downloaded from [url] from cache
      * */
-    suspend fun load(
+    public suspend fun load(
         url: String
     ): ByteArray?
 
     /**
      * Clear all ache
      * */
-    suspend fun clear()
+    public suspend fun clear()
 }
 
