@@ -54,6 +54,8 @@ import kotlin.math.roundToInt
  * @param clipTextToBoundingBoxes if text should be clipped to its bounding boxes (if provided in animation)
  * @param enableTextGrouping disable line-to-char splitting. Enable this to correctly render texts
  * in locales such as Arabic. This feature forces to use fonts over glyphs and disables text tracking.
+ * However, if you have texts rendered with fonts and don't use tracking, you can try enable this option
+ * for any locales as this feature greatly improves texts performance
  * @param enableMergePaths enable experimental merge paths feature. Most of the time animation doesn't need
  * it even if it contains merge paths. This feature should only be enabled for tested animations
  * @param enableExpressions enable experimental expressions feature. Unsupported expressions will

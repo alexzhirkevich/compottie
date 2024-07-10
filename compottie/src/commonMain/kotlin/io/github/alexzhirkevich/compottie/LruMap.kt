@@ -60,8 +60,12 @@ internal class LruMap<T : Any>(
     private fun putRaw(key: Any, value: T): T? {
         val cacheLimit = limit()
 
-        while (cacheLimit in 1..size) {
-            remove(keys.firstOrNull())
+        if (cacheLimit < 1){
+            clearRaw()
+        } else {
+            while (cacheLimit < size) {
+                remove(keys.firstOrNull())
+            }
         }
 
         return delegate.put(key, value)
