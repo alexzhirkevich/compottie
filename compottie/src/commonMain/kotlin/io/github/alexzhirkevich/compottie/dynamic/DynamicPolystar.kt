@@ -5,21 +5,21 @@ import androidx.compose.ui.geometry.Size
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import kotlinx.serialization.SerialName
 
-interface DynamicPolystar : DynamicShape {
+public interface DynamicPolystar : DynamicShape {
 
-    fun size(provider : PropertyProvider<Size>)
+    public fun size(provider : PropertyProvider<Size>)
 
-    fun position(provider : PropertyProvider<Offset>)
+    public fun position(provider : PropertyProvider<Offset>)
 
-    fun rotation(provider : PropertyProvider<Float>)
+    public fun rotation(provider : PropertyProvider<Float>)
 
-    fun points(provider : PropertyProvider<Float>)
+    public fun points(provider : PropertyProvider<Float>)
 
-    fun innerRoundness(provider : PropertyProvider<Float>)
+    public fun innerRoundness(provider : PropertyProvider<Float>)
 
-    fun innerRadius(provider : PropertyProvider<Float>)
+    public fun innerRadius(provider : PropertyProvider<Float>)
 
-    fun outerRadius(provider : PropertyProvider<Float>)
+    public fun outerRadius(provider : PropertyProvider<Float>)
 
-    fun outerRoundness(provider : PropertyProvider<Float>)
+    public fun outerRoundness(provider : PropertyProvider<Float>)
 }

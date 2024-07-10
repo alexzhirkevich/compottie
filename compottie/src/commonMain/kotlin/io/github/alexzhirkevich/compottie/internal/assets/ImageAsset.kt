@@ -3,9 +3,8 @@ package io.github.alexzhirkevich.compottie.internal.assets
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.IntSize
-import io.github.alexzhirkevich.compottie.dynamic.ImageSpec
+import io.github.alexzhirkevich.compottie.assets.LottieImageSpec
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
 import kotlinx.serialization.SerialName
@@ -26,9 +25,6 @@ internal class ImageAsset(
     @SerialName("u")
     override val path: String ="",
 
-    @SerialName("sid")
-    override val slotId: String? = null,
-
     @SerialName("nm")
     val name: String? = null,
 
@@ -47,7 +43,7 @@ internal class ImageAsset(
     val height: Int get() = h ?: bitmap?.height ?: 0
 
     @Transient
-    val spec = ImageSpec(
+    val spec = LottieImageSpec(
         id = id,
         path = path,
         name = fileName,
@@ -58,11 +54,13 @@ internal class ImageAsset(
     @OptIn(ExperimentalEncodingApi::class)
     @Transient
     var bitmap: ImageBitmap? = fileName
-        .takeIf(String::isBase64Data::get)
+        .takeIf { embedded.toBoolean() || it.isBase64Data }
         ?.substringAfter("base64,")
         ?.trim()
         ?.let {
-            ImageBitmap.fromBytes(Base64.decode(it))
+            runCatching {
+                ImageBitmap.fromBytes(Base64.decode(it))
+            }.getOrNull()
         }?.let(::transformBitmap)
         private set
 
@@ -81,7 +79,6 @@ internal class ImageAsset(
             id = id,
             fileName = fileName,
             path = path,
-            slotId = slotId,
             name = name,
             embedded = embedded,
             w = w,

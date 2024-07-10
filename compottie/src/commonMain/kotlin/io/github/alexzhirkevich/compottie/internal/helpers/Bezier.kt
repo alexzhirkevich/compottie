@@ -11,6 +11,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlin.math.min
 
+private val EmptyTangent = listOf(0f,0f)
+
 @Serializable
 internal class Bezier(
 
@@ -18,13 +20,13 @@ internal class Bezier(
     var isClosed : Boolean = false,
 
     @SerialName("i")
-    var inTangents : List<FloatArray> = emptyList(),
+    var inTangents : List<List<Float>> = emptyList(),
 
     @SerialName("o")
-    var outTangents : List<FloatArray> = emptyList(),
+    var outTangents : List<List<Float>> = emptyList(),
 
     @SerialName("v")
-    val vertices : List<FloatArray> = emptyList(),
+    val vertices : List<List<Float>> = emptyList(),
 ) {
 
     @Transient
@@ -36,9 +38,6 @@ internal class Bezier(
         private set
 
     init {
-        require(vertices.size == inTangents.size && vertices.size == outTangents.size){
-            "Invalid bezier curve. Control points count must be the same as vertices count"
-        }
 
         if (vertices.isNotEmpty()) {
             initialPoint = vertices.first().toOffset()
@@ -46,8 +45,8 @@ internal class Bezier(
             for (i in 1..vertices.lastIndex) {
 
                 val prevVertex = vertices[i - 1]
-                val cp1 = outTangents[i - 1]
-                val cp2 = inTangents[i]
+                val cp1 = outTangents.getOrNull(i - 1) ?:  EmptyTangent
+                val cp2 = inTangents.getOrNull(i) ?:  EmptyTangent
                 val vertex = vertices[i]
 
                 val shapeCp1 = Offset(prevVertex[0] + cp1[0], prevVertex[1] + cp1[1])
@@ -148,8 +147,8 @@ internal class Bezier(
     private fun closeShape(){
         val vertex = vertices[0]
         val prevVertex = vertices.last()
-        val cp1 = outTangents[vertices.lastIndex]
-        val cp2 = inTangents[0]
+        val cp1 = outTangents.getOrNull(vertices.lastIndex) ?: EmptyTangent
+        val cp2 = inTangents.getOrNull(0) ?:  EmptyTangent
 
         val shapeCp1 = Offset(prevVertex[0] + cp1[0], prevVertex[1] + cp1[1])
         val shapeCp2 = Offset(vertex[0] + cp2[0], vertex[1] + cp2[1])

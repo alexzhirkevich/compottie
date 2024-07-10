@@ -15,8 +15,8 @@ import io.github.alexzhirkevich.compottie.LruMap
 import io.github.alexzhirkevich.compottie.dynamic.LottieGradient
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
-import io.github.alexzhirkevich.compottie.internal.animation.GradientColors
-import io.github.alexzhirkevich.compottie.internal.animation.GradientType
+import io.github.alexzhirkevich.compottie.internal.helpers.GradientColors
+import io.github.alexzhirkevich.compottie.internal.helpers.GradientType
 import kotlin.math.hypot
 
 @OptIn(ExperimentalCompottieApi::class)

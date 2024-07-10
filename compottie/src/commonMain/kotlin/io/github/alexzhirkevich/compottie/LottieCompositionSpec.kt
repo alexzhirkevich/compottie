@@ -6,23 +6,23 @@ import kotlinx.coroutines.withContext
 import kotlin.jvm.JvmInline
 
 @Stable
-interface LottieCompositionSpec {
+public interface LottieCompositionSpec {
 
     /**
      * Key that uniquely identifies composition instance. Equal specs must return equal key
      * */
-    val key : String?
+    public val key : String?
 
-    suspend fun load(cacheKey : Any? = null) : LottieComposition
+    public suspend fun load(cacheKey : Any? = null) : LottieComposition
 
-    companion object {
+    public companion object {
 
 
         /**
         *  [LottieComposition] from a [jsonString]
         */
         @Stable
-        fun JsonString(
+        public fun JsonString(
             jsonString: String
         ): LottieCompositionSpec = JsonStringImpl(jsonString)
     }

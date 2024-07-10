@@ -24,7 +24,7 @@ import kotlinx.coroutines.withContext
  * URL assets will be automatically prepared with [NetworkAssetsManager]
  * */
 @Stable
-fun LottieCompositionSpec.Companion.Url(
+public fun LottieCompositionSpec.Companion.Url(
     url : String,
     format: LottieAnimationFormat = LottieAnimationFormat.Undefined,
     client: HttpClient = DefaultHttpClient,

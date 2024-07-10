@@ -21,7 +21,7 @@ import org.jetbrains.compose.resources.rememberResourceEnvironment
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 @ExperimentalCompottieApi
-fun rememberResourcesFontManager(
+public fun rememberResourcesFontManager(
     font : (LottieFontSpec) -> FontResource?
 ) : LottieFontManager {
     val factory by rememberUpdatedState(font)
@@ -50,7 +50,7 @@ fun rememberResourcesFontManager(
  *
  * Warning: this manager uses internal Compose API on Android and should be considered unstable
  * */
-fun ResourcesFontManager(
+public fun ResourcesFontManager(
     environment: ResourceEnvironment = getSystemResourceEnvironment(),
     resource : (LottieFontSpec) -> FontResource?
 ) : LottieFontManager = ResourcesFontManagerImpl(

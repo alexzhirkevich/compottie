@@ -11,7 +11,7 @@ import androidx.compose.runtime.Stable
  */
 
 @Stable
-sealed class LottieClipSpec {
+public sealed class LottieClipSpec {
 
     internal abstract fun getMinProgress(composition: LottieComposition): Float
 
@@ -22,10 +22,10 @@ sealed class LottieClipSpec {
      * should play the max frame or stop one frame before it.
      */
     @Immutable
-    class Frame(
-        val min: Int?,
-        val max: Int?,
-        val maxInclusive: Boolean = true,
+    public class Frame(
+        public val min: Int?,
+        public val max: Int?,
+        public val maxInclusive: Boolean = true,
     ) : LottieClipSpec() {
 
         private val actualMaxFrame = when {
@@ -80,9 +80,9 @@ sealed class LottieClipSpec {
      */
 
     @Immutable
-    class Progress(
-        val min: Float,
-        val max: Float,
+    public class Progress(
+        public val min: Float,
+        public val max: Float,
     ) : LottieClipSpec() {
         override fun getMinProgress(composition: LottieComposition): Float {
             return min
@@ -122,10 +122,10 @@ sealed class LottieClipSpec {
      * it to false to stop the animation at the frame before maxMarker.
      */
     @Immutable
-    class Markers(
-        val min: String?,
-        val max: String?,
-        val maxInclusive: Boolean
+    public class Markers(
+        public val min: String?,
+        public val max: String?,
+        public val maxInclusive: Boolean
     ) : LottieClipSpec() {
         override fun getMinProgress(composition: LottieComposition): Float {
             return when (min) {
@@ -173,7 +173,7 @@ sealed class LottieClipSpec {
      * Play the animation from the beginning of the marker for the duration of the marker itself.
      * The duration can be set in After Effects.
      */
-    class Marker(val marker: String) : LottieClipSpec() {
+    public class Marker(public val marker: String) : LottieClipSpec() {
         override fun getMinProgress(composition: LottieComposition): Float {
             return ((composition.marker(marker)?.startFrame ?: 0f) / composition.endFrame).coerceIn(0f, 1f)
         }

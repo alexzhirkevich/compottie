@@ -41,7 +41,7 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
 
     private val getLayerLock = SynchronizedObject()
 
-    private var loadedLayers: List<BaseLayer>? = null
+    protected var loadedLayers: List<BaseLayer>? = null
 
     abstract fun compose(state: AnimationState): List<Layer>
 
@@ -137,7 +137,7 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
                 val p = layersWithIndex[pId]
 
                 if (p != null) {
-                    it.setParentLayer(p)
+                    it.parentLayer = p
                 }
             }
 

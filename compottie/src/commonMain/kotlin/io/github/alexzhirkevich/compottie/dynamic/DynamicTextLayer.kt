@@ -5,38 +5,38 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import io.github.alexzhirkevich.compottie.internal.helpers.text.TextJustify
 
-interface DynamicTextLayer: DynamicLayer {
+public interface DynamicTextLayer: DynamicLayer {
 
     /**
      * Dynamically provide text content for this layer.
      */
-    fun text(provider: PropertyProvider<String>)
+    public fun text(provider: PropertyProvider<String>)
 
-    fun fontSize(provider: PropertyProvider<Float>)
+    public fun fontSize(provider: PropertyProvider<Float>)
 
-    fun lineHeight(provider: PropertyProvider<Float>)
+    public fun lineHeight(provider: PropertyProvider<Float>)
 
-    fun lineSpacing(provider: PropertyProvider<Float>)
+    public fun lineSpacing(provider: PropertyProvider<Float>)
 
-    fun fillColor(provider: PropertyProvider<Color>)
+    public fun fillColor(provider: PropertyProvider<Color>)
 
-    fun strokeColor(provider: PropertyProvider<Color>)
+    public fun strokeColor(provider: PropertyProvider<Color>)
 
-    fun strokeWidth(provider: PropertyProvider<Float>)
+    public fun strokeWidth(provider: PropertyProvider<Float>)
 
     /**
      * If stroke should be drawn before fill
      * */
-    fun strokeOverFill(provider: PropertyProvider<Boolean>)
+    public fun strokeOverFill(provider: PropertyProvider<Boolean>)
 
-    fun textJustify(provider: PropertyProvider<TextJustify>)
+    public fun textJustify(provider: PropertyProvider<TextJustify>)
 
-    fun baselineShift(provider: PropertyProvider<Float>)
+    public fun baselineShift(provider: PropertyProvider<Float>)
 
-    fun tracking(provider: PropertyProvider<Float>)
+    public fun tracking(provider: PropertyProvider<Float>)
 
-    fun size(provider: PropertyProvider<Size>)
+    public fun size(provider: PropertyProvider<Size>)
 
-    fun position(provider: PropertyProvider<Offset>)
+    public fun position(provider: PropertyProvider<Offset>)
 }
 

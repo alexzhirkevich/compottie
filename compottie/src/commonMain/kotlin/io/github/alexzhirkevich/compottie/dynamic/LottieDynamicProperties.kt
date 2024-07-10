@@ -15,7 +15,7 @@ import kotlin.contracts.contract
  * */
 @Composable
 @ExperimentalCompottieApi
-inline fun rememberLottieDynamicProperties(
+public inline fun rememberLottieDynamicProperties(
     vararg keys : Any?,
     crossinline builder: LottieDynamicProperties.() -> Unit
 ) : LottieDynamicProperties = remember(keys) {
@@ -32,7 +32,7 @@ inline fun rememberLottieDynamicProperties(
  * Use [rememberLottieDynamicProperties] to create it from the composition
  * */
 @OptIn(ExperimentalContracts::class)
-inline fun createLottieDynamicProperties(
+public inline fun createLottieDynamicProperties(
     builder: LottieDynamicProperties.() -> Unit
 ) : LottieDynamicProperties {
     contract {
@@ -47,7 +47,7 @@ inline fun createLottieDynamicProperties(
  * Usually created with [rememberLottieDynamicProperties] (from Compose) or
  * [createLottieDynamicProperties] (outside of Compose)
  * */
-sealed interface LottieDynamicProperties {
+public sealed interface LottieDynamicProperties {
 
     /**
      * Layer dynamic properties builder.
@@ -67,7 +67,7 @@ sealed interface LottieDynamicProperties {
      * }
      * ```
      * */
-    fun layer(vararg path: String, builder: DynamicLayer.() -> Unit)
+    public fun layer(vararg path: String, builder: DynamicLayer.() -> Unit)
 
     /**
      * Shape layer dynamic properties builder.
@@ -91,7 +91,7 @@ sealed interface LottieDynamicProperties {
      * }
      * ```
      * */
-    fun shapeLayer(vararg path: String, builder: DynamicShapeLayer.() -> Unit)
+    public fun shapeLayer(vararg path: String, builder: DynamicShapeLayer.() -> Unit)
 
     /**
      * Image layer dynamic properties builder.
@@ -99,7 +99,7 @@ sealed interface LottieDynamicProperties {
      * Path is a chain of layers names up to the required layer.
      * All layers in the chain must have a name.
      * */
-    fun imageLayer(vararg path: String, builder: DynamicImageLayer.() -> Unit)
+    public fun imageLayer(vararg path: String, builder: DynamicImageLayer.() -> Unit)
 
     /**
      * Text layer dynamic properties builder.
@@ -107,7 +107,7 @@ sealed interface LottieDynamicProperties {
      * Path is a chain of layers names up to the required layer.
      * All layers in the chain must have a name.
      * */
-    fun textLayer(vararg path: String, builder: DynamicTextLayer.() -> Unit)
+    public fun textLayer(vararg path: String, builder: DynamicTextLayer.() -> Unit)
 }
 
 

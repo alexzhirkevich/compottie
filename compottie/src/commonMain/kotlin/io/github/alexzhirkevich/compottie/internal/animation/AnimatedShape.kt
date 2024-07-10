@@ -16,21 +16,24 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = AnimatedShapeSerializer::class)
-internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
+internal sealed interface AnimatedShape : AnimatedProperty<Path> {
 
-    fun interpolatedRaw(state: AnimationState): Path
+    fun interpolatedMutable(state: AnimationState): Path
 
-    fun copy() : AnimatedShape
+    fun rawBezier(state: AnimationState) : Bezier
 
-    fun setClosed(closed : Boolean)
+    fun copy(): AnimatedShape
+
+    fun setClosed(closed: Boolean)
+
 
     @Serializable
     class Default(
         @SerialName("x")
-        override val expression: String? = null,
+        val expression: String? = null,
 
         @SerialName("ix")
-        override val index: String? = null,
+        override val index: Int? = null,
 
         @SerialName("k")
         val bezier: Bezier,
@@ -43,31 +46,39 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
             bezier.setIsClosed(closed)
         }
 
-        override fun interpolated(state: AnimationState): Path {
+        override fun rawBezier(state: AnimationState): Bezier {
+            return bezier
+        }
+
+        override fun raw(state: AnimationState): Path {
             bezier.mapPath(tmpPath)
             return tmpPath
         }
 
-        override fun interpolatedRaw(state: AnimationState): Path {
+        override fun interpolatedMutable(state: AnimationState): Path {
             return Path().apply { bezier.mapPath(this) }
         }
 
         override fun copy(): AnimatedShape {
-            return Default(expression = expression, index = index, bezier = bezier)
+            return Default(
+                expression = expression,
+                index = index,
+                bezier = bezier
+            )
         }
     }
 
     @Serializable
     class Animated(
         @SerialName("x")
-        override val expression: String? = null,
+        val expression: String? = null,
 
         @SerialName("ix")
-        override val index: String? = null,
+        override val index: Int? = null,
 
         @SerialName("k")
-        val keyframes: List<BezierKeyframe>,
-    ) : AnimatedShape, KeyframeAnimation<Path> {
+        override val keyframes: List<BezierKeyframe>,
+    ) : AnimatedShape, AnimatedKeyframeProperty<Path, BezierKeyframe> {
 
         @Transient
         private val tmpPath = Path()
@@ -76,8 +87,19 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
         private val tmpBezier = Bezier()
 
         @Transient
+        private var bezierDelegate = BaseKeyframeAnimation(
+            index = index,
+            keyframes = keyframes,
+            emptyValue = Bezier(),
+            map = { s, e, p ->
+                tmpBezier.interpolateBetween(s, e, easingX.transform(p))
+                tmpBezier
+            }
+        )
+
+        @Transient
         private var delegate = BaseKeyframeAnimation(
-            expression = expression,
+            index = index,
             keyframes = keyframes,
             emptyValue = tmpPath,
             map = { s, e, p ->
@@ -88,8 +110,8 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
         )
 
         @Transient
-        private var rawDelegate = BaseKeyframeAnimation(
-            expression = expression,
+        private var mutableDelegate = BaseKeyframeAnimation(
+            index = index,
             keyframes = keyframes,
             emptyValue = tmpPath,
             map = { s, e, p ->
@@ -108,16 +130,24 @@ internal sealed interface AnimatedShape : KeyframeAnimation<Path>, Indexable {
             }
         }
 
-        override fun interpolatedRaw(state: AnimationState): Path {
-            return rawDelegate.interpolated(state)
+        override fun interpolatedMutable(state: AnimationState): Path {
+            return mutableDelegate.raw(state)
+        }
+
+        override fun rawBezier(state: AnimationState): Bezier {
+            return bezierDelegate.raw(state)
         }
 
         override fun copy(): AnimatedShape {
-            return Animated(expression = expression, index = index, keyframes = keyframes)
+            return Animated(
+                expression = expression,
+                index = index,
+                keyframes = keyframes
+            )
         }
 
-        override fun interpolated(state: AnimationState): Path {
-            return delegate.interpolated(state)
+        override fun raw(state: AnimationState): Path {
+            return delegate.raw(state)
         }
     }
 }

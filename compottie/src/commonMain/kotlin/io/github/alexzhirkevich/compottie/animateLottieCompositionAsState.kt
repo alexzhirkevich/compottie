@@ -37,7 +37,7 @@ import androidx.compose.runtime.setValue
  * refresh rate
  */
 @Composable
-fun animateLottieCompositionAsState(
+public fun animateLottieCompositionAsState(
     composition: LottieComposition?,
     isPlaying: Boolean = true,
     restartOnPlay: Boolean = true,

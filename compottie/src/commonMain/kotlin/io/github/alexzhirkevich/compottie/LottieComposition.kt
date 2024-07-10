@@ -11,15 +11,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.font.FontFamily
-import io.github.alexzhirkevich.compottie.assets.LottieImage
+import io.github.alexzhirkevich.compottie.assets.LottieImageSpec
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.LottieFontManager
 import io.github.alexzhirkevich.compottie.internal.Animation
 import io.github.alexzhirkevich.compottie.internal.LottieJson
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionComposition
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionCompositionFromAsset
 import io.github.alexzhirkevich.compottie.internal.assets.CharacterData
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.assets.PrecompositionAsset
 import io.github.alexzhirkevich.compottie.internal.helpers.Marker
+import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -46,7 +50,7 @@ internal object UnspecifiedCompositionKey
  * */
 @OptIn(InternalCompottieApi::class)
 @Composable
-fun rememberLottieComposition(
+public fun rememberLottieComposition(
     key : Any? = UnspecifiedCompositionKey,
     spec : suspend () -> LottieCompositionSpec,
 ) : LottieCompositionResult {
@@ -91,7 +95,7 @@ fun rememberLottieComposition(
     ReplaceWith("rememberLottieComposition { spec }")
 )
 @Composable
-fun rememberLottieComposition(
+public fun rememberLottieComposition(
     spec : LottieCompositionSpec,
 ) : LottieCompositionResult {
 
@@ -119,48 +123,54 @@ fun rememberLottieComposition(
 }
 
 @Stable
-class LottieComposition internal constructor(
+public class LottieComposition internal constructor(
     internal val animation: Animation,
 ) {
 
     /**
      * Frame when animation becomes visible
      * */
-    val startFrame: Float get() = animation.inPoint
+    public val startFrame: Float get() = animation.inPoint
 
     /**
      * Frame when animation becomes no longer visible
      * */
-    val endFrame: Float get() = animation.outPoint
+    public val endFrame: Float get() = animation.outPoint
 
     /**
      * Animation duration
      * */
-    val duration: Duration = (durationFrames / frameRate * 1_000_000).toInt().microseconds
+    public val duration: Duration = (durationFrames / frameRate * 1_000_000).toInt().microseconds
 
-    val durationFrames : Float
+    public val durationFrames : Float
         get() = animation.outPoint - animation.inPoint
+
+    /**
+     * Animation start time in seconds
+     * */
+    public val startTime : Float
+        get() = animation.inPoint / animation.frameRate
 
     /**
      * Animation frame rate
      * */
-    val frameRate: Float get() = animation.frameRate
+    public val frameRate: Float get() = animation.frameRate
 
     /**
      * Animation intrinsic width
      * */
-    val width: Float get() = animation.width
+    public val width: Float get() = animation.width
 
     /**
      * Animation intrinsic height
      * */
-    val height: Float get() = animation.height
+    public val height: Float get() = animation.height
 
     /**
      * Some animations may contain predefined number of interactions.
      * It will be used as a default value for the LottiePainter
      * */
-    var iterations: Int by mutableStateOf(1)
+    public var iterations: Int by mutableStateOf(1)
         @InternalCompottieApi
         set
 
@@ -168,15 +178,43 @@ class LottieComposition internal constructor(
      * Some animations may contain predefined speed multiplier.
      * It will be used as a default value for the LottiePainter
      * */
-    var speed: Float by mutableFloatStateOf(1f)
+    public var speed: Float by mutableFloatStateOf(1f)
         @InternalCompottieApi
         set
+
+    internal val expressionComposition = object : ExpressionComposition {
+
+        override val name: String?
+            get() = animation.name
+        override val width: Float
+            get() = this@LottieComposition.width
+        override val height: Float
+            get() = this@LottieComposition.height
+        override val startTime: Float
+            get() = this@LottieComposition.startTime
+
+        override val layersByName: Map<String, Layer> by lazy {
+            animation.layers.associateBy { it.name.orEmpty() }
+        }
+
+        override val layersByIndex: Map<Int, Layer> by lazy {
+            animation.layers.associateBy { it.index ?: Int.MIN_VALUE }
+        }
+
+        override val layersCount: Int
+            get() = animation.layers.size
+    }
 
     private val charGlyphs: Map<String, Map<String, CharacterData>> =
         animation.chars
             .groupBy(CharacterData::fontFamily)
             .mapValues { it.value.associateBy(CharacterData::character) }
 
+    internal val precomps : Map<String, ExpressionComposition> by lazy {
+        animation.assets.filterIsInstance<PrecompositionAsset>()
+            .associateBy { it.name.orEmpty() }
+            .mapValues { ExpressionCompositionFromAsset(it.value) }
+    }
 
     private val assetsMutex = Mutex()
     private val fontsMutex = Mutex()
@@ -197,14 +235,14 @@ class LottieComposition internal constructor(
 
 
     @InternalCompottieApi
-    suspend fun prepareAssets(assetsManager: LottieAssetsManager) {
+    public suspend fun prepareAssets(assetsManager: LottieAssetsManager) {
         assetsMutex.withLock {
             loadAssets(assetsManager, false)
         }
     }
 
     @InternalCompottieApi
-    suspend fun prepareFonts(fontsManager : LottieFontManager) {
+    public suspend fun prepareFonts(fontsManager : LottieFontManager) {
         fontsMutex.withLock {
             storedFonts.putAll(loadFontsInternal(fontsManager))
         }
@@ -224,13 +262,7 @@ class LottieComposition internal constructor(
                     is ImageAsset -> {
                         if (asset.bitmap == null) {
                             launch(Dispatchers.Default) {
-                                assetsManager.image(
-                                    LottieImage(
-                                        id = asset.id,
-                                        path = asset.path,
-                                        name = asset.fileName
-                                    )
-                                )?.let {
+                                assetsManager.image(asset.spec)?.let {
                                     asset.setBitmap(it.toBitmap(asset.width, asset.height))
                                 }
                             }
@@ -282,9 +314,9 @@ class LottieComposition internal constructor(
 
     internal fun marker(name: String?) = markersMap[name]
 
-    companion object {
+    public companion object {
 
-        fun parse(json: String): LottieComposition {
+        public fun parse(json: String): LottieComposition {
             return LottieComposition(
                 animation = LottieJson.decodeFromString(json),
             )
@@ -293,7 +325,7 @@ class LottieComposition internal constructor(
         /**
          * Get cached composition for [key] or create new one and cache it by [key]
          * */
-        suspend fun getOrCreate(key : Any?, create : suspend () -> LottieComposition) : LottieComposition {
+        public suspend fun getOrCreate(key : Any?, create : suspend () -> LottieComposition) : LottieComposition {
             if (key == null)
                 return create()
 
@@ -304,7 +336,9 @@ class LottieComposition internal constructor(
          * Clear all in-memory cached compositions.
          * This will not clear the file system cache
          * */
-        fun clearCache() = cache.clear()
+        public fun clearCache() {
+            cache.clear()
+        }
 
         @OptIn(ExperimentalCompottieApi::class)
         private val cache = LruMap<LottieComposition>(limit = Compottie::compositionCacheLimit)

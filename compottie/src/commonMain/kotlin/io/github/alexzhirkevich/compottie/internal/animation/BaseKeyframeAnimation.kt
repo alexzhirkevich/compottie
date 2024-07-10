@@ -1,15 +1,14 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.evaluate
 
 
-internal class BaseKeyframeAnimation<T, K, out KF : Keyframe<K>>(
-    private val expression : String?,
-    keyframes: List<KF>,
+internal class BaseKeyframeAnimation<T : Any, K, out KF : Keyframe<K>>(
+    override val index: Int?,
+    override val keyframes: List<KF>,
     private val emptyValue : T,
     private val map : KF.(start : K, end : K, progress: Float) -> T
-) : KeyframeAnimation<T> {
+) : RawKeyframeProperty<T, KF> {
 
     private val sortedKeyframes = keyframes
         .sortedBy(Keyframe<*>::time)
@@ -61,13 +60,12 @@ internal class BaseKeyframeAnimation<T, K, out KF : Keyframe<K>>(
         }
     }
 
-
-    override fun interpolated(state: AnimationState): T {
+    override fun raw(state: AnimationState): T {
 
         if (sortedKeyframes.isEmpty())
             return emptyValue
 
-        val value = when {
+        return when {
             sortedKeyframes.isEmpty() -> emptyValue
             state.frame >= lastFrame -> targetValue
             state.frame <= firstFrame -> initialValue
@@ -104,12 +102,6 @@ internal class BaseKeyframeAnimation<T, K, out KF : Keyframe<K>>(
                 }
             }
         }
-
-        if (expression == null) {
-            return value
-        }
-
-        return evaluate(expression, state, value)
     }
 }
 

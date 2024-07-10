@@ -1,5 +1,7 @@
 package io.github.alexzhirkevich.compottie
 
+import android.app.Activity
+import android.app.Application
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.createFontFamilyResolver
 
@@ -12,3 +14,7 @@ internal actual fun makeFontFamilyResolver() : FontFamily.Resolver {
         }
     )
 }
+
+internal actual fun mockFontFamilyResolver() : FontFamily.Resolver =
+    createFontFamilyResolver(Application())
+

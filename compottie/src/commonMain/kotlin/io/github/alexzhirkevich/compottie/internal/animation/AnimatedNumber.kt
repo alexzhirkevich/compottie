@@ -2,12 +2,18 @@ package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.dynamic.PropertyProvider
-import io.github.alexzhirkevich.compottie.dynamic.derive
+import io.github.alexzhirkevich.compottie.dynamic.invoke
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionEvaluator
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.RawExpressionEvaluator
 import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -16,24 +22,18 @@ import kotlinx.serialization.json.JsonTransformingSerializer
 import kotlinx.serialization.json.jsonObject
 
 @Serializable(with = AnimatedNumberSerializer::class)
-internal sealed class AnimatedNumber : KeyframeAnimation<Float>, Indexable {
+internal sealed class AnimatedNumber : DynamicProperty<Float>() {
 
-    protected var dynamic: PropertyProvider<Float>? = null
-        private set
 
-    fun dynamic(provider: PropertyProvider<Float>?) {
-        dynamic = provider
+    override fun mapEvaluated(e: Any): Float {
+        return when (e){
+            is Number -> e.toFloat()
+            is List<*> -> (e[0] as Number).toFloat()
+            else -> error("Failed to cast $e to number")
+        }
     }
 
     abstract fun copy() : AnimatedNumber
-
-    abstract fun interpolatedInternal(state: AnimationState): Float
-
-    final override fun interpolated(state: AnimationState): Float {
-        return interpolatedInternal(state).let {
-            dynamic.derive(it, state)
-        }
-    }
 
     @Serializable
     class Default(
@@ -44,31 +44,44 @@ internal sealed class AnimatedNumber : KeyframeAnimation<Float>, Indexable {
         override val expression: String? = null,
 
         @SerialName("ix")
-        override val index: String? = null
+        override val index: Int? = null
     ) : AnimatedNumber() {
-        override fun copy(): AnimatedNumber {
-            return Default(value, expression, index)
+
+        init {
+            prepare()
         }
 
-        override fun interpolatedInternal(state: AnimationState): Float = value
+        override fun copy(): AnimatedNumber {
+            return Default(
+                value = value,
+                expression = expression,
+                index = index
+            )
+        }
+
+        override fun raw(state: AnimationState): Float = value
     }
 
     @Serializable
     class Animated(
         @SerialName("k")
-        val value: List<ValueKeyframe>,
+        override val keyframes: List<ValueKeyframe>,
 
         @SerialName("x")
         override val expression: String? = null,
 
         @SerialName("ix")
-        override val index: String? = null
-    ) : AnimatedNumber() {
+        override val index: Int? = null
+    ) : AnimatedNumber(), AnimatedKeyframeProperty<Float, ValueKeyframe> {
+
+        init {
+            prepare()
+        }
 
         @Transient
         private val delegate = BaseKeyframeAnimation(
-            expression = expression,
-            keyframes = value,
+            index = index,
+            keyframes = keyframes,
             emptyValue = 1f,
             map = { s, e, p ->
                 lerp(s[0], e[0], easingX.transform(p))
@@ -76,19 +89,23 @@ internal sealed class AnimatedNumber : KeyframeAnimation<Float>, Indexable {
         )
 
         override fun copy(): AnimatedNumber {
-            return Animated(value, expression, index)
+            return Animated(
+                keyframes = keyframes,
+                expression = expression,
+                index = index
+            )
         }
 
-        override fun interpolatedInternal(state: AnimationState): Float {
-            return delegate.interpolated(state)
+        override fun raw(state: AnimationState): Float {
+            return delegate.raw(state)
         }
     }
 }
 
 internal fun AnimatedNumber.dynamicNorm(provider: PropertyProvider<Float>?) {
-    if (provider != null)
-        dynamic { provider(it) * 100f }
-    else dynamic(null)
+    dynamic = if (provider != null) PropertyProvider {
+        provider.invoke(this, it) * 100f
+    } else null
 }
 
 internal fun AnimatedNumber.Companion.defaultRotation() : AnimatedNumber =

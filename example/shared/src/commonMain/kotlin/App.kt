@@ -32,20 +32,16 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RenderEffect
-import androidx.compose.ui.layout.ScaleFactor
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.CompottieException
 import io.github.alexzhirkevich.compottie.DotLottie
 import io.github.alexzhirkevich.compottie.ExperimentalCompottieApi
+import io.github.alexzhirkevich.compottie.LottieClipSpec
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
-import io.github.alexzhirkevich.compottie.LottiePainter
-import io.github.alexzhirkevich.compottie.NetworkFontManager
-import io.github.alexzhirkevich.compottie.ResourcesFontManager
-import io.github.alexzhirkevich.compottie.Url
 import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
 import io.github.alexzhirkevich.compottie.dynamic.rememberLottieDynamicProperties
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
@@ -55,7 +51,6 @@ import io.github.alexzhirkevich.compottie.rememberResourcesFontManager
 import io.github.alexzhirkevich.shared.generated.resources.ComicNeue
 import io.github.alexzhirkevich.shared.generated.resources.Res
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import kotlin.random.Random
 
 private val GRADIENT_ELLIPSE = "gradient_ellipse.json"
 private val TEST = "test.json"
@@ -123,7 +118,7 @@ private val ALL = listOf(
  * */
 @OptIn(ExperimentalResourceApi::class)
 @Stable
-suspend fun LottieCompositionSpec.Companion.ResourceString(
+public suspend fun LottieCompositionSpec.Companion.ResourceString(
     path : String,
     dir : String = "files",
     readBytes: suspend (path: String) -> ByteArray = { Res.readBytes(it) }
@@ -131,12 +126,11 @@ suspend fun LottieCompositionSpec.Companion.ResourceString(
 
 @OptIn(ExperimentalResourceApi::class, ExperimentalCompottieApi::class)
 @Composable
-fun App() {
+public fun App() {
 
 //    return LottieFontExample()
 //    return AllExamples()
 //    return LottieList()
-
 
     val composition = rememberLottieComposition() {
 
@@ -144,6 +138,9 @@ fun App() {
 //            Res.readBytes("files/$DOT_WITH_IMAGE")
 //        )
 
+//        LottieCompositionSpec.ResourceString("expr/move_horizontal.json")
+//        LottieCompositionSpec.ResourceString("expr/wiggle.json")
+//        LottieCompositionSpec.ResourceString("expr/noise.json")
         LottieCompositionSpec.ResourceString(ROBOT)
 //
 //        LottieCompositionSpec.Url(
@@ -178,12 +175,14 @@ fun App() {
 
         val progress = animateLottieCompositionAsState(
             iterations = Compottie.IterateForever,
-            composition = composition.value
+            composition = composition.value,
         )
 
         val painter = rememberLottiePainter(
             composition = composition.value,
             progress = progress::value,
+            enableExpressions = true,
+
 //            clipToCompositionBounds = false,
 //            fontManager = rememberResourcesFontManager { fontSpec ->
 //                when (fontSpec.family) {
@@ -191,9 +190,9 @@ fun App() {
 //                    else -> null
 //                }
 //            },
-            assetsManager = rememberResourcesAssetsManager(
-                readBytes = Res::readBytes
-            ),
+//            assetsManager = rememberResourcesAssetsManager(
+//                readBytes = Res::readBytes
+//            ),
         )
 
         Image(
@@ -212,7 +211,7 @@ fun App() {
 
 @OptIn(ExperimentalResourceApi::class, ExperimentalCompottieApi::class)
 @Composable
-fun AllExamples(){
+public fun AllExamples(){
     LazyVerticalGrid(
         modifier = Modifier
             .fillMaxSize()
@@ -251,7 +250,7 @@ private val ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ':, \n"
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun LottieFontExample() {
+public fun LottieFontExample() {
     var text by remember {
         mutableStateOf("")
     }
@@ -342,7 +341,7 @@ fun LottieFontExample() {
 }
 
 @Composable
-fun LottieList() {
+public fun LottieList() {
     LazyVerticalGrid(columns = GridCells.FixedSize(100.dp)) {
         items(1000){
             val composition = rememberLottieComposition() {

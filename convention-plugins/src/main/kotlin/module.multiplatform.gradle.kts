@@ -9,6 +9,8 @@ plugins {
 val _jvmTarget = findProperty("jvmTarget")!! as String
 
 kotlin {
+    explicitApi()
+
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     applyDefaultHierarchyTemplate {
         common {
@@ -17,6 +19,10 @@ kotlin {
                 withJvm()
                 withIos()
                 withMacos()
+            }
+            group("java"){
+                withJvm()
+                withAndroidTarget()
             }
             group("web") {
                 withJs()
@@ -44,7 +50,6 @@ kotlin {
     iosSimulatorArm64()
     macosX64()
     macosArm64()
-
 
     jvm("desktop") {
         compilerOptions {

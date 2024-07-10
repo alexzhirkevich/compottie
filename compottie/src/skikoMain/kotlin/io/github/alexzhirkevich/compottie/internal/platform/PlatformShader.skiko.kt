@@ -46,7 +46,6 @@ internal actual fun MakeLinearGradient(
             )
         )
     }catch (t : Throwable){
-        print("${matrix.values[Matrix.ScaleX]} ${matrix.values[Matrix.ScaleY]}")
         throw t
     }
 }

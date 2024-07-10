@@ -6,7 +6,7 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.platform.ComposeBackend
 import io.github.alexzhirkevich.compottie.internal.platform.currentComposeBackend
-import io.github.alexzhirkevich.compottie.internal.utils.Math
+import io.github.alexzhirkevich.compottie.internal.utils.degreeToRadians
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.preRotate
 import io.github.alexzhirkevich.compottie.internal.utils.preRotateX
@@ -14,6 +14,7 @@ import io.github.alexzhirkevich.compottie.internal.utils.preRotateY
 import io.github.alexzhirkevich.compottie.internal.utils.preRotateZ
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
+import io.github.alexzhirkevich.compottie.internal.utils.radiansToDegree
 import io.github.alexzhirkevich.compottie.internal.utils.setValues
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -40,10 +41,10 @@ internal abstract class AnimatedTransform {
                 field = value
                 position.dynamicOffset(value?.offset)
                 scale.dynamicScale(value?.scale)
-                rotation.dynamic(value?.rotation)
+                rotation.dynamic = value?.rotation
                 opacity.dynamicNorm(value?.opacity)
-                skew.dynamic(value?.skew)
-                skewAxis.dynamic(value?.skewAxis)
+                skew.dynamic = value?.skew
+                skewAxis.dynamic = value?.skewAxis
             }
         }
 
@@ -86,7 +87,7 @@ internal abstract class AnimatedTransform {
                     position.interpolated(it)
                 }
 
-                val rotationValue= Math.toDegree(
+                val rotationValue= radiansToDegree(
                     atan2(
                         (nextPosition.y - startY),
                         (nextPosition.x - startX)
@@ -125,13 +126,13 @@ internal abstract class AnimatedTransform {
 
             val mCos = if (skewAngle == 0f)
                 0f
-            else cos(Math.toRadians(-skewAngle + 90))
+            else cos(degreeToRadians(-skewAngle + 90))
 
             val mSin = if (skewAngle == 0f)
                 1f
-            else sin(Math.toRadians(-skewAngle + 90))
+            else sin(degreeToRadians(-skewAngle + 90))
 
-            val aTan = tan(Math.toRadians(sk))
+            val aTan = tan(degreeToRadians(sk))
 
             clearSkewValues()
             skewValues[0] = mCos

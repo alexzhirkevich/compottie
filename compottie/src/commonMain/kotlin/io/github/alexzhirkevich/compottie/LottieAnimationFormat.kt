@@ -1,5 +1,5 @@
 package io.github.alexzhirkevich.compottie
 
-enum class LottieAnimationFormat {
+public enum class LottieAnimationFormat {
     Json, DotLottie, Undefined
 }

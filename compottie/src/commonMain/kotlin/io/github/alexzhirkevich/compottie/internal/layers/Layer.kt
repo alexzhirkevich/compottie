@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
+import androidx.compose.ui.graphics.Matrix
 import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.internal.AnimationState
@@ -11,6 +12,7 @@ import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
+import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonClassDiscriminator
 import kotlin.jvm.JvmInline
@@ -63,9 +65,29 @@ internal sealed interface Layer : DrawingContent {
 
     var resolvingPath : ResolvingPath?
 
+    var parentLayer : Layer?
+
     fun setDynamicProperties(composition: DynamicCompositionProvider?, state: AnimationState): DynamicLayerProvider?
 
     fun deepCopy() : Layer
+
+    fun isHidden(state: AnimationState) : Boolean
+
+    fun isActive(state: AnimationState) : Boolean
+
+}
+
+internal fun Layer.totalTransformMatrix(state : AnimationState) : Matrix {
+
+    val matrix = transform.matrix(state)
+    var layer = parentLayer
+
+    while (layer != null) {
+        matrix.preConcat(layer.transform.matrix(state))
+        layer = layer.parentLayer
+    }
+
+    return matrix
 }
 
 @JvmInline

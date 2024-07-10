@@ -5,7 +5,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -18,11 +17,20 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = AnimatedColorSerializer::class)
-internal sealed interface AnimatedColor : KeyframeAnimation<Color>, Indexable {
+internal sealed class AnimatedColor : ExpressionProperty<Color>() {
 
-    fun copy() : AnimatedColor
+    abstract fun copy() : AnimatedColor
 
-    @Serializable()
+    override fun mapEvaluated(e: Any): Color {
+        return when (e){
+            is Color -> e
+            is List<*> -> (e as List<Number>).toColor2()
+
+            else -> error("Can't convert $e to color")
+        }
+    }
+
+    @Serializable
     class Default(
         @SerialName("k")
         val value: List<Float>,
@@ -31,16 +39,25 @@ internal sealed interface AnimatedColor : KeyframeAnimation<Color>, Indexable {
         override val expression: String? = null,
 
         @SerialName("ix")
-        override val index: String? = null
-    ) : AnimatedColor {
+        override val index: Int? = null
+    ) : AnimatedColor() {
+
+        init {
+            prepare()
+        }
 
         @Transient
         private val color: Color = value.toColor()
+
         override fun copy(): AnimatedColor {
-            return Default(value = value, expression = expression, index = index)
+            return Default(
+                value = value,
+                expression = expression,
+                index = index
+            )
         }
 
-        override fun interpolated(state: AnimationState) = color
+        override fun raw(state: AnimationState) = color
     }
 
     @Serializable
@@ -53,17 +70,26 @@ internal sealed interface AnimatedColor : KeyframeAnimation<Color>, Indexable {
         override val expression: String? = null,
 
         @SerialName("ix")
-        override val index: String? = null
-    ) : AnimatedColor, KeyframeAnimation<Color> by BaseKeyframeAnimation(
-        expression = expression,
+        override val index: Int? = null
+    ) : AnimatedColor(), RawKeyframeProperty<Color, VectorKeyframe> by BaseKeyframeAnimation(
+        index = index,
         keyframes = value,
         emptyValue = Color.Transparent,
         map = { s, e, p ->
             lerp(s.toColor(), e.toColor(), easingX.transform(p))
         }
     ) {
+
+        init {
+            prepare()
+        }
+
         override fun copy(): AnimatedColor {
-            return Animated(value = value, expression = expression, index = index)
+            return Animated(
+                value = value,
+                expression = expression,
+                index = index
+            )
         }
     }
 }
@@ -73,6 +99,13 @@ internal fun List<Float>.toColor() = Color(
     green = get(1).toColorComponent(),
     blue = get(2).toColorComponent(),
     alpha = getOrNull(3)?.toColorComponent() ?: 1f
+)
+
+internal fun List<Number>.toColor2() = Color(
+    red = get(0).toFloat().toColorComponent(),
+    green = get(1).toFloat().toColorComponent(),
+    blue = get(2).toFloat().toColorComponent(),
+    alpha = getOrNull(3)?.toFloat()?.toColorComponent() ?: 1f
 )
 
 // Modern Lotties (v 4.1.9+) have color components in the [0, 1] range.

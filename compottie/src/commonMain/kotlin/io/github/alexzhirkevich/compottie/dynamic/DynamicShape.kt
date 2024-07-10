@@ -1,6 +1,6 @@
 package io.github.alexzhirkevich.compottie.dynamic
 
-sealed interface DynamicShape {
+public sealed interface DynamicShape {
 
-    fun hidden(provider : PropertyProvider<Boolean>)
+    public fun hidden(provider : PropertyProvider<Boolean>)
 }

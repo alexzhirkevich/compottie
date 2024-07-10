@@ -86,9 +86,10 @@ internal abstract class BaseLayer : Layer {
         }
     }
     private val rect = MutableRect(0f, 0f, 0f, 0f)
-    private var parentLayers: MutableList<BaseLayer>? = null
+    private var parentLayers: MutableList<Layer>? = null
 
-    private var parentLayer: BaseLayer? = null
+    override var parentLayer: Layer? = null
+
     private var matteLayer: BaseLayer? = null
 
     private val allMasksAreNone by lazy {
@@ -120,6 +121,16 @@ internal abstract class BaseLayer : Layer {
         state: AnimationState,
     )
 
+    override fun isHidden(state: AnimationState): Boolean {
+       return dynamicLayer?.hidden.derive(hidden, state)
+    }
+
+    override fun isActive(state: AnimationState): Boolean {
+        return !isHidden(state)
+                && state.frame in (inPoint ?: Float.MIN_VALUE)..(outPoint ?: Float.MAX_VALUE)
+    }
+
+
     final override fun draw(
         drawScope: DrawScope,
         parentMatrix: Matrix,
@@ -129,10 +140,8 @@ internal abstract class BaseLayer : Layer {
         try {
             state.onLayer(this) {
 
-                if (dynamicLayer?.hidden.derive(hidden, state)
-                    || (inPoint ?: Float.MIN_VALUE) > state.frame
-                    || (outPoint ?: Float.MAX_VALUE) < state.frame
-                ) return@onLayer
+                if (!isActive(state))
+                    return@onLayer
 
                 buildParentLayerListIfNeeded()
 
@@ -236,7 +245,7 @@ internal abstract class BaseLayer : Layer {
                     boundsMatrix.preConcat(it.transform.matrix(state))
                 }
             } else {
-                parentLayer?.transform?.matrix(state)?.let {
+                this.parentLayer?.transform?.matrix(state)?.let {
                     boundsMatrix.preConcat(it)
                 }
             }
@@ -249,9 +258,6 @@ internal abstract class BaseLayer : Layer {
     final override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
     }
 
-    fun setParentLayer(layer: BaseLayer) {
-        this.parentLayer = layer
-    }
 
     fun setMatteLayer(layer: BaseLayer) {
         this.matteLayer = layer
@@ -261,13 +267,13 @@ internal abstract class BaseLayer : Layer {
         if (parentLayers != null) {
             return
         }
-        if (parentLayer == null) {
+        if (this.parentLayer == null) {
             parentLayers = mutableListOf()
             return
         }
 
         parentLayers = mutableListOf()
-        var layer: BaseLayer? = parentLayer
+        var layer = this.parentLayer
         while (layer != null) {
             parentLayers?.add(layer)
             layer = layer.parentLayer
@@ -296,7 +302,7 @@ internal abstract class BaseLayer : Layer {
         }
 
         masks?.fastForEach { mask ->
-            val maskPath = mask.shape?.interpolatedRaw(state) ?: return@fastForEach
+            val maskPath = mask.shape?.interpolatedMutable(state) ?: return@fastForEach
             path.set(maskPath)
             path.transform(matrix)
 
@@ -398,7 +404,7 @@ internal abstract class BaseLayer : Layer {
     ) {
         canvas.saveLayer(rect, contentPaint)
         canvas.drawRect(rect, contentPaint)
-        val maskPath = mask.shape?.interpolatedRaw(state) ?: return
+        val maskPath = mask.shape?.interpolatedMutable(state) ?: return
         path.set(maskPath)
         path.transform(matrix)
         contentPaint.alpha = mask.opacity?.interpolatedNorm(state)?.coerceIn(0f, 1f) ?: 1f
@@ -412,7 +418,7 @@ internal abstract class BaseLayer : Layer {
         mask: Mask,
         state: AnimationState,
     ) {
-        val maskPath = mask.shape?.interpolatedRaw(state) ?: return
+        val maskPath = mask.shape?.interpolatedMutable(state) ?: return
         path.set(maskPath)
         path.transform(matrix)
         contentPaint.alpha = mask.opacity?.interpolatedNorm(state)?.coerceIn(0f, 1f) ?: 1f
@@ -425,7 +431,7 @@ internal abstract class BaseLayer : Layer {
         mask: Mask,
         state: AnimationState,
     ) {
-        val maskPath = mask.shape?.interpolatedRaw(state) ?: return
+        val maskPath = mask.shape?.interpolatedMutable(state) ?: return
         path.set(maskPath)
         path.transform(matrix)
         canvas.drawPath(path, dstOutPaint)
@@ -441,7 +447,7 @@ internal abstract class BaseLayer : Layer {
         canvas.drawRect(rect, contentPaint)
         dstOutPaint.alpha = mask.opacity?.interpolatedNorm(state)
             ?.coerceIn(0f, 1f) ?: 1f
-        val maskPath = mask.shape?.interpolatedRaw(state) ?: return
+        val maskPath = mask.shape?.interpolatedMutable(state) ?: return
         path.set(maskPath)
         path.transform(matrix)
         canvas.drawPath(path, dstOutPaint)
@@ -455,7 +461,7 @@ internal abstract class BaseLayer : Layer {
         state: AnimationState,
     ) {
         canvas.saveLayer(rect, dstInPaint)
-        val maskPath = mask.shape?.interpolatedRaw(state) ?: return
+        val maskPath = mask.shape?.interpolatedMutable(state) ?: return
         path.set(maskPath)
         path.transform(matrix)
         contentPaint.alpha = mask.opacity?.interpolatedNorm(state)?.coerceIn(0f, 1f) ?: 1f
@@ -472,7 +478,7 @@ internal abstract class BaseLayer : Layer {
         canvas.saveLayer(rect, dstInPaint)
         canvas.drawRect(rect, contentPaint)
         dstOutPaint.alpha = mask.opacity?.interpolatedNorm(state)?.coerceIn(0f, 1f) ?: 1f
-        val maskPath = mask.shape?.interpolatedRaw(state) ?: return
+        val maskPath = mask.shape?.interpolatedMutable(state) ?: return
         path.set(maskPath)
         path.transform(matrix)
         canvas.drawPath(path, dstOutPaint)

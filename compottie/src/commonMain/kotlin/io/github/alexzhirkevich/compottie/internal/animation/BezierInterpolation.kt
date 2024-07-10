@@ -9,7 +9,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.JsonTransformingSerializer
 
 @Serializable
-class BezierInterpolation(
+internal class BezierInterpolation(
     @Serializable(with = BezierCoordinateSerializer::class)
     val x : List<Float>,
 

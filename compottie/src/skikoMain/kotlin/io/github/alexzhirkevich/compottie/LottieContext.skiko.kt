@@ -2,10 +2,10 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Composable
 
-actual abstract class LottieContext {
+public actual abstract class LottieContext {
 
-    companion object : LottieContext()
+    internal companion object : LottieContext()
 }
 
 @Composable
-actual fun currentLottieContext() : LottieContext = LottieContext
+public  actual fun currentLottieContext() : LottieContext = LottieContext

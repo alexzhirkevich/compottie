@@ -1,17 +1,20 @@
-package io.github.alexzhirkevich.compottie.dynamic
+package io.github.alexzhirkevich.compottie.assets
 
-class ImageSpec internal constructor(
-    val id : String,
-    val path : String,
-    val name : String,
-    val width : Int,
-    val height : Int
+import androidx.compose.runtime.Immutable
+
+@Immutable
+public class LottieImageSpec internal constructor(
+    public val id : String,
+    public val path: String,
+    public val name : String,
+    public val width : Int,
+    public val height : Int
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
 
-        other as ImageSpec
+        other as LottieImageSpec
 
         if (id != other.id) return false
         if (path != other.path) return false
@@ -32,6 +35,6 @@ class ImageSpec internal constructor(
     }
 
     override fun toString(): String {
-        return "ImageSpec(id='$id', path='$path', name='$name', width=$width, height=$height)"
+        return "LottieImageSpec(id='$id', path='$path', name='$name', width=$width, height=$height)"
     }
 }

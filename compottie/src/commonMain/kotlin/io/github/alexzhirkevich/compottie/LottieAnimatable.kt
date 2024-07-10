@@ -26,13 +26,13 @@ import kotlin.time.Duration.Companion.nanoseconds
  * @see LottieAnimatable
  */
 @Composable
-fun rememberLottieAnimatable(): LottieAnimatable = remember { LottieAnimatableImpl() }
+public fun rememberLottieAnimatable(): LottieAnimatable = remember { LottieAnimatableImpl() }
 
 
 /**
  * Reset the animation back to the minimum progress and first iteration.
  */
-suspend fun LottieAnimatable.resetToBeginning() {
+public suspend fun LottieAnimatable.resetToBeginning() {
     snapTo(
         progress = defaultProgress(composition, clipSpec, speed),
         iteration = 1,
@@ -68,7 +68,7 @@ suspend fun LottieAnimatable.resetToBeginning() {
  * @see animateLottieCompositionAsState
  */
 @Stable
-interface LottieAnimatable : LottieAnimationState {
+public interface LottieAnimatable : LottieAnimationState {
     /**
      * Snap to a specific point in an animation. This can be used to update the progress
      * or iteration count of an ongoing animation. It will cancel any ongoing animations
@@ -90,7 +90,7 @@ interface LottieAnimatable : LottieAnimationState {
      *                            Defaults to false if progress is not being snapped to.
      *                            Defaults to true if progress is being snapped to.
      */
-    suspend fun snapTo(
+    public suspend fun snapTo(
         composition: LottieComposition? = this.composition,
         progress: Float = this.progress,
         iteration: Int = this.iteration,
@@ -130,7 +130,7 @@ interface LottieAnimatable : LottieAnimationState {
      *                                so this will likely make your animation feel janky. However, it may be desirable
      *                                for specific situations such as pixel art that are intended to have low frame rates.
      */
-    suspend fun animate(
+    public suspend fun animate(
         composition: LottieComposition?,
         iteration: Int = this.iteration,
         iterations: Int = this.iterations,

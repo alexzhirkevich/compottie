@@ -50,11 +50,13 @@ publishing {
     }
 }
 
-if (System.getenv("GPG_KEY") != null) {
+if (System.getenv("GPG_KEY") != null || findProperty("GPG_KEY") != null) {
     signing {
         useInMemoryPgpKeys(
-            Base64.getDecoder().decode(System.getenv("GPG_KEY")).decodeToString(),
-            System.getenv("GPG_KEY_PWD"),
+            Base64.getDecoder().decode(
+                System.getenv("GPG_KEY") ?: findProperty("GPG_KEY") as String
+            ).decodeToString(),
+            System.getenv("GPG_KEY_PWD") ?: findProperty("GPG_KEY_PWD") as String,
         )
         sign(publishing.publications)
     }

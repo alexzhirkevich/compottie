@@ -42,6 +42,7 @@ internal class Animation(
 
     val markers : List<Marker> = emptyList()
 ) {
+
     fun deepCopy() : Animation {
         return Animation(
             frameRate = frameRate,

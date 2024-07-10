@@ -1,14 +1,23 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 
-internal fun <T> evaluate(
-    expression : String,
-    state: AnimationState,
-    value : T
-) : T {
+internal val EXPR_DEBUG_PRINT_ENABLED = false
 
-    // TODO: support expressions
-    return value
+internal fun interface Expression {
+
+    operator fun invoke(
+        property: RawProperty<Any>,
+        context: EvaluationContext,
+        state: AnimationState
+    ): Any
+
+    object UndefinedExpression: Expression {
+        override fun invoke(
+            property: RawProperty<Any>,
+            context: EvaluationContext,
+            state: AnimationState,
+        ) = Undefined
+    }
 }
-

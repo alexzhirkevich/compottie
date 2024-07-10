@@ -1,5 +1,8 @@
 package io.github.alexzhirkevich.compottie.dynamic
 
+import androidx.compose.ui.util.fastMaxBy
+import kotlin.reflect.KClass
+
 @PublishedApi
 internal class DynamicShapeLayerProvider(
     private val basePath : String? = null,
@@ -11,7 +14,9 @@ internal class DynamicShapeLayerProvider(
     @PublishedApi
     internal val shapes = mutableMapOf<String, DynamicShape>()
 
-    override fun group(vararg path : String, builder: DynamicShapeLayer.() -> Unit) {
+    internal val eachShapes = mutableMapOf<Pair<String?, KClass<out DynamicShape>>, DynamicShape>()
+
+    override fun group(vararg path: String, builder: DynamicShapeLayer.() -> Unit) {
         DynamicShapeLayerProvider(
             basePath = layerPath(basePath, path.joinToString(LayerPathSeparator)),
             root = nRoot
@@ -43,9 +48,23 @@ internal class DynamicShapeLayerProvider(
     }
 
     internal inline operator fun <reified S : DynamicShape> get(path: String): S? =
-        shapes[path] as? S
+        getInternal(path, S::class) as S?
 
-    private operator fun <T : DynamicShape> set(path : List<String>, instance : T){
-        nRoot.shapes[layerPath(basePath, path.joinToString(LayerPathSeparator))] = instance
+    private inline operator fun <reified T : DynamicShape> set(path: List<String>, instance: T) {
+        if (path.isNotEmpty()) {
+            nRoot.shapes[layerPath(basePath, path.joinToString(LayerPathSeparator))] = instance
+        } else {
+            nRoot.eachShapes[basePath to T::class] = instance
+        }
+    }
+
+    private fun <S : DynamicShape> getInternal(path: String, clazz: KClass<S>): DynamicShape? {
+        (nRoot.shapes[path])?.let { return it }
+
+        val key = nRoot.eachShapes.keys
+            .filter { it.second == clazz }
+            .fastMaxBy { it.first.orEmpty().commonPrefixWith(path).length }
+
+        return nRoot.eachShapes[key]
     }
 }

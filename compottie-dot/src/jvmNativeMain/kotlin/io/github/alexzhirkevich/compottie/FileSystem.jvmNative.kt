@@ -8,7 +8,7 @@ import okio.Path.Companion.toPath
 import okio.SYSTEM
 
 @InternalCompottieApi
-actual fun defaultFileSystem() : FileSystem = FileSystem.SYSTEM
+public actual fun defaultFileSystem() : FileSystem = FileSystem.SYSTEM
 //
 //actual typealias FilePath = String
 //

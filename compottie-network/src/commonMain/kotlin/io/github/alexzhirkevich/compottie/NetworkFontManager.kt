@@ -21,7 +21,7 @@ import okio.Path
  * @param cacheStrategy caching strategy. Caching to system temp dir by default
  * */
 @Stable
-fun NetworkFontManager(
+public fun NetworkFontManager(
     client: HttpClient = DefaultHttpClient,
     request : NetworkRequest = GetRequest,
     cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,

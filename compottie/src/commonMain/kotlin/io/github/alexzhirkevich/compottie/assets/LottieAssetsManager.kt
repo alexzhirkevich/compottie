@@ -6,7 +6,7 @@ import androidx.compose.runtime.Stable
  * Used to fetch lottie assets that are not embedded to the animation JSON file
  * */
 @Stable
-interface LottieAssetsManager {
+public interface LottieAssetsManager {
 
     /**
      * Load image asset
@@ -19,11 +19,11 @@ interface LottieAssetsManager {
      *
      * @param name asset name and extension (for example image.png)
      * */
-    suspend fun image(image: LottieImage): ImageRepresentable?
+    public suspend fun image(image: LottieImageSpec): ImageRepresentable?
 }
 
 internal object EmptyAssetsManager : LottieAssetsManager {
-    override suspend fun image(image: LottieImage): ImageRepresentable? {
+    override suspend fun image(image: LottieImageSpec): ImageRepresentable? {
         return null
     }
 }

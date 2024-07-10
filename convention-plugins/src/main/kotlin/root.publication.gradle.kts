@@ -18,6 +18,9 @@ nexusPublishing {
             if (System.getenv("OSSRH_PASSWORD") != null) {
                 username.set(System.getenv("OSSRH_USERNAME"))
                 password.set(System.getenv("OSSRH_PASSWORD"))
+            } else if (findProperty("OSSRH_PASSWORD") != null) {
+                username.set(findProperty("OSSRH_USERNAME") as String)
+                password.set(findProperty("OSSRH_PASSWORD") as String)
             }
         }
     }

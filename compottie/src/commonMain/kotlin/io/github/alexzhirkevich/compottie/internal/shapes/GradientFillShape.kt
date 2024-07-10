@@ -17,14 +17,14 @@ import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
-import io.github.alexzhirkevich.compottie.internal.animation.GradientColors
-import io.github.alexzhirkevich.compottie.internal.animation.GradientType
 import io.github.alexzhirkevich.compottie.internal.animation.defaultOpacity
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsState
 import io.github.alexzhirkevich.compottie.internal.helpers.FillRule
+import io.github.alexzhirkevich.compottie.internal.helpers.GradientColors
+import io.github.alexzhirkevich.compottie.internal.helpers.GradientType
 import io.github.alexzhirkevich.compottie.internal.helpers.asComposeBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.asPathFillType
 import io.github.alexzhirkevich.compottie.internal.platform.GradientCache
