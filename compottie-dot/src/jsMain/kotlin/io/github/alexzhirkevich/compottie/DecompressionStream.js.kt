@@ -6,19 +6,19 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import kotlin.js.Promise
 
-external class DecompressionStream(alg : String)
+internal external class DecompressionStream(alg : String)
 
-external interface UnderlyingSource {
+internal external interface UnderlyingSource {
     fun start(controller: SourceController)
 }
 
-external interface SourceController {
+internal external interface SourceController {
     fun enqueue(data : ByteArray)
 
     fun close()
 }
 
-external class ReadableStream(
+internal external class ReadableStream(
     source: UnderlyingSource
 ) {
     fun pipeThrough(decompressionStream: DecompressionStream) : ReadableStream
@@ -26,11 +26,11 @@ external class ReadableStream(
     fun getReader() : StreamReader
 }
 
-external interface StreamReader {
+internal external interface StreamReader {
     fun read() : Promise<StreamReadResult>
 }
 
-external interface StreamReadResult {
+internal external interface StreamReadResult {
     val done : Boolean
 
     val value : ArrayBufferView

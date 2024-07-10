@@ -7,7 +7,7 @@ internal actual fun CharSequence.codePointAt(index : Int) =
 internal actual fun charCount(codePoint : Int): Int = Character.charCount(codePoint)
 
 
-val modifierSet = setOf(
+private val modifierSet = setOf(
     Character.FORMAT,
     Character.MODIFIER_SYMBOL,
     Character.NON_SPACING_MARK,

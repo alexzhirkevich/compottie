@@ -3,7 +3,7 @@ package io.github.alexzhirkevich.compottie
 import android.content.Context
 import androidx.startup.Initializer
 
-class CompottieInitializer : Initializer<Compottie> {
+public class CompottieInitializer : Initializer<Compottie> {
 
     @OptIn(InternalCompottieApi::class)
     override fun create(context: Context): Compottie {

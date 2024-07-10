@@ -129,7 +129,7 @@ public suspend fun LottieCompositionSpec.Companion.ResourceString(
 public fun App() {
 
 //    return LottieFontExample()
-//    return AllExamples()
+    return AllExamples()
 //    return LottieList()
 
     val composition = rememberLottieComposition() {

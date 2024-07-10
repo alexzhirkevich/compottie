@@ -50,14 +50,12 @@ publishing {
     }
 }
 
-if (System.getenv("GPG_KEY") != null || findProperty("GPG_KEY") != null) {
-    signing {
-        useInMemoryPgpKeys(
-            Base64.getDecoder().decode(
-                System.getenv("GPG_KEY") ?: findProperty("GPG_KEY") as String
-            ).decodeToString(),
-            System.getenv("GPG_KEY_PWD") ?: findProperty("GPG_KEY_PWD") as String,
-        )
-        sign(publishing.publications)
-    }
+signing {
+    useInMemoryPgpKeys(
+        Base64.getDecoder().decode(
+            rootProject.ext.takeIf { it.has("GPG_KEY") }?.get("GPG_KEY") as? String ?: return@signing
+        ).decodeToString(),
+        rootProject.ext.takeIf { it.has("GPG_KEY_PWD") }?.get("GPG_KEY_PWD") as? String ?: return@signing
+    )
+    sign(publishing.publications)
 }

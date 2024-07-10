@@ -1,5 +1,22 @@
+import gradle.kotlin.dsl.accessors._2502cef48cff830615fe1c6d6ab5e104.ext
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("io.github.gradle-nexus.publish-plugin")
+}
+
+rootProject.projectDir.resolve("local.properties").let {
+    if (it.exists()) {
+        Properties().apply {
+            load(FileInputStream(it))
+        }.also {
+            it.forEach { (k,v)-> rootProject.ext.set(k.toString(), v) }
+        }
+        System.getenv().forEach { (k,v) ->
+            rootProject.ext.set(k, v)
+        }
+    }
 }
 
 allprojects {
@@ -15,13 +32,8 @@ nexusPublishing {
             nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
             snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
 
-            if (System.getenv("OSSRH_PASSWORD") != null) {
-                username.set(System.getenv("OSSRH_USERNAME"))
-                password.set(System.getenv("OSSRH_PASSWORD"))
-            } else if (findProperty("OSSRH_PASSWORD") != null) {
-                username.set(findProperty("OSSRH_USERNAME") as String)
-                password.set(findProperty("OSSRH_PASSWORD") as String)
-            }
+            username.set(rootProject.ext.takeIf { it.has("OSSRH_USERNAME") }?.get("OSSRH_USERNAME") as? String? ?: return@sonatype)
+            password.set(rootProject.ext.takeIf { it.has("OSSRH_PASSWORD") }?.get("OSSRH_PASSWORD") as? String? ?: return@sonatype)
         }
     }
 }

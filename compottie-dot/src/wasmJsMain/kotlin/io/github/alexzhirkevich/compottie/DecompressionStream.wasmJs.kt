@@ -7,9 +7,9 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import kotlin.js.Promise
 
-external class DecompressionStream(alg : String)
+internal external class DecompressionStream(alg : String)
 
-external class ReadableStream(
+internal external class ReadableStream(
     source: JsAny
 ) {
     fun pipeThrough(decompressionStream: DecompressionStream) : ReadableStream
@@ -17,11 +17,11 @@ external class ReadableStream(
     fun getReader() : StreamReader
 }
 
-external interface StreamReader {
+internal external interface StreamReader {
     fun read() : Promise<StreamReadResult>
 }
 
-external interface StreamReadResult : JsAny {
+internal external interface StreamReadResult : JsAny {
     val done : Boolean
 
     val value : ArrayBufferView
