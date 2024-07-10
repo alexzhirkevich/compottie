@@ -8,7 +8,7 @@ import okio.Sink
 import okio.Source
 
 @InternalCompottieApi
-internal actual fun defaultFileSystem() : FileSystem = ThrowingFileSystem
+public actual fun defaultFileSystem() : FileSystem = ThrowingFileSystem
 
 private object ThrowingFileSystem : FileSystem() {
 

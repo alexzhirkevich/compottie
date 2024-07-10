@@ -64,6 +64,8 @@ internal class DynamicShapeLayerProvider(
         val key = nRoot.eachShapes.keys
             .filter { it.second == clazz }
             .fastMaxBy { it.first.orEmpty().commonPrefixWith(path).length }
+            ?.takeIf { it.first?.commonPrefixWith(path)?.length != 0 }
+            ?: return null
 
         return nRoot.eachShapes[key]
     }
