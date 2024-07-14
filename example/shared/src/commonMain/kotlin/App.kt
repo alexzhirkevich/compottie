@@ -32,7 +32,10 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.compottie.Compottie
@@ -129,7 +132,7 @@ public suspend fun LottieCompositionSpec.Companion.ResourceString(
 public fun App() {
 
 //    return LottieFontExample()
-    return AllExamples()
+//    return AllExamples()
 //    return LottieList()
 
     val composition = rememberLottieComposition() {

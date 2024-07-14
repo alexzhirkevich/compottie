@@ -20,6 +20,7 @@ dependencyResolutionManagement {
 rootProject.name = "compottie"
 include(":compottie")
 include(":compottie-dot")
+include(":compottie-avp")
 include(":compottie-network")
 include(":compottie-resources")
 include(":example:desktopApp")

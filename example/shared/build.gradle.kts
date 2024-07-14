@@ -20,6 +20,7 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":compottie"))
             implementation(project(":compottie-dot"))
+            implementation(project(":compottie-avp"))
             implementation(project(":compottie-network"))
             implementation(project(":compottie-resources"))
 //            implementation("io.github.alexzhirkevich:compottie:2.0.0-beta01")
