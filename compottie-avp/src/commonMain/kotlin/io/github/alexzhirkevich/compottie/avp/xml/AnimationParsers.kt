@@ -8,12 +8,15 @@ import io.github.alexzhirkevich.compottie.avp.animator.ColorData
 import io.github.alexzhirkevich.compottie.avp.animator.DynamicFloatAnimator
 import io.github.alexzhirkevich.compottie.avp.animator.DynamicPaintAnimator
 import io.github.alexzhirkevich.compottie.avp.animator.DynamicPathAnimator
+import io.github.alexzhirkevich.compottie.avp.animator.FloatAnimator
 import io.github.alexzhirkevich.compottie.avp.animator.ObjectAnimator
+import io.github.alexzhirkevich.compottie.avp.animator.PaintAnimator
+import io.github.alexzhirkevich.compottie.avp.animator.PathAnimator
 import org.jetbrains.compose.resources.vector.xmldom.Element
 import org.jetbrains.compose.resources.vector.childrenSequence
 import org.jetbrains.compose.resources.vector.xmldom.MalformedXMLException
 
-internal fun Element.parseAnimation() : List<ObjectAnimator<*, *>> {
+internal fun Element.parseObjectAnimators() : List<ObjectAnimator<*, *>> {
     if (this.nodeName == "set") {
         return childrenSequence
                 .filterIsInstance<Element>()
@@ -33,11 +36,13 @@ private fun Element.toObjectAnimator() : ObjectAnimator<*, *> {
     val duration = androidAttribute("duration").toFloat()
     val valueFrom = androidAttribute("valueFrom")
     val valueTo = androidAttribute("valueTo")
+    val property = AnimatedVectorProperty.forName(androidAttribute("propertyName"))
 
     return getValueType(valueType, valueFrom).toAnimator(
         duration,
         valueFrom,
-        valueTo
+        valueTo,
+        property = property
     )
 }
 
@@ -78,10 +83,11 @@ private sealed interface ValueType<T>  {
 }
 
 @Suppress("unchecked_cast")
-private fun <T> ValueType<T>.toAnimator(
+private fun ValueType<*>.toAnimator(
     duration : Float,
     from : String,
-    to : String
+    to : String,
+    property: AnimatedVectorProperty<*>
 ) : ObjectAnimator<*, *> {
 
     val fromValue = parse(from)
@@ -93,7 +99,8 @@ private fun <T> ValueType<T>.toAnimator(
             valueFrom = fromValue as ColorData,
             valueTo = toValue as ColorData,
             delay = 0f,
-            interpolator = LinearEasing
+            easing = LinearEasing,
+            property = property as AnimatedVectorProperty<PaintAnimator>
         )
 
         ValueType.Number -> DynamicFloatAnimator(
@@ -101,7 +108,8 @@ private fun <T> ValueType<T>.toAnimator(
             valueFrom = fromValue as Float,
             valueTo = toValue as Float,
             delay = 0f,
-            interpolator = LinearEasing
+            easing = LinearEasing,
+            property = property as AnimatedVectorProperty<FloatAnimator>
         )
 
         ValueType.Path -> DynamicPathAnimator(
@@ -109,7 +117,8 @@ private fun <T> ValueType<T>.toAnimator(
             valueFrom = fromValue as List<PathNode>,
             valueTo = toValue as List<PathNode>,
             delay = 0f,
-            interpolator = LinearEasing
+            easing = LinearEasing,
+            property = property as AnimatedVectorProperty<PathAnimator>
         )
     }
 }

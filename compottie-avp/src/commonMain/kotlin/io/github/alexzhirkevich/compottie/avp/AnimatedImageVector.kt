@@ -430,27 +430,8 @@ internal class AnimatedVectorGroup internal constructor(
      * Child Vector nodes that are part of this group, this can contain
      * paths or other groups
      */
-    private val children: List<AnimatedVectorNode> = emptyList()
-) : AnimatedVectorNode(), Iterable<AnimatedVectorNode> {
-
-    val size: Int
-        get() = children.size
-
-    operator fun get(index: Int): AnimatedVectorNode {
-        return children[index]
-    }
-
-    override fun iterator(): Iterator<AnimatedVectorNode> {
-        return object : Iterator<AnimatedVectorNode> {
-
-            val it = children.iterator()
-
-            override fun hasNext(): Boolean = it.hasNext()
-
-            override fun next(): AnimatedVectorNode = it.next()
-        }
-    }
-}
+    val children: List<AnimatedVectorNode> = emptyList()
+) : AnimatedVectorNode()
 
 /**
  * Leaf node of a Vector graphics tree. This specifies a path shape and parameters

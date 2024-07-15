@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.avp
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.DefaultAlpha
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
@@ -22,24 +23,36 @@ import androidx.compose.ui.graphics.vector.DefaultTrimPathStart
 import androidx.compose.ui.graphics.vector.EmptyPath
 import androidx.compose.ui.graphics.vector.VNode
 import androidx.compose.ui.util.fastForEach
+import io.github.alexzhirkevich.compottie.avp.animator.ColorData
 import io.github.alexzhirkevich.compottie.avp.animator.StaticFloatAnimator
+import io.github.alexzhirkevich.compottie.avp.animator.StaticPaintAnimator
 import io.github.alexzhirkevich.compottie.avp.animator.StaticPathAnimator
+import io.github.alexzhirkevich.compottie.avp.xml.AnimatedVectorProperty
 
-internal val DefaultRotationAnimator = StaticFloatAnimator(DefaultRotation)
-internal val DefaultPivotXAnimator = StaticFloatAnimator(DefaultPivotX)
-internal val DefaultPivotYAnimator = StaticFloatAnimator(DefaultPivotY)
-internal val DefaultScaleXAnimator = StaticFloatAnimator(DefaultScaleX)
-internal val DefaultScaleYAnimator = StaticFloatAnimator(DefaultScaleY)
-internal val DefaultTranslationXAnimator = StaticFloatAnimator(DefaultTranslationX)
-internal val DefaultTranslationYAnimator = StaticFloatAnimator(DefaultTranslationY)
-internal val EmptyPathAnimator = StaticPathAnimator(EmptyPath)
+internal val DefaultRotationAnimator = StaticFloatAnimator(DefaultRotation, AnimatedVectorProperty.Rotation)
+internal val DefaultPivotXAnimator = StaticFloatAnimator(DefaultPivotX, AnimatedVectorProperty.PivotX)
+internal val DefaultPivotYAnimator = StaticFloatAnimator(DefaultPivotY, AnimatedVectorProperty.PivotY)
+internal val DefaultScaleXAnimator = StaticFloatAnimator(DefaultScaleX, AnimatedVectorProperty.ScaleX)
+internal val DefaultScaleYAnimator = StaticFloatAnimator(DefaultScaleY, AnimatedVectorProperty.ScaleY)
+internal val DefaultTranslationXAnimator = StaticFloatAnimator(DefaultTranslationX, AnimatedVectorProperty.TranslationX)
+internal val DefaultTranslationYAnimator = StaticFloatAnimator(DefaultTranslationY, AnimatedVectorProperty.TranslationY)
+internal val EmptyPathAnimator = StaticPathAnimator(EmptyPath, AnimatedVectorProperty.PathData)
+internal val TransparentFillColorAnimator = StaticPaintAnimator(
+    ColorData.Solid(Color.Transparent),
+    AnimatedVectorProperty.FillColor
+)
+internal val TransparentStrokeColorAnimator = StaticPaintAnimator(
+    ColorData.Solid(Color.Transparent),
+    AnimatedVectorProperty.StrokeColor
+)
 
-internal val DefaultTrimPathStartAnimator = StaticFloatAnimator(DefaultTrimPathStart)
-internal val DefaultTrimPathEndAnimator = StaticFloatAnimator(DefaultTrimPathEnd)
-internal val DefaultTrimPathOffsetAnimator = StaticFloatAnimator(DefaultTrimPathOffset)
-internal val DefaultStrokeLineMiterAnimator = StaticFloatAnimator(DefaultStrokeLineMiter)
-internal val DefaultStrokeLineWidthAnimator = StaticFloatAnimator(DefaultStrokeLineWidth)
-internal val DefaultAlphaAnimator = StaticFloatAnimator(DefaultAlpha)
+internal val DefaultTrimPathStartAnimator = StaticFloatAnimator(DefaultTrimPathStart, AnimatedVectorProperty.TrimPathStart)
+internal val DefaultTrimPathEndAnimator = StaticFloatAnimator(DefaultTrimPathEnd, AnimatedVectorProperty.TrimPathEnd)
+internal val DefaultTrimPathOffsetAnimator = StaticFloatAnimator(DefaultTrimPathOffset, AnimatedVectorProperty.TrimPathOffset)
+internal val DefaultStrokeLineMiterAnimator = StaticFloatAnimator(DefaultStrokeLineMiter, AnimatedVectorProperty.StrokeLineMiter)
+internal val DefaultStrokeLineWidthAnimator = StaticFloatAnimator(DefaultStrokeLineWidth, AnimatedVectorProperty.StrokeLineWidth)
+internal val DefaultFillAlphaAnimator = StaticFloatAnimator(DefaultAlpha, AnimatedVectorProperty.FillAlpha)
+internal val DefaultStrokeAlphaAnimator = StaticFloatAnimator(DefaultAlpha, AnimatedVectorProperty.StrokeAlpha)
 
 internal sealed class AnimatedVNode {
 
@@ -131,9 +144,15 @@ internal class AnimatedPathComponent(
 internal class AnimatedGroupComponent(
     private val group: AnimatedVectorGroup
 ) : AnimatedVNode() {
+
     private var groupMatrix: Matrix? = null
 
-    private val children = mutableListOf<VNode>()
+    private val children = group.children.map {
+        when (it) {
+            is AnimatedVectorGroup -> AnimatedGroupComponent(it)
+            is AnimatedVectorPath -> AnimatedPathComponent(it)
+        }
+    }
 
     private val willClipPath: Boolean
         get() = group.clipPathData !is StaticPathAnimator || group.clipPathData.value.isNotEmpty()
@@ -173,7 +192,7 @@ internal class AnimatedGroupComponent(
         }) {
             children.fastForEach { node ->
                 with(node) {
-                    this@draw.draw()
+                    draw(time)
                 }
             }
         }

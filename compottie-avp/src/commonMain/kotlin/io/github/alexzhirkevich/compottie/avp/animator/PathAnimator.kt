@@ -6,15 +6,17 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.vector.PathNode
 import androidx.compose.ui.graphics.vector.toPath
 import androidx.compose.ui.util.lerp
+import io.github.alexzhirkevich.compottie.avp.xml.AnimatedVectorProperty
 
-internal sealed class PathAnimator :  ObjectAnimator<List<PathNode>, Path>()
+public sealed class PathAnimator :  ObjectAnimator<List<PathNode>, Path>()
 
 internal class DynamicPathAnimator(
     override val duration: Float,
     override val valueFrom: List<PathNode>,
     override val valueTo: List<PathNode>,
     override val delay: Float,
-    override val interpolator: Easing
+    override val easing: Easing,
+    override val property: AnimatedVectorProperty<PathAnimator>,
 ) : PathAnimator() {
 
     init {
@@ -34,13 +36,14 @@ internal class DynamicPathAnimator(
 }
 
 internal class StaticPathAnimator(
-    val value : List<PathNode>
+    val value : List<PathNode>,
+    override val property: AnimatedVectorProperty<PathAnimator>,
 ) : PathAnimator() {
     override val delay: Float get() = 0f
     override val duration: Float get() = 0f
     override val valueFrom: List<PathNode> get() = value
     override val valueTo: List<PathNode> get() = value
-    override val interpolator: Easing get() = LinearEasing
+    override val easing: Easing get() = LinearEasing
 
     private val path = Path()
 

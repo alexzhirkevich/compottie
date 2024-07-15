@@ -20,44 +20,28 @@ package io.github.alexzhirkevich.compottie.avp.xml
 
 import io.github.alexzhirkevich.compottie.avp.AnimatedImageVector
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathFillType
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.vector.DefaultGroupName
 import androidx.compose.ui.graphics.vector.DefaultPathName
-import io.github.alexzhirkevich.compottie.avp.DefaultPivotXAnimator
-import io.github.alexzhirkevich.compottie.avp.DefaultPivotYAnimator
-import io.github.alexzhirkevich.compottie.avp.DefaultRotationAnimator
-import io.github.alexzhirkevich.compottie.avp.DefaultScaleXAnimator
-import io.github.alexzhirkevich.compottie.avp.DefaultScaleYAnimator
-import io.github.alexzhirkevich.compottie.avp.DefaultTranslationXAnimator
-import io.github.alexzhirkevich.compottie.avp.DefaultTranslationYAnimator
 import io.github.alexzhirkevich.compottie.avp.EmptyPathAnimator
 import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.unit.Density
-import io.github.alexzhirkevich.compottie.avp.DefaultAlphaAnimator
-import io.github.alexzhirkevich.compottie.avp.DefaultStrokeLineMiterAnimator
-import io.github.alexzhirkevich.compottie.avp.DefaultStrokeLineWidthAnimator
-import io.github.alexzhirkevich.compottie.avp.DefaultTrimPathEndAnimator
-import io.github.alexzhirkevich.compottie.avp.DefaultTrimPathOffsetAnimator
-import io.github.alexzhirkevich.compottie.avp.DefaultTrimPathStartAnimator
 import io.github.alexzhirkevich.compottie.avp.animator.ColorData
 import io.github.alexzhirkevich.compottie.avp.animator.FloatAnimator
 import io.github.alexzhirkevich.compottie.avp.animator.ObjectAnimator
 import io.github.alexzhirkevich.compottie.avp.animator.PaintAnimator
 import io.github.alexzhirkevich.compottie.avp.animator.PathAnimator
 import io.github.alexzhirkevich.compottie.avp.animator.StaticFloatAnimator
+import io.github.alexzhirkevich.compottie.avp.animator.StaticPaintAnimator
 import io.github.alexzhirkevich.compottie.avp.animator.StaticPathAnimator
 import io.github.alexzhirkevich.compottie.avp.xml.BuildContext.Group
 import org.jetbrains.compose.resources.vector.xmldom.Element
-import org.jetbrains.compose.resources.vector.xmldom.Node
 import org.jetbrains.compose.resources.vector.parseDp
 import org.jetbrains.compose.resources.vector.parseFillType
-import org.jetbrains.compose.resources.vector.parseColorValue
 import org.jetbrains.compose.resources.vector.parseColorValue
 import org.jetbrains.compose.resources.vector.parseStrokeCap
 import org.jetbrains.compose.resources.vector.parseStrokeJoin
@@ -94,9 +78,9 @@ private class BuildContext {
     }
 }
 
-internal fun Element.toImageVector(
+internal fun Element.toAnimatedImageVector(
     density: Density,
-    animators : Map<String, Map<VectorProperty, ObjectAnimator<*,*>>>,
+    animators : Map<String, Map<AnimatedVectorProperty<*>, ObjectAnimator<*,*>>>,
 ): AnimatedImageVector {
     val context = BuildContext()
     val builder = AnimatedImageVector.Builder(
@@ -111,7 +95,7 @@ internal fun Element.toImageVector(
 
 private fun Element.parseVectorNodes(
     builder: AnimatedImageVector.Builder,
-    animators : Map<String,Map<VectorProperty, ObjectAnimator<*,*>>>,
+    animators : Map<String,Map<AnimatedVectorProperty<*>, ObjectAnimator<*,*>>>,
     context: BuildContext
 ) {
     childrenSequence
@@ -123,7 +107,7 @@ private fun Element.parseVectorNodes(
 
 private fun Element.parseVectorNode(
     builder: AnimatedImageVector.Builder,
-    animators : Map<String,Map<VectorProperty, ObjectAnimator<*,*>>>,
+    animators : Map<String,Map<AnimatedVectorProperty<*>, ObjectAnimator<*,*>>>,
     context: BuildContext
 ) {
     when (nodeName) {
@@ -133,96 +117,9 @@ private fun Element.parseVectorNode(
     }
 }
 
-private fun Element.parsePath(
-    builder: AnimatedImageVector.Builder,
-    animators : Map<String,Map<VectorProperty, ObjectAnimator<*,*>>>,
-) {
-    val name = attributeOrNull(ANDROID_NS, "name")
-    val thisAnimators = animators[name].orEmpty()
-
-    builder.addPath(
-        pathData = StaticPathAnimator(addPathNodes(attributeOrNull(ANDROID_NS, "pathData"))),
-        pathFillType = attributeOrNull(ANDROID_NS, "fillType")
-            ?.let(::parseFillType) ?: PathFillType.NonZero,
-        name = name ?: DefaultPathName,
-        fill = attributeOrNull(ANDROID_NS, "fillColor")?.let(::parseColorStops)
-            ?: apptAttr(ANDROID_NS, "fillColor")?.let(Element::parseColorStops)?.let(::StaticPathAnimator),
-        fillAlpha = floatAnimator(
-            thisAnimators,
-            VectorProperty.FillAlpha,
-            DefaultAlphaAnimator
-        ),
-        stroke = attributeOrNull(ANDROID_NS, "strokeColor")?.let(::parseColorStops)
-            ?: apptAttr(ANDROID_NS, "strokeColor")?.let(Element::parseColorStops),
-        strokeAlpha = floatAnimator(
-            thisAnimators,
-            VectorProperty.StrokeAlpha,
-            DefaultAlphaAnimator
-        ),
-        strokeLineWidth = attributeOrNull(ANDROID_NS, "strokeWidth")?.toFloat()?.let(::StaticFloatAnimator)
-            ?: DefaultStrokeLineWidthAnimator,
-        strokeLineCap = attributeOrNull(ANDROID_NS, "strokeLineCap")
-            ?.let(::parseStrokeCap) ?: StrokeCap.Butt,
-        strokeLineJoin = attributeOrNull(ANDROID_NS, "strokeLineJoin")
-            ?.let(::parseStrokeJoin) ?: StrokeJoin.Miter,
-        strokeLineMiter = floatAnimator(
-            thisAnimators,
-            VectorProperty.StrokeLineMiter,
-            DefaultStrokeLineMiterAnimator
-        ),
-        trimPathStart = floatAnimator(
-            thisAnimators,
-            VectorProperty.TrimPathStart,
-            DefaultTrimPathStartAnimator
-        ),
-        trimPathEnd = floatAnimator(
-            thisAnimators,
-            VectorProperty.TrimPathEnd,
-            DefaultTrimPathEndAnimator
-        ),
-        trimPathOffset = floatAnimator(
-            thisAnimators,
-            VectorProperty.TrimPathOffset,
-            DefaultTrimPathOffsetAnimator
-        )
-    )
-}
-
-private fun Element.floatAnimator(
-    animators: Map<VectorProperty, ObjectAnimator<*,*>>,
-    property: VectorProperty,
-    default : FloatAnimator
-) : FloatAnimator {
-    return (animators[property] as? FloatAnimator?)
-        ?: attributeOrNull(ANDROID_NS, property.property)?.toFloat()?.let(::StaticFloatAnimator)
-        ?: default
-}
-
-private fun Element.pathAnimator(
-    animators: Map<VectorProperty, ObjectAnimator<*,*>>,
-    property: VectorProperty,
-    default : PathAnimator
-) : PathAnimator {
-    return (animators[property] as? PathAnimator?)
-        ?: attributeOrNull(ANDROID_NS, property.property)?.let(::addPathNodes)?.let(::StaticPathAnimator)
-        ?: default
-}
-
-private fun Element.parseClipPath(
-    builder: AnimatedImageVector.Builder,
-    animators : Map<String,Map<VectorProperty, ObjectAnimator<*,*>>>,
-    context: BuildContext
-) {
-    builder.addGroup(
-        name = attributeOrNull(ANDROID_NS, "name") ?: DefaultPathName,
-        clipPathData = StaticPathAnimator(addPathNodes(attributeOrNull(ANDROID_NS, "pathData")))
-    )
-    context.currentGroups.add(Group.Virtual)
-}
-
 private fun Element.parseGroup(
     builder: AnimatedImageVector.Builder,
-    animators : Map<String,Map<VectorProperty, ObjectAnimator<*,*>>>,
+    animators : Map<String,Map<AnimatedVectorProperty<*>, ObjectAnimator<*,*>>>,
     context: BuildContext
 ) {
     val name = attributeOrNull(ANDROID_NS, "name")
@@ -231,13 +128,34 @@ private fun Element.parseGroup(
 
     builder.addGroup(
         name = name ?: DefaultGroupName,
-        rotate = floatAnimator(thisAnimators, VectorProperty.Rotation, DefaultRotationAnimator),
-        pivotX = floatAnimator(thisAnimators, VectorProperty.PivotX, DefaultPivotXAnimator),
-        pivotY = floatAnimator(thisAnimators, VectorProperty.PivotY, DefaultPivotYAnimator),
-        scaleX = floatAnimator(thisAnimators, VectorProperty.ScaleX, DefaultScaleXAnimator),
-        scaleY = floatAnimator(thisAnimators, VectorProperty.ScaleY, DefaultScaleYAnimator),
-        translationX = floatAnimator(thisAnimators, VectorProperty.TranslationX, DefaultTranslationXAnimator),
-        translationY = floatAnimator(thisAnimators, VectorProperty.TranslationY, DefaultTranslationYAnimator),
+        rotate = parseFloatAnimator(
+            thisAnimators,
+            AnimatedVectorProperty.Rotation,
+        ),
+        pivotX = parseFloatAnimator(
+            thisAnimators,
+            AnimatedVectorProperty.PivotX,
+        ),
+        pivotY = parseFloatAnimator(
+            thisAnimators,
+            AnimatedVectorProperty.PivotY,
+        ),
+        scaleX = parseFloatAnimator(
+            thisAnimators,
+            AnimatedVectorProperty.ScaleX,
+        ),
+        scaleY = parseFloatAnimator(
+            thisAnimators,
+            AnimatedVectorProperty.ScaleY,
+        ),
+        translationX = parseFloatAnimator(
+            thisAnimators,
+            AnimatedVectorProperty.TranslationX,
+        ),
+        translationY = parseFloatAnimator(
+            thisAnimators,
+            AnimatedVectorProperty.TranslationY,
+        ),
         clipPathData = EmptyPathAnimator
     )
     context.currentGroups.add(Group.Real)
@@ -250,13 +168,128 @@ private fun Element.parseGroup(
     } while (removedGroup == Group.Virtual)
 }
 
-private fun Element.parseElementBrush(): Brush? =
+private fun Element.parsePath(
+    builder: AnimatedImageVector.Builder,
+    animators : Map<String,Map<AnimatedVectorProperty<*>, ObjectAnimator<*,*>>>,
+) {
+    val name = attributeOrNull(ANDROID_NS, "name")
+    val thisAnimators = animators[name].orEmpty()
+
+    builder.addPath(
+        pathData = parsePathAnimator(thisAnimators, AnimatedVectorProperty.PathData),
+        pathFillType = attributeOrNull(ANDROID_NS, "fillType")
+            ?.let(::parseFillType) ?: PathFillType.NonZero,
+        name = name ?: DefaultPathName,
+        fill = parseColorAnimator(
+            thisAnimators,
+            AnimatedVectorProperty.FillColor
+        ),
+        fillAlpha = parseFloatAnimator(
+            thisAnimators,
+            AnimatedVectorProperty.FillAlpha
+        ),
+        stroke =  parseColorAnimator(
+            thisAnimators,
+            AnimatedVectorProperty.StrokeColor
+        ),
+        strokeAlpha = parseFloatAnimator(
+            thisAnimators,
+            AnimatedVectorProperty.StrokeAlpha
+        ),
+        strokeLineWidth = parseFloatAnimator(
+            thisAnimators,
+            AnimatedVectorProperty.StrokeLineWidth
+        ),
+        strokeLineCap = attributeOrNull(ANDROID_NS, "strokeLineCap")
+            ?.let(::parseStrokeCap) ?: StrokeCap.Butt,
+        strokeLineJoin = attributeOrNull(ANDROID_NS, "strokeLineJoin")
+            ?.let(::parseStrokeJoin) ?: StrokeJoin.Miter,
+        strokeLineMiter = parseFloatAnimator(
+            thisAnimators,
+            AnimatedVectorProperty.StrokeLineMiter
+        ),
+        trimPathStart = parseFloatAnimator(
+            thisAnimators,
+            AnimatedVectorProperty.TrimPathStart
+        ),
+        trimPathEnd = parseFloatAnimator(
+            thisAnimators,
+            AnimatedVectorProperty.TrimPathEnd
+        ),
+        trimPathOffset = parseFloatAnimator(
+            thisAnimators,
+            AnimatedVectorProperty.TrimPathOffset,
+        )
+    )
+}
+
+private fun Element.parseColorAnimator(
+    animators: Map<AnimatedVectorProperty<*>, ObjectAnimator<*,*>>,
+    property: AnimatedVectorProperty<PaintAnimator>
+) : PaintAnimator {
+    return (animators[property] as? PaintAnimator?)
+        ?: attributeOrNull(ANDROID_NS, property.propertyName)?.let {
+            StaticPaintAnimator(ColorData.Solid(Color(parseColorValue(it))), property)
+        }
+        ?: apptAttr(ANDROID_NS, property.propertyName)?.let {
+            when (attributeOrNull(ANDROID_NS, "type")) {
+                "linear" -> parseLinearGradient()
+                "radial" -> parseRadialGradient()
+                "sweep" -> parseSweepGradient()
+                else -> return@let property.defaultAnimator
+            }.let {
+                StaticPaintAnimator(it, property)
+            }
+        }
+        ?: property.defaultAnimator
+}
+
+
+private fun Element.parseFloatAnimator(
+    animators: Map<AnimatedVectorProperty<*>, ObjectAnimator<*,*>>,
+    property: AnimatedVectorProperty<FloatAnimator>
+) : FloatAnimator {
+    return (animators[property] as? FloatAnimator?)
+        ?: attributeOrNull(ANDROID_NS, property.propertyName)?.toFloat()
+            ?.let { StaticFloatAnimator(it, property) }
+        ?: property.defaultAnimator
+}
+
+private fun Element.parsePathAnimator(
+    animators: Map<AnimatedVectorProperty<*>, ObjectAnimator<*,*>>,
+    property: AnimatedVectorProperty<PathAnimator>
+) : PathAnimator {
+    return (animators[property] as? PathAnimator?)
+        ?: attributeOrNull(ANDROID_NS, property.propertyName)?.let(::addPathNodes)?.let {
+            StaticPathAnimator(it, property)
+        } ?: property.defaultAnimator
+}
+
+private fun Element.parseClipPath(
+    builder: AnimatedImageVector.Builder,
+    animators : Map<String,Map<AnimatedVectorProperty<*>, ObjectAnimator<*,*>>>,
+    context: BuildContext
+) {
+    val name = attributeOrNull(ANDROID_NS, "name")
+
+    builder.addGroup(
+        name = name ?: DefaultPathName,
+        clipPathData = parsePathAnimator(
+            animators[name].orEmpty(),
+            AnimatedVectorProperty.PathData
+        )
+    )
+    context.currentGroups.add(Group.Virtual)
+}
+
+
+private fun Element.parseElementBrush(): ColorData? =
     childrenSequence
         .filterIsInstance<Element>()
         .find { it.nodeName == "gradient" }
         ?.parseGradient()
 
-private fun Element.parseGradient(): Brush? {
+private fun Element.parseGradient(): ColorData? {
     return when (attributeOrNull(ANDROID_NS, "type")) {
         "linear" -> parseLinearGradient()
         "radial" -> parseRadialGradient()
@@ -278,7 +311,7 @@ private fun Element.parseLinearGradient() = ColorData.LinearGradient(
     tileMode = attributeOrNull(ANDROID_NS, "tileMode")?.let(::parseTileMode) ?: TileMode.Clamp
 )
 
-private fun Element.parseRadialGradient() = Brush.radialGradient(
+private fun Element.parseRadialGradient() = ColorData.RadialGradient(
     colorStops = parseColorStops(),
     center = Offset(
         attributeOrNull(ANDROID_NS, "centerX")?.toFloat() ?: 0f,
@@ -288,7 +321,7 @@ private fun Element.parseRadialGradient() = Brush.radialGradient(
     tileMode = attributeOrNull(ANDROID_NS, "tileMode")?.let(::parseTileMode) ?: TileMode.Clamp
 )
 
-private fun Element.parseSweepGradient() = Brush.sweepGradient(
+private fun Element.parseSweepGradient() = ColorData.SweepGradient(
     colorStops = parseColorStops(),
     center = Offset(
         attributeOrNull(ANDROID_NS, "centerX")?.toFloat() ?: 0f,

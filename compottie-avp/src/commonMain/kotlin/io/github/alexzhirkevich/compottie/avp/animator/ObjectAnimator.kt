@@ -1,8 +1,11 @@
 package io.github.alexzhirkevich.compottie.avp.animator
 
 import androidx.compose.animation.core.Easing
+import io.github.alexzhirkevich.compottie.avp.xml.AnimatedVectorProperty
 
-public sealed class ObjectAnimator<T, out R> {
+public sealed class ObjectAnimator<T, R> {
+
+    public abstract val property : AnimatedVectorProperty<out ObjectAnimator<T,R>>
 
     public abstract val delay: Float
 
@@ -12,7 +15,7 @@ public sealed class ObjectAnimator<T, out R> {
 
     public abstract val valueTo: T
 
-    public abstract val interpolator: Easing
+    public abstract val easing: Easing
 
     protected abstract fun interpolate(progress: Float): R
 
@@ -24,6 +27,6 @@ public sealed class ObjectAnimator<T, out R> {
             ((time - delay) / duration).coerceIn(0f, 1f)
         }
 
-        return interpolate(interpolator.transform(progress))
+        return interpolate(easing.transform(progress))
     }
 }

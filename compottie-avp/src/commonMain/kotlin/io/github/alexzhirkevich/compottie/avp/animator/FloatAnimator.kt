@@ -3,21 +3,24 @@ package io.github.alexzhirkevich.compottie.avp.animator
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.ui.util.lerp
+import io.github.alexzhirkevich.compottie.avp.xml.AnimatedVectorProperty
 
 public sealed class FloatAnimator : ObjectAnimator<Float, Float>()
 
 public fun FloatAnimator(
     duration: Float,
-    delay : Float,
     valueFrom: Float,
     valueTo: Float,
-    interpolator: Easing
+    property: AnimatedVectorProperty<FloatAnimator>,
+    delay : Float = 0f,
+    interpolator: Easing = LinearEasing,
 ) : FloatAnimator = DynamicFloatAnimator(
     duration = duration,
     valueFrom = valueFrom,
     valueTo = valueTo,
     delay = delay,
-    interpolator = interpolator
+    easing = interpolator,
+    property = property
 )
 
 internal class DynamicFloatAnimator(
@@ -25,7 +28,8 @@ internal class DynamicFloatAnimator(
     override val valueFrom: Float,
     override val valueTo: Float,
     override val delay: Float,
-    override val interpolator: Easing
+    override val easing: Easing,
+    override val property: AnimatedVectorProperty<FloatAnimator>
 ) : FloatAnimator() {
 
     override fun interpolate(progress: Float): Float {
@@ -34,17 +38,16 @@ internal class DynamicFloatAnimator(
 }
 
 internal class StaticFloatAnimator(
-    private val value : Float
+    private val value : Float,
+    override val property: AnimatedVectorProperty<FloatAnimator>
 ) : FloatAnimator() {
     override val delay: Float get() = 0f
     override val duration: Float get() = 0f
     override val valueFrom: Float get() = value
     override val valueTo: Float get() = value
-    override val interpolator: Easing get() = LinearEasing
+    override val easing: Easing get() = LinearEasing
 
     override fun interpolate(progress: Float): Float {
         return value
     }
 }
-
-internal fun Float.toAnimator() = StaticFloatAnimator(this)
