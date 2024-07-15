@@ -1,3 +1,4 @@
+@file: Suppress("invisible_member", "invisible_reference")
 package io.github.alexzhirkevich.compottie.avp.xml
 
 import androidx.compose.animation.core.LinearEasing
@@ -9,6 +10,7 @@ import io.github.alexzhirkevich.compottie.avp.animator.DynamicPaintAnimator
 import io.github.alexzhirkevich.compottie.avp.animator.DynamicPathAnimator
 import io.github.alexzhirkevich.compottie.avp.animator.ObjectAnimator
 import org.jetbrains.compose.resources.vector.xmldom.Element
+import org.jetbrains.compose.resources.vector.childrenSequence
 import org.jetbrains.compose.resources.vector.xmldom.MalformedXMLException
 
 internal fun Element.parseAnimation() : List<ObjectAnimator<*, *>> {
@@ -90,7 +92,7 @@ private fun <T> ValueType<T>.toAnimator(
             duration = duration,
             valueFrom = fromValue as ColorData,
             valueTo = toValue as ColorData,
-            startOffset = 0f,
+            delay = 0f,
             interpolator = LinearEasing
         )
 
@@ -98,7 +100,7 @@ private fun <T> ValueType<T>.toAnimator(
             duration = duration,
             valueFrom = fromValue as Float,
             valueTo = toValue as Float,
-            startOffset = 0f,
+            delay = 0f,
             interpolator = LinearEasing
         )
 
@@ -106,7 +108,7 @@ private fun <T> ValueType<T>.toAnimator(
             duration = duration,
             valueFrom = fromValue as List<PathNode>,
             valueTo = toValue as List<PathNode>,
-            startOffset = 0f,
+            delay = 0f,
             interpolator = LinearEasing
         )
     }

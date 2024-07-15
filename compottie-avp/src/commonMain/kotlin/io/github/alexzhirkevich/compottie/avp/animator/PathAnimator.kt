@@ -13,7 +13,7 @@ internal class DynamicPathAnimator(
     override val duration: Float,
     override val valueFrom: List<PathNode>,
     override val valueTo: List<PathNode>,
-    override val startOffset: Float,
+    override val delay: Float,
     override val interpolator: Easing
 ) : PathAnimator() {
 
@@ -36,7 +36,7 @@ internal class DynamicPathAnimator(
 internal class StaticPathAnimator(
     val value : List<PathNode>
 ) : PathAnimator() {
-    override val startOffset: Float get() = 0f
+    override val delay: Float get() = 0f
     override val duration: Float get() = 0f
     override val valueFrom: List<PathNode> get() = value
     override val valueTo: List<PathNode> get() = value

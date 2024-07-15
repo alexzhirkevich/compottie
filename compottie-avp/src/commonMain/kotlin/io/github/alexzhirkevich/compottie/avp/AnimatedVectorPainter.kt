@@ -13,22 +13,31 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntSize
+import io.github.alexzhirkevich.compottie.avp.animator.ObjectAnimator
+import org.jetbrains.compose.resources.DefaultComposeEnvironment
 import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.getResourceItemByEnvironment
 import kotlin.math.roundToInt
+
+
 
 @Composable
 public fun rememberAnimatedVectorPainter(
     resource : DrawableResource,
+    animations : List<ObjectAnimator<*,*>>,
     isAtAnd : Boolean
 ) : Painter {
-    TODO()
+    val environment = LocalComposeEnvironment.cu
+    val path =  resource.getResourceItemByEnvironment(environment).path
 }
 
+
 private class AnimatedVectorPainter(
-    vector: AnimatedImageVector,
+    private val vector: AnimatedImageVector,
     density : Density,
     time : () -> Float
 ) : Painter() {
+
     override val intrinsicSize: Size = density.run {
         DpSize(
             vector.defaultWidth,
@@ -37,8 +46,8 @@ private class AnimatedVectorPainter(
     }
 
     private val viewportSize = IntSize(
-        intrinsicSize.width.roundToInt(),
-        intrinsicSize.height.roundToInt()
+        vector.viewportWidth.roundToInt(),
+        vector.viewportHeight.roundToInt()
     )
 
     private val root = AnimatedGroupComponent(vector.root)

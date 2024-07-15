@@ -1,3 +1,5 @@
+@file: Suppress("invisible_member", "invisible_reference")
+
 /*
  * Copyright 2020 The Android Open Source Project
  *
@@ -46,13 +48,21 @@ import io.github.alexzhirkevich.compottie.avp.DefaultTrimPathStartAnimator
 import io.github.alexzhirkevich.compottie.avp.animator.ColorData
 import io.github.alexzhirkevich.compottie.avp.animator.FloatAnimator
 import io.github.alexzhirkevich.compottie.avp.animator.ObjectAnimator
+import io.github.alexzhirkevich.compottie.avp.animator.PaintAnimator
 import io.github.alexzhirkevich.compottie.avp.animator.PathAnimator
 import io.github.alexzhirkevich.compottie.avp.animator.StaticFloatAnimator
 import io.github.alexzhirkevich.compottie.avp.animator.StaticPathAnimator
-import io.github.alexzhirkevich.compottie.avp.animator.toAnimator
 import io.github.alexzhirkevich.compottie.avp.xml.BuildContext.Group
 import org.jetbrains.compose.resources.vector.xmldom.Element
 import org.jetbrains.compose.resources.vector.xmldom.Node
+import org.jetbrains.compose.resources.vector.parseDp
+import org.jetbrains.compose.resources.vector.parseFillType
+import org.jetbrains.compose.resources.vector.parseColorValue
+import org.jetbrains.compose.resources.vector.parseColorValue
+import org.jetbrains.compose.resources.vector.parseStrokeCap
+import org.jetbrains.compose.resources.vector.parseStrokeJoin
+import org.jetbrains.compose.resources.vector.parseTileMode
+import org.jetbrains.compose.resources.vector.childrenSequence
 
 
 //  Parsing logic is the same as in Android implementation
@@ -135,21 +145,21 @@ private fun Element.parsePath(
         pathFillType = attributeOrNull(ANDROID_NS, "fillType")
             ?.let(::parseFillType) ?: PathFillType.NonZero,
         name = name ?: DefaultPathName,
-        fill = attributeOrNull(ANDROID_NS, "fillColor")?.let(::parseStringBrush)
-            ?: apptAttr(ANDROID_NS, "fillColor")?.let(Element::parseElementBrush),
+        fill = attributeOrNull(ANDROID_NS, "fillColor")?.let(::parseColorStops)
+            ?: apptAttr(ANDROID_NS, "fillColor")?.let(Element::parseColorStops)?.let(::StaticPathAnimator),
         fillAlpha = floatAnimator(
             thisAnimators,
             VectorProperty.FillAlpha,
             DefaultAlphaAnimator
         ),
-        stroke = attributeOrNull(ANDROID_NS, "strokeColor")?.let(::parseStringBrush)
-            ?: apptAttr(ANDROID_NS, "strokeColor")?.let(Element::parseElementBrush),
+        stroke = attributeOrNull(ANDROID_NS, "strokeColor")?.let(::parseColorStops)
+            ?: apptAttr(ANDROID_NS, "strokeColor")?.let(Element::parseColorStops),
         strokeAlpha = floatAnimator(
             thisAnimators,
             VectorProperty.StrokeAlpha,
             DefaultAlphaAnimator
         ),
-        strokeLineWidth = attributeOrNull(ANDROID_NS, "strokeWidth")?.toFloat()?.toAnimator()
+        strokeLineWidth = attributeOrNull(ANDROID_NS, "strokeWidth")?.toFloat()?.let(::StaticFloatAnimator)
             ?: DefaultStrokeLineWidthAnimator,
         strokeLineCap = attributeOrNull(ANDROID_NS, "strokeLineCap")
             ?.let(::parseStrokeCap) ?: StrokeCap.Butt,
@@ -240,8 +250,6 @@ private fun Element.parseGroup(
     } while (removedGroup == Group.Virtual)
 }
 
-private fun parseStringBrush(str: String) = SolidColor(Color(parseColorValue(str)))
-
 private fun Element.parseElementBrush(): Brush? =
     childrenSequence
         .filterIsInstance<Element>()
@@ -258,7 +266,7 @@ private fun Element.parseGradient(): Brush? {
 }
 
 private fun Element.parseLinearGradient() = ColorData.LinearGradient(
-    colorStops = parseColorStops(),
+    colorStops = parseColorStops().toList(),
     start = Offset(
         attributeOrNull(ANDROID_NS, "startX")?.toFloat() ?: 0f,
         attributeOrNull(ANDROID_NS, "startY")?.toFloat() ?: 0f
@@ -288,7 +296,7 @@ private fun Element.parseSweepGradient() = Brush.sweepGradient(
     )
 )
 
-private fun Element.parseColorStops(): Array<Pair<Float, Color>> {
+private fun Element.parseColorStops(): List<Pair<Float, Color>> {
     val items = childrenSequence
         .filterIsInstance<Element>()
         .filter { it.nodeName == "item" }
@@ -314,7 +322,7 @@ private fun Element.parseColorStops(): Array<Pair<Float, Color>> {
         }
     }
 
-    return colorStops.toTypedArray()
+    return colorStops
 }
 
 private fun Element.parseColorStop(defaultOffset: Float): Pair<Float, Color>? {
@@ -363,10 +371,4 @@ private fun Element.apptAttr(
             it.namespaceURI == AAPT_NS && it.localName == "attr" &&
                 it.getAttribute("name") == "$prefix:$name"
         }
-}
-
-internal val Element.childrenSequence get() = sequence<Node> {
-    for (i in 0 until childNodes.length) {
-        yield(childNodes.item(i))
-    }
 }

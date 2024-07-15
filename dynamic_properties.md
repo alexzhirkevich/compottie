@@ -127,4 +127,4 @@ shapeLayer("Precomposition 1", "Shape Layer 4") {
 }
 ```
 
-Just like precompositions, groups can be nested. So the keypath to the desired shape may lay throught the large amount of groups
+Just like precompositions, groups can be nested. So the keypath to the desired shape may пше з through the large amount of groups

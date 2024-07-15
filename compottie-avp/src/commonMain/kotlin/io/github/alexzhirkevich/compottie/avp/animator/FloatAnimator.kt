@@ -4,13 +4,27 @@ import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.ui.util.lerp
 
-internal sealed class FloatAnimator : ObjectAnimator<Float, Float>()
+public sealed class FloatAnimator : ObjectAnimator<Float, Float>()
+
+public fun FloatAnimator(
+    duration: Float,
+    delay : Float,
+    valueFrom: Float,
+    valueTo: Float,
+    interpolator: Easing
+) : FloatAnimator = DynamicFloatAnimator(
+    duration = duration,
+    valueFrom = valueFrom,
+    valueTo = valueTo,
+    delay = delay,
+    interpolator = interpolator
+)
 
 internal class DynamicFloatAnimator(
     override val duration: Float,
     override val valueFrom: Float,
     override val valueTo: Float,
-    override val startOffset: Float,
+    override val delay: Float,
     override val interpolator: Easing
 ) : FloatAnimator() {
 
@@ -22,7 +36,7 @@ internal class DynamicFloatAnimator(
 internal class StaticFloatAnimator(
     private val value : Float
 ) : FloatAnimator() {
-    override val startOffset: Float get() = 0f
+    override val delay: Float get() = 0f
     override val duration: Float get() = 0f
     override val valueFrom: Float get() = value
     override val valueTo: Float get() = value
