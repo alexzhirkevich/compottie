@@ -8,7 +8,6 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.RadialGradientShader
 import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.graphics.setFrom
 
 
 private val tempMatrix = android.graphics.Matrix()
@@ -27,7 +26,7 @@ internal actual fun MakeLinearGradient(
     tileMode = tileMode,
     colors = colors
 ).apply {
-    tempMatrix.setFrom(matrix)
+    tempMatrix.setFromInternal(matrix)
     setLocalMatrix(tempMatrix)
 }
 
@@ -45,7 +44,7 @@ internal actual fun MakeRadialGradient(
     tileMode = tileMode,
     colors = colors
 ).apply {
-    tempMatrix.setFrom(matrix)
+    tempMatrix.setFromInternal(matrix)
     setLocalMatrix(tempMatrix)
 }
 

@@ -48,12 +48,6 @@ internal class Transform(
     override val skewAxis: AnimatedNumber = AnimatedNumber.defaultSkewAxis(),
 ) : AnimatedTransform() {
 
-    init {
-        if (rotationX != null || rotationY != null){
-            Compottie.logger?.warn("Animations contains arbitrary transforms that are not supported on Android")
-        }
-    }
-
     fun deepCopy(): Transform {
         return Transform(
             anchorPoint = anchorPoint.copy(),

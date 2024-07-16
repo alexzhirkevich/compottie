@@ -104,7 +104,7 @@ internal abstract class AnimatedTransform {
             }
         }
 
-        if (currentComposeBackend != ComposeBackend.Android) {
+//        if (currentComposeBackend != ComposeBackend.Android) {
             rotationX?.let {
                 matrix.preRotateX(it.interpolated(state))
             }
@@ -112,7 +112,7 @@ internal abstract class AnimatedTransform {
             rotationY?.let {
                 matrix.preRotateY(it.interpolated(state))
             }
-        }
+//        }
 
         rotationZ?.let {
             matrix.preRotateZ(it.interpolated(state))

@@ -5,7 +5,6 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.asComposePath
-import androidx.compose.ui.graphics.setFrom
 
 
 internal actual fun ExtendedPathMeasure() : ExtendedPathMeasure = AndroidExtendedPathMeasure(
@@ -17,7 +16,7 @@ internal actual fun Path.addPath(path: Path, matrix: Matrix) : Path {
     return asAndroidPath().apply {
         addPath(path.asAndroidPath(), tempAndroidMatrix.apply {
             reset()
-            setFrom(matrix)
+            setFromInternal(matrix)
         })
     }.asComposePath()
 }
