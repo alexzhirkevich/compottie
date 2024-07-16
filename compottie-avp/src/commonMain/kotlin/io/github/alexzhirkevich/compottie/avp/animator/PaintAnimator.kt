@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie.avp.animator
 
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shader
 import io.github.alexzhirkevich.compottie.avp.xml.AnimatedVectorProperty
@@ -21,7 +22,9 @@ internal class DynamicPaintAnimator(
     override val valueTo: ColorData,
     override val delay: Float,
     override val easing: Easing,
-    override val property: AnimatedVectorProperty<PaintAnimator>
+    override val property: AnimatedVectorProperty<PaintAnimator>,
+    override val repeatCount: Int,
+    override val repeatMode: RepeatMode
 ) : PaintAnimator() {
 
     private val paintData = PaintData()
@@ -57,6 +60,8 @@ internal class StaticPaintAnimator(
     override val valueFrom: ColorData get() = value
     override val valueTo: ColorData get() = value
     override val easing: Easing get() = LinearEasing
+    override val repeatCount: Int get() = 1
+    override val repeatMode: RepeatMode get() = RepeatMode.Restart
 
     private val paint = PaintData()
 

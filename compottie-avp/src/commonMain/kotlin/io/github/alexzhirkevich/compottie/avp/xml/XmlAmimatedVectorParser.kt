@@ -231,15 +231,8 @@ private fun Element.parseColorAnimator(
         ?: attributeOrNull(ANDROID_NS, property.propertyName)?.let {
             StaticPaintAnimator(ColorData.Solid(Color(parseColorValue(it))), property)
         }
-        ?: apptAttr(ANDROID_NS, property.propertyName)?.let {
-            when (attributeOrNull(ANDROID_NS, "type")) {
-                "linear" -> parseLinearGradient()
-                "radial" -> parseRadialGradient()
-                "sweep" -> parseSweepGradient()
-                else -> return@let property.defaultAnimator
-            }.let {
-                StaticPaintAnimator(it, property)
-            }
+        ?: parseElementBrush()?.let {
+            StaticPaintAnimator(it, property)
         }
         ?: property.defaultAnimator
 }
@@ -257,7 +250,7 @@ private fun Element.parseFloatAnimator(
 
 private fun Element.parsePathAnimator(
     animators: Map<AnimatedVectorProperty<*>, ObjectAnimator<*,*>>,
-    property: AnimatedVectorProperty<PathAnimator>
+    property: AnimatedVectorProperty<PathAnimator>,
 ) : PathAnimator {
     return (animators[property] as? PathAnimator?)
         ?: attributeOrNull(ANDROID_NS, property.propertyName)?.let(::addPathNodes)?.let {
@@ -276,7 +269,7 @@ private fun Element.parseClipPath(
         name = name ?: DefaultPathName,
         clipPathData = parsePathAnimator(
             animators[name].orEmpty(),
-            AnimatedVectorProperty.PathData
+            AnimatedVectorProperty.PathData,
         )
     )
     context.currentGroups.add(Group.Virtual)
@@ -340,10 +333,15 @@ private fun Element.parseColorStops(): List<Pair<Float, Color>> {
     }
 
     if (colorStops.isEmpty()) {
-        val startColor = attributeOrNull(ANDROID_NS, "startColor")?.let(::parseColorValue)
-        val centerColor = attributeOrNull(ANDROID_NS, "centerColor")?.let(::parseColorValue)
-        val endColor = attributeOrNull(ANDROID_NS, "endColor")?.let(::parseColorValue)
-
+        val startColor: Int? = attributeOrNull(ANDROID_NS, "startColor")?.let {
+            parseColorValue(it)
+        }
+        val centerColor: Int? = attributeOrNull(ANDROID_NS, "centerColor")?.let {
+            parseColorValue(it)
+        }
+        val endColor : Int? = attributeOrNull(ANDROID_NS, "endColor")?.let {
+            parseColorValue(it)
+        }
         if (startColor != null) {
             colorStops.add(0f to Color(startColor))
         }

@@ -18,7 +18,6 @@
 
 package io.github.alexzhirkevich.compottie.avp.xml
 
-import io.github.alexzhirkevich.compottie.avp.AnimationTarget
 import org.jetbrains.compose.resources.vector.childrenSequence
 import org.jetbrains.compose.resources.vector.xmldom.Element
 
@@ -26,6 +25,8 @@ internal class AnimationTarget(
     public val name : String,
     public val animation: String
 )
+
+internal fun Element.drawable(): String = androidAttribute("drawable")
 
 internal fun Element.parseAnimationTargets() : List<AnimationTarget> {
     return childrenSequence.filterIsInstance<Element>().map {

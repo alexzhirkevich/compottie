@@ -1,7 +1,9 @@
-@file: Suppress("invisible_member", "invisible_reference")
+@file: Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+
 package io.github.alexzhirkevich.compottie.avp.xml
 
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.ui.graphics.vector.PathNode
 import androidx.compose.ui.graphics.vector.PathParser
 import io.github.alexzhirkevich.compottie.avp.animator.ColorData
@@ -20,7 +22,7 @@ internal fun Element.parseObjectAnimators() : List<ObjectAnimator<*, *>> {
     if (this.nodeName == "set") {
         return childrenSequence
                 .filterIsInstance<Element>()
-                .map(Element::toObjectAnimator)
+                .map { it.toObjectAnimator() }
                 .toList()
     }
     if (this.nodeName == "objectAnimator") {
@@ -36,13 +38,23 @@ private fun Element.toObjectAnimator() : ObjectAnimator<*, *> {
     val duration = androidAttribute("duration").toFloat()
     val valueFrom = androidAttribute("valueFrom")
     val valueTo = androidAttribute("valueTo")
+    val repeatCount = androidAttributeOrNull("repeatCount")?.toIntOrNull() ?: 1
+    val repeatMode = androidAttributeOrNull("repeatMode").let {
+        if (it.equals("reverse", true)) {
+            RepeatMode.Reverse
+        } else {
+            RepeatMode.Restart
+        }
+    }
     val property = AnimatedVectorProperty.forName(androidAttribute("propertyName"))
 
     return getValueType(valueType, valueFrom).toAnimator(
         duration,
         valueFrom,
         valueTo,
-        property = property
+        property = property,
+        repeatCount = repeatCount,
+        repeatMode = repeatMode
     )
 }
 
@@ -87,7 +99,9 @@ private fun ValueType<*>.toAnimator(
     duration : Float,
     from : String,
     to : String,
-    property: AnimatedVectorProperty<*>
+    property: AnimatedVectorProperty<*>,
+    repeatCount : Int,
+    repeatMode: RepeatMode,
 ) : ObjectAnimator<*, *> {
 
     val fromValue = parse(from)
@@ -100,7 +114,9 @@ private fun ValueType<*>.toAnimator(
             valueTo = toValue as ColorData,
             delay = 0f,
             easing = LinearEasing,
-            property = property as AnimatedVectorProperty<PaintAnimator>
+            property = property as AnimatedVectorProperty<PaintAnimator>,
+            repeatCount = repeatCount,
+            repeatMode = repeatMode
         )
 
         ValueType.Number -> DynamicFloatAnimator(
@@ -109,7 +125,9 @@ private fun ValueType<*>.toAnimator(
             valueTo = toValue as Float,
             delay = 0f,
             easing = LinearEasing,
-            property = property as AnimatedVectorProperty<FloatAnimator>
+            property = property as AnimatedVectorProperty<FloatAnimator>,
+            repeatCount = repeatCount,
+            repeatMode = repeatMode
         )
 
         ValueType.Path -> DynamicPathAnimator(
@@ -118,7 +136,9 @@ private fun ValueType<*>.toAnimator(
             valueTo = toValue as List<PathNode>,
             delay = 0f,
             easing = LinearEasing,
-            property = property as AnimatedVectorProperty<PathAnimator>
+            property = property as AnimatedVectorProperty<PathAnimator>,
+            repeatCount = repeatCount,
+            repeatMode = repeatMode
         )
     }
 }

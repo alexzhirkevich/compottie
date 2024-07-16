@@ -2,13 +2,19 @@ package io.github.alexzhirkevich.compottie.avp.animator
 
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.vector.PathNode
 import androidx.compose.ui.graphics.vector.toPath
 import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.avp.xml.AnimatedVectorProperty
 
-public sealed class PathAnimator :  ObjectAnimator<List<PathNode>, Path>()
+public sealed class PathAnimator :  ObjectAnimator<List<PathNode>, Path>() {
+
+    protected val path : Path = Path()
+
+    internal var fillType by path::fillType
+}
 
 internal class DynamicPathAnimator(
     override val duration: Float,
@@ -17,13 +23,13 @@ internal class DynamicPathAnimator(
     override val delay: Float,
     override val easing: Easing,
     override val property: AnimatedVectorProperty<PathAnimator>,
+    override val repeatCount: Int,
+    override val repeatMode: RepeatMode,
 ) : PathAnimator() {
 
     init {
         require(valueFrom.size == valueTo.size)
     }
-
-    private val path = Path()
 
     private val list = valueFrom.toMutableList()
 
@@ -44,9 +50,8 @@ internal class StaticPathAnimator(
     override val valueFrom: List<PathNode> get() = value
     override val valueTo: List<PathNode> get() = value
     override val easing: Easing get() = LinearEasing
-
-    private val path = Path()
-
+    override val repeatCount: Int get() = 1
+    override val repeatMode: RepeatMode get() = RepeatMode.Restart
 
     override fun interpolate(progress: Float): Path {
         return value.toPath(path)

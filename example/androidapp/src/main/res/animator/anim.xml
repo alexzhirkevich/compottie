@@ -6,7 +6,6 @@
         android:duration="1000"
         android:valueFrom="0"
         android:valueTo="#ffffff"
-        android:valueType=""
         android:repeatCount="0"
         android:repeatMode="restart"/>
 </set>

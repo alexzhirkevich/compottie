@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.Dp
 import io.github.alexzhirkevich.compottie.avp.animator.FloatAnimator
 import io.github.alexzhirkevich.compottie.avp.animator.PaintAnimator
 import io.github.alexzhirkevich.compottie.avp.animator.PathAnimator
+import io.github.alexzhirkevich.compottie.avp.animator.endTime
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 
@@ -94,6 +95,9 @@ internal class AnimatedImageVector internal constructor(
      */
     internal val genId: Int = generateImageVectorId(),
 ) {
+
+    internal val duration = root.duration
+
     /**
      * Builder used to construct a Vector graphic tree.
      * This is useful for caching the result of expensive operations used to construct
@@ -370,7 +374,9 @@ internal class AnimatedImageVector internal constructor(
     }
 }
 
-internal sealed class AnimatedVectorNode
+internal sealed class AnimatedVectorNode {
+    abstract val duration : Float
+}
 
 /**
  * Defines a group of paths or subgroups, plus transformation information.
@@ -430,8 +436,12 @@ internal class AnimatedVectorGroup internal constructor(
      * Child Vector nodes that are part of this group, this can contain
      * paths or other groups
      */
-    val children: List<AnimatedVectorNode> = emptyList()
-) : AnimatedVectorNode()
+    val children: List<AnimatedVectorNode> = emptyList(),
+) : AnimatedVectorNode() {
+
+    override val duration: Float =
+        children.maxOf(AnimatedVectorNode::duration)
+}
 
 /**
  * Leaf node of a Vector graphics tree. This specifies a path shape and parameters
@@ -512,8 +522,26 @@ internal class AnimatedVectorPath internal constructor(
      * Specifies the offset of the trim region (allows showed region to include the start and end),
      * in the range from 0 to 1. The default is 0.
      */
-    val trimPathOffset: FloatAnimator
-) : AnimatedVectorNode()
+    val trimPathOffset: FloatAnimator,
+) : AnimatedVectorNode() {
+
+    init {
+        pathData.fillType = pathFillType
+    }
+
+    override val duration: Float = maxOf(
+        pathData.endTime,
+        fill?.endTime ?: 0f,
+        fillAlpha.endTime,
+        stroke?.endTime ?: 0f,
+        strokeAlpha.endTime,
+        strokeLineWidth.endTime,
+        strokeLineMiter.endTime,
+        trimPathStart.endTime,
+        trimPathEnd.endTime,
+        trimPathOffset.endTime
+    )
+}
 
 private fun <T> ArrayList<T>.push(value: T): Boolean = add(value)
 

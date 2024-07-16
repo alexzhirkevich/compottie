@@ -130,7 +130,7 @@ internal class AnimatedPathComponent(
     override fun DrawScope.draw(time: Float) {
         updateFill(time)
         updateStroke(time)
-        updateRenderPath(time,vector.pathData.animate(time))
+        updateRenderPath(time, vector.pathData.animate(time))
 
         if (vector.fill != null){
             drawContext.canvas.drawPath(renderPath, fillPaint)
