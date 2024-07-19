@@ -37,8 +37,6 @@ dependencies {
 }
 ```
 
-or using the version catalog
-
 ```toml
 [versions]
 compottie="<version>"
@@ -49,6 +47,9 @@ compottie-dot = { module = "io.github.alexzhirkevich:compottie-dot", version.ref
 compottie-network = { module = "io.github.alexzhirkevich:compottie-network", version.ref = "compottie" }
 compottie-resources = { module = "io.github.alexzhirkevich:compottie-resources", version.ref = "compottie" }
 ```
+
+> [!NOTE]
+For projects with Android minSdk < 26 `dot` and `network` modules require [desugaring](https://developer.android.com/studio/write/java8-support#library-desugaring)
 
 # Usage
 The following docs describe the Compottie 2.x usage.
