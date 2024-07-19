@@ -46,6 +46,7 @@ import io.github.alexzhirkevich.compottie.internal.platform.addCodePoint
 import io.github.alexzhirkevich.compottie.internal.platform.charCount
 import io.github.alexzhirkevich.compottie.internal.platform.codePointAt
 import io.github.alexzhirkevich.compottie.internal.platform.isModifier
+import io.github.alexzhirkevich.compottie.internal.utils.fastReset
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
 import io.github.alexzhirkevich.compottie.internal.utils.toOffset
@@ -659,7 +660,7 @@ internal class TextLayer(
       fontScale : Float,
       document: TextDocument,
     ) {
-        matrix.reset();
+        matrix.fastReset();
         matrix.preTranslate(0f, -(document.baselineShift ?: 0f))
         matrix.preScale(fontScale, fontScale);
         character.data?.draw(drawScope, state, matrix, strokePaint, fillPaint)

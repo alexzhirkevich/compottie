@@ -31,6 +31,7 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.layers.CompositionLayer
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
+import io.github.alexzhirkevich.compottie.internal.utils.fastReset
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlin.math.roundToInt
@@ -342,7 +343,7 @@ private class LottiePainter(
     }
 
     override fun DrawScope.onDraw() {
-        matrix.reset()
+        matrix.fastReset()
 
         val scale = ContentScale.FillBounds.computeScaleFactor(intrinsicSize, size)
 

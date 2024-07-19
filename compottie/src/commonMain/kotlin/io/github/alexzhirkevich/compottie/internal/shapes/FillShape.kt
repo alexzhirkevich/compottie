@@ -59,11 +59,10 @@ internal class FillShape(
     ) : Shape, DrawingContent {
 
     @Transient
-    private val path = Path().apply {
-        fillRule?.asPathFillType()?.let {
-            fillType = it
-        }
-    }
+    private val path = Path()
+
+    @Transient
+    private val fillType = fillRule?.asPathFillType() ?: path.fillType
 
     @Transient
     private var paths: List<PathContent> = emptyList()
@@ -122,7 +121,9 @@ internal class FillShape(
         roundShape?.applyTo(paint, state)
 
         state.layer.effectsApplier.applyTo(paint, state, effectsState)
+
         path.rewind()
+        path.fillType = fillType
 
         paths.fastForEach {
             path.addPath(it.getPath(state), parentMatrix)

@@ -103,7 +103,7 @@ internal fun Path.applyTrimPath(
     }
 
 
-    tempPath.reset()
+    tempPath.rewind()
     pathMeasure.getSegment(
         startDistance = newStart,
         stopDistance = newEnd,

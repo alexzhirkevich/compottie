@@ -53,6 +53,10 @@ internal fun Matrix.preConcat(other : Matrix) {
 //    timesAssign(other)
 }
 
+internal fun Matrix.fastReset() {
+    fastSetFrom(IdentityMatrix)
+}
+
 internal fun Matrix.fastSetFrom(other : Matrix){
     other.values.copyInto(values)
 }
@@ -80,20 +84,20 @@ internal fun Matrix.preRotate(degree : Float) {
 
 internal fun Matrix.preRotateX(degree : Float) {
     preConcat(tempMatrixTransform.apply {
-        reset()
+        fastReset()
         rotateX(degree)
     })
 }
 
 internal fun Matrix.preRotateY(degree : Float) {
     preConcat(tempMatrixTransform.apply {
-        reset()
+        fastReset()
         rotateY(degree)
     })
 }
 internal fun Matrix.preRotateZ(degree : Float) {
     preConcat(tempMatrixTransform.apply {
-        reset()
+        fastReset()
         rotateZ(degree)
     })
 }

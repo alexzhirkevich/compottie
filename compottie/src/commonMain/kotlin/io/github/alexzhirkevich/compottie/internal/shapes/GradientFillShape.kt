@@ -75,13 +75,11 @@ internal class GradientFillShape(
     val fillRule : FillRule? = null,
 ) : Shape, DrawingContent {
 
+    @Transient
+    private val path = Path()
 
     @Transient
-    private val path = Path().apply {
-        fillRule?.asPathFillType()?.let {
-            fillType = it
-        }
-    }
+    private val fillType =  fillRule?.asPathFillType() ?: path.fillType
 
     @Transient
     private val boundsRect = MutableRect(0f,0f,0f,0f)
@@ -143,6 +141,7 @@ internal class GradientFillShape(
         state.layer.effectsApplier.applyTo(paint, state, effectsState)
 
         path.rewind()
+        path.fillType = fillType
 
         pathContents.fastForEach {
             path.addPath(it.getPath(state), parentMatrix)

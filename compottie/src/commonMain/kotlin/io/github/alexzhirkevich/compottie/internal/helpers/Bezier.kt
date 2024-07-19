@@ -113,7 +113,7 @@ internal class Bezier(
     }
 
     fun mapPath(outPath : Path) {
-        outPath.reset()
+        outPath.rewind()
         outPath.moveTo(initialPoint.x, initialPoint.y)
 
         var pathFromDataCurrentPoint = initialPoint

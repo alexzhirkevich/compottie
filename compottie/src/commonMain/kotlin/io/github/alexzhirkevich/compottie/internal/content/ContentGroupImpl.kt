@@ -11,6 +11,7 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
+import io.github.alexzhirkevich.compottie.internal.utils.fastReset
 import io.github.alexzhirkevich.compottie.internal.utils.fastSetFrom
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.union
@@ -103,7 +104,7 @@ internal class ContentGroupImpl(
         if (hidden(state)) {
             return path
         }
-        matrix.reset()
+        matrix.fastReset()
 
         matrix.fastSetFrom(transform.matrix(state))
         pathContents.fastForEachReversed {

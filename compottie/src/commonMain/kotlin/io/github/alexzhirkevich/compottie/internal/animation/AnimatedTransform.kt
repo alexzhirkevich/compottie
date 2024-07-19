@@ -7,6 +7,7 @@ import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.platform.ComposeBackend
 import io.github.alexzhirkevich.compottie.internal.platform.currentComposeBackend
 import io.github.alexzhirkevich.compottie.internal.utils.degreeToRadians
+import io.github.alexzhirkevich.compottie.internal.utils.fastReset
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.preRotate
 import io.github.alexzhirkevich.compottie.internal.utils.preRotateX
@@ -63,7 +64,7 @@ internal abstract class AnimatedTransform {
     fun matrix(state: AnimationState): Matrix {
         val autoOrient = state.layer.autoOrient == BooleanInt.Yes
 
-        matrix.reset()
+        matrix.fastReset()
 
         if (isHidden(state)){
             return matrix

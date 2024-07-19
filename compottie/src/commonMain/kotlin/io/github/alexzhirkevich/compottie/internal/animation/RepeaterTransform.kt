@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie.internal.animation
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.utils.fastReset
 import io.github.alexzhirkevich.compottie.internal.utils.preRotate
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
@@ -40,10 +41,8 @@ internal class RepeaterTransform(
     val endOpacity : AnimatedNumber? = null,
 ) : AnimatedTransform() {
 
-
-
     fun repeaterMatrix(state: AnimationState, amount: Float): Matrix {
-        matrix.reset()
+        matrix.fastReset()
 
         position.interpolated(state).takeIf { it != Vec2.Zero }?.let {
             matrix.preTranslate(

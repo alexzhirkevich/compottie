@@ -64,7 +64,7 @@ internal class MergePathsShape(
 
     override fun getPath(state: AnimationState): Path {
 
-        path.reset()
+        path.rewind()
 
         val hidden = dynamicShape?.hidden.derive(hidden, state)
 
