@@ -12,7 +12,7 @@
 |  👍 Repeater          |                    | 👍 Dashes        | 👍 Auto Orient             |                     |
 |  👍 Trim Path         |                    | 👍 Gradient      |                            |                     |
 |                       |                    |                   |                           |                     |
-|             **Masks** |         **Mattes** | **Layer Effects** |                  **Text** | **Other**           |
+|             **Masks** |         **Mattes** | **Layer Effects** |                  **Text** |            **Other**|
 |  👍 Mask Pat          | 👍 Alpha          | 👍 Fill           | 👍 Glyps                  | 👍 Expressions      |
 |  👍 Mask Opacity      | 👍 Alpha Inverted | 👍 Blur           | 👍 Fonts                  | 👍 Images           |
 |  👍 Add               | ⛔️ Luma           | ⛔️ Stroke        | 👍 Transform               | 👍 Precomps        |
