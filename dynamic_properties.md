@@ -107,7 +107,7 @@ Now when we found the shape layer, let's have a look on it's shapes. The structu
 }
 ```
 
-The keypaths for the *Ellipse 1* and its stroke relative to the layer they are in will be `["Group 1", "Ellipse 1"]` and `["Group 1", "Ellipse 1 Stroke"]`.
+The keypaths for the *Ellipse 1* and its stroke relative to the layer they are in will be `["Group 4", "Ellipse 1"]` and `["Group 4", "Ellipse 1 Stroke"]`.
 Thats why we have 
 
 ```kotlin

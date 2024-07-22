@@ -16,7 +16,7 @@ Compose Multiplatform Adobe After Effects Bodymovin (Lottie) animations renderin
 > Starting from v2.0 Compottie has its own multiplatform rendering engine without any platform delegates.
 > <br>The new engine is implemented from scratch and therefore may have bugs.
 > <br>Please [report](https://github.com/alexzhirkevich/compottie/issues) if you find any, preferably with a reproducible animation.
-> <br>List of supported AE Lottie features is the same as for [lottie-android](https://lottiefiles.com/supported-features)
+> <br>List of supported AE Lottie features can be found [here](/supported_features.md)
 
 | Module | Description  | 
 | :----: | ------------- | 
@@ -337,3 +337,5 @@ val painter = rememberLottiePainter(
 ```
 
 Note, that final property building blocks (such as rotations, color, alpha) are called on EACH ANIMATION FRAME and should be cached if they don't rely on progress and have allocations or hard computations.
+
+More info about dynamic properties for those who is not familiar with AE / Lottie format can be found [here](/dynamic_properties.md).
