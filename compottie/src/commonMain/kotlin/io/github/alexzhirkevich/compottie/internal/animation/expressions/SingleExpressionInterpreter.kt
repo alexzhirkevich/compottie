@@ -130,10 +130,10 @@ internal class SingleExpressionInterpreter(
         }
         while (true) {
             x = when {
-                eatSequence("+=") -> parseAssignmentValue(x, OpAdd.Companion::invoke)
-                eatSequence("-=") -> parseAssignmentValue(x, OpSub.Companion::invoke)
-                eatSequence("*=") -> parseAssignmentValue(x, OpMul.Companion::invoke)
-                eatSequence("/=") -> parseAssignmentValue(x, OpDiv.Companion::invoke)
+                eatSequence("+=") -> parseAssignmentValue(x, ::OpAdd)
+                eatSequence("-=") -> parseAssignmentValue(x, ::OpSub)
+                eatSequence("*=") -> parseAssignmentValue(x, ::OpMul)
+                eatSequence("/=") -> parseAssignmentValue(x, ::OpDiv)
                 eat('=') -> parseAssignmentValue(x, null)
                 else -> return x
             }
@@ -209,28 +209,65 @@ internal class SingleExpressionInterpreter(
                 }
             }
 
-            context is OpGlobalContext && ch.isDigit() || nextCharIs('.'::equals)  -> {
+            context is OpGlobalContext && nextCharIs { it.isDigit() || it == '.' } -> {
                 if (EXPR_DEBUG_PRINT_ENABLED) {
                     print("making const number... ")
                 }
-                var isFloat = false
+                var numberFormat = NumberFormat.Dec
+                var isFloat = nextCharIs { it == '.' }
                 val startPos = pos
                 do {
                     nextChar()
-                    if (nextCharIs('.'::equals)) {
-                        if (isFloat){
-                            break
+                    print(ch)
+                    when(ch.lowercaseChar()){
+                        '.' -> {
+                            if (isFloat) {
+                                break
+                            }
+                            isFloat = true
                         }
-                        isFloat = true
+                        NumberFormat.Hex.prefix -> {
+                            check(numberFormat == NumberFormat.Dec && !isFloat) {
+                                "Invalid number at pos $startPos"
+                            }
+                            numberFormat = NumberFormat.Hex
+                        }
+                        NumberFormat.Oct.prefix  -> {
+                            check(numberFormat == NumberFormat.Dec && !isFloat) {
+                                "Invalid number at pos $startPos"
+                            }
+                            numberFormat = NumberFormat.Oct
+                        }
+                        NumberFormat.Bin.prefix  -> {
+                            if (numberFormat == NumberFormat.Hex) {
+                                continue
+                            }
+                            check(numberFormat == NumberFormat.Dec && !isFloat) {
+                                "Invalid number at pos $startPos"
+                            }
+                            numberFormat = NumberFormat.Bin
+                        }
                     }
-                } while (ch.isDigit() || nextCharIs('.'::equals))
+                } while (ch.lowercaseChar().let {
+                    it in numberFormat.alphabet || it in NumberFormatIndicators
+                })
 
                 val num = expr.substring(startPos, pos).let {
-                    if (it.endsWith('.')){
+                    if (it.endsWith('.')) {
                         prevChar()
                         isFloat = false
                     }
-                    if (isFloat) it.toFloat() else it.trimEnd('.').toInt()
+                    if (isFloat) {
+                        it.toFloat()
+                    }
+                    else {
+                        it.trimEnd('.')
+                            .let { n ->
+                                numberFormat.prefix?.let(n::substringAfter) ?: n
+                            }
+                            .toUInt(numberFormat.radix)
+                            .toInt()
+                    }
                 }
                 if (EXPR_DEBUG_PRINT_ENABLED) {
                     println(num)
@@ -398,8 +435,20 @@ internal fun checkArgs(args : List<*>, count : Int, func : String) {
     }
 }
 
-
 private val funMap = (('a'..'z').toList() + ('A'..'Z').toList() + '$' + '_' ).associateBy { it }
 
 private fun Char.isFun() = isDigit() || funMap[this] != null
 
+
+private enum class NumberFormat(
+    val radix : Int,
+    val alphabet : String,
+    val prefix : Char?
+) {
+    Dec(10, ".0123456789", null),
+    Hex(16, "0123456789abcdef", 'x'),
+    Oct(8, "01234567", 'o'),
+    Bin(2, "01", 'b')
+}
+
+private val NumberFormatIndicators = NumberFormat.entries.mapNotNull { it.prefix }

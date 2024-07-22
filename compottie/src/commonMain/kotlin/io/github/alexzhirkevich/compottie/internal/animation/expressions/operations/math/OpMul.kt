@@ -3,44 +3,34 @@ package io.github.alexzhirkevich.compottie.internal.animation.expressions.operat
 import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
-import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 
-internal class OpMul(
-    private val a : Expression,
-    private val b : Expression,
-) : Expression {
-    override fun invoke(
-        property: RawProperty<Any>,
-        context: EvaluationContext,
-        state: AnimationState
-    ): Any {
-        return invoke(
-            a(property, context, state),
-            b(property, context, state)
-        )
-    }
-
-    companion object {
-
-        operator fun invoke(a : Any, b : Any) : Any {
-            return when {
-                (a is Number && b is Number) -> a.toFloat() * b.toFloat()
-                (a is List<*> && b is Number) -> {
-                    a as List<Number>
-                    val bf = b.toFloat()
-                    a.fastMap { it.toFloat() * bf }
-                }
-                (a is Number && b is List<*>) -> {
-                    b as List<Number>
-                    val af = a.toFloat()
-                    b.fastMap { it.toFloat() * af }
-                }
-                else -> error("Cant multiply $a by $b")
-            }
-        }
-    }
+internal fun OpMul(a : Expression, b : Expression) = Expression { property, context, state ->
+    a(property, context, state) * b(property, context, state)
 }
 
-internal operator fun Any.times(other : Any) : Any  = OpMul.invoke(this, other)
+internal fun OpMul(a : Any, b : Any) : Any = a.times(b)
+
+
+internal operator fun Any.times(other : Any) : Any  {
+    val a = this
+
+    return when {
+        a is Number && other is Number -> a.toFloat() * other.toFloat()
+        a is List<*> && other is Number -> {
+            a as List<Number>
+            val bf = other.toFloat()
+            a.fastMap { it.toFloat() * bf }
+        }
+        a is Number && other is List<*> -> {
+            other as List<Number>
+            val af = a.toFloat()
+            other.fastMap { it.toFloat() * af }
+        }
+        a is CharSequence || other is CharSequence -> {
+            a.toString().toFloat() * other.toString().toFloat()
+        }
+        else -> error("Cant multiply $a by $other")
+    }
+}

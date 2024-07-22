@@ -6,13 +6,11 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTextDocument
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
-import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionEvaluator
 import io.github.alexzhirkevich.compottie.internal.layers.NullLayer
 import io.github.alexzhirkevich.compottie.mockFontFamilyResolver
 import kotlin.test.assertEquals
-import kotlin.test.fail
 
 internal const val ret = "\$bm_rt"
 
@@ -24,7 +22,7 @@ internal fun String.assertExprReturns(expected : Any) {
     assertEquals(expected, value.run { evaluator.run { evaluate(state) } })
 }
 
-internal fun String.assertExprValueEquals(expected : Any) {
+internal fun String.assertExprEquals(expected : Any) {
     "$ret = $this".assertExprReturns(expected)
 }
 
@@ -35,7 +33,7 @@ internal fun String.assertExprReturns(expected : Float) {
     assertEquals(expected, value.interpolated(state), absoluteTolerance = 0.00001f)
 }
 
-internal fun String.assertExprValueEquals(expected : Float) {
+internal fun String.assertExprEquals(expected : Float) {
     "$ret = $this".assertExprReturns(expected)
 }
 
@@ -50,10 +48,10 @@ internal fun String.assertExprReturns(expected : Vec2) {
     val state = MockAnimationState(0f)
     assertEquals(expected, value.interpolated(state))
 }
-internal fun String.assertExprValueEquals(expected : Vec2) {
+internal fun String.assertExprEquals(expected : Vec2) {
     "$ret = $this".assertExprReturns(expected)
 }
-internal fun String.assertExprValueEquals(expected : String) {
+internal fun String.assertExprEquals(expected : String) {
     "$ret = $this".assertExprReturns(expected)
 }
 

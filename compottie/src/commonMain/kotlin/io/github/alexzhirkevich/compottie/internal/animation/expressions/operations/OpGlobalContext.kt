@@ -52,6 +52,7 @@ internal object OpGlobalContext : ExpressionContext<Undefined>, Expression {
 
         return when (op) {
             "var", "let", "const" -> OpVar
+            "Infinity" -> OpConstant(Float.POSITIVE_INFINITY)
             "Math" -> OpMath
             "time" -> OpGetTime
             "thisComp" -> {
