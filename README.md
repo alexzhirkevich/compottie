@@ -337,3 +337,5 @@ val painter = rememberLottiePainter(
 ```
 
 Note, that final property building blocks (such as rotations, color, alpha) are called on EACH ANIMATION FRAME and should be cached if they don't rely on progress and have allocations or hard computations.
+
+More info about dynamic properties for those who is not familiar with AE / Lottie format can be found [here](/dynamic_properties.md).
