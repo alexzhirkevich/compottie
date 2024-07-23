@@ -9,10 +9,14 @@ import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.JsonTransformingSerializer
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -21,7 +25,6 @@ import kotlin.math.min
 
 @Serializable(with = AnimatedVectorNSerializer::class)
 internal sealed class AnimatedVectorN : DynamicProperty<List<Float>>() {
-
 
     override fun mapEvaluated(e: Any): List<Float> {
         return when (e) {
@@ -36,6 +39,7 @@ internal sealed class AnimatedVectorN : DynamicProperty<List<Float>>() {
     @Serializable
     class Default(
         @SerialName("k")
+        @Serializable(with = ToListSerializer::class)
         val value: List<Float>,
 
         @SerialName("x")
@@ -48,9 +52,6 @@ internal sealed class AnimatedVectorN : DynamicProperty<List<Float>>() {
         init {
             prepare()
         }
-
-        @Transient
-        private val vec = Vec2(value[0], value[1])
 
         override fun raw(state: AnimationState): List<Float> = value
 
@@ -107,6 +108,8 @@ internal sealed class AnimatedVectorN : DynamicProperty<List<Float>>() {
     }
 }
 
+
+
 internal class AnimatedVectorNSerializer : JsonContentPolymorphicSerializer<AnimatedVectorN>(AnimatedVectorN::class) {
 
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedVectorN> {
@@ -120,6 +123,16 @@ internal class AnimatedVectorNSerializer : JsonContentPolymorphicSerializer<Anim
                 AnimatedVectorN.Animated.serializer()
 
             else -> AnimatedVectorN.Default.serializer()
+        }
+    }
+}
+
+internal class ToListSerializer : JsonTransformingSerializer<List<Float>>(ListSerializer(Float.serializer())){
+    override fun transformDeserialize(element: JsonElement): JsonElement {
+        return if (element is JsonPrimitive){
+            JsonArray(listOf(element))
+        } else {
+            element
         }
     }
 }
