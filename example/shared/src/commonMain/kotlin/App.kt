@@ -16,7 +16,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -33,6 +35,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.compottie.Compottie
@@ -42,6 +45,7 @@ import io.github.alexzhirkevich.compottie.ExperimentalCompottieApi
 import io.github.alexzhirkevich.compottie.LottieClipSpec
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
+import io.github.alexzhirkevich.compottie.Url
 import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
 import io.github.alexzhirkevich.compottie.dynamic.rememberLottieDynamicProperties
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
@@ -130,6 +134,7 @@ public suspend fun LottieCompositionSpec.Companion.ResourceString(
 public fun App() {
 
 //    return LottieFontExample()
+//    return AllExamples()
     return LottieFilesScreen()
 //    return LottieList()
 
@@ -142,10 +147,10 @@ public fun App() {
 //        LottieCompositionSpec.ResourceString("expr/move_horizontal.json")
 //        LottieCompositionSpec.ResourceString("expr/wiggle.json")
 //        LottieCompositionSpec.ResourceString("expr/noise.json")
-        LottieCompositionSpec.ResourceString(WONDERS)
+//        LottieCompositionSpec.ResourceString(WONDERS)
 //
 //        LottieCompositionSpec.Url(
-//            "https://assets-v2.lottiefiles.com/a/a63d8606-1166-11ee-a7f8-83d9759dd8ff/hCTtJKM3Tu.lottie"
+//            "https://assets-v2.lottiefiles.com/a/9286b092-117a-11ee-b857-2712bc869389/WSepKUr5be.lottie"
 //            "https://assets-v2.lottiefiles.com/a/d5654818-1168-11ee-a43f-870f05952f24/m5LUOQBrz9.lottie" // radial gr with angle
 //            "https://assets-v2.lottiefiles.com/a/27cd3f04-1180-11ee-852d-8b2f8ce04afa/SB3d1oChh6.lottie", // rotationXYZ envelope
 //            "https://assets-v2.lottiefiles.com/a/4a2c7f7e-1171-11ee-ae37-d7b32f8315b2/7qw6O5kPfv.lottie", // broken text pos

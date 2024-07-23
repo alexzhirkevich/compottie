@@ -1,16 +1,17 @@
 package lottiefiles
 
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,21 +24,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Repeat
-import androidx.compose.material.icons.filled.RepeatOne
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.rounded.ArrowBackIos
 import androidx.compose.material.icons.rounded.ArrowForwardIos
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -49,18 +44,15 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.SearchBar
-import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,15 +61,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.SubcomposeLayout
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastSumBy
 import androidx.compose.ui.window.Dialog
@@ -86,10 +74,8 @@ import coil3.compose.AsyncImage
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.Url
-import io.github.alexzhirkevich.compottie.rememberLottieAnimatable
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
-import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 @Composable
@@ -97,9 +83,9 @@ internal fun LottieFilesScreen(
     modifier: Modifier = Modifier.fillMaxSize(),
     viewModel: LottieFilesViewModel = viewModel { LottieFilesViewModel() }
 ) {
-    DisposableEffect(0){
+    DisposableEffect(0) {
         val l = Compottie.logger
-        Compottie.logger = null
+//        Compottie.logger = null
         onDispose {
             Compottie.logger = l
         }
@@ -122,45 +108,58 @@ internal fun LottieFilesScreen(
         }
     }
 
-    BoxWithConstraints {
-        Column(
-            modifier = modifier,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            SearchBar(
-                viewModel = viewModel
-            )
-
-            val files = viewModel.files.collectAsState().value
-
-            LazyVerticalGrid(
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(24.dp),
-                columns = GridCells.Adaptive(200.dp),
-                horizontalArrangement = Arrangement.spacedBy(24.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+    Surface {
+        BoxWithConstraints {
+            Column(
+                modifier = modifier,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                items(
-                    items = files,
-                    key = LottieFile::id
+                SearchBar(
+                    viewModel = viewModel
+                )
+
+                val files = viewModel.files.collectAsState().value
+
+                val gridState = rememberLazyGridState()
+
+                LazyVerticalGrid(
+                    state = gridState,
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(24.dp),
+                    columns = GridCells.Adaptive(200.dp),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
-                    LottieCard(
-                        file = it,
-                        onClick = { viewModel.onFileSelected(it) },
+                    items(
+                        items = files,
+                        key = LottieFile::id
+                    ) {
+                        LottieCard(
+                            file = it,
+                            onClick = { viewModel.onFileSelected(it) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        )
+                    }
+                }
+
+                val pageCount by viewModel.pageCount.collectAsState()
+
+                AnimatedVisibility(
+                    visible = pageCount > 1,
+                    enter = slideInVertically { it } + expandVertically(),
+                    exit = slideOutVertically { it } + shrinkVertically()
+                ) {
+                    PageSelector(
+                        page = viewModel.page.collectAsState().value,
+                        pageCount = pageCount,
+                        onPageSelected = viewModel::onPageSelected,
                         modifier = Modifier
                             .fillMaxWidth()
+                            .padding(horizontal = 24.dp, vertical = 12.dp),
                     )
                 }
             }
-
-            PageSelector(
-                page = viewModel.page.collectAsState().value,
-                pageCount = viewModel.pageCount.collectAsState().value,
-                onPageSelected = viewModel::onPageSelected,
-                modifier =  Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 12.dp),
-            )
         }
     }
 }
@@ -459,7 +458,7 @@ private fun LottieCard(
 }
 
 @Composable
-private fun UserAvatar(user: User, size : Dp) {
+internal fun UserAvatar(user: User, size : Dp) {
     val placeholder = rememberVectorPainter(Icons.Default.Person)
 
     AsyncImage(
@@ -473,243 +472,8 @@ private fun UserAvatar(user: User, size : Dp) {
     )
 }
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
-@Composable
-private fun LottieDetails(
-    modifier: Modifier = Modifier,
-    onDismiss : () -> Unit,
-    file: LottieFile,
-) {
-    val composition by rememberLottieComposition {
-        LottieCompositionSpec.Url(file.lottieSource ?: file.jsonSource ?: "")
-    }
 
-    val animatable = rememberLottieAnimatable()
 
-    var isPlaying by rememberSaveable { mutableStateOf(true) }
-    var isLooping by rememberSaveable { mutableStateOf(true) }
-
-    var speedIndex by rememberSaveable {
-        mutableStateOf(0)
-    }
-
-    LaunchedEffect(
-        composition,
-        isPlaying,
-        isLooping,
-        speedIndex
-    ) {
-        if (!isPlaying) return@LaunchedEffect
-
-        animatable.animate(
-            composition = composition,
-            iterations = if (isLooping) Compottie.IterateForever else 1,
-            initialProgress = if (animatable.progress == 1f) 0f else animatable.progress,
-            speed = Speed[speedIndex].first,
-            continueFromPreviousAnimate = false,
-        )
-
-        if (composition != null) {
-            isPlaying = false
-        }
-    }
-
-    val coroutineScope = rememberCoroutineScope()
-
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.background
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .layout { measurable, constraints ->
-                    val w = (constraints.maxWidth * .9).toInt()
-                    val shrinkedConstraints = constraints
-                        .copy(maxWidth = w, minWidth = w)
-                    val placeable = measurable.measure(shrinkedConstraints)
-                    layout(constraints.maxWidth, placeable.height){
-                        placeable.place((constraints.maxWidth - w)/2,0)
-                    }
-                }
-                .verticalScroll(rememberScrollState())
-                .padding(vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                UserAvatar(
-                    user = file.user,
-                    size = 36.dp
-                )
-
-                Column(
-                    modifier.weight(1f)
-                ) {
-                    if (file.name != null) {
-                        Text(
-                            modifier = Modifier.basicMarquee(),
-                            text = file.name,
-                            maxLines = 1,
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-
-                    if (file.user.name != null) {
-                        Text(
-                            text = file.user.name,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                }
-
-                IconButton(
-                    onClick = onDismiss,
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "close"
-                    )
-                }
-            }
-            ElevatedCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f),
-                colors = CardDefaults.elevatedCardColors(
-                    containerColor = file.bgColor?.let(::parseColorValue) ?: Color.White
-                )
-            ) {
-                Image(
-                    modifier = Modifier.fillMaxSize(),
-                    painter = rememberLottiePainter(
-                        composition = composition,
-                        progress = animatable::value
-                    ),
-                    contentDescription = file.name
-                )
-            }
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = {
-                        isPlaying = !isPlaying
-                    }
-                ) {
-                    Icon(
-                        imageVector = if (isPlaying)
-                            Icons.Default.Pause
-                        else Icons.Default.PlayArrow,
-                        contentDescription = null
-                    )
-                }
-                Slider(
-                    modifier = Modifier.weight(1f),
-                    value = animatable.value,
-                    onValueChange = {
-                        isPlaying = false
-                        coroutineScope.launch {
-                            animatable.snapTo(progress = it)
-                        }
-                    },
-                    onValueChangeFinished = {
-                        isPlaying = true
-                    }
-                )
-
-                composition?.let {
-                    Text(
-                        "${(it.durationFrames * animatable.value).toInt()} / ${it.durationFrames.toInt()}"
-                    )
-                }
-
-                IconButton(
-                    onClick = {
-                        isLooping = !isLooping
-                        isPlaying = true
-                    }
-                ) {
-                    Icon(
-                        imageVector = if (isLooping)
-                            Icons.Default.Repeat
-                        else Icons.Default.RepeatOne,
-                        contentDescription = null
-                    )
-                }
-
-                IconButton(
-                    onClick = {
-                        speedIndex = if (speedIndex == Speed.lastIndex) {
-                            0
-                        } else {
-                            speedIndex + 1
-                        }
-                    }
-                ) {
-                    Text(
-                        text = Speed[speedIndex].second,
-                        fontWeight = FontWeight.Bold,
-                        lineHeight = LocalTextStyle.current.fontSize
-                    )
-                }
-            }
-
-            Text(
-                text = "Tags",
-                fontWeight = FontWeight.SemiBold,
-                style = MaterialTheme.typography.labelLarge
-            )
-
-            ProvideTextStyle(
-                MaterialTheme.typography.labelMedium.let {
-                    it.copy(
-                        lineHeight = it.fontSize,
-                        lineHeightStyle = LineHeightStyle(
-                            alignment = LineHeightStyle.Alignment.Center,
-                            trim = LineHeightStyle.Trim.Both
-                        )
-                    )
-                }
-            ) {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    file.tags.fastForEach {
-                        Text(
-                            text = it,
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.secondaryContainer)
-                                .padding(
-                                    horizontal = 12.dp,
-                                    vertical = 4.dp
-                                )
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-private val Speed = listOf(
-    1f to "1x",
-    1.5f to "1.5x",
-    2f to "2x",
-    .25f to ".25x",
-    .5f to ".5x",
-    .75f to ".75x",
-)
 
 private const val ALPHA_MASK = 0xFF000000.toInt()
 
