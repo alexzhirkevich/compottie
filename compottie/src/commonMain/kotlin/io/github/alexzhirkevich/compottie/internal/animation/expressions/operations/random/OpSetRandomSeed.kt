@@ -6,21 +6,14 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Evaluat
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
 
-internal class OpSetRandomSeed(
-    private val seed : Expression,
-    private val timeless : Expression? = null
-) : Expression {
+internal fun OpSetRandomSeed(
+    seed : Expression,
+    timeless : Expression? = null
+) = Expression { property, context, state ->
+    context.randomSource.setSeed(
+        seed = (seed(property, context, state) as Number).toInt(),
+        timeless = (timeless?.invoke(property, context, state) as? Boolean) ?: false
+    )
 
-    override fun invoke(
-        property: RawProperty<Any>,
-        context: EvaluationContext,
-        state: AnimationState,
-    ): Undefined {
-        context.randomSource.setSeed(
-            seed = (seed(property, context, state) as Number).toInt(),
-            timeless = (timeless?.invoke(property, context, state) as? Boolean) ?: false
-        )
-
-        return Undefined
-    }
+    Undefined
 }

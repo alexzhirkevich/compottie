@@ -7,15 +7,8 @@ import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 
-internal class OpMakeArray(
-    private val items : List<Expression>
-) : Expression {
-
-    override fun invoke(
-        property: RawProperty<Any>,
-        context: EvaluationContext,
-        state: AnimationState,
-    ): Any {
-        return items.fastMap { it.invoke(property, context, state) }
-    }
+internal fun OpMakeArray(
+    items : List<Expression>
+) = Expression { property, context, state ->
+    items.fastMap { it.invoke(property, context, state) }
 }

@@ -1,20 +1,17 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math
 
-import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.utils.degreeToRadians
+import io.github.alexzhirkevich.compottie.internal.utils.radiansToDegree
 
-internal class OpDegreesToRadians(
-    private val degrees : Expression
-) : Expression {
+internal fun OpDegreesToRadians(
+    degrees : Expression
+) = Expression { property, context, state ->
+    degreeToRadians((degrees(property, context,state) as Number).toFloat())
+}
 
-    override fun invoke(
-        property: RawProperty<Any>,
-        context: EvaluationContext,
-        state: AnimationState
-    ): Any {
-        return degreeToRadians((degrees(property, context,state) as Number).toFloat())
-    }
+internal fun OpRadiansToDegree(
+    rad : Expression
+) = Expression { property, context, state ->
+    radiansToDegree((rad(property, context,state) as Number).toFloat())
 }
