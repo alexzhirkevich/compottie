@@ -213,15 +213,35 @@ internal class TextLayer(
 
             val hasFontFamily = configureTextStyle(drawScope, document, state)
 
+            val ascent = document.fontFamily?.let {
+                state.composition.animation.fonts?.find(it)
+            }?.accent ?: 0f
+
             if (hasFontFamily || state.enableTextGrouping) {
-                drawTextWithFonts(state, drawScope, document)
+                drawTextWithFonts(
+                    state = state,
+                    ascent = ascent,
+                    drawScope = drawScope,
+                    document = document
+                )
             } else {
                 val glyphs = state.composition.findGlyphs(document.fontFamily)
 
                 if (glyphs != null) {
-                    drawTextWithGlyphs(drawScope, document, state, glyphs)
+                    drawTextWithGlyphs(
+                        drawScope = drawScope,
+                        document = document,
+                        ascent = ascent,
+                        state = state,
+                        glyphs = glyphs
+                    )
                 } else {
-                    drawTextWithFonts(state, drawScope, document)
+                    drawTextWithFonts(
+                        state = state,
+                        ascent = ascent,
+                        drawScope = drawScope,
+                        document = document
+                    )
                 }
             }
 
@@ -319,7 +339,6 @@ internal class TextLayer(
         val fontFamily = animationState.fonts[strFontFamily]
 
         val fontSpec = animationState.composition.animation.fonts?.find(strFontFamily)
-
         val weight = fontSpec?.weight ?: FontWeight.Normal
         val style = fontSpec?.style ?: FontStyle.Normal
 
@@ -378,6 +397,7 @@ internal class TextLayer(
 
     private fun drawTextWithFonts(
         state: AnimationState,
+        ascent: Float,
         drawScope: DrawScope,
         document: TextDocument
     ) {
@@ -408,15 +428,23 @@ internal class TextLayer(
             lines.fastForEachIndexed { idx, line ->
 
                 canvas.save()
-                if (offsetCanvas(state, canvas, document, alLinesIdx + idx, line.width, true)) {
+                if (offsetCanvas(
+                        state = state,
+                        canvas = canvas,
+                        document = document,
+                        lineIndex = alLinesIdx + idx,
+                        lineWidth = line.width,
+                        accent = ascent,
+                        withFonts = true
+                    )) {
                     drawFontTextLine(
-                        line.text,
-                        measurer,
-                        document,
-                        drawScope,
-                        canvas,
-                        tracking,
-                        state.enableTextGrouping
+                        text = line.text,
+                        textMeasurer = measurer,
+                        documentData = document,
+                        drawScope = drawScope,
+                        canvas = canvas,
+                        tracking = tracking,
+                        drawFullLine = state.enableTextGrouping
                     )
                 }
 
@@ -428,6 +456,7 @@ internal class TextLayer(
     private fun drawTextWithGlyphs(
         drawScope: DrawScope,
         document: TextDocument,
+        ascent: Float,
         state: AnimationState,
         glyphs : Map<String, CharacterData>
     ) {
@@ -446,12 +475,20 @@ internal class TextLayer(
         textLines.fastForEachIndexed { outerIndex, line ->
             val boxWidth = document.wrapSize?.getOrNull(0) ?: 0f
 
-            val lines = splitGlyphTextIntoLines(measurer, line,document.fontScale, boxWidth, tracking, glyphs);
+            val lines = splitGlyphTextIntoLines(measurer, line, document.fontScale, boxWidth, tracking, glyphs);
 
             lines.forEachIndexed { innerIndex, l ->
                 canvas.save()
 
-                if (offsetCanvas(state, canvas, document, outerIndex + innerIndex, l.width,false)) {
+                if (offsetCanvas(
+                        state = state,
+                        canvas = canvas,
+                        document = document,
+                        lineIndex = outerIndex + innerIndex,
+                        lineWidth = l.width,
+                        accent = ascent,
+                        withFonts = false
+                    )) {
                     drawGlyphTextLine(
                         text = l.text,
                         state = state,
@@ -573,10 +610,14 @@ internal class TextLayer(
         document: TextDocument,
         lineIndex: Int,
         lineWidth: Float,
+        accent : Float,
         withFonts : Boolean,
     ): Boolean {
 
-        val position = document.wrapPosition?.toOffset() ?: Offset.Zero
+        val position = document.wrapPosition?.toOffset()
+            ?.plus(Offset(x = 0f, y = accent/100f * document.fontSize))
+            ?: Offset.Zero
+
         val size = document.wrapSize?.let { Size(it[0], it[1]) } ?: Size.Zero
 
         val lineSpacing = textAnimation?.style?.lineSpacing?.interpolated(state) ?: 0f

@@ -9,7 +9,8 @@ public class LottieFontSpec internal constructor(
     public val style : FontStyle,
     public val weight : FontWeight,
     public val path : String?,
-    public val origin: FontOrigin
+    public val origin: FontOrigin,
+    public val accent : Float
 ) {
     public enum class FontOrigin {
         /**

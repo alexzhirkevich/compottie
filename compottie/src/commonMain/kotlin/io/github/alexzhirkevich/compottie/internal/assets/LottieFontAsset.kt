@@ -15,9 +15,9 @@ internal class FontList(
 ) {
 
     @Transient
-    private val map = list.map {
+    private val map = list.flatMap {
         listOf(it.name to it.spec, it.family to it.spec)
-    }.flatten().toMap()
+    }.toMap()
 
     fun find(family: String): LottieFontSpec? {
         return map[family]
@@ -44,7 +44,10 @@ internal class LottieFontAsset(
     val path : String? = null,
 
     @SerialName("origin")
-    val origin : FontOrigin? = null
+    val origin : FontOrigin? = null,
+
+    @SerialName("ascent")
+    val ascent : Float = 0f
 ) {
 
     @Transient
@@ -74,7 +77,8 @@ internal class LottieFontAsset(
             style = fontStyle,
             weight = weight,
             path = path,
-            origin = origin?.toSpecOrigin() ?: LottieFontSpec.FontOrigin.Unknown
+            origin = origin?.toSpecOrigin() ?: LottieFontSpec.FontOrigin.Unknown,
+            accent = ascent
         )
     }
 
