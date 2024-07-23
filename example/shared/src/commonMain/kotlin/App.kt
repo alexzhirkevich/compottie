@@ -50,6 +50,7 @@ import io.github.alexzhirkevich.compottie.rememberResourcesAssetsManager
 import io.github.alexzhirkevich.compottie.rememberResourcesFontManager
 import io.github.alexzhirkevich.shared.generated.resources.ComicNeue
 import io.github.alexzhirkevich.shared.generated.resources.Res
+import lottiefiles.LottieFilesScreen
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 private val GRADIENT_ELLIPSE = "gradient_ellipse.json"
@@ -129,7 +130,7 @@ public suspend fun LottieCompositionSpec.Companion.ResourceString(
 public fun App() {
 
 //    return LottieFontExample()
-    return AllExamples()
+    return LottieFilesScreen()
 //    return LottieList()
 
     val composition = rememberLottieComposition() {
@@ -141,7 +142,7 @@ public fun App() {
 //        LottieCompositionSpec.ResourceString("expr/move_horizontal.json")
 //        LottieCompositionSpec.ResourceString("expr/wiggle.json")
 //        LottieCompositionSpec.ResourceString("expr/noise.json")
-        LottieCompositionSpec.ResourceString(ROBOT)
+        LottieCompositionSpec.ResourceString(WONDERS)
 //
 //        LottieCompositionSpec.Url(
 //            "https://assets-v2.lottiefiles.com/a/a63d8606-1166-11ee-a7f8-83d9759dd8ff/hCTtJKM3Tu.lottie"

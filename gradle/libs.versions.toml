@@ -12,6 +12,7 @@ ktor="2.3.12"
 atomicfu="0.23.2"
 coroutines="1.8.0"
 nexus-publish="2.0.0"
+coil="3.0.0-alpha08"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
@@ -29,6 +30,8 @@ coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", ve
 nexus-publish = { module = "io.github.gradle-nexus.publish-plugin:io.github.gradle-nexus.publish-plugin.gradle.plugin", version.ref = "nexus-publish" }
 kotlin-gp = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 android-gp = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-network = { module = "io.coil-kt.coil3:coil-network-ktor", version.ref = "coil" }
 
 [plugins]
 compose = { id = "org.jetbrains.compose", version.ref = "compose" }

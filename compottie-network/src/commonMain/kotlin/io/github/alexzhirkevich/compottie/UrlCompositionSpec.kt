@@ -48,7 +48,7 @@ private class NetworkCompositionSpec(
 ) : LottieCompositionSpec {
 
     override val key: String
-        get() = "url_${url.hashCode()}"
+        get() = "url_$url"
 
     private val assetsManager = NetworkAssetsManager(client, request, cacheStrategy)
     private val fontManager = NetworkFontManager(client, request, cacheStrategy)

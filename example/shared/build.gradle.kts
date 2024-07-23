@@ -1,7 +1,11 @@
+
+@file:Suppress("DSL_SCOPE_VIOLATION")
+
 plugins {
     id("module.android")
     id("module.multiplatform")
     id("ktorwasm.workaround")
+    alias(libs.plugins.serialization)
 }
 
 kotlin {
@@ -27,11 +31,14 @@ kotlin {
 //            implementation("io.github.alexzhirkevich:compottie-network:2.0.0-beta01")
 //            implementation("io.github.alexzhirkevich:compottie-resources:2.0.0-beta01")
 
-            implementation(compose.ui)
-            implementation(compose.runtime)
+            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.7.0-alpha07")
+            implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
             implementation(compose.material3)
-            implementation(compose.foundation)
+            implementation(compose.materialIconsExtended)
             implementation(compose.components.resources)
+            implementation(libs.serialization)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network)
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
