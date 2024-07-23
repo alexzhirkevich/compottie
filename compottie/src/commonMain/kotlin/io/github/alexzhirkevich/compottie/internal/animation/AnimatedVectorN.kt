@@ -114,7 +114,7 @@ internal class AnimatedVectorNSerializer : JsonContentPolymorphicSerializer<Anim
 
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedVectorN> {
 
-        val k = element.jsonObject["k"]
+        val k =  element.jsonObject["k"]
 
         return when {
 

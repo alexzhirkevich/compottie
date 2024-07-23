@@ -12,7 +12,7 @@ internal sealed class OpEffectContext : ExpressionContext<LayerEffect> {
 
         return when (op) {
             null -> {
-                checkArgs(args, 1, "())")
+                checkArgs(args, 1, "()")
                 OpGetEffectParam(this, args.argAt(0))
             }
             "active" -> withContext { _, _, _ -> enabled }

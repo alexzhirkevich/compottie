@@ -218,7 +218,6 @@ internal class SingleExpressionInterpreter(
                 val startPos = pos
                 do {
                     nextChar()
-                    print(ch)
                     when(ch.lowercaseChar()){
                         '.' -> {
                             if (isFloat) {

@@ -78,13 +78,17 @@ internal sealed interface EffectValue<T : RawProperty<Any>> {
 
     @Serializable
     class Unsupported(
-        @SerialName("v")
-        override val value: AnimatedVectorN? = null,
-        @SerialName("nm")
-        override val name: String? = null,
-        @SerialName("ix")
-        override val index: Int? = null,
+//        @SerialName("v")
+//        override val value: AnimatedVectorN? = null,
+//        @SerialName("nm")
+//        override val name: String? = null
+//        @SerialName("ix")
+//    override val index: Int? = null
     ) : EffectValue<AnimatedVectorN> {
-        override fun copy() = Unsupported(value,name, index) // TODO deep copy JsonElement?
+        override val name: String? = null
+        override val index: Int? = null
+        override val value: AnimatedVectorN? = null
+
+        override fun copy() = Unsupported()
     }
 }
