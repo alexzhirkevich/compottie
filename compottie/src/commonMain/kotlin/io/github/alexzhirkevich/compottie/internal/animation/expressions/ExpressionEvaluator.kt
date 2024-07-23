@@ -31,7 +31,7 @@ private class ExpressionEvaluatorImpl(expr : String) : ExpressionEvaluator {
             try {
                 context.reset()
                 expression.invoke(this, context, state)
-                context.result.toListOrThis()
+                context.result?.toListOrThis() ?: raw(state)
             } catch (t: Throwable) {
                 Compottie.logger?.warn(
                     "Error occurred in a Lottie expression. Try to disable expressions for Painter using enableExpressions=false: ${t.message}"

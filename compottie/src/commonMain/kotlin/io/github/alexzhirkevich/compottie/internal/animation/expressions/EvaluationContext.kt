@@ -12,10 +12,7 @@ internal class DefaultEvaluatorContext(
     override val randomSource: RandomSource = RandomSource(),
 ) : EvaluationContext {
 
-    val result: Any
-        get() = checkNotNull(variables["\$bm_rt"]) {
-            "\$bm_rt is null"
-        }
+    val result: Any? get() = variables["\$bm_rt"]
 
     fun reset() {
         variables.clear()
