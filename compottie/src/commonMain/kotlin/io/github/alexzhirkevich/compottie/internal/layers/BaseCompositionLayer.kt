@@ -161,6 +161,7 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         this.loadedLayers = (layers - matteLayers).fastFilter { it.matteTarget != BooleanInt.Yes }
         return this.loadedLayers!!
     }
+
     private fun getRemappedFrame(state: AnimationState): Float {
 
         val frame = timeRemapping?.interpolated(state)
@@ -168,7 +169,7 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
             ?.minus(state.composition.startFrame)
             ?: (state.frame - (startTime ?: inPoint ?: 0f)  )
 
-        return if (timeStretch.absoluteValue > Float.MIN_VALUE && timeStretch != 1f && !isContainerLayer) {
+        return if (timeRemapping == null && timeStretch.absoluteValue > Float.MIN_VALUE && !isContainerLayer) {
             frame / timeStretch
         } else frame
     }
