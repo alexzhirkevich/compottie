@@ -123,7 +123,7 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         }
 
         layers.fastForEach {
-            it.effects = effects + it.effects
+            it.effects += effects
         }
 
         val matteLayers = mutableSetOf<BaseLayer>()

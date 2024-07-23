@@ -96,7 +96,7 @@ internal abstract class BaseLayer : Layer {
         masks?.all { it.mode == MaskMode.None } == true
     }
 
-    override val effectsApplier by lazy {
+    final override val effectsApplier by lazy {
         LayerEffectsApplier(this)
     }
 

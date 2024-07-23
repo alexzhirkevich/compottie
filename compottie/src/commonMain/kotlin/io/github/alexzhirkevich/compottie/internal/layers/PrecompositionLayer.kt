@@ -129,7 +129,9 @@ internal data class PrecompositionLayer(
     }
 
     override fun compose(state: AnimationState): List<Layer> {
-        return (state.assets[refId] as? PrecompositionAsset?)?.layers.orEmpty()
+        return (state.assets[refId] as? PrecompositionAsset?)?.layers.orEmpty().map {
+            it.deepCopy()
+        }
     }
 
     override fun drawLayer(
