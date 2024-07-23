@@ -126,8 +126,7 @@ internal abstract class BaseLayer : Layer {
     }
 
     override fun isActive(state: AnimationState): Boolean {
-        return !isHidden(state)
-                && state.frame in (inPoint ?: Float.MIN_VALUE)..(outPoint ?: Float.MAX_VALUE)
+        return !isHidden(state) && state.frame in (inPoint ?: 0f)..(outPoint ?: Float.MAX_VALUE)
     }
 
 
