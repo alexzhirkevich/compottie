@@ -24,11 +24,13 @@ internal value class LottieBlendMode(val type : Byte){
         val Saturation = LottieBlendMode(13)
         val Color = LottieBlendMode(14)
         val Luminosity = LottieBlendMode(15)
+        val Add = LottieBlendMode(16)
+        val Mix = LottieBlendMode(17)
     }
 }
 
 internal fun LottieBlendMode.asComposeBlendMode() : BlendMode {
-    return BlendModeMapping[this] ?: error("Unknown lottie blend mode: $this")
+    return BlendModeMapping[this] ?: BlendMode.SrcOver
 }
 
 private val BlendModeMapping = mapOf(

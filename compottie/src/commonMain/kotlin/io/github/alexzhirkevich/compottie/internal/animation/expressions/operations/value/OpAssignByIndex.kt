@@ -6,14 +6,15 @@ import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.VariableScope
 
 internal class OpAssignByIndex(
     private val variableName : String,
+    private val scope : VariableScope,
     private val index : Expression,
     private val assignableValue : Expression,
     private val merge : ((Any, Any) -> Any)?
 ) : Expression {
-
 
     override tailrec fun invoke(
         property: RawProperty<Any>,
@@ -21,7 +22,7 @@ internal class OpAssignByIndex(
         state: AnimationState,
     ): Undefined {
         val v = assignableValue.invoke(property, context, state)
-        val current = context.variables[variableName]
+        val current = context.getVariable(variableName)
 
 
         check(merge == null || current != null) {
@@ -29,7 +30,7 @@ internal class OpAssignByIndex(
         }
 
         if (current == null) {
-            context.variables[variableName] = mutableListOf<Any>()
+            context.setVariable(variableName, mutableListOf<Any>(), scope)
             return invoke(property, context, state)
         } else {
             val i = index.invoke(property, context, state)
@@ -57,7 +58,7 @@ internal class OpAssignByIndex(
                 }
 
                 is List<*> -> {
-                    context.variables[variableName] = current.toMutableList()
+                    context.setVariable(variableName, current.toMutableList(), scope)
                     return invoke(property, context, state)
                 }
 

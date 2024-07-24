@@ -9,9 +9,11 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Evaluat
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.VariableScope
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.argAt
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.argForNameOrIndex
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgsNotNull
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.color.OpHslToRgb
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.color.OpRgbToHsl
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition.OpGetComp
@@ -48,15 +50,22 @@ internal object OpGlobalContext : ExpressionContext<Undefined>, Expression {
     private val thisLayer = OpGetLayer()
     private val thisComp = OpGetComp(null)
 
-    override fun interpret(op: String?, args: List<Expression>): Expression? {
-
+    override fun interpret(op: String?, args: List<Expression>?): Expression? {
         return when (op) {
-            "var", "let", "const" -> OpVar
-            "Infinity" -> OpConstant(Float.POSITIVE_INFINITY)
-            "Math" -> OpMath
-            "time" -> OpGetTime
+            "var", "let", "const" -> {
+                OpVar(if (op == "var") VariableScope.Global else VariableScope.Block)
+            }
+            "Infinity" -> {
+                OpConstant(Float.POSITIVE_INFINITY)
+            }
+            "Math" -> {
+                OpMath
+            }
+            "time" -> {
+                OpGetTime
+            }
             "thisComp" -> {
-                if (args.isEmpty()) {
+                if (args.isNullOrEmpty()) {
                     OpGetComp(null)
                 } else {
                     OpGetLayer(nameOrIndex = args.single())
@@ -68,8 +77,12 @@ internal object OpGlobalContext : ExpressionContext<Undefined>, Expression {
                 return OpGetComp(args.argAt(0))
             }
 
-            "thisLayer" -> OpGetLayer()
-            "thisProperty" -> thisProperty
+            "thisLayer" -> {
+                OpGetLayer()
+            }
+            "thisProperty" -> {
+                thisProperty
+            }
             "add", "\$bm_sum", "sum" -> {
                 checkArgs(args, 2, op)
                 OpAdd(
@@ -127,16 +140,21 @@ internal object OpGlobalContext : ExpressionContext<Undefined>, Expression {
                 )
             }
 
-            "length" -> OpLength(
-                args.argForNameOrIndex(0, "vec", "point1")!!,
-                args.argForNameOrIndex(1, "point2"),
-            )
+            "length" -> {
+                checkArgsNotNull(args, op)
+                OpLength(
+                    args.argForNameOrIndex(0, "vec", "point1")!!,
+                    args.argForNameOrIndex(1, "point2"),
+                )
+            }
             "normalize" -> {
                 checkArgs(args, 1, op)
                 OpNormalize(args.argAt(0))
             }
 
-            "cross" -> error("cross is not supported yet") //todo: support OpCross
+            "cross" -> {
+                error("cross is not supported yet") //todo: support OpCross
+            }
 
             "degreesToRadians" -> {
                 checkArgs(args, 1, op)
@@ -148,19 +166,29 @@ internal object OpGlobalContext : ExpressionContext<Undefined>, Expression {
                 OpRadiansToDegree(args.argAt(0))
             }
 
-            "timeToFrames" -> OpTimeToFrames(
-                args.argForNameOrIndex(0,"t"),
-                args.argForNameOrIndex(1,"fps"),
-            )
-            "framesToTime" -> OpFramesToTime(
-                args.argForNameOrIndex(0,"frames"),
-                args.argForNameOrIndex(1,"fps"),
-            )
-            "seedRandom" -> OpSetRandomSeed(
-                args.argForNameOrIndex(0,"offset")!!,
-                args.argForNameOrIndex(1,"timeless"),
-            )
+            "timeToFrames" -> {
+                checkArgsNotNull(args, op)
+                OpTimeToFrames(
+                    args.argForNameOrIndex(0,"t"),
+                    args.argForNameOrIndex(1,"fps"),
+                )
+            }
+            "framesToTime" -> {
+                checkArgsNotNull(args, op)
+                OpFramesToTime(
+                    args.argForNameOrIndex(0,"frames"),
+                    args.argForNameOrIndex(1,"fps"),
+                )
+            }
+            "seedRandom" -> {
+                checkArgsNotNull(args, op)
+                OpSetRandomSeed(
+                    args.argForNameOrIndex(0,"offset")!!,
+                    args.argForNameOrIndex(1,"timeless"),
+                )
+            }
             "random", "gaussRandom" -> {
+                checkArgsNotNull(args, op)
                 OpRandomNumber(
                     args.argForNameOrIndex(0,"maxValOrArray1"),
                     args.argForNameOrIndex(1,"maxValOrArray2"),
@@ -173,10 +201,22 @@ internal object OpGlobalContext : ExpressionContext<Undefined>, Expression {
                 OpNoise(args.argAt(0))
             }
 
-            "linear" -> OpInterpolate.interpret(LinearEasing, args)
-            "ease" -> OpInterpolate.interpret(easeInOut, args)
-            "easeIn" -> OpInterpolate.interpret(easeIn, args)
-            "easeOut" -> OpInterpolate.interpret(easeOut, args)
+            "linear" -> {
+                checkArgsNotNull(args, op)
+                OpInterpolate.interpret(LinearEasing, args)
+            }
+            "ease" -> {
+                checkArgsNotNull(args, op)
+                OpInterpolate.interpret(easeInOut, args)
+            }
+            "easeIn" -> {
+                checkArgsNotNull(args, op)
+                OpInterpolate.interpret(easeIn, args)
+            }
+            "easeOut" -> {
+                checkArgsNotNull(args, op)
+                OpInterpolate.interpret(easeOut, args)
+            }
 
             "hslToRgb" -> {
                 checkArgs(args, 1, op)
@@ -189,16 +229,21 @@ internal object OpGlobalContext : ExpressionContext<Undefined>, Expression {
             }
 
             "if" -> {
+                checkArgsNotNull(args, op)
                 OpIfCondition(condition = args.single())
             }//error("Compottie doesn't support conditions in expressions yet")
-            "true" -> OpConstant(true)
-            "false" -> OpConstant(false)
+            "true" -> {
+                OpConstant(true)
+            }
+            "false" -> {
+                OpConstant(false)
+            }
             else -> {
                 thisProperty.interpret(op, args)
                     ?: thisLayer.interpret(op, args)
                     ?: thisComp.interpret(op, args)
                     ?: run {
-                        if (args.isEmpty() && op != null) {
+                        if (args == null && op != null) {
                             if (EXPR_DEBUG_PRINT_ENABLED) {
                                 println("making GetVariable $op...")
                             }

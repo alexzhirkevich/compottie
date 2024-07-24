@@ -6,13 +6,14 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefin
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.argAt
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.argForNameOrIndex
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgsNotNull
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpConstant
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.layers.PrecompositionLayer
 
 internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
 
-    override fun interpret(op: String?, args: List<Expression>): Expression? {
+    override fun interpret(op: String?, args: List<Expression>?): Expression? {
         return when (op) {
             "index" -> withContext { _, _, _ -> index ?: Undefined }
             "name" -> withContext { _, _, _ -> name ?: Undefined }
@@ -75,6 +76,7 @@ internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
             }
 
             "fromComp" -> {
+                checkArgsNotNull(args, op)
                 OpLayerToComp(
                     layer = this,
                     point = args.argForNameOrIndex(0,"point")!!,
@@ -84,6 +86,7 @@ internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
             }
 
             "toWorld" -> {
+                checkArgsNotNull(args, op)
                 OpLayerToWorld(
                     layer = this,
                     point = args.argForNameOrIndex(0,"point")!!,

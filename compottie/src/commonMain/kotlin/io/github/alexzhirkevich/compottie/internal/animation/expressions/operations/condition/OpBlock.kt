@@ -8,15 +8,35 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Express
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
 
 internal class OpBlock(
-    private val expressions: List<Expression>
+    val expressions: List<Expression>,
+    var scoped : Boolean
 ) : Expression {
+
     override fun invoke(
         property: RawProperty<Any>,
         context: EvaluationContext,
         state: AnimationState
-    ): Undefined {
+    ): Any {
+        return if (scoped){
+            context.withScope(emptyMap()){
+               invokeInternal(property, it, state)
+            }
+        } else {
+            invokeInternal(property, context, state)
+        }
+    }
+
+    private fun invokeInternal(
+        property: RawProperty<Any>,
+        context: EvaluationContext,
+        state: AnimationState
+    ) : Any {
         expressions.fastForEach {
-            it(property, context, state)
+            if (it is OpReturn) {
+                return it(property, context, state)
+            } else {
+                it(property, context, state)
+            }
         }
         return Undefined
     }

@@ -9,21 +9,27 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpEquals
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpGetVariable
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpGlobalContext
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.FunctionParam
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpFunction
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpFunctionExec
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.js.JsContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpIfCondition
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpIndex
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpMakeArray
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpMul
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpNot
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpReturn
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpSub
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpUnaryMinus
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpUnaryPlus
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.unresolvedReference
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpVar
-import kotlin.math.exp
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 internal class SingleExpressionInterpreter(
     private val expr : String,
+    private val context: EvaluationContext
 ) : ExpressionInterpreter {
     private var pos = -1
     private var ch: Char = ' '
@@ -54,8 +60,10 @@ internal class SingleExpressionInterpreter(
         ch = if (--pos > 0 && pos < expr.length) expr[pos] else ';'
     }
 
+    fun Char.skip() : Boolean = this == ' ' || this == '\n'
+
     private fun eat(charToEat: Char): Boolean {
-        while (ch == ' ') nextChar()
+        while (ch.skip()) nextChar()
 
         if (ch == charToEat) {
             nextChar()
@@ -70,7 +78,7 @@ internal class SingleExpressionInterpreter(
         while (i < expr.length) {
             if (condition(expr[i]))
                 return true
-            if (expr[i] == ' ')
+            if (expr[i].skip())
                 i++
             else return false
         }
@@ -143,6 +151,7 @@ internal class SingleExpressionInterpreter(
     private fun parseAssignmentValue(x : Expression, merge : ((Any, Any) -> Any)? = null) =  when {
         x is OpIndex && x.variable is OpGetVariable -> OpAssignByIndex(
             variableName = x.variable.name,
+            scope = x.variable.assignInScope ?: VariableScope.Global,
             index = x.index,
             assignableValue = parseExpressionOp(OpGlobalContext),
             merge = merge
@@ -155,10 +164,11 @@ internal class SingleExpressionInterpreter(
         x is OpGetVariable -> OpAssign(
             variableName = x.name,
             assignableValue = parseExpressionOp(OpGlobalContext),
+            scope = x.assignInScope ?: VariableScope.Global,
             merge = merge
         ).also {
             if (EXPR_DEBUG_PRINT_ENABLED) {
-                println("parsing assignment for ${x.name}")
+                println("parsing assignment for ${x.name} in ${it.scope} scope")
             }
         }
 
@@ -346,9 +356,13 @@ internal class SingleExpressionInterpreter(
                 val startPos = pos
                 do {
                     nextChar()
-                } while (ch.isFun())
+                } while (
+                    ch.isFun()
+                    && !(expr.substring(startPos, pos) == "function" && ch == ' ')
+                    && !(expr.substring(startPos, pos) == "return" && ch == ' ')
+                )
 
-                val func = expr.substring(startPos, pos)
+                val func = expr.substring(startPos, pos).trim()
 
                 parseFunction(context, func)
             }
@@ -376,8 +390,12 @@ internal class SingleExpressionInterpreter(
         }
     }
 
-    private fun parseFunction(context: Expression, func : String?) : Expression {
-        val args = buildList {
+    private fun parseFunctionArgs(name : String?): List<Expression>? {
+
+        if (!nextCharIs('('::equals)){
+            return null
+        }
+        return buildList {
             when {
                 eat('(') -> {
                     if (eat(')')){
@@ -388,17 +406,93 @@ internal class SingleExpressionInterpreter(
                     } while (eat(','))
 
                     require(eat(')')) {
-                        "Bad expression:Missing ')' after argument to $func"
+                        "Bad expression:Missing ')' after argument to $name"
                     }
                 }
             }
         }
+    }
+
+    private fun parseFunction(context: Expression, func : String?) : Expression {
+
+        if (func == "function") {
+
+            val start = pos
+
+            while (ch != '(') {
+                nextChar()
+            }
+
+            val name = expr.substring(start, pos).trim()
+
+            if (EXPR_DEBUG_PRINT_ENABLED) {
+                println("making defined function $name")
+            }
+
+            val args = parseFunctionArgs(name).let { args ->
+                args?.map {
+                    when (it) {
+                        is OpGetVariable -> FunctionParam(name = it.name, default = null)
+                        is OpAssign -> FunctionParam(
+                            name = it.variableName,
+                            default = it.assignableValue
+                        )
+
+                        else -> error("Invalid function declaration at $start")
+                    }
+                }
+            }
+
+            checkNotNull(args){
+                "Missing function args"
+            }
+
+
+            check(nextCharIs('{'::equals)) {
+                "Missing function body at $pos"
+            }
+
+
+            val block = parseBlock(
+                scoped = false // function scope will be used
+            )
+
+            this.context.registerFunction(
+                OpFunction(
+                    name = name,
+                    parameters = args,
+                    body = block
+                )
+            )
+            if (EXPR_DEBUG_PRINT_ENABLED) {
+                println("registered function $name")
+            }
+            return OpConstant(Undefined)
+        }
+
+        if (func == "return"){
+            val expr = parseExpressionOp(OpGlobalContext)
+            if (EXPR_DEBUG_PRINT_ENABLED) {
+                println("making return with $expr")
+            }
+            return OpReturn(expr)
+        }
+
+        val args = parseFunctionArgs(func)
+
         if (EXPR_DEBUG_PRINT_ENABLED) {
             println("making fun $func")
         }
 
         return when (context) {
             is ExpressionContext<*> -> context.interpret(func, args)
+                ?: (if (args != null && func != null && this.context.getFunction(func) != null) {
+                    if (EXPR_DEBUG_PRINT_ENABLED) {
+                        println("parsed call for defined function $func")
+                    }
+                    OpFunctionExec(func, args)
+                }
+                else null)
                 ?: unresolvedReference(
                     ref = func ?: "null",
                     obj = context::class.simpleName
@@ -409,11 +503,17 @@ internal class SingleExpressionInterpreter(
             else -> {
                 JsContext.interpret(context, func, args)
                     ?: error("Unsupported Lottie expression function: $func")
+//                when {
+//                    func != null && this.context.getFunction(func) != null ->
+//                        OpFunctionExec(func, args)
+//                    else -> JsContext.interpret(context, func, args)
+//                        ?: error("Unsupported Lottie expression function: $func")
+//                }
             }
         }
     }
 
-    private fun parseBlock(): Expression {
+    private fun parseBlock(scoped : Boolean = true): Expression {
         val list =  buildList {
             if (eat('{')) {
                 while (!eat('}') && pos < expr.length) {
@@ -424,11 +524,29 @@ internal class SingleExpressionInterpreter(
                 add(parseAssignment(OpGlobalContext))
             }
         }
-        return OpBlock(list)
+        return OpBlock(list, scoped)
     }
 }
 
-internal fun checkArgs(args : List<*>, count : Int, func : String) {
+
+@OptIn(ExperimentalContracts::class)
+internal fun checkArgsNotNull(args : List<*>?, func : String) {
+    contract {
+        returns() implies (args != null)
+    }
+    checkNotNull(args){
+        "$func call was missing"
+    }
+}
+
+@OptIn(ExperimentalContracts::class)
+internal fun checkArgs(args : List<*>?, count : Int, func : String) {
+    contract {
+        returns() implies (args != null)
+    }
+    checkNotNull(args){
+        "$func call was missing"
+    }
     require(args.size == count){
         "$func takes $count arguments, but ${args.size} got"
     }

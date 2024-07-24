@@ -8,25 +8,29 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 
 internal interface JsContext {
 
-    fun interpret(parent : Expression, op: String?, args: List<Expression>): Expression?
+    fun interpret(parent: Expression, op: String?, args: List<Expression>?): Expression?
 
     companion object : JsContext {
 
-        override fun interpret(parent : Expression, op: String?, args: List<Expression>): Expression? {
-            return when (op) {
+        override fun interpret(parent: Expression, op: String?, args: List<Expression>?): Expression? {
+            return if (args != null){
+                when (op) {
+                    "toString" -> Expression { p, v, s -> parent(p, v, s).toString() }
+                    "indexOf", "lastIndexOf" -> {
+                        checkArgs(args, 1, op)
+                        JsIndexOf(
+                            value = parent,
+                            search = args.argAt(0),
+                            last = op == "lastIndexOf"
+                        )
+                    }
 
-                "toString" -> Expression { p, v, s -> parent(p, v, s).toString() }
-                "indexOf", "lastIndexOf" -> {
-                    checkArgs(args, 1, op)
-                    JsIndexOf(
-                        value = parent,
-                        search = args.argAt(0),
-                        last = op == "lastIndexOf"
-                    )
+                    else -> JsNumberContext.interpret(parent, op, args)
+                        ?: JsStringContext.interpret(parent, op, args)
                 }
-
-                else -> JsNumberContext.interpret(parent, op, args)
-                    ?: JsStringContext.interpret(parent, op, args)
+            } else {
+                JsNumberContext.interpret(parent, op, args)
+                 ?: JsStringContext.interpret(parent, op, args)
             }
         }
     }

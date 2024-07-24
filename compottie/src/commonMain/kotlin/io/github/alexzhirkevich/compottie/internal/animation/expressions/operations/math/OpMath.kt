@@ -10,7 +10,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Express
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.argAt
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random.OpRandomNumber
-import kotlin.js.JsName
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.unresolvedReference
 import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.acosh
@@ -52,7 +52,17 @@ internal object OpMath : Expression, ExpressionContext<OpMath> {
 
     override fun interpret(
         op: String?,
-        args: List<Expression>
+        args: List<Expression>?
+    ): Expression {
+       return if (args == null){
+           interpretVar(op)
+       } else {
+           interpretFun(op, args)
+       }
+    }
+
+    private fun interpretVar(
+        op: String?,
     ): Expression {
         return when (op) {
             "PI" -> PI
@@ -63,6 +73,14 @@ internal object OpMath : Expression, ExpressionContext<OpMath> {
             "LOG2E" -> LOG2E
             "SQRT1_2" -> SQRT1_2
             "SQRT2" -> SQRT2
+            else -> unresolvedReference("$op", "Math")
+        }
+    }
+    private fun interpretFun(
+        op: String?,
+        args: List<Expression>
+    ): Expression {
+        return when (op) {
             "abs" -> op1(args, ::abs, op)
             "asoc" -> op1(args, ::acos, op)
             "asoch" -> op1(args, ::acosh, op)
@@ -97,7 +115,7 @@ internal object OpMath : Expression, ExpressionContext<OpMath> {
             "tanh" -> op1(args, ::tanh, op)
             "trunc" -> op1(args, ::truncate, op)
 
-            else -> error("Unsupported Math operation: $op")
+            else -> unresolvedReference("$op", "Math")
         }
     }
 

@@ -5,8 +5,10 @@ import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.VariableScope
 
 internal class OpAssign(
+    val scope : VariableScope,
     val variableName : String,
     val assignableValue : Expression,
     private val merge : ((Any, Any) -> Any)?
@@ -19,15 +21,19 @@ internal class OpAssign(
     ): Undefined {
         val v = assignableValue.invoke(property, context, state)
 
-        val current = context.variables[variableName]
+        val current = context.getVariable(variableName)
 
         check(merge == null || current != null) {
             "Cant modify $variableName as it is undefined"
         }
 
-        context.variables[variableName] = if (current != null && merge != null) {
-            merge.invoke(current, v)
-        } else v
+        context.setVariable(
+            name = variableName,
+            value = if (current != null && merge != null) {
+                merge.invoke(current, v)
+            } else v,
+            scope = scope
+        )
 
         return Undefined
     }

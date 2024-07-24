@@ -1,20 +1,25 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition
 
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedProperty
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.toExpressionType
 
 internal sealed class OpTransformContext : Expression, ExpressionContext<AnimatedTransform> {
 
-    override fun interpret(op: String?, args: List<Expression>): Expression? {
+    override fun interpret(op: String?, args: List<Expression>?): Expression? {
         return when(op) {
-            "rotation" -> withContext { _, _, s -> rotation.interpolated(s) }
-            "scale" -> withContext { _, _, s -> scale.interpolated(s) }
-            "opacity" -> withContext { _, _, s -> opacity.interpolated(s) }
-            "skew" -> withContext { _, _, s -> skew.interpolated(s) }
-            "skewAxis" -> withContext { _, _, s -> skewAxis.interpolated(s) }
-            "position" -> withContext { _, _, s -> position.interpolated(s) }
+            "rotation" -> interpolate(AnimatedTransform::rotation)
+            "scale" -> interpolate(AnimatedTransform::scale)
+            "opacity" -> interpolate(AnimatedTransform::opacity)
+            "skew" -> interpolate(AnimatedTransform::skew)
+            "skewAxis" -> interpolate(AnimatedTransform::skewAxis)
+            "position" -> interpolate(AnimatedTransform::position)
             else -> null
         }
     }
+
+    private fun interpolate(value : (AnimatedTransform) -> AnimatedProperty<*>) : Expression =
+        withContext { _, _, s -> value(this).interpolated(s).toExpressionType() }
 }

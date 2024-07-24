@@ -24,7 +24,7 @@ private class ExpressionEvaluatorImpl(expr : String) : ExpressionEvaluator {
 
     private val context = DefaultEvaluatorContext()
 
-    private val expression: Expression = MainExpressionInterpreter(expr).interpret()
+    private val expression: Expression = MainExpressionInterpreter(expr, context).interpret()
 
     override fun RawProperty<*>.evaluate(state: AnimationState): Any {
         return if (state.enableExpressions) {

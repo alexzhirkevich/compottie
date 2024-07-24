@@ -22,6 +22,12 @@ internal abstract class ExpressionProperty<T : Any> : AnimatedProperty<T> {
 
     override fun interpolated(state: AnimationState): T {
         val evaluator = expressionEvaluator
-        return mapEvaluated(evaluator.run { evaluate(state) })
+        val evaluated = evaluator.run { evaluate(state) }
+
+        return if (evaluated is AnimatedProperty<*>){
+            evaluated.interpolated(state) as T
+        } else {
+            mapEvaluated(evaluated)
+        }
     }
 }

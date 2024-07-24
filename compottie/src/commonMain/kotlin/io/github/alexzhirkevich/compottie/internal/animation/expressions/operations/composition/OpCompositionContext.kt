@@ -10,7 +10,7 @@ internal sealed class OpCompositionContext : ExpressionContext<ExpressionComposi
 
     final override fun interpret(
         op: String?,
-        args: List<Expression>
+        args: List<Expression>?
     ): Expression? {
         return when (op) {
             "numLayers" -> withContext { _, _, _ -> layersCount }

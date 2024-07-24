@@ -3,12 +3,16 @@ package io.github.alexzhirkevich.compottie.internal.animation.expressions
 import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.Compottie
 
-internal class MainExpressionInterpreter(expr : String) : ExpressionInterpreter {
+internal class MainExpressionInterpreter(
+    expr : String,
+    private val context: EvaluationContext
+) : ExpressionInterpreter {
 
     private val expressions = try {
         val lines = expr
             .replace("\t", " ")
             .replace("\r", "")
+            .replace("\n{", "{")
             .split(";", "\n")
             .filter(String::isNotBlank)
 
@@ -19,12 +23,19 @@ internal class MainExpressionInterpreter(expr : String) : ExpressionInterpreter 
 
                 var line = lines[i]
 
-                while (line.endsWithExpressionChar() || line.countOpenedBlocks()> 0) {
+                while (
+                    line.endsWithExpressionChar() ||
+                    line.countOpenedBlocks()> 0
+                ) {
 
                     check(i < lines.lastIndex) {
                         "Unexpected end of line: $line"
                     }
-                    line += ";" + lines[i + 1]
+                    line += if (line.endsWith("{")) {
+                        lines[i + 1]
+                    } else {
+                        ";" + lines[i + 1]
+                    }
                     i++
                 }
 
@@ -32,8 +43,11 @@ internal class MainExpressionInterpreter(expr : String) : ExpressionInterpreter 
                 i++
             }
         }.map {
+            if (EXPR_DEBUG_PRINT_ENABLED) {
+                println("Expressions: $expr")
+            }
             try {
-                SingleExpressionInterpreter(it).interpret()
+                SingleExpressionInterpreter(it, context).interpret()
             } catch (t: Throwable) {
                 Compottie.logger?.warn(
                     "Unsupported or invalid Lottie expression: $it. You can ignore it if the animation runs fine or expressions are disabled (${t.message})"

@@ -6,13 +6,16 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Evaluat
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.VariableScope
 
-internal object OpVar : Expression, ExpressionContext<Any> {
+internal class OpVar(
+    val scope : VariableScope
+) : Expression, ExpressionContext<Any> {
 
-    override fun interpret(op: String?, args: List<Expression>): Expression {
+    override fun interpret(op: String?, args: List<Expression>?): Expression {
         return if (op == null)
             Expression.UndefinedExpression
-        else OpGetVariable(op, declare = true)
+        else OpGetVariable(op, assignInScope = scope)
     }
 
     override fun invoke(

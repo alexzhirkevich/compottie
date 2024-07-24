@@ -11,6 +11,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefin
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.argAt
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.argForNameOrIndex
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgsNotNull
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random.OpSmooth
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random.OpTemporalWiggle
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random.OpWiggle
@@ -27,86 +28,121 @@ internal abstract class OpPropertyContext : Expression, ExpressionContext<RawPro
         state: AnimationState
     ): RawProperty<Any> = TODO()
 
-    final override fun interpret(op: String?, args: List<Expression>): Expression? {
+    final override fun interpret(op: String?, args: List<Expression>?): Expression? {
         return when (op) {
-            "value" -> OpPropertyValue(this)
-            "numKeys" -> withContext { _, _, _ ->
-                (this as? RawKeyframeProperty<*, *>)?.keyframes?.size ?: 0
+            "value" -> {
+                OpPropertyValue(this)
+            }
+            "numKeys" -> {
+                withContext { _, _, _ ->
+                    (this as? RawKeyframeProperty<*, *>)?.keyframes?.size ?: 0
+                }
             }
 
-            "points" -> withTimeRemapping(args.getOrNull(0)) { _, _, state ->
-                (this as? AnimatedShape)?.rawBezier(state)?.vertices ?: Undefined
+            "points" -> {
+                withTimeRemapping(args?.getOrNull(0)) { _, _, state ->
+                    (this as? AnimatedShape)?.rawBezier(state)?.vertices ?: Undefined
+                }
             }
 
-            "inTangents" -> withTimeRemapping(args.getOrNull(0)) { _, _, state ->
-                (this as? AnimatedShape)?.rawBezier(state)?.inTangents ?: Undefined
+            "inTangents" -> {
+                withTimeRemapping(args?.getOrNull(0)) { _, _, state ->
+                    (this as? AnimatedShape)?.rawBezier(state)?.inTangents ?: Undefined
+                }
             }
 
-            "outTangents" -> withTimeRemapping(args.getOrNull(0)) { _, _, state ->
-                (this as? AnimatedShape)?.rawBezier(state)?.outTangents ?: Undefined
+            "outTangents" -> {
+                withTimeRemapping(args?.getOrNull(0)) { _, _, state ->
+                    (this as? AnimatedShape)?.rawBezier(state)?.outTangents ?: Undefined
+                }
             }
 
-            "isClosed" -> withTimeRemapping(args.getOrNull(0)) { _, _, state ->
-                (this as? AnimatedShape)?.rawBezier(state)?.isClosed ?: Undefined
+            "isClosed" -> {
+                withTimeRemapping(args?.getOrNull(0)) { _, _, state ->
+                    (this as? AnimatedShape)?.rawBezier(state)?.isClosed ?: Undefined
+                }
             }
 
-            "createPath" -> OpCreatePath(
-                points = args.argForNameOrIndex(0, "points"),
-                inTangents = args.argForNameOrIndex(1, "inTangents"),
-                outTangents = args.argForNameOrIndex(2, "outTangents"),
-                isClosed = args.argForNameOrIndex(3, "is_closed"),
-            )
+            "createPath" -> {
+                checkArgsNotNull(args, op)
+                OpCreatePath(
+                    points = args.argForNameOrIndex(0, "points"),
+                    inTangents = args.argForNameOrIndex(1, "inTangents"),
+                    outTangents = args.argForNameOrIndex(2, "outTangents"),
+                    isClosed = args.argForNameOrIndex(3, "is_closed"),
+                )
+            }
 
-            "propertyIndex" -> withContext { _, _, _ -> index ?: Undefined }
+            "propertyIndex" -> {
+                withContext { _, _, _ -> index ?: Undefined }
+            }
 
             "valueAtTime" -> {
                 checkArgs(args, 1, op)
                 OpPropertyValue(this, timeRemapping = args.argAt(0))
             }
 
-            "wiggle" -> OpWiggle(
-                property = this,
-                freq = args.argForNameOrIndex(0, "freq")!!,
-                amp = args.argForNameOrIndex(1, "amp")!!,
-                octaves = args.argForNameOrIndex(2, "octaves"),
-                ampMult = args.argForNameOrIndex(3, "amp_mult"),
-                time = args.argForNameOrIndex(4, "t"),
-            )
+            "wiggle" -> {
+                checkArgsNotNull(args, op)
+                OpWiggle(
+                    property = this,
+                    freq = args.argForNameOrIndex(0, "freq")!!,
+                    amp = args.argForNameOrIndex(1, "amp")!!,
+                    octaves = args.argForNameOrIndex(2, "octaves"),
+                    ampMult = args.argForNameOrIndex(3, "amp_mult"),
+                    time = args.argForNameOrIndex(4, "t"),
+                )
+            }
 
-            "temporalWiggle" -> OpTemporalWiggle(
-                freq = args.argForNameOrIndex(0, "freq")!!,
-                amp = args.argForNameOrIndex(1, "amp")!!,
-                octaves = args.argForNameOrIndex(2, "octaves"),
-                ampMult = args.argForNameOrIndex(3, "amp_mult"),
-                time = args.argForNameOrIndex(4, "t"),
-            )
+            "temporalWiggle" -> {
+                checkArgsNotNull(args, op)
+                OpTemporalWiggle(
+                    freq = args.argForNameOrIndex(0, "freq")!!,
+                    amp = args.argForNameOrIndex(1, "amp")!!,
+                    octaves = args.argForNameOrIndex(2, "octaves"),
+                    ampMult = args.argForNameOrIndex(3, "amp_mult"),
+                    time = args.argForNameOrIndex(4, "t"),
+                )
+            }
 
-            "smooth" -> OpSmooth(
-                prop = this,
-                width = args.argForNameOrIndex(0, "width"),
-                samples = args.argForNameOrIndex(1, "samples"),
-                time = args.argForNameOrIndex(2, "t")
-            )
+            "smooth" -> {
+                checkArgsNotNull(args, op)
+                OpSmooth(
+                    prop = this,
+                    width = args.argForNameOrIndex(0, "width"),
+                    samples = args.argForNameOrIndex(1, "samples"),
+                    time = args.argForNameOrIndex(2, "t")
+                )
+            }
 
-            "loopIn", "loopInDuration" -> OpLoopIn(
-                property = this,
-                name = args.getOrNull(0),
-                numKf = args.getOrNull(1),
-                isDuration = op == "loopInDuration"
-            )
+            "loopIn", "loopInDuration" -> {
+                checkArgsNotNull(args, op)
+                OpLoopIn(
+                    property = this,
+                    name = args.getOrNull(0),
+                    numKf = args.getOrNull(1),
+                    isDuration = op == "loopInDuration"
+                )
+            }
 
-            "loopOut", "loopOutDuration" -> OpLoopOut(
-                property = this,
-                name = args.argForNameOrIndex(0, "type"),
-                numKf = args.argForNameOrIndex(1, "numKeyframes"),
-                isDuration = op == "loopOutDuration"
-            )
+            "loopOut", "loopOutDuration" -> {
+                checkArgsNotNull(args, op)
+                OpLoopOut(
+                    property = this,
+                    name = args.argForNameOrIndex(0, "type"),
+                    numKf = args.argForNameOrIndex(1, "numKeyframes"),
+                    isDuration = op == "loopOutDuration"
+                )
+            }
 
             "getVelocityAtTime",
-            "getSpeedAtTime"
-            -> error("$op is not yet supported")
+            "getSpeedAtTime" -> {
+                error("$op is not yet supported")
+            }
 
-            else -> null
+            else -> {
+                null
+            }
         }
     }
 }
