@@ -70,12 +70,6 @@ internal class LottieFilesViewModel() : ViewModel() {
                 Triple(q, s, p)
             }.collectLatest { (q, s, p) ->
 
-                if (prevSearch != null && prevSearch != q){
-                    prevSearch = q
-                    _page.value = 1
-                    _pageCount.value = 1
-                    return@collectLatest
-                }
                 try {
                     val resp = httpClient.get(
                         "https://lottiefiles.com/api/search/get-animations"
@@ -95,6 +89,8 @@ internal class LottieFilesViewModel() : ViewModel() {
 
                     _files.value = json.decodeFromJsonElement<List<LottieFile>>(files)
                     _pageCount.value = resp.get("originalPageCount")?.jsonPrimitive?.intOrNull ?: 0
+                    _page.value = if (prevSearch == q) p else 1
+                    prevSearch = q
                 } catch (t: Throwable) {
                     t.printStackTrace()
                 }
@@ -122,6 +118,10 @@ internal class LottieFilesViewModel() : ViewModel() {
                     }
                 }
         }
+    }
+
+    fun onSortOrderChanged(sortOrder: SortOrder){
+        _sortOrder.value = sortOrder
     }
 
     fun onSearch(query: String) {

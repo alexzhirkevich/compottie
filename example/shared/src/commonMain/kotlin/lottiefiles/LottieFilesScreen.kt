@@ -27,14 +27,19 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.rounded.ArrowBackIos
 import androidx.compose.material.icons.rounded.ArrowForwardIos
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -53,6 +58,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -108,15 +114,79 @@ internal fun LottieFilesScreen(
         }
     }
 
-    Surface {
+    Surface(modifier) {
         BoxWithConstraints {
+
+            val isWideScreen = constraints.maxWidth > LocalDensity.current.run {
+                400.dp.toPx()
+            }
             Column(
-                modifier = modifier,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                SearchBar(
-                    viewModel = viewModel
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp)
+                ) {
+                    SearchBar(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(bottom = 12.dp),
+                        viewModel = viewModel
+                    )
+
+                    var sortExpanded by rememberSaveable {
+                        mutableStateOf(false)
+                    }
+
+                    val sort by viewModel.sortOrder.collectAsState()
+
+                    Box {
+                        AssistChip(
+                            onClick = {
+                                sortExpanded = true
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.Sort,
+                                    contentDescription = null
+                                )
+                            },
+                            label = {
+                                Text(if (isWideScreen) sort.name else sort.name.take(1))
+                            }
+                        )
+                        DropdownMenu(
+                            expanded = sortExpanded,
+                            onDismissRequest = {
+                                sortExpanded = false
+                            }
+                        ) {
+                            SortOrder.entries.forEach {
+                                DropdownMenuItem(
+                                    leadingIcon = if (it == sort){
+                                        {
+                                            Icon(
+                                                imageVector = Icons.Default.Done,
+                                                contentDescription = "Selected"
+                                            )
+                                        }
+                                    } else null,
+                                    text = {
+                                        Text(it.name)
+                                    },
+                                    onClick = {
+                                        sortExpanded = false
+                                        viewModel.onSortOrderChanged(it)
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
 
                 val files = viewModel.files.collectAsState().value
 

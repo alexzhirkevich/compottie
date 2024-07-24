@@ -1,6 +1,7 @@
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -147,7 +148,7 @@ public fun App() {
 //        LottieCompositionSpec.ResourceString("expr/move_horizontal.json")
 //        LottieCompositionSpec.ResourceString("expr/wiggle.json")
 //        LottieCompositionSpec.ResourceString("expr/noise.json")
-//        LottieCompositionSpec.ResourceString(WONDERS)
+        LottieCompositionSpec.ResourceString(TEST)
 //
 //        LottieCompositionSpec.Url(
 //            "https://assets-v2.lottiefiles.com/a/9286b092-117a-11ee-b857-2712bc869389/WSepKUr5be.lottie"
@@ -179,9 +180,15 @@ public fun App() {
         contentAlignment = Alignment.Center
     ) {
 
+        var isPlaying by remember {
+            mutableStateOf(true)
+        }
+
         val progress = animateLottieCompositionAsState(
             iterations = Compottie.IterateForever,
             composition = composition.value,
+            isPlaying = isPlaying,
+            restartOnPlay = false
         )
 
         val painter = rememberLottiePainter(
@@ -205,6 +212,7 @@ public fun App() {
             modifier = Modifier
                 .fillMaxSize()
                 .opacityGrid()
+                .clickable { isPlaying = !isPlaying }
             ,painter = painter,
             contentDescription = null
         )
