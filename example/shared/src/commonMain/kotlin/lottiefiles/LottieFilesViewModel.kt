@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.intOrNull
@@ -43,7 +42,7 @@ internal class LottieFilesViewModel() : ViewModel() {
     private val _sortOrder = MutableStateFlow(SortOrder.Popular)
     val sortOrder = _sortOrder.asStateFlow()
 
-    private val _search = MutableStateFlow("loading")
+    private val _search = MutableStateFlow("")
     val search = _search.asStateFlow()
 
     private val _files = MutableStateFlow<List<LottieFile>>(emptyList())
@@ -87,6 +86,8 @@ internal class LottieFilesViewModel() : ViewModel() {
                         .jsonObject
                         .get("data")!!
 
+                    println(resp)
+
                     _files.value = json.decodeFromJsonElement<List<LottieFile>>(files)
                     _pageCount.value = resp.get("originalPageCount")?.jsonPrimitive?.intOrNull ?: 0
                     _page.value = if (prevSearch == q) p else 1
@@ -126,6 +127,10 @@ internal class LottieFilesViewModel() : ViewModel() {
 
     fun onSearch(query: String) {
         _search.value = query
+        if (query.isBlank()){
+            _files.value = emptyList()
+            _pageCount.value = 1
+        }
     }
 
     fun onPageSelected(page : Int) {

@@ -9,14 +9,16 @@ internal class LottieFile(
     val tags : List<String> = emptyList(),
     val lottieSource : String? = null,
     val jsonSource : String? = null,
-//    val imageSource : String = "",
     val bgColor : String? = null,
     val downloadCount : Int = 0,
+    val slug : String = "",
+    val hash : String = "",
     val user : User = User()
 )
 
 @Serializable
 internal class User(
     val name : String? = null,
-    val avatarUrl : String? = null
+    val avatarUrl : String? = null,
+    val username : String? = null
 )

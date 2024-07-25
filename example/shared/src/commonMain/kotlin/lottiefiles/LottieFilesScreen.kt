@@ -21,12 +21,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
@@ -36,6 +38,7 @@ import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.rounded.ArrowBackIos
 import androidx.compose.material.icons.rounded.ArrowForwardIos
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -58,6 +61,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -68,6 +72,9 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
@@ -78,10 +85,16 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import io.github.alexzhirkevich.compottie.Compottie
+import io.github.alexzhirkevich.compottie.DotLottie
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.Url
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
+import io.github.alexzhirkevich.shared.generated.resources.Res
+import io.ktor.http.encodeURLPath
+import kotlinx.coroutines.launch
+import lottiefiles.theme.LottieFilesTheme
+import org.jetbrains.compose.resources.ExperimentalResourceApi
 import kotlin.math.abs
 
 @Composable
@@ -89,145 +102,169 @@ internal fun LottieFilesScreen(
     modifier: Modifier = Modifier.fillMaxSize(),
     viewModel: LottieFilesViewModel = viewModel { LottieFilesViewModel() }
 ) {
-    DisposableEffect(0) {
-        val l = Compottie.logger
+    LottieFilesTheme {
+        DisposableEffect(0) {
+            val l = Compottie.logger
 //        Compottie.logger = null
-        onDispose {
-            Compottie.logger = l
-        }
-    }
-
-    val selectedFile = viewModel.selectedFile.collectAsState().value
-
-    if (selectedFile != null) {
-        Dialog(
-            onDismissRequest = {
-                viewModel.onFileSelected(null)
+            onDispose {
+                Compottie.logger = l
             }
-        ) {
-            LottieDetails(
-                file = selectedFile,
-                onDismiss = {
+        }
+
+        val selectedFile = viewModel.selectedFile.collectAsState().value
+
+        if (selectedFile != null) {
+            Dialog(
+                onDismissRequest = {
                     viewModel.onFileSelected(null)
                 }
-            )
-        }
-    }
-
-    Surface(modifier) {
-        BoxWithConstraints {
-
-            val isWideScreen = constraints.maxWidth > LocalDensity.current.run {
-                400.dp.toPx()
-            }
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                LottieDetails(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp)
-                ) {
-                    SearchBar(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(bottom = 12.dp),
-                        viewModel = viewModel
-                    )
+                        .padding(vertical = 12.dp),
+                    file = selectedFile,
+                    onTagClicked = {
+                        viewModel.onFileSelected(null)
+                        viewModel.onSearch(it)
+                    },
+                    onDismiss = {
+                        viewModel.onFileSelected(null)
+                    }
+                )
+            }
+        }
 
-                    var sortExpanded by rememberSaveable {
-                        mutableStateOf(false)
+        Surface(modifier) {
+            BoxWithConstraints {
+
+                val isWideScreen = constraints.maxWidth > LocalDensity.current.run {
+                    400.dp.toPx()
+                }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp)
+                    ) {
+                        SearchBar(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(bottom = 12.dp),
+                            viewModel = viewModel
+                        )
+
+                        var sortExpanded by rememberSaveable {
+                            mutableStateOf(false)
+                        }
+
+                        val sort by viewModel.sortOrder.collectAsState()
+
+                        Box {
+                            AssistChip(
+                                onClick = {
+                                    sortExpanded = true
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.Sort,
+                                        contentDescription = null
+                                    )
+                                },
+                                label = {
+                                    Text(if (isWideScreen) sort.name else sort.name.take(1))
+                                }
+                            )
+                            DropdownMenu(
+                                expanded = sortExpanded,
+                                onDismissRequest = {
+                                    sortExpanded = false
+                                }
+                            ) {
+                                SortOrder.entries.forEach {
+                                    DropdownMenuItem(
+                                        leadingIcon = if (it == sort) {
+                                            {
+                                                Icon(
+                                                    imageVector = Icons.Default.Done,
+                                                    contentDescription = "Selected"
+                                                )
+                                            }
+                                        } else null,
+                                        text = {
+                                            Text(it.name)
+                                        },
+                                        onClick = {
+                                            sortExpanded = false
+                                            viewModel.onSortOrderChanged(it)
+                                        }
+                                    )
+                                }
+                            }
+                        }
                     }
 
-                    val sort by viewModel.sortOrder.collectAsState()
+                    val files by viewModel.files.collectAsState()
+                    val pageCount by viewModel.pageCount.collectAsState()
 
-                    Box {
-                        AssistChip(
-                            onClick = {
-                                sortExpanded = true
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.Sort,
-                                    contentDescription = null
-                                )
-                            },
-                            label = {
-                                Text(if (isWideScreen) sort.name else sort.name.take(1))
+                    when {
+                        files.isEmpty() -> {
+                            Landing(Modifier.fillMaxSize())
+                        }
+
+                        else -> {
+                            val gridState = rememberLazyGridState()
+
+                            LazyVerticalGrid(
+                                state = gridState,
+                                modifier = Modifier.weight(1f),
+                                contentPadding = PaddingValues(24.dp),
+                                columns = GridCells.Adaptive(200.dp),
+                                horizontalArrangement = Arrangement.spacedBy(24.dp),
+                                verticalArrangement = Arrangement.spacedBy(24.dp)
+                            ) {
+                                items(
+                                    items = files,
+                                    key = LottieFile::id
+                                ) {
+                                    LottieCard(
+                                        file = it,
+                                        onClick = { viewModel.onFileSelected(it) },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                    )
+                                }
                             }
-                        )
-                        DropdownMenu(
-                            expanded = sortExpanded,
-                            onDismissRequest = {
-                                sortExpanded = false
-                            }
-                        ) {
-                            SortOrder.entries.forEach {
-                                DropdownMenuItem(
-                                    leadingIcon = if (it == sort){
-                                        {
-                                            Icon(
-                                                imageVector = Icons.Default.Done,
-                                                contentDescription = "Selected"
-                                            )
+
+                            val scope = rememberCoroutineScope()
+
+                            AnimatedVisibility(
+                                visible = pageCount > 1,
+                                enter = slideInVertically { it } + expandVertically(),
+                                exit = slideOutVertically { it } + shrinkVertically()
+                            ) {
+                                PageSelector(
+                                    page = viewModel.page.collectAsState().value,
+                                    pageCount = pageCount,
+                                    onPageSelected = {
+                                        viewModel.onPageSelected(it)
+                                        scope.launch {
+                                            gridState.animateScrollToItem(0)
                                         }
-                                    } else null,
-                                    text = {
-                                        Text(it.name)
                                     },
-                                    onClick = {
-                                        sortExpanded = false
-                                        viewModel.onSortOrderChanged(it)
-                                    }
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(
+                                            horizontal = 24.dp,
+                                            vertical = 12.dp
+                                        ),
                                 )
                             }
                         }
                     }
-                }
-
-
-                val files = viewModel.files.collectAsState().value
-
-                val gridState = rememberLazyGridState()
-
-                LazyVerticalGrid(
-                    state = gridState,
-                    modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(24.dp),
-                    columns = GridCells.Adaptive(200.dp),
-                    horizontalArrangement = Arrangement.spacedBy(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
-                ) {
-                    items(
-                        items = files,
-                        key = LottieFile::id
-                    ) {
-                        LottieCard(
-                            file = it,
-                            onClick = { viewModel.onFileSelected(it) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        )
-                    }
-                }
-
-                val pageCount by viewModel.pageCount.collectAsState()
-
-                AnimatedVisibility(
-                    visible = pageCount > 1,
-                    enter = slideInVertically { it } + expandVertically(),
-                    exit = slideOutVertically { it } + shrinkVertically()
-                ) {
-                    PageSelector(
-                        page = viewModel.page.collectAsState().value,
-                        pageCount = pageCount,
-                        onPageSelected = viewModel::onPageSelected,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp, vertical = 12.dp),
-                    )
                 }
             }
         }
@@ -291,6 +328,94 @@ private fun SearchBar(
 
 private val PageSelectorSize = 36.dp
 
+@Composable
+private fun Landing(modifier: Modifier = Modifier) {
+    BoxWithConstraints {
+
+        if (constraints.maxWidth > 1.5 * constraints.maxHeight) {
+            Row(
+                modifier = modifier,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                LandingAnimation(Modifier.weight(1f))
+                LandingText(
+                    Modifier
+                        .weight(1f)
+                        .padding(24.dp)
+                        .widthIn(max = 500.dp)
+                )
+            }
+        } else {
+            Column(
+                modifier = modifier,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                LandingAnimation(Modifier.weight(1f))
+                LandingText(
+                    Modifier
+                        .weight(1f)
+                        .padding(12.dp)
+                        .widthIn(max = 500.dp)
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalResourceApi::class)
+@Composable
+private fun LandingAnimation(modifier: Modifier = Modifier) {
+    val composition by rememberLottieComposition {
+        LottieCompositionSpec.DotLottie(
+            archive = Res.readBytes("files/dotlottie/lottiefiles.lottie")
+        )
+    }
+
+    Image(
+        modifier = modifier,
+        painter = rememberLottiePainter(
+            composition = composition,
+            iterations = Compottie.IterateForever
+        ),
+        contentDescription = "LottieFiles animation"
+    )
+}
+
+@Composable
+private fun LandingText(modifier: Modifier = Modifier) {
+
+    val uriHandler = LocalUriHandler.current
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        Text(
+            text = "Compottie example made with LottieFiles",
+            style = MaterialTheme.typography.displayMedium,
+            fontWeight = FontWeight.ExtraBold,
+            textAlign = TextAlign.Center
+        )
+        Text(
+            text = "Here you can search for free Lottie animations, test them with Compottie pure Kotlin renderer and download them to use in your Compose Multiplatform app",
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center
+        )
+        Button(
+            onClick = {
+                uriHandler.openUri("https://lottiefiles.com")
+            }
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                contentDescription = null
+            )
+            Spacer(Modifier.width(8.dp))
+            Text("Open site")
+        }
+    }
+}
 
 @Composable
 private fun PageSelector(
@@ -456,7 +581,6 @@ private fun LottieCard(
 
     Card(
         modifier = modifier,
-        onClick = onClick,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.background
         )
@@ -469,6 +593,7 @@ private fun LottieCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f),
+                onClick = onClick,
                 colors = CardDefaults.elevatedCardColors(
                     containerColor = file.bgColor?.let(::parseColorValue) ?: Color.White
                 )
@@ -487,6 +612,8 @@ private fun LottieCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
+
                 UserAvatar(
                     user = file.user,
                     size = 28.dp
@@ -528,13 +655,27 @@ private fun LottieCard(
 }
 
 @Composable
-internal fun UserAvatar(user: User, size : Dp) {
+internal fun UserAvatar(
+    user: User,
+    size : Dp
+) {
     val placeholder = rememberVectorPainter(Icons.Default.Person)
+
+    val uriHandler = LocalUriHandler.current
 
     AsyncImage(
         modifier = Modifier
             .size(size)
-            .clip(CircleShape),
+            .clip(CircleShape)
+            .clickable(
+                enabled = user.username != null,
+                onClick = {
+                    uriHandler.openUri(
+                        "https://lottiefiles.com/${user.username.orEmpty()}"
+                            .encodeURLPath()
+                    )
+                }
+            ),
         model = user.avatarUrl,
         contentDescription = user.name,
         placeholder = placeholder,

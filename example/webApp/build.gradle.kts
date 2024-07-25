@@ -3,12 +3,13 @@ plugins {
 }
 
 kotlin {
-    js(IR){
+
+    js(IR) {
         browser()
         binaries.executable()
     }
 
-    wasmJs(){
+    wasmJs {
         browser()
         binaries.executable()
     }
@@ -17,6 +18,11 @@ kotlin {
         commonMain.dependencies {
             implementation(compose.ui)
             implementation(project(":example:shared"))
+        }
+
+        val webMain by creating {
+            jsMain.get().dependsOn(this)
+            wasmJsMain.get().dependsOn(this)
         }
     }
 }

@@ -120,7 +120,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
     }
 
     private val dashOffset by lazy {
-        strokeDash?.first { it.dashType == DashType.Offset }?.value
+        strokeDash?.firstOrNull { it.dashType == DashType.Offset }?.value
     }
 
     private val dashPatternValues by lazy {

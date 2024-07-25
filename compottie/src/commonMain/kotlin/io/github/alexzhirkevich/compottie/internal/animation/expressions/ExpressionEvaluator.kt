@@ -5,7 +5,6 @@ import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
-import kotlin.time.measureTime
 
 internal interface ExpressionEvaluator {
     fun RawProperty<*>.evaluate(state: AnimationState): Any
@@ -26,23 +25,27 @@ private class ExpressionEvaluatorImpl(expr : String) : ExpressionEvaluator {
 
     private val expression: Expression = MainExpressionInterpreter(expr, context).interpret()
 
+    private val errors = mutableSetOf<String?>()
+
     override fun RawProperty<*>.evaluate(state: AnimationState): Any {
-        return if (state.enableExpressions) {
-            try {
-                context.reset()
-                expression.invoke(this, context, state)
-                context.result?.toListOrThis() ?: raw(state)
-            } catch (t: Throwable) {
+        if (!state.enableExpressions)
+            return raw(state)
+
+        return try {
+            context.reset()
+            expression.invoke(this, context, state)
+            context.result?.toListOrThis()
+        } catch (t: Throwable) {
+            if (t.message !in errors) {
+                errors += t.message
                 Compottie.logger?.warn(
                     "Error occurred in a Lottie expression. Try to disable expressions for Painter using enableExpressions=false: ${t.message}"
                 )
-                raw(state)
             }
-        } else {
-            raw(state)
-        }
+            null
+        } ?: raw(state)
     }
-}
+    }
 
 private fun Any.toListOrThis() : Any{
     return when (this){

@@ -88,8 +88,8 @@ internal class ImageAsset(
         }
 }
 
-private val String.isBase64Data : Boolean get() =
-    (startsWith("data:") && indexOf("base64,") > 0)
+private val String.isBase64Data : Boolean
+    get() = (startsWith("data:") && contains("base64,"))
 
 
 private val emptyPaint = Paint()

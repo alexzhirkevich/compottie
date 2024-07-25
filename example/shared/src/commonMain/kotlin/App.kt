@@ -1,3 +1,4 @@
+
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -17,9 +18,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -35,20 +34,14 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.CompottieException
-import io.github.alexzhirkevich.compottie.DotLottie
 import io.github.alexzhirkevich.compottie.ExperimentalCompottieApi
-import io.github.alexzhirkevich.compottie.LottieClipSpec
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
-import io.github.alexzhirkevich.compottie.Url
 import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
-import io.github.alexzhirkevich.compottie.dynamic.rememberLottieDynamicProperties
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import io.github.alexzhirkevich.compottie.rememberResourcesAssetsManager
@@ -57,6 +50,7 @@ import io.github.alexzhirkevich.shared.generated.resources.ComicNeue
 import io.github.alexzhirkevich.shared.generated.resources.Res
 import lottiefiles.LottieFilesScreen
 import org.jetbrains.compose.resources.ExperimentalResourceApi
+import kotlin.math.roundToInt
 
 private val GRADIENT_ELLIPSE = "gradient_ellipse.json"
 private val TEST = "test.json"
@@ -134,9 +128,11 @@ public suspend fun LottieCompositionSpec.Companion.ResourceString(
 @Composable
 public fun App() {
 
+    return LottieFilesScreen()
+
+
 //    return LottieFontExample()
 //    return AllExamples()
-    return LottieFilesScreen()
 //    return LottieList()
 
     val composition = rememberLottieComposition() {
@@ -378,10 +374,12 @@ public fun LottieList() {
 
 private val DarkOpacity = Color(0xff7f7f7f)
 private val LightOpacity = Color(0xffb2b2b2)
-private fun Modifier.opacityGrid(cellSize : Dp = 30.dp) = drawBehind {
+internal fun Modifier.opacityGrid(cellSize : Dp = 30.dp) = drawBehind {
 
-    val sizePx = cellSize.toPx()
+    val cells = (size.width / cellSize.toPx()).roundToInt()
+    val sizePx = size.width / cells
     val s = Size(sizePx,sizePx)
+
     repeat((size.width /sizePx).toInt() + 1){ i ->
         repeat((size.height / sizePx).toInt() + 1){ j->
 

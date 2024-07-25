@@ -1,10 +1,13 @@
 package lottiefiles
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -15,42 +18,48 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.RepeatOne
-import androidx.compose.material.icons.outlined.DoorFront
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
@@ -64,13 +73,16 @@ import io.github.alexzhirkevich.compottie.Url
 import io.github.alexzhirkevich.compottie.rememberLottieAnimatable
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import opacityGrid
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
 internal fun LottieDetails(
     modifier: Modifier = Modifier,
     onDismiss : () -> Unit,
+    onTagClicked : (String) -> Unit,
     file: LottieFile,
 ) {
     val composition by rememberLottieComposition {
@@ -92,18 +104,23 @@ internal fun LottieDetails(
         isLooping,
         speedIndex
     ) {
-        if (!isPlaying) return@LaunchedEffect
+        try {
+            if (!isPlaying) return@LaunchedEffect
 
-        animatable.animate(
-            composition = composition,
-            iterations = if (isLooping) Compottie.IterateForever else 1,
-            initialProgress = if (animatable.progress == 1f) 0f else animatable.progress,
-            speed = Speed[speedIndex].first,
-            continueFromPreviousAnimate = false,
-        )
+            animatable.animate(
+                composition = composition,
+                iterations = if (isLooping) Compottie.IterateForever else 1,
+                initialProgress = if (animatable.progress == 1f) 0f else animatable.progress,
+                speed = Speed[speedIndex].first,
+                continueFromPreviousAnimate = false,
+            )
 
-        if (composition != null) {
+            if (composition != null) {
+                isPlaying = false
+            }
+        } catch (t : CancellationException){
             isPlaying = false
+            throw t
         }
     }
 
@@ -136,12 +153,13 @@ internal fun LottieDetails(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     UserAvatar(
                         user = file.user,
                         size = 36.dp
                     )
+
+                    Spacer(Modifier.width(12.dp))
 
                     Column(
                         modifier = Modifier.weight(1f)
@@ -166,10 +184,33 @@ internal fun LottieDetails(
                         }
                     }
 
+                    Spacer(Modifier.width(12.dp))
+
                     DownloadButton(
                         file = file,
                         compact = !isWideScreen
                     )
+
+                    if (isWideScreen){
+                        Spacer(Modifier.width(12.dp))
+                    }
+
+                    val uriHandler = LocalUriHandler.current
+
+                    IconButton(
+                        onClick = {
+                            uriHandler.openUri("https://lottiefiles.com/free-animation/${file.slug}-${file.hash}")
+                        }
+                    ){
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                            contentDescription = "View animation on LottieFiles"
+                        )
+                    }
+
+                    if (isWideScreen){
+                        Spacer(Modifier.width(12.dp))
+                    }
 
                     IconButton(
                         onClick = onDismiss,
@@ -180,22 +221,61 @@ internal fun LottieDetails(
                         )
                     }
                 }
+
+                var useOpacityGrid by remember {
+                    mutableStateOf(false)
+                }
+
                 ElevatedCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1f),
-                    colors = CardDefaults.elevatedCardColors(
-                        containerColor = file.bgColor?.let(::parseColorValue) ?: Color.White
-                    )
                 ) {
-                    Image(
-                        modifier = Modifier.fillMaxSize(),
-                        painter = rememberLottiePainter(
-                            composition = composition,
-                            progress = animatable::value
-                        ),
-                        contentDescription = file.name
-                    )
+                    val bgColor = file.bgColor?.let(::parseColorValue) ?: Color.White
+                    Box(
+                        modifier = if (useOpacityGrid)
+                            Modifier.opacityGrid(42.dp)
+                        else Modifier.background(bgColor)
+                    ) {
+
+                        Image(
+                            modifier = Modifier.fillMaxSize(),
+                            painter = rememberLottiePainter(
+                                composition = composition,
+                                progress = animatable::value
+                            ),
+                            contentDescription = file.name
+                        )
+
+                        IconButton(
+                            modifier = Modifier
+                                .padding(4.dp)
+                                .align(Alignment.BottomStart),
+                            onClick = {
+                                useOpacityGrid = !useOpacityGrid
+                            }
+                        ){
+                            AnimatedContent(
+                                targetState = useOpacityGrid
+                            ) { grid ->
+                                Spacer(
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .clip(CircleShape)
+                                        .alpha(.75f)
+                                        .border(1.dp, Color.Black, CircleShape)
+                                        .let {
+                                            if (grid) {
+                                                it.background(bgColor)
+                                            } else {
+                                                it.opacityGrid(14.dp)
+                                            }
+                                        }
+                                )
+                            }
+                        }
+
+                    }
                 }
 
                 if (isWideScreen) {
@@ -211,14 +291,10 @@ internal fun LottieDetails(
                             modifier = Modifier.weight(1f),
                             value = animatable.value,
                             onValueChange = {
-                                isPlaying = false
                                 coroutineScope.launch {
                                     animatable.snapTo(progress = it)
                                 }
                             },
-                            onValueChangeFinished = {
-                                isPlaying = true
-                            }
                         )
 
                         composition?.let {
@@ -252,13 +328,9 @@ internal fun LottieDetails(
                             modifier = Modifier.weight(1f),
                             value = animatable.value,
                             onValueChange = {
-                                isPlaying = false
                                 coroutineScope.launch {
                                     animatable.snapTo(progress = it)
                                 }
-                            },
-                            onValueChangeFinished = {
-                                isPlaying = true
                             }
                         )
                         Row(
@@ -293,7 +365,7 @@ internal fun LottieDetails(
                 Text(
                     text = "Tags",
                     fontWeight = FontWeight.SemiBold,
-                    style = MaterialTheme.typography.labelLarge
+                    style = MaterialTheme.typography.titleMedium
                 )
 
                 ProvideTextStyle(
@@ -309,19 +381,29 @@ internal fun LottieDetails(
                 ) {
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         file.tags.fastForEach {
-                            Text(
-                                text = it,
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.secondaryContainer)
-                                    .padding(
-                                        vertical = 8.dp,
-                                        horizontal = 16.dp
-                                    )
+                            SuggestionChip(
+                                onClick = {
+                                    onTagClicked(it)
+                                },
+                                colors = SuggestionChipDefaults.suggestionChipColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                                ),
+                                label = {
+                                    Text(it)
+                                }
                             )
+//                            Text(
+//                                text = it,
+//                                modifier = Modifier
+//                                    .clip(CircleShape)
+//                                    .background(MaterialTheme.colorScheme.secondaryContainer)
+//                                    .padding(
+//                                        vertical = 8.dp,
+//                                        horizontal = 16.dp
+//                                    )
+//                            )
                         }
                     }
                 }
@@ -389,12 +471,14 @@ private fun RepeatButton(
         modifier = modifier,
         onClick = onClick
     ) {
-        Icon(
-            imageVector = if (isLooping)
-                Icons.Default.Repeat
-            else Icons.Default.RepeatOne,
-            contentDescription = null
-        )
+        AnimatedContent(isLooping) {
+            Icon(
+                imageVector = if (it)
+                    Icons.Default.Repeat
+                else Icons.Default.RepeatOne,
+                contentDescription = null
+            )
+        }
     }
 }
 
@@ -416,11 +500,13 @@ private fun SpeedButton(
             )
         }
     ) {
-        Text(
-            text = Speed[speedIndex].second,
-            fontWeight = FontWeight.Bold,
-            lineHeight = LocalTextStyle.current.fontSize
-        )
+        AnimatedContent(speedIndex) {
+            Text(
+                text = Speed[it].second,
+                fontWeight = FontWeight.Bold,
+                lineHeight = LocalTextStyle.current.fontSize
+            )
+        }
     }
 }
 
@@ -431,15 +517,17 @@ private fun PlayButton(
     onPlaying : (Boolean) -> Unit
 ) {
 
-    IconButton(
+    FilledTonalIconButton(
         modifier = modifier,
         onClick = { onPlaying(!isPlaying) }
     ) {
-        Icon(
-            imageVector = if (isPlaying)
-                Icons.Default.Pause
-            else Icons.Default.PlayArrow,
-            contentDescription = null
-        )
+        AnimatedContent(isPlaying) {
+            Icon(
+                imageVector = if (it)
+                    Icons.Default.Pause
+                else Icons.Default.PlayArrow,
+                contentDescription = null
+            )
+        }
     }
 }
