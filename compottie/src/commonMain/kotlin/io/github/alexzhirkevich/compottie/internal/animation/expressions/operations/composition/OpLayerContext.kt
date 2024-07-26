@@ -13,8 +13,8 @@ import io.github.alexzhirkevich.compottie.internal.layers.PrecompositionLayer
 
 internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
 
-    override fun interpret(op: String?, args: List<Expression>?): Expression? {
-        return when (op) {
+    override fun interpret(callable: String?, args: List<Expression>?): Expression? {
+        return when (callable) {
             "index" -> withContext { _, _, _ -> index ?: Undefined }
             "name" -> withContext { _, _, _ -> name ?: Undefined }
             "inPoint" -> withContext { _, _, s ->
@@ -39,7 +39,7 @@ internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
             "parent" -> withContext { _, _, _ -> parentLayer ?: Undefined }
             "transform" -> OpGetLayerTransform(this)
             "effect" -> {
-                checkArgs(args, 1, op)
+                checkArgs(args, 1, callable)
                 return OpGetEffect(layer = this, nameOrIndex = args.argAt(0))
             }
 
@@ -66,7 +66,7 @@ internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
             }
 
             "toComp" -> {
-                checkArgs(args, 1, op)
+                checkArgs(args, 1, callable)
                 OpLayerToComp(
                     layer = this,
                     point = args.argForNameOrIndex(0,"point")!!,
@@ -76,7 +76,7 @@ internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
             }
 
             "fromComp" -> {
-                checkArgsNotNull(args, op)
+                checkArgsNotNull(args, callable)
                 OpLayerToComp(
                     layer = this,
                     point = args.argForNameOrIndex(0,"point")!!,
@@ -86,7 +86,7 @@ internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
             }
 
             "toWorld" -> {
-                checkArgsNotNull(args, op)
+                checkArgsNotNull(args, callable)
                 OpLayerToWorld(
                     layer = this,
                     point = args.argForNameOrIndex(0,"point")!!,
@@ -96,7 +96,7 @@ internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
             }
 
             "fromWorld" -> {
-                checkArgs(args, 1, op)
+                checkArgs(args, 1, callable)
                 OpLayerToWorld(
                     layer = this,
                     point = args.argForNameOrIndex(0, "point")!!,
@@ -106,7 +106,7 @@ internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
             }
 
             "hasAudio", "hasVideo", "audioActive" -> OpConstant(false)
-            "sourceRectAtTime", "sampleImage" -> error("$op for Layer is not yet supported")
+            "sourceRectAtTime", "sampleImage" -> error("$callable for Layer is not yet supported")
             else -> null
         }
     }

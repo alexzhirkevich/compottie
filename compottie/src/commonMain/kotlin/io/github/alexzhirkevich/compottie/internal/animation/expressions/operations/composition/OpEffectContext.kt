@@ -8,16 +8,16 @@ import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 
 internal sealed class OpEffectContext : ExpressionContext<LayerEffect> {
 
-    final override fun interpret(op: String?, args: List<Expression>?): Expression? {
+    final override fun interpret(callable: String?, args: List<Expression>?): Expression? {
 
-        return when (op) {
+        return when (callable) {
             null -> {
                 checkArgs(args, 1, "()")
                 OpGetEffectParam(this, args.argAt(0))
             }
             "active" -> withContext { _, _, _ -> enabled }
             "param" -> {
-                checkArgs(args, 1, op)
+                checkArgs(args, 1, callable)
                 OpGetEffectParam(this, args.argAt(0))
             }
 

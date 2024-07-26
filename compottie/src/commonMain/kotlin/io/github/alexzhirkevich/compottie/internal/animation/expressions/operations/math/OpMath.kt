@@ -51,13 +51,13 @@ internal object OpMath : Expression, ExpressionContext<OpMath> {
     }
 
     override fun interpret(
-        op: String?,
+        callable: String?,
         args: List<Expression>?
     ): Expression {
        return if (args == null){
-           interpretVar(op)
+           interpretVar(callable)
        } else {
-           interpretFun(op, args)
+           interpretFun(callable, args)
        }
     }
 

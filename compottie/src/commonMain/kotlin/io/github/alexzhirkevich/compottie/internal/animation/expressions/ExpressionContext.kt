@@ -6,12 +6,12 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 
 internal interface ExpressionContext<T> : Expression {
 
-    fun interpret(op: String?, args: List<Expression>?): Expression?
+    fun interpret(callable: String?, args: List<Expression>?): Expression?
 
     fun withContext(
         block: T.(
             value: Any,
-            variables: EvaluationContext,
+            context: EvaluationContext,
             state: AnimationState
         ) -> Any
     ) = Expression { value, variables, state ->
@@ -22,7 +22,7 @@ internal interface ExpressionContext<T> : Expression {
         timeRemapping : Expression?,
         block: T.(
             value: Any,
-            variables: EvaluationContext,
+            context: EvaluationContext,
             state: AnimationState
         ) -> Any
     ) = Expression { value, variables, state ->

@@ -9,17 +9,17 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkAr
 internal sealed class OpCompositionContext : ExpressionContext<ExpressionComposition> {
 
     final override fun interpret(
-        op: String?,
+        callable: String?,
         args: List<Expression>?
     ): Expression? {
-        return when (op) {
+        return when (callable) {
             "numLayers" -> withContext { _, _, _ -> layersCount }
             "width" -> withContext { _, _, _ -> width }
             "height" -> withContext { _, _, _ -> height }
             "displayStartTime" -> withContext { _, _, _ -> startTime }
             "frameDuration" -> withContext { _, _, s -> s.composition.frameRate / 1000 }
             "layer" -> {
-                checkArgs(args, 1, op)
+                checkArgs(args, 1, callable)
                 OpGetLayer(
                     comp = this,
                     nameOrIndex = args.argAt(0)

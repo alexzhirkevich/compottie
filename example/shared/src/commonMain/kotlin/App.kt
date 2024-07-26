@@ -128,7 +128,7 @@ public suspend fun LottieCompositionSpec.Companion.ResourceString(
 @Composable
 public fun App() {
 
-    return LottieFilesScreen()
+//    return LottieFilesScreen()
 
 
 //    return LottieFontExample()
@@ -141,10 +141,10 @@ public fun App() {
 //            Res.readBytes("files/$DOT_WITH_IMAGE")
 //        )
 
-//        LottieCompositionSpec.ResourceString("expr/move_horizontal.json")
+        LottieCompositionSpec.ResourceString("expr/move_horizontal.json")
 //        LottieCompositionSpec.ResourceString("expr/wiggle.json")
 //        LottieCompositionSpec.ResourceString("expr/noise.json")
-        LottieCompositionSpec.ResourceString(TEST)
+//        LottieCompositionSpec.ResourceString(TEST)
 //
 //        LottieCompositionSpec.Url(
 //            "https://assets-v2.lottiefiles.com/a/9286b092-117a-11ee-b857-2712bc869389/WSepKUr5be.lottie"

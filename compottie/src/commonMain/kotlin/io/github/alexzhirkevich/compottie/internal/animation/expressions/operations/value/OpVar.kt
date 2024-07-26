@@ -12,10 +12,10 @@ internal class OpVar(
     val scope : VariableScope
 ) : Expression, ExpressionContext<Any> {
 
-    override fun interpret(op: String?, args: List<Expression>?): Expression {
-        return if (op == null)
+    override fun interpret(callable: String?, args: List<Expression>?): Expression {
+        return if (callable == null)
             Expression.UndefinedExpression
-        else OpGetVariable(op, assignInScope = scope)
+        else OpGetVariable(callable, assignInScope = scope)
     }
 
     override fun invoke(

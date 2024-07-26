@@ -28,8 +28,8 @@ internal abstract class OpPropertyContext : Expression, ExpressionContext<RawPro
         state: AnimationState
     ): RawProperty<Any> = TODO()
 
-    final override fun interpret(op: String?, args: List<Expression>?): Expression? {
-        return when (op) {
+    final override fun interpret(callable: String?, args: List<Expression>?): Expression? {
+        return when (callable) {
             "value" -> {
                 OpPropertyValue(this)
             }
@@ -64,7 +64,7 @@ internal abstract class OpPropertyContext : Expression, ExpressionContext<RawPro
             }
 
             "createPath" -> {
-                checkArgsNotNull(args, op)
+                checkArgsNotNull(args, callable)
                 OpCreatePath(
                     points = args.argForNameOrIndex(0, "points"),
                     inTangents = args.argForNameOrIndex(1, "inTangents"),
@@ -78,12 +78,12 @@ internal abstract class OpPropertyContext : Expression, ExpressionContext<RawPro
             }
 
             "valueAtTime" -> {
-                checkArgs(args, 1, op)
+                checkArgs(args, 1, callable)
                 OpPropertyValue(this, timeRemapping = args.argAt(0))
             }
 
             "wiggle" -> {
-                checkArgsNotNull(args, op)
+                checkArgsNotNull(args, callable)
                 OpWiggle(
                     property = this,
                     freq = args.argForNameOrIndex(0, "freq")!!,
@@ -95,7 +95,7 @@ internal abstract class OpPropertyContext : Expression, ExpressionContext<RawPro
             }
 
             "temporalWiggle" -> {
-                checkArgsNotNull(args, op)
+                checkArgsNotNull(args, callable)
                 OpTemporalWiggle(
                     freq = args.argForNameOrIndex(0, "freq")!!,
                     amp = args.argForNameOrIndex(1, "amp")!!,
@@ -106,7 +106,7 @@ internal abstract class OpPropertyContext : Expression, ExpressionContext<RawPro
             }
 
             "smooth" -> {
-                checkArgsNotNull(args, op)
+                checkArgsNotNull(args, callable)
                 OpSmooth(
                     prop = this,
                     width = args.argForNameOrIndex(0, "width"),
@@ -116,28 +116,28 @@ internal abstract class OpPropertyContext : Expression, ExpressionContext<RawPro
             }
 
             "loopIn", "loopInDuration" -> {
-                checkArgsNotNull(args, op)
+                checkArgsNotNull(args, callable)
                 OpLoopIn(
                     property = this,
                     name = args.getOrNull(0),
                     numKf = args.getOrNull(1),
-                    isDuration = op == "loopInDuration"
+                    isDuration = callable == "loopInDuration"
                 )
             }
 
             "loopOut", "loopOutDuration" -> {
-                checkArgsNotNull(args, op)
+                checkArgsNotNull(args, callable)
                 OpLoopOut(
                     property = this,
                     name = args.argForNameOrIndex(0, "type"),
                     numKf = args.argForNameOrIndex(1, "numKeyframes"),
-                    isDuration = op == "loopOutDuration"
+                    isDuration = callable == "loopOutDuration"
                 )
             }
 
             "getVelocityAtTime",
             "getSpeedAtTime" -> {
-                error("$op is not yet supported")
+                error("$callable is not yet supported")
             }
 
             else -> {

@@ -1,4 +1,4 @@
-package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition
+package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty

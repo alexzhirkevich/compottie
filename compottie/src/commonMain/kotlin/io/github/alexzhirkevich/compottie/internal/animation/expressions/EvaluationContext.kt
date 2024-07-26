@@ -1,6 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpFunction
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpFunction
 
 
 internal enum class VariableScope {

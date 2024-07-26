@@ -1,28 +1,30 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpAdd
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpAssign
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpAssignByIndex
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpBlock
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpConstant
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpDiv
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpEquals
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpGetVariable
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpGlobalContext
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.FunctionParam
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpFunction
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpFunctionExec
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.js.JsContext
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpIfCondition
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpIndex
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpMakeArray
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.FunctionParam
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpBlock
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpBoolean
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpEquals
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpFunction
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpFunctionExec
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpIfCondition
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpNot
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpReturn
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpWhileLoop
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpAdd
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpDiv
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpMul
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpNot
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.condition.OpReturn
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpSub
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpUnaryMinus
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpUnaryPlus
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.unresolvedReference
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpAssign
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpAssignByIndex
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpConstant
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpGetVariable
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpIndex
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpMakeArray
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpVar
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -179,11 +181,14 @@ internal class SingleExpressionInterpreter(
         var x = parseTermOp(context)
         while (true) {
             x = when {
+                eatSequence("&&") -> OpBoolean(parseExpressionOp(OpGlobalContext),x,  Boolean::and, "and")
+                eatSequence("||") -> OpBoolean(parseExpressionOp(OpGlobalContext),x,  Boolean::or, "or")
+                !nextSequenceIs("+=") && eat('+') -> OpAdd(x, parseTermOp(OpGlobalContext))
+                !nextSequenceIs("-=") && eat('-') -> OpSub(x, parseTermOp(OpGlobalContext))
                 eatSequence("===") -> OpEquals(x, parseExpressionOp(OpGlobalContext), true)
                 eatSequence("==") -> OpEquals(x, parseExpressionOp(OpGlobalContext), false)
-                eatSequence("!=") -> OpNot(OpEquals(x, parseExpressionOp(OpGlobalContext), false))
-                !nextSequenceIs("+=") && eat('+') -> OpAdd(x, parseTermOp(context))
-                !nextSequenceIs("-=") && eat('-') -> OpSub(x, parseTermOp(context))
+                eatSequence("!==") -> OpNot(OpEquals(x, parseExpressionOp(OpGlobalContext), false))
+                eatSequence("!=") -> OpNot(OpEquals(x, parseExpressionOp(OpGlobalContext), true))
                 else -> return x
             }
         }
@@ -193,8 +198,8 @@ internal class SingleExpressionInterpreter(
         var x = parseFactorOp(context)
         while (true) {
             x = when {
-                !nextSequenceIs("*=") && eat('*') -> OpMul(x, parseFactorOp(context))
-                !nextSequenceIs("/=") && eat('/') -> OpDiv(x, parseFactorOp(context))
+                !nextSequenceIs("*=") && eat('*') -> OpMul(x, parseFactorOp(OpGlobalContext))
+                !nextSequenceIs("/=") && eat('/') -> OpDiv(x, parseFactorOp(OpGlobalContext))
                 else -> return x
             }
         }
@@ -357,9 +362,7 @@ internal class SingleExpressionInterpreter(
                 do {
                     nextChar()
                 } while (
-                    ch.isFun()
-                    && !(expr.substring(startPos, pos) == "function" && ch == ' ')
-                    && !(expr.substring(startPos, pos) == "return" && ch == ' ')
+                    ch.isFun() && !(isReserved(expr.substring(startPos, pos)) && ch == ' ')
                 )
 
                 val func = expr.substring(startPos, pos).trim()
@@ -416,58 +419,16 @@ internal class SingleExpressionInterpreter(
     private fun parseFunction(context: Expression, func : String?) : Expression {
 
         if (func == "function") {
+            return parseFunctionDefinition()
+        }
 
-            val start = pos
-
-            while (ch != '(') {
-                nextChar()
-            }
-
-            val name = expr.substring(start, pos).trim()
-
-            if (EXPR_DEBUG_PRINT_ENABLED) {
-                println("making defined function $name")
-            }
-
-            val args = parseFunctionArgs(name).let { args ->
-                args?.map {
-                    when (it) {
-                        is OpGetVariable -> FunctionParam(name = it.name, default = null)
-                        is OpAssign -> FunctionParam(
-                            name = it.variableName,
-                            default = it.assignableValue
-                        )
-
-                        else -> error("Invalid function declaration at $start")
-                    }
-                }
-            }
-
-            checkNotNull(args){
-                "Missing function args"
-            }
-
-
-            check(nextCharIs('{'::equals)) {
-                "Missing function body at $pos"
-            }
-
-
-            val block = parseBlock(
-                scoped = false // function scope will be used
+        if (func == "while"){
+            return OpWhileLoop(
+                condition = checkNotNull(parseFunctionArgs("while")?.singleOrNull()){
+                    "missing 'while' condition"
+                },
+                body = parseBlock()
             )
-
-            this.context.registerFunction(
-                OpFunction(
-                    name = name,
-                    parameters = args,
-                    body = block
-                )
-            )
-            if (EXPR_DEBUG_PRINT_ENABLED) {
-                println("registered function $name")
-            }
-            return OpConstant(Undefined)
         }
 
         if (func == "return"){
@@ -511,6 +472,60 @@ internal class SingleExpressionInterpreter(
 //                }
             }
         }
+    }
+
+    private fun parseFunctionDefinition() : Expression{
+        val start = pos
+
+        while (ch != '(') {
+            nextChar()
+        }
+
+        val name = expr.substring(start, pos).trim()
+
+        if (EXPR_DEBUG_PRINT_ENABLED) {
+            println("making defined function $name")
+        }
+
+        val args = parseFunctionArgs(name).let { args ->
+            args?.map {
+                when (it) {
+                    is OpGetVariable -> FunctionParam(name = it.name, default = null)
+                    is OpAssign -> FunctionParam(
+                        name = it.variableName,
+                        default = it.assignableValue
+                    )
+
+                    else -> error("Invalid function declaration at $start")
+                }
+            }
+        }
+
+        checkNotNull(args){
+            "Missing function args"
+        }
+
+
+        check(nextCharIs('{'::equals)) {
+            "Missing function body at $pos"
+        }
+
+
+        val block = parseBlock(
+            scoped = false // function scope will be used
+        )
+
+        this.context.registerFunction(
+            OpFunction(
+                name = name,
+                parameters = args,
+                body = block
+            )
+        )
+        if (EXPR_DEBUG_PRINT_ENABLED) {
+            println("registered function $name")
+        }
+        return OpConstant(Undefined)
     }
 
     private fun parseBlock(scoped : Boolean = true): Expression {
@@ -569,3 +584,9 @@ private enum class NumberFormat(
 }
 
 private val NumberFormatIndicators = NumberFormat.entries.mapNotNull { it.prefix }
+
+private val reservedKeywords = setOf(
+    "function","return","do","while","for"
+)
+
+private fun isReserved(keyword : String) = keyword in reservedKeywords

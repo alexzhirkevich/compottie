@@ -43,9 +43,6 @@ internal class MainExpressionInterpreter(
                 i++
             }
         }.map {
-            if (EXPR_DEBUG_PRINT_ENABLED) {
-                println("Expressions: $expr")
-            }
             try {
                 SingleExpressionInterpreter(it, context).interpret()
             } catch (t: Throwable) {

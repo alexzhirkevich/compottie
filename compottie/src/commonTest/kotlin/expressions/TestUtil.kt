@@ -14,6 +14,17 @@ import kotlin.test.assertEquals
 
 internal const val ret = "\$bm_rt"
 
+internal fun String.assertSimpleExprEquals(expected : Any) {
+    "$ret=$this".assertExprReturns(expected)
+}
+
+internal fun String.assertSimpleExprReturns(expected : Any) {
+    val value = AnimatedNumber.Default(0f, this)
+    val state = MockAnimationState(0f)
+    val evaluator = ExpressionEvaluator(this)
+    assertEquals(expected, value.run { evaluator.run { evaluate(state) } })
+}
+
 internal fun String.assertExprReturns(expected : Any) {
     val value = AnimatedNumber.Default(0f, this)
     val state = MockAnimationState(0f)

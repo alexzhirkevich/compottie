@@ -8,8 +8,8 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 
 internal sealed class OpTransformContext : Expression, ExpressionContext<AnimatedTransform> {
 
-    override fun interpret(op: String?, args: List<Expression>?): Expression? {
-        return when(op) {
+    override fun interpret(callable: String?, args: List<Expression>?): Expression? {
+        return when(callable) {
             "rotation" -> interpolate(AnimatedTransform::rotation)
             "scale" -> interpolate(AnimatedTransform::scale)
             "opacity" -> interpolate(AnimatedTransform::opacity)
