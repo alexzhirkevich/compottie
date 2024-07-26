@@ -48,7 +48,6 @@ import io.github.alexzhirkevich.compottie.rememberResourcesAssetsManager
 import io.github.alexzhirkevich.compottie.rememberResourcesFontManager
 import io.github.alexzhirkevich.shared.generated.resources.ComicNeue
 import io.github.alexzhirkevich.shared.generated.resources.Res
-import lottiefiles.LottieFilesScreen
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import kotlin.math.roundToInt
 
@@ -144,7 +143,7 @@ public fun App() {
         LottieCompositionSpec.ResourceString("expr/move_horizontal.json")
 //        LottieCompositionSpec.ResourceString("expr/wiggle.json")
 //        LottieCompositionSpec.ResourceString("expr/noise.json")
-//        LottieCompositionSpec.ResourceString(TEST)
+//        LottieCompositionSpec.ResourceString(IMAGE_ASSET)
 //
 //        LottieCompositionSpec.Url(
 //            "https://assets-v2.lottiefiles.com/a/9286b092-117a-11ee-b857-2712bc869389/WSepKUr5be.lottie"
@@ -199,9 +198,9 @@ public fun App() {
 //                    else -> null
 //                }
 //            },
-//            assetsManager = rememberResourcesAssetsManager(
-//                readBytes = Res::readBytes
-//            ),
+            assetsManager = rememberResourcesAssetsManager(
+                readBytes = Res::readBytes
+            ),
         )
 
         Image(

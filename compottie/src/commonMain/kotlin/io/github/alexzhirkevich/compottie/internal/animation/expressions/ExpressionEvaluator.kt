@@ -23,7 +23,7 @@ private class ExpressionEvaluatorImpl(expr : String) : ExpressionEvaluator {
 
     private val context = DefaultEvaluatorContext()
 
-    private val expression: Expression = MainExpressionInterpreter(expr, context).interpret()
+    private val expression: Expression = ExpressionInterpreterImpl(expr, context).interpret()
 
     private val errors = mutableSetOf<String?>()
 

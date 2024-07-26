@@ -33,55 +33,55 @@ internal class JsStringExpressionsTest {
 
     @Test
     fun padEnd() {
-        "'abc'.padEnd(5))".assertExprEquals("abc  ")
-        "'abc'.padEnd(5,'0'))".assertExprEquals("abc00")
-        "'abc'.padEnd(5,'12'))".assertExprEquals("abc12")
-        "'abc'.padEnd(6,'12'))".assertExprEquals("abc121")
-        "'abcdef'.padEnd(5,'0'))".assertExprEquals("abcdef")
+        "'abc'.padEnd(5)".assertExprEquals("abc  ")
+        "'abc'.padEnd(5,'0')".assertExprEquals("abc00")
+        "'abc'.padEnd(5,'12')".assertExprEquals("abc12")
+        "'abc'.padEnd(6,'12')".assertExprEquals("abc121")
+        "'abcdef'.padEnd(5,'0')".assertExprEquals("abcdef")
     }
 
     @Test
     fun padStart() {
-        "'abc'.padStart(5))".assertExprEquals("  abc")
-        "'abc'.padStart(5,'0'))".assertExprEquals("00abc")
-        "'abc'.padStart(5,'12'))".assertExprEquals("12abc")
-        "'abc'.padStart(6,'12'))".assertExprEquals("121abc")
-        "'abcdef'.padStart(5,'0'))".assertExprEquals("abcdef")
+        "'abc'.padStart(5)".assertExprEquals("  abc")
+        "'abc'.padStart(5,'0')".assertExprEquals("00abc")
+        "'abc'.padStart(5,'12')".assertExprEquals("12abc")
+        "'abc'.padStart(6,'12')".assertExprEquals("121abc")
+        "'abcdef'.padStart(5,'0')".assertExprEquals("abcdef")
     }
 
     @Test
     fun repeat() {
-        "'abc'.repeat(3))".assertExprEquals("abcabcabc")
-        "'abc'.repeat(0))".assertExprEquals("")
+        "'abc'.repeat(3)".assertExprEquals("abcabcabc")
+        "'abc'.repeat(0)".assertExprEquals("")
     }
 
     @Test
     fun replace() {
-        "'aabbcc'.replace('b','f'))".assertExprEquals("aafbcc")
-        "'aabbcc'.replace('x','ff'))".assertExprEquals("aabbcc")
-        "'aabbcc'.replace('','ff'))".assertExprEquals("ffaabbcc")
+        "'aabbcc'.replace('b','f')".assertExprEquals("aafbcc")
+        "'aabbcc'.replace('x','ff')".assertExprEquals("aabbcc")
+        "'aabbcc'.replace('','ff')".assertExprEquals("ffaabbcc")
     }
 
     @Test
     fun replaceAll() {
-        "'aabbcc'.replaceAll('b','f'))".assertExprEquals("aaffcc")
-        "'aabbcc'.replaceAll('x','ff'))".assertExprEquals("aabbcc")
-        "'aabbcc'.replaceAll('','ff'))".assertExprEquals("ffaabbcc")
+        "'aabbcc'.replaceAll('b','f')".assertExprEquals("aaffcc")
+        "'aabbcc'.replaceAll('x','ff')".assertExprEquals("aabbcc")
+        "'aabbcc'.replaceAll('','ff')".assertExprEquals("ffaabbcc")
     }
 
     @Test
     fun trim() {
-        "' abc '.trim())".assertExprEquals("abc")
-        "'abc '.trim())".assertExprEquals("abc")
-        "' abc'.trim())".assertExprEquals("abc")
+        "' abc '.trim()".assertExprEquals("abc")
+        "'abc '.trim()".assertExprEquals("abc")
+        "' abc'.trim()".assertExprEquals("abc")
 
-        "' abc'.trimStart())".assertExprEquals("abc")
-        "' abc '.trimStart())".assertExprEquals("abc ")
-        "'abc '.trimStart())".assertExprEquals("abc ")
+        "' abc'.trimStart()".assertExprEquals("abc")
+        "' abc '.trimStart()".assertExprEquals("abc ")
+        "'abc '.trimStart()".assertExprEquals("abc ")
 
-        "' abc'.trimEnd())".assertExprEquals(" abc")
-        "' abc '.trimEnd())".assertExprEquals(" abc")
-        "'abc '.trimEnd())".assertExprEquals("abc")
+        "' abc'.trimEnd()".assertExprEquals(" abc")
+        "' abc '.trimEnd()".assertExprEquals(" abc")
+        "'abc '.trimEnd()".assertExprEquals("abc")
     }
     @Test
     fun substring() {

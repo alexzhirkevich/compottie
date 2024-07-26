@@ -33,16 +33,13 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-internal class SingleExpressionInterpreter(
-    expr : String,
+internal class ExpressionInterpreterImpl(
+    private val expr : String,
     private val context: EvaluationContext
 ) : ExpressionInterpreter {
+
     private var pos = -1
     private var ch: Char = ' '
-
-    private val expr = expr
-        .replace("{\n","{")
-        .replace("\n}"," }")
 
     override fun interpret(): Expression {
         pos = -1
@@ -51,11 +48,27 @@ internal class SingleExpressionInterpreter(
             println("Parsing $expr")
         }
         nextChar()
-        val x = parseAssignment(OpGlobalContext)
+        val expressions = buildList {
+            var x : Expression? = null
+            do {
+                while (eat(';')){
+                }
+                if (pos >= expr.length){
+                    break
+                }
+
+                x = parseAssignment(if (x is ExpressionContext<*>) x else OpGlobalContext)
+                add(x)
+            } while (pos < expr.length)
+        }
+
         require(pos <= expr.length) {
             "Unexpected Lottie expression $expr"
         }
-        return x.also {
+
+        return OpBlock(expressions, false).also {
+            pos = -1
+            ch = ' '
             if (EXPR_DEBUG_PRINT_ENABLED) {
                 println("Expression parsed: $expr")
             }
@@ -69,17 +82,18 @@ internal class SingleExpressionInterpreter(
     }
 
     private fun nextChar() {
-        ch = if (++pos < expr.length) expr[pos] else ';'
+        ch = if (++pos < expr.length) expr[pos] else ' '
     }
 
     private fun prevChar() {
-        ch = if (--pos > 0 && pos < expr.length) expr[pos] else ';'
+        ch = if (--pos > 0 && pos < expr.length) expr[pos] else ' '
     }
 
     private fun Char.skip() : Boolean = this == ' ' || this == '\n'
 
     private fun eat(charToEat: Char): Boolean {
-        while (ch.skip()) nextChar()
+        while (ch.skip() && pos < expr.length)
+            nextChar()
 
         if (ch == charToEat) {
             nextChar()
@@ -389,7 +403,7 @@ internal class SingleExpressionInterpreter(
                 do {
                     nextChar()
                 } while (
-                    ch.isFun() && !(isReserved(expr.substring(startPos, pos)) && ch == ' ')
+                    pos < expr.length && ch.isFun() && !(isReserved(expr.substring(startPos, pos)) && ch == ' ')
                 )
 
                 val func = expr.substring(startPos, pos).trim()

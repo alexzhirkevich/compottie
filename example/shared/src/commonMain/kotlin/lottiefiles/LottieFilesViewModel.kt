@@ -86,7 +86,6 @@ internal class LottieFilesViewModel() : ViewModel() {
                         .jsonObject
                         .get("data")!!
 
-                    println(resp)
 
                     _files.value = json.decodeFromJsonElement<List<LottieFile>>(files)
                     _pageCount.value = resp.get("originalPageCount")?.jsonPrimitive?.intOrNull ?: 0
