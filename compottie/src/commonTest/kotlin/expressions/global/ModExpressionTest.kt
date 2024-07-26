@@ -4,7 +4,7 @@ import expressions.assertExprEquals
 import kotlin.test.Test
 
 
-internal class ModExpressionTest {
+class ModExpressionTest {
 
     @Test
     fun mod_num(){

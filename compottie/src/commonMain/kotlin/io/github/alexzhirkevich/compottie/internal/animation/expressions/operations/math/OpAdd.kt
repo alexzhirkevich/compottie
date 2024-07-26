@@ -13,6 +13,9 @@ internal fun OpAdd(a : Any, b : Any) : Any = a.plus(b)
 internal operator fun Any.plus(other : Any) : Any {
     val a = this
     return when {
+        a is Int && other is Int -> a+other
+        a is Long && other is Long -> a+other
+        a is Double && other is Double -> a+other
         a is Number && other is Number -> a.toFloat() + other.toFloat()
         a is List<*> && other is List<*> -> {
             a as List<Number>

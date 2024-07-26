@@ -2,10 +2,9 @@ package expressions.global
 
 import expressions.assertExprReturns
 import expressions.ret
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import kotlin.test.Test
 
-internal class ConditionExpressionTest {
+class ConditionExpressionTest {
 
     @Test
     fun if_with_else() {

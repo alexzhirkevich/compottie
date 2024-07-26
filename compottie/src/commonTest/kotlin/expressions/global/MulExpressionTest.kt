@@ -5,7 +5,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import kotlin.test.Test
 
 
-internal class MulExpressionTest {
+class MulExpressionTest {
 
 
     @Test

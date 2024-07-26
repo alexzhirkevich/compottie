@@ -8,7 +8,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefin
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.VariableScope
 
 internal class OpAssign(
-    val scope : VariableScope,
+    val scope : VariableScope? = null,
     val variableName : String,
     val assignableValue : Expression,
     private val merge : ((Any, Any) -> Any)?

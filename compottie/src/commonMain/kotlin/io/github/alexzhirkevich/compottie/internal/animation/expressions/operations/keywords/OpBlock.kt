@@ -9,7 +9,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefin
 
 internal class OpBlock(
     val expressions: List<Expression>,
-    var scoped : Boolean
+    var scoped : Boolean,
 ) : Expression {
 
     override fun invoke(

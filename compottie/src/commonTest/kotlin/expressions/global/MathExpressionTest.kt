@@ -4,7 +4,7 @@ import expressions.assertExprEquals
 import kotlin.math.PI
 import kotlin.test.Test
 
-internal class MathExpressionTest {
+class MathExpressionTest {
 
     @Test
     fun math() {

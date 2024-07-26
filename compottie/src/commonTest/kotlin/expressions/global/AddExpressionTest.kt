@@ -5,7 +5,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import kotlin.test.Test
 
 
-internal class AddExpressionTest {
+class AddExpressionTest {
 
     @Test
     fun add_num_expr() {
@@ -47,8 +47,6 @@ internal class AddExpressionTest {
         "add(13, 17.0)".assertExprEquals(30f)
         " add(-13.0, 17);".assertExprEquals(4f)
         "add(-13.0, -17.0)  ".assertExprEquals(-30f)
-
-
     }
 
     @Test

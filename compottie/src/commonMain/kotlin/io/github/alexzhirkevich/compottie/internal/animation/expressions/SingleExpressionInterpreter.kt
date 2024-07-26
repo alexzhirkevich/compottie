@@ -21,20 +21,28 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.unresolvedReference
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpAssign
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpAssignByIndex
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpCompare
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpConstant
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpEqualsComparator
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpGetVariable
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpGreaterComparator
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpIndex
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpLessComparator
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpMakeArray
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpVar
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
 internal class SingleExpressionInterpreter(
-    private val expr : String,
+    expr : String,
     private val context: EvaluationContext
 ) : ExpressionInterpreter {
     private var pos = -1
     private var ch: Char = ' '
+
+    private val expr = expr
+        .replace("{\n","{")
+        .replace("\n}"," }")
 
     override fun interpret(): Expression {
         pos = -1
@@ -54,6 +62,12 @@ internal class SingleExpressionInterpreter(
         }
     }
 
+    private fun prepareNextChar(){
+        while (ch.skip() && pos < expr.length){
+            nextChar()
+        }
+    }
+
     private fun nextChar() {
         ch = if (++pos < expr.length) expr[pos] else ';'
     }
@@ -62,7 +76,7 @@ internal class SingleExpressionInterpreter(
         ch = if (--pos > 0 && pos < expr.length) expr[pos] else ';'
     }
 
-    fun Char.skip() : Boolean = this == ' ' || this == '\n'
+    private fun Char.skip() : Boolean = this == ' ' || this == '\n'
 
     private fun eat(charToEat: Char): Boolean {
         while (ch.skip()) nextChar()
@@ -139,6 +153,7 @@ internal class SingleExpressionInterpreter(
             println("Parsed ${x::class.simpleName} as assignment")
         }
         while (true) {
+            prepareNextChar()
             x = when {
                 eatSequence("+=") -> parseAssignmentValue(x, ::OpAdd)
                 eatSequence("-=") -> parseAssignmentValue(x, ::OpSub)
@@ -166,7 +181,7 @@ internal class SingleExpressionInterpreter(
         x is OpGetVariable -> OpAssign(
             variableName = x.name,
             assignableValue = parseExpressionOp(OpGlobalContext),
-            scope = x.assignInScope ?: VariableScope.Global,
+            scope = x.assignInScope,
             merge = merge
         ).also {
             if (EXPR_DEBUG_PRINT_ENABLED) {
@@ -177,18 +192,29 @@ internal class SingleExpressionInterpreter(
         else -> error("Invalid assignment")
     }
 
-    private fun parseExpressionOp(context: Expression): Expression {
+    private fun parseExpressionOp(context: Expression, logicalContext: LogicalContext? = null): Expression {
         var x = parseTermOp(context)
         while (true) {
+            prepareNextChar()
             x = when {
-                eatSequence("&&") -> OpBoolean(parseExpressionOp(OpGlobalContext),x,  Boolean::and, "and")
-                eatSequence("||") -> OpBoolean(parseExpressionOp(OpGlobalContext),x,  Boolean::or, "or")
+                logicalContext != LogicalContext.Compare && eatSequence("&&") ->
+                    OpBoolean(parseExpressionOp(OpGlobalContext, LogicalContext.And),x,  Boolean::and)
+                logicalContext == null && eatSequence("||") ->
+                    OpBoolean(parseExpressionOp(OpGlobalContext, LogicalContext.Or),x,  Boolean::or)
+                eatSequence("<=") -> OpCompare(x, parseExpressionOp(OpGlobalContext,  LogicalContext.Compare)) { a, b ->
+                    OpLessComparator(a, b) || OpEqualsComparator(a, b)
+                }
+                eatSequence("<") -> OpCompare(x, parseExpressionOp(OpGlobalContext,  LogicalContext.Compare), OpLessComparator)
+                eatSequence(">=") -> OpCompare(x, parseExpressionOp(OpGlobalContext,  LogicalContext.Compare)) { a, b ->
+                    OpGreaterComparator(a, b) || OpEqualsComparator(a, b)
+                }
+                eatSequence(">") -> OpCompare(x, parseExpressionOp(OpGlobalContext, LogicalContext.Compare), OpGreaterComparator)
+                eatSequence("===") -> OpEquals(x, parseExpressionOp(OpGlobalContext, LogicalContext.Compare), true)
+                eatSequence("==") -> OpEquals(x, parseExpressionOp(OpGlobalContext, LogicalContext.Compare), false)
+                eatSequence("!==") -> OpNot(OpEquals(x, parseExpressionOp(OpGlobalContext, LogicalContext.Compare), false))
+                eatSequence("!=") -> OpNot(OpEquals(x, parseExpressionOp(OpGlobalContext, LogicalContext.Compare), true))
                 !nextSequenceIs("+=") && eat('+') -> OpAdd(x, parseTermOp(OpGlobalContext))
                 !nextSequenceIs("-=") && eat('-') -> OpSub(x, parseTermOp(OpGlobalContext))
-                eatSequence("===") -> OpEquals(x, parseExpressionOp(OpGlobalContext), true)
-                eatSequence("==") -> OpEquals(x, parseExpressionOp(OpGlobalContext), false)
-                eatSequence("!==") -> OpNot(OpEquals(x, parseExpressionOp(OpGlobalContext), false))
-                eatSequence("!=") -> OpNot(OpEquals(x, parseExpressionOp(OpGlobalContext), true))
                 else -> return x
             }
         }
@@ -197,6 +223,7 @@ internal class SingleExpressionInterpreter(
     private fun parseTermOp(context: Expression): Expression {
         var x = parseFactorOp(context)
         while (true) {
+            prepareNextChar()
             x = when {
                 !nextSequenceIs("*=") && eat('*') -> OpMul(x, parseFactorOp(OpGlobalContext))
                 !nextSequenceIs("/=") && eat('/') -> OpDiv(x, parseFactorOp(OpGlobalContext))
@@ -418,58 +445,64 @@ internal class SingleExpressionInterpreter(
 
     private fun parseFunction(context: Expression, func : String?) : Expression {
 
-        if (func == "function") {
-            return parseFunctionDefinition()
-        }
-
-        if (func == "while"){
-            return OpWhileLoop(
-                condition = checkNotNull(parseFunctionArgs("while")?.singleOrNull()){
-                    "missing 'while' condition"
-                },
-                body = parseBlock()
-            )
-        }
-
-        if (func == "return"){
-            val expr = parseExpressionOp(OpGlobalContext)
-            if (EXPR_DEBUG_PRINT_ENABLED) {
-                println("making return with $expr")
-            }
-            return OpReturn(expr)
-        }
-
-        val args = parseFunctionArgs(func)
-
-        if (EXPR_DEBUG_PRINT_ENABLED) {
-            println("making fun $func")
-        }
-
-        return when (context) {
-            is ExpressionContext<*> -> context.interpret(func, args)
-                ?: (if (args != null && func != null && this.context.getFunction(func) != null) {
-                    if (EXPR_DEBUG_PRINT_ENABLED) {
-                        println("parsed call for defined function $func")
-                    }
-                    OpFunctionExec(func, args)
+        return when (func) {
+            "function" -> parseFunctionDefinition()
+            "while" -> {
+                if (EXPR_DEBUG_PRINT_ENABLED) {
+                    println("making while loop")
                 }
-                else null)
-                ?: unresolvedReference(
-                    ref = func ?: "null",
-                    obj = context::class.simpleName
-                        ?.substringAfter("Op")
-                        ?.substringBefore("Context")
+
+                check(eat('(')){
+                    "Missing while loop condition"
+                }
+
+                val condition = parseExpressionOp(OpGlobalContext)
+
+                check(eat(')')){
+                    "Missing closing ')' in loop condition"
+                }
+
+                OpWhileLoop(
+                    condition = condition,
+                    body = parseBlock()
                 )
+            }
+
+            "return" -> {
+                val expr = parseExpressionOp(OpGlobalContext)
+                if (EXPR_DEBUG_PRINT_ENABLED) {
+                    println("making return with $expr")
+                }
+                OpReturn(expr)
+            }
 
             else -> {
-                JsContext.interpret(context, func, args)
-                    ?: error("Unsupported Lottie expression function: $func")
-//                when {
-//                    func != null && this.context.getFunction(func) != null ->
-//                        OpFunctionExec(func, args)
-//                    else -> JsContext.interpret(context, func, args)
-//                        ?: error("Unsupported Lottie expression function: $func")
-//                }
+                val args = parseFunctionArgs(func)
+
+                if (EXPR_DEBUG_PRINT_ENABLED) {
+                    println("making fun $func")
+                }
+
+                return when (context) {
+                    is ExpressionContext<*> -> context.interpret(func, args)
+                        ?: (if (args != null && func != null && this.context.getFunction(func) != null) {
+                            if (EXPR_DEBUG_PRINT_ENABLED) {
+                                println("parsed call for defined function $func")
+                            }
+                            OpFunctionExec(func, args)
+                        } else null)
+                        ?: unresolvedReference(
+                            ref = func ?: "null",
+                            obj = context::class.simpleName
+                                ?.substringAfter("Op")
+                                ?.substringBefore("Context")
+                        )
+
+                    else -> {
+                        JsContext.interpret(context, func, args)
+                            ?: error("Unsupported Lottie expression function: $func")
+                    }
+                }
             }
         }
     }

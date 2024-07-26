@@ -4,6 +4,10 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpGetTime
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpAssign
 
+internal enum class LogicalContext {
+    And, Or, Compare
+}
+
 internal interface ExpressionContext<T> : Expression {
 
     fun interpret(callable: String?, args: List<Expression>?): Expression?

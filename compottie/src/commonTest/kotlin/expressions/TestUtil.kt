@@ -15,7 +15,7 @@ import kotlin.test.assertEquals
 internal const val ret = "\$bm_rt"
 
 internal fun String.assertSimpleExprEquals(expected : Any) {
-    "$ret=$this".assertExprReturns(expected)
+    "var $ret=$this".assertExprReturns(expected)
 }
 
 internal fun String.assertSimpleExprReturns(expected : Any) {
@@ -34,7 +34,7 @@ internal fun String.assertExprReturns(expected : Any) {
 }
 
 internal fun String.assertExprEquals(expected : Any) {
-    "$ret = $this".assertExprReturns(expected)
+    "var $ret = $this".assertExprReturns(expected)
 }
 
 
@@ -45,7 +45,7 @@ internal fun String.assertExprReturns(expected : Float) {
 }
 
 internal fun String.assertExprEquals(expected : Float) {
-    "$ret = $this".assertExprReturns(expected)
+    "var $ret = $this".assertExprReturns(expected)
 }
 
 internal fun String.assertExprReturns(expected : String) {
@@ -60,10 +60,10 @@ internal fun String.assertExprReturns(expected : Vec2) {
     assertEquals(expected, value.interpolated(state))
 }
 internal fun String.assertExprEquals(expected : Vec2) {
-    "$ret = $this".assertExprReturns(expected)
+    "var $ret = $this".assertExprReturns(expected)
 }
 internal fun String.assertExprEquals(expected : String) {
-    "$ret = $this".assertExprReturns(expected)
+    "var $ret = $this".assertExprReturns(expected)
 }
 
 internal fun MockAnimationState(

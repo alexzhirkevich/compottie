@@ -3,7 +3,7 @@ package expressions.global
 import expressions.assertExprEquals
 import kotlin.test.Test
 
-internal class NumberFormatTest {
+class NumberFormatTest {
 
     @Test
     fun test(){

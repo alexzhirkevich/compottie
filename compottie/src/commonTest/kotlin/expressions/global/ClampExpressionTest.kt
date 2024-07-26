@@ -4,7 +4,7 @@ import expressions.assertExprEquals
 import kotlin.test.Test
 
 
-internal class ClampExpressionTest {
+class ClampExpressionTest {
 
     @Test
     fun clamp() {

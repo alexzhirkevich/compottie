@@ -6,7 +6,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import kotlin.test.Test
 
 
-internal class AssignExpressionTest {
+class AssignExpressionTest {
 
     @Test
     fun add_sub_mull_div_assign() {

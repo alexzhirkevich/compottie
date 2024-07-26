@@ -45,7 +45,7 @@ private class ExpressionEvaluatorImpl(expr : String) : ExpressionEvaluator {
             null
         } ?: raw(state)
     }
-    }
+}
 
 private fun Any.toListOrThis() : Any{
     return when (this){

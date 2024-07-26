@@ -10,7 +10,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Express
 internal fun unresolvedReference(ref : String, obj : String? = null) : Nothing =
     if (obj != null)
         error("Unresolved reference '$ref' for $obj")
-    else error("Unresolved reference")
+    else error("Unresolved reference: $ref")
 
 
 internal fun <T, R : Any> Expression.cast(block: (T) -> R) : Expression =

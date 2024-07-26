@@ -7,7 +7,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.easeOut
 import kotlin.test.Test
 
-internal class InterpolationExpressionTest {
+class InterpolationExpressionTest {
 
     private val easingTests = mapOf(
         "linear" to LinearEasing,

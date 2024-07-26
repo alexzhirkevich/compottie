@@ -4,7 +4,7 @@ import expressions.assertExprReturns
 import expressions.ret
 import kotlin.test.Test
 
-internal class CustomFunctionsTest {
+class CustomFunctionsTest {
 
     @Test
     fun creation() {

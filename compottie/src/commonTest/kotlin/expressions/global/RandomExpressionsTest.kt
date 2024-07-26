@@ -12,7 +12,7 @@ import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-internal class RandomExpressionsTest {
+class RandomExpressionsTest {
 
     @Test
     fun noise() {

@@ -28,10 +28,7 @@ internal fun OpBoolean(
     a : Expression,
     b : Expression,
     op : (Boolean, Boolean) -> Boolean,
-    name: String,
 ) = Expression { property, context, state ->
-
-    println(name)
     op(!a(property, context, state).isFalse(), !b(property, context, state).isFalse())
 }
 

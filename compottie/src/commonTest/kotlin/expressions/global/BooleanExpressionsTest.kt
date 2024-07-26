@@ -48,11 +48,13 @@ class BooleanExpressionsTest {
 
     @Test
     fun with_different_source() {
-//        "false || 1 == 1".assertSimpleExprEquals(true)
-//        "true && 1 == 2".assertSimpleExprEquals(false)
+        "false || 1 == 1".assertSimpleExprEquals(true)
+        "true && 1 == 2".assertSimpleExprEquals(false)
 
-//        "(1 == 2) || false || (1+1) == 2".assertSimpleExprEquals(true)
-
+        "(1 == 2) || false || (1+1) == 2".assertSimpleExprEquals(true)
         "1 == 2 || false || (1+1) == 2".assertSimpleExprEquals(true)
+        "1 == 1 && 2 == 2".assertSimpleExprEquals(true)
+
+        "1 == 2 && 2 == 1 || 2 * 2 == 4".assertSimpleExprEquals(true)
     }
 }

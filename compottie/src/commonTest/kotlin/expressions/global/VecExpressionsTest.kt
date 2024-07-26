@@ -6,7 +6,7 @@ import kotlin.math.hypot
 import kotlin.test.Test
 
 
-internal class VecExpressionsTest {
+class VecExpressionsTest {
 
     @Test
     fun dot() {

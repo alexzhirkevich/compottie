@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpFunction
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.unresolvedReference
 
 
 internal enum class VariableScope {
@@ -17,7 +18,7 @@ internal interface EvaluationContext {
 
     fun getVariable(name : String) : Any?
 
-    fun setVariable(name: String, value : Any, scope: VariableScope)
+    fun setVariable(name: String, value : Any, scope: VariableScope?)
 
     fun withScope(extraVariables : Map<String ,Any>, block : (EvaluationContext) -> Any) : Any
 
@@ -44,10 +45,13 @@ internal class DefaultEvaluatorContext(
         blockVariables.clear()
     }
 
-    override fun setVariable(name: String, value: Any, scope: VariableScope) {
-        val map = when (scope) {
-            VariableScope.Global -> globalVariables
-            VariableScope.Block -> blockVariables
+    override fun setVariable(name: String, value: Any, scope: VariableScope?) {
+        val map = when {
+            scope == VariableScope.Global -> globalVariables
+            scope == VariableScope.Block -> blockVariables
+            name in blockVariables -> blockVariables
+            name in globalVariables -> globalVariables
+            else -> unresolvedReference(name)
         }
         map[name] = value
     }
@@ -110,10 +114,11 @@ private class BlockEvaluatorContext(
         }
     }
 
-    override fun setVariable(name: String, value: Any, scope: VariableScope) {
-        when (scope) {
-            VariableScope.Global -> parent.setVariable(name, value, scope)
-            VariableScope.Block -> scopeVariables[name] = value
+    override fun setVariable(name: String, value: Any, scope: VariableScope?) {
+        when {
+            scope == VariableScope.Global -> parent.setVariable(name, value, scope)
+            scope == VariableScope.Block || name in scopeVariables -> scopeVariables[name] = value
+            else -> parent.setVariable(name, value, scope)
         }
     }
 

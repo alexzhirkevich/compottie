@@ -4,7 +4,7 @@ import expressions.assertExprEquals
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import kotlin.test.Test
 
-internal class SubExpressionTest {
+class SubExpressionTest {
 
 
     @Test
