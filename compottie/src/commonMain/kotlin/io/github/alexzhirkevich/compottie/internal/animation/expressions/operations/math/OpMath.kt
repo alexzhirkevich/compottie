@@ -8,12 +8,9 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Evaluat
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.OpUndefined
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.argAt
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random.OpRandomNumber
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.unresolvedReference
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpConstant
 import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.acosh
@@ -105,12 +102,12 @@ internal object OpMath : Expression, ExpressionContext<OpMath> {
             "log10" -> op1(args, ::log10, op)
             "log1p " -> op1(args, ::ln1p, op)
             "log2" -> op1(args, ::log2, op)
-            "max" -> opN(args, List<Float>::max, op)
-            "min" -> opN(args, List<Float>::min, op)
-            "pow" -> op2(args, Float::pow, op)
+            "max" -> opN(args, List<Double>::max, op)
+            "min" -> opN(args, List<Double>::min, op)
+            "pow" -> op2(args, Double::pow, op)
             "random" -> OpRandomNumber()
-            "round" -> op1(args, Float::roundToInt, op)
-            "sign" -> op1(args, Float::sign, op)
+            "round" -> op1(args, Double::roundToInt, op)
+            "sign" -> op1(args, Double::sign, op)
             "sin" -> op1(args, ::sin, op)
             "sinh" -> op1(args, ::sinh, op)
             "sqrt" -> op1(args, ::sqrt, op)
@@ -122,22 +119,22 @@ internal object OpMath : Expression, ExpressionContext<OpMath> {
         }
     }
 
-    private fun op1(args: List<Expression>, func: (Float) -> Number, name: String): Expression {
+    private fun op1(args: List<Expression>, func: (Double) -> Number, name: String): Expression {
         checkArgs(args, 1, name)
 
         val a = args.argAt(0)
         return Expression { property, context, state ->
-            val a = a(property, context, state)
+            val a = a(property, context, state).validateJsNumber()
             require(a is Number) {
                 "Can't get Math.$name of $a"
             }
-            func(a.toFloat())
+            func(a.toDouble())
         }
     }
 
     private fun op2(
         args: List<Expression>,
-        func: (Float, Float) -> Number,
+        func: (Double, Double) -> Number,
         name: String
     ): Expression {
         checkArgs(args, 2, name)
@@ -145,18 +142,18 @@ internal object OpMath : Expression, ExpressionContext<OpMath> {
         val a = args.argAt(0)
         val b = args.argAt(1)
         return Expression { property, context, state ->
-            val a = a(property, context, state)
-            val b = b(property, context, state)
+            val a = a(property, context, state).validateJsNumber()
+            val b = b(property, context, state).validateJsNumber()
             require(a is Number && b is Number) {
                 "Can't get Math.$name of ($a,$b)"
             }
-            func(a.toFloat(), b.toFloat())
+            func(a.toDouble(), b.toDouble())
         }
     }
 
     private fun opN(
         args: List<Expression>,
-        func: (List<Float>) -> Number,
+        func: (List<Double>) -> Number,
         name: String
     ): Expression {
         check(args.isNotEmpty()){
@@ -165,13 +162,13 @@ internal object OpMath : Expression, ExpressionContext<OpMath> {
         return Expression { property, context, state ->
 
             val a = args.fastMap {
-                val n = it(property, context, state).also {
+                val n = it(property, context, state).validateJsNumber().also {
                     check(it is Number) {
                         "Illegal arguments for Math.$name"
                     }
                 } as Number
 
-                n.toFloat()
+                n.toDouble()
             }
 
             func(a)
@@ -189,25 +186,26 @@ internal object OpMath : Expression, ExpressionContext<OpMath> {
     private val SQRT2 = Expression { _, _, _ -> 1.4142135f }
 }
 
-private fun hypotN(args : List<Float>): Float {
+private fun hypotN(args : List<Double>): Double {
     return sqrt(args.fastMap(::pow2).fastSum())
 }
 
-private fun pow2(a : Float) = a * a
+private fun pow2(a : Double) = a * a
 
-private fun List<Float>.fastSum() : Float {
-    var x = 0f
+private fun List<Double>.fastSum() : Double {
+    var x = 0.0
     fastForEach { x += it }
     return x
 }
 
-private fun imul(x : Float, y : Float) : Int {
-    val a = x.toInt()
-    val b = y.toInt()
+private fun imul(x : Double, y : Double) : Long {
+    val a = x.toLong().toInt()
+    val b = y.toLong().toInt()
+
     val ah = (a ushr 16) and 0xffff
     val al = a and 0xffff
     val bh = (b ushr 16) and 0xffff
     val bl = b and 0xffff
 
-    return (al * bl) + ((((ah * bl) + (al * bh)) shl 16) ushr 0) or 0
+    return ((al * bl) + ((((ah * bl) + (al * bh)) shl 16) ushr 0) or 0).toLong()
 }

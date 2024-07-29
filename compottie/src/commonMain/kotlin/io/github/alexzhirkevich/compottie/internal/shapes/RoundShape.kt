@@ -9,6 +9,7 @@ import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.content.Content
+import io.github.alexzhirkevich.compottie.internal.utils.appendPathEffect
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -63,11 +64,8 @@ internal class RoundShape(
 internal fun RoundShape.applyTo(paint: Paint, state: AnimationState) {
     if (!isHidden(state)) {
         val radius = radius.interpolated(state)
-        val effect = PathEffect.cornerPathEffect(radius)
-        paint.pathEffect = if (paint.pathEffect == null) {
-            effect
-        } else {
-            PathEffect.chainPathEffect(effect, paint.pathEffect!!)
+        if (radius > 1) {
+            paint.appendPathEffect(PathEffect.cornerPathEffect(radius))
         }
     }
 }

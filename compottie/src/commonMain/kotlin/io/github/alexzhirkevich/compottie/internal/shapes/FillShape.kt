@@ -107,6 +107,7 @@ internal class FillShape(
         }
 
         paint.color = color.interpolated(state)
+        paint.pathEffect = null
 
         dynamicFill.applyToPaint(
             paint = paint,

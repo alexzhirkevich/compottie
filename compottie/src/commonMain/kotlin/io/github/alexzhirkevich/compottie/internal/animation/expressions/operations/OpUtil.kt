@@ -25,25 +25,32 @@ internal fun <T, R : Any> Expression.withCast(block: T.(
 }
 
 internal operator fun Any.get(index : Int) : Any {
+    return checkNotNull(tryGet(index)){
+        "Index $index out of bounds of $this length"
+    }
+}
+
+internal fun Any.tryGet(index : Int) : Any? {
     return when (this){
         is Map<*,*> -> {
             (this as Map<Int, *>).get(index)
         }
-        is List<*> -> this.get(index)
-        is Array<*> -> this.get(index)
+        is List<*> -> this.getOrNull(index)
+        is Array<*> -> this.getOrNull(index)
         is Vec2 -> when (index){
             0 -> x
             1 -> y
-            else -> throw IndexOutOfBoundsException("Index $index is out of bounds [0,1]")
+            else -> null
         }
-        is CharSequence -> this.get(index)
+        is CharSequence -> this.getOrNull(index)
         is Color -> when(index){
             0 -> red
             1 -> green
             2 -> blue
             3 -> alpha
-            else -> throw IndexOutOfBoundsException("Index $index is out of bounds [0,3]")
+            else -> null
         }
         else -> error("Can't get value by index from $this")
     }!!
 }
+

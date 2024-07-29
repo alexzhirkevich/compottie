@@ -12,6 +12,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpIfCondition
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpNot
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpReturn
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpTryCatch
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpWhileLoop
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpAdd
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpDecrement
@@ -47,30 +48,29 @@ internal class ExpressionInterpreterImpl(
     private var ch: Char = ' '
 
     override fun interpret(): Expression {
-        pos = -1
-        ch = ' '
-        if (EXPR_DEBUG_PRINT_ENABLED) {
-            println("Parsing $expr")
-        }
-        nextChar()
         val expressions = buildList {
-            var x : Expression? = null
+            pos = -1
+            ch = ' '
+            if (EXPR_DEBUG_PRINT_ENABLED) {
+                println("Parsing $expr")
+            }
+            nextChar()
+            var x: Expression? = null
             do {
-                while (eat(';')){
+                while (eat(';')) {
                 }
-                if (pos >= expr.length){
+                if (pos >= expr.length) {
                     break
                 }
 
                 x = parseAssignment(if (x is ExpressionContext<*>) x else OpGlobalContext)
                 add(x)
             } while (pos < expr.length)
-        }
 
-        require(pos <= expr.length) {
-            "Unexpected Lottie expression $expr"
+            require(pos <= expr.length) {
+                "Unexpected Lottie expression $expr"
+            }
         }
-
         return OpBlock(expressions, false).also {
             pos = -1
             ch = ' '
@@ -340,15 +340,13 @@ internal class ExpressionInterpreterImpl(
                         isFloat = false
                     }
                     if (isFloat) {
-                        it.toFloat()
+                        it.toDouble()
                     }
                     else {
                         it.trimEnd('.')
-                            .let { n ->
-                                numberFormat.prefix?.let(n::substringAfter) ?: n
-                            }
-                            .toUInt(numberFormat.radix)
-                            .toInt()
+                            .let { n -> numberFormat.prefix?.let(n::substringAfter) ?: n }
+                            .toULong(numberFormat.radix)
+                            .toLong()
                     }
                 }
                 if (EXPR_DEBUG_PRINT_ENABLED) {
@@ -527,6 +525,36 @@ internal class ExpressionInterpreterImpl(
                 }
                 OpReturn(expr)
             }
+            "try" -> {
+                val tryBlock = parseBlock(requireBlock = true)
+                val catchBlock = if (eatSequence("catch")) {
+
+                    if (eat('(')) {
+                        val start = pos
+                        while (!eat(')') && pos < expr.length) {
+                            //nothing
+                        }
+                        expr.substring(start, pos).trim() to parseBlock(
+                            scoped = false,
+                            requireBlock = true
+                        )
+                    } else {
+                        null to parseBlock(requireBlock = true)
+                    }
+                }
+                else null
+
+                val finallyBlock = if (eatSequence("finally")){
+                    parseBlock(requireBlock = true)
+                } else null
+
+                OpTryCatch(
+                    tryBlock = tryBlock,
+                    catchVariableName = catchBlock?.first,
+                    catchBlock = catchBlock?.second,
+                    finallyBlock = finallyBlock
+                )
+            }
 
             else -> {
                 val args = parseFunctionArgs(func)
@@ -628,7 +656,7 @@ internal class ExpressionInterpreterImpl(
         return OpConstant(Undefined)
     }
 
-    private fun parseBlock(scoped : Boolean = true): Expression {
+    private fun parseBlock(scoped : Boolean = true, requireBlock : Boolean = false): Expression {
         val list =  buildList {
             if (eat('{')) {
                 while (!eat('}') && pos < expr.length) {
@@ -636,6 +664,9 @@ internal class ExpressionInterpreterImpl(
                     eat(';')
                 }
             } else {
+                if (requireBlock){
+                    error("Unexpected token at $pos: block start was expected")
+                }
                 add(parseAssignment(OpGlobalContext))
             }
         }

@@ -28,16 +28,8 @@ internal fun OpDecrement(variable : Expression) : Expression = OpIncDec(
 
 
 private fun increment(v : Any) : Any {
-    return when (v) {
-        is Byte -> v + 1
-        is UByte -> v + 1u
-        is Short -> v + 1
-        is UShort -> v + 1u
-        is Int -> v + 1
-        is UInt -> v + 1u
+    return when (val v = v.validateJsNumber()) {
         is Long -> v + 1
-        is ULong -> v + 1u
-        is Float -> v + 1
         is Double -> v + 1
         is Number -> v.toDouble() + 1
         else -> error("can't increment $v")
@@ -45,16 +37,8 @@ private fun increment(v : Any) : Any {
 }
 
 private fun decrement(v : Any) : Any {
-    return when (v) {
-        is Byte -> v - 1
-        is UByte -> v - 1u
-        is Short -> v - 1
-        is UShort -> v - 1u
-        is Int -> v - 1
-        is UInt -> v - 1u
+    return when (val v = v.validateJsNumber()) {
         is Long -> v - 1
-        is ULong -> v - 1u
-        is Float -> v - 1
         is Double -> v - 1
         is Number -> v.toDouble() - 1
         else -> error("can't decrement $v")

@@ -4,12 +4,12 @@ import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 
 internal fun OpUnaryMinus(a : Expression) = Expression { property, context, state ->
-    when (val v = a(property, context, state)) {
-        is Int -> -v
-        is Number -> -v.toFloat()
+    when (val v = a(property, context, state).validateJsNumber()) {
+        is Long -> -v
+        is Number -> -v.toDouble()
         is List<*> -> {
             v as List<Number>
-            v.fastMap { -it.toFloat() }
+            v.fastMap { -it.toDouble() }
         }
 
         else -> error("Cant apply unary minus to $v")

@@ -25,7 +25,6 @@ import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsState
 import io.github.alexzhirkevich.compottie.internal.helpers.FillRule
 import io.github.alexzhirkevich.compottie.internal.helpers.GradientColors
 import io.github.alexzhirkevich.compottie.internal.helpers.GradientType
-import io.github.alexzhirkevich.compottie.internal.helpers.asComposeBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.asPathFillType
 import io.github.alexzhirkevich.compottie.internal.platform.GradientCache
 import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
@@ -109,7 +108,7 @@ internal class GradientFillShape(
 
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
 
-        paint.blendMode = state.layer.blendMode.asComposeBlendMode()
+        paint.pathEffect = null
 
         if (dynamicShape?.hidden.derive(hidden, state)) {
             return

@@ -2,6 +2,8 @@ package io.github.alexzhirkevich.compottie.internal.utils
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.PathEffect
 import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.min
@@ -11,14 +13,23 @@ internal fun List<Float>.toOffset() = Offset(this[0], this[1])
 internal fun List<Float>.toSize() = Size(this[0], this[1])
 
 private val PiDiv180 = PI / 180
+private val PiDiv180Float = PiDiv180.toFloat()
 
 
 internal fun degreeToRadians(degree : Float) : Float {
-    return (degree * PiDiv180).toFloat()
+    return degree * PiDiv180Float
 }
 
+internal fun degreeToRadians(degree : Double) : Double {
+    return degree * PiDiv180
+}
+
+
 internal fun radiansToDegree(radians : Float) : Float {
-    return  (radians / PiDiv180).toFloat()
+    return radians / PiDiv180Float
+}
+internal fun radiansToDegree(radians : Double) : Double {
+    return radians / PiDiv180
 }
 
 
@@ -56,4 +67,12 @@ internal inline fun <reified R> List<*>.firstInstanceOf() : R? {
 
 internal inline fun <reified R> List<*>.getAs(index : Int) : R? {
     return getOrNull(index) as? R
+}
+
+internal fun Paint.appendPathEffect(effect: PathEffect) {
+    if (pathEffect == null) {
+        pathEffect = effect
+    } else {
+        pathEffect = PathEffect.chainPathEffect(effect, pathEffect!!)
+    }
 }

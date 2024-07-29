@@ -94,7 +94,7 @@ internal fun OpWhileLoop(
 
 internal fun Any.isFalse() : Boolean {
     return this == false
-            || this is Number && toFloat() == 0f
+            || this is Number && toDouble() == 0.0
             || this is CharSequence && isEmpty()
             || this is Undefined
 }

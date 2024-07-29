@@ -31,12 +31,12 @@ import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsState
 import io.github.alexzhirkevich.compottie.internal.helpers.DashType
 import io.github.alexzhirkevich.compottie.internal.helpers.StrokeDash
 import io.github.alexzhirkevich.compottie.internal.helpers.applyTrimPath
-import io.github.alexzhirkevich.compottie.internal.helpers.asComposeBlendMode
 import io.github.alexzhirkevich.compottie.internal.platform.ExtendedPathMeasure
 import io.github.alexzhirkevich.compottie.internal.platform.GradientCache
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import io.github.alexzhirkevich.compottie.internal.utils.IdentityMatrix
+import io.github.alexzhirkevich.compottie.internal.utils.appendPathEffect
 import io.github.alexzhirkevich.compottie.internal.utils.scale
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.Serializable
@@ -149,7 +149,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
             return
         }
 
-        paint.blendMode = state.layer.blendMode.asComposeBlendMode()
+        paint.pathEffect = null
         paint.style = PaintingStyle.Stroke
 
         getBounds(drawScope, IdentityMatrix, false, state, rawBoundsRect)
@@ -371,7 +371,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
             dashPatternValues[i] = dashPatternValues[i] * scale
         }
 
-        paint.pathEffect = PathEffect.dashPathEffect(dashPatternValues, o)
+        paint.appendPathEffect(PathEffect.dashPathEffect(dashPatternValues, o))
     }
 }
 

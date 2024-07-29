@@ -1,6 +1,5 @@
 package expressions.global
 
-import expressions.assertExprReturns
 import expressions.assertSimpleExprEquals
 import expressions.assertSimpleExprReturns
 import expressions.executeExpression
@@ -47,16 +46,16 @@ class SyntaxExpressionsTest {
 
     @Test
     fun increment_decrement() {
-        "let $ret = 5; $ret++".assertSimpleExprReturns(6)
-        "let $ret = 5; ++$ret".assertSimpleExprReturns(6)
+        "let $ret = 5; $ret++".assertSimpleExprReturns(6L)
+        "let $ret = 5; ++$ret".assertSimpleExprReturns(6L)
 
-        "let $ret = 5; $ret--".assertSimpleExprReturns(4)
-        "let $ret = 5; --$ret".assertSimpleExprReturns(4)
+        "let $ret = 5; $ret--".assertSimpleExprReturns(4L)
+        "let $ret = 5; --$ret".assertSimpleExprReturns(4L)
 
-        "let x = 5; let $ret = --x".assertSimpleExprReturns(4)
-        "let x = 5; let $ret = ++x".assertSimpleExprReturns(6)
-        "let x = 5; let $ret = x--".assertSimpleExprReturns(4)
-        "let x = 5; let $ret = x++".assertSimpleExprReturns(6)
+        "let x = 5; let $ret = --x".assertSimpleExprReturns(4L)
+        "let x = 5; let $ret = ++x".assertSimpleExprReturns(6L)
+        "let x = 5; let $ret = x--".assertSimpleExprReturns(4L)
+        "let x = 5; let $ret = x++".assertSimpleExprReturns(6L)
     }
 
     @Test
@@ -67,7 +66,7 @@ class SyntaxExpressionsTest {
                 var x = 5
             }
             $ret = x
-        """.trimIndent().assertSimpleExprReturns(5)
+        """.trimIndent().assertSimpleExprReturns(5L)
 
         assertFails {
             """
@@ -81,12 +80,19 @@ class SyntaxExpressionsTest {
     }
 
     @Test
-    fun const() {
+    fun constMutating() {
         assertFails {
             """
                 const x = 1; 
                 x++
             """.trimIndent().executeExpression()
+        }
+    }
+
+    @Test
+    fun tryCatch() {
+        assertFails {
+            "let x = [123".executeExpression()
         }
     }
 }

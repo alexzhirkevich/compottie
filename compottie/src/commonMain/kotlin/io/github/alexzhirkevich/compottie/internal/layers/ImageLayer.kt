@@ -18,7 +18,6 @@ import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
-import io.github.alexzhirkevich.compottie.internal.helpers.asComposeBlendMode
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -123,7 +122,6 @@ internal class ImageLayer(
         val bitmap = mAsset.bitmap ?: return
 
         paint.alpha = parentAlpha
-        paint.blendMode = blendMode.asComposeBlendMode()
 
         effectsApplier.applyTo(paint, state, effectState)
 

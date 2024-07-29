@@ -16,7 +16,6 @@ import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
-import io.github.alexzhirkevich.compottie.internal.helpers.asComposeBlendMode
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -105,7 +104,6 @@ internal class SolidColorLayer(
     @Transient
     private val paint= Paint().apply {
         isAntiAlias = true
-        blendMode = this@SolidColorLayer.blendMode.asComposeBlendMode()
 
         try {
             val hex = colorHex.substringAfter("#")

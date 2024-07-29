@@ -33,6 +33,15 @@ internal fun String.assertSimpleExprReturns(expected : Any) {
     assertEquals(expected, executeExpression())
 }
 
+internal fun String.assertSimpleExprEquals(expected : Double) {
+    "var $ret=$this".assertSimpleExprReturns(expected)
+}
+
+internal fun String.assertSimpleExprReturns(expected : Double) {
+    assertEquals(expected, executeExpression() as Double, 0.00001)
+}
+
+
 internal fun String.assertExprReturns(expected : Any) {
     val value = AnimatedNumber.Default(0f, this)
     val state = MockAnimationState(0f)

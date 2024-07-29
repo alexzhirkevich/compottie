@@ -17,7 +17,7 @@ internal fun OpCompare(
 
 internal val OpGreaterComparator : (Comparable<*>, Comparable<*>) -> Boolean = { a, b ->
     if (a is Number && b is Number) {
-        a.toFloat() > b.toFloat()
+        a.toDouble() > b.toDouble()
     } else {
         a.toString() > b.toString()
     }
@@ -25,7 +25,7 @@ internal val OpGreaterComparator : (Comparable<*>, Comparable<*>) -> Boolean = {
 
 internal val OpLessComparator : (Comparable<*>, Comparable<*>) -> Boolean = { a, b ->
     if (a is Number && b is Number) {
-        a.toFloat() < b.toFloat()
+        a.toDouble() < b.toDouble()
     } else {
         a.toString() < b.toString()
     }

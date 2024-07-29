@@ -1,19 +1,21 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.js.number
 
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.validateJsNumber
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.unresolvedReference
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 internal fun JsToPrecision(
     number : Expression,
     digits : Expression? = null
 ) = Expression { property, context, state ->
 
-    val number = (number(property, context, state) as? Number?)?.toFloat()
+    val number = (number(property, context, state).validateJsNumber() as? Number?)?.toDouble()
         ?: unresolvedReference("toFixed")
 
-    val digits = (digits?.invoke(property, context, state) as Number?)?.toInt()
+    val digits = (digits?.invoke(property, context, state)?.validateJsNumber() as Number?)?.toInt()
         ?.takeIf { it > 0 }
         ?: return@Expression number
 
@@ -24,13 +26,13 @@ internal fun JsToFixed(
     number : Expression,
     digits : Expression?
 ) = Expression { property, context, state ->
-    val number = (number(property, context, state) as? Number?)?.toFloat()
+    val number = (number(property, context, state).validateJsNumber()as? Number?)?.toDouble()
         ?: unresolvedReference("toFixed")
 
-    val digits = (digits?.invoke(property, context, state) as Number?)?.toInt() ?: 0
+    val digits = (digits?.invoke(property, context, state)?.validateJsNumber() as Number?)?.toInt() ?: 0
 
     if (digits == 0) {
-        return@Expression number.roundToInt().toString()
+        return@Expression number.roundToLong().toString()
     }
 
     val stringNumber = number.roundTo(digits).toString()
@@ -46,12 +48,12 @@ internal fun JsToFixed(
 }
 
 private val pow10 by lazy {
-    (1..10).mapIndexed { i, it -> i to 10f.pow(it) }.toMap()
+    (1..10).mapIndexed { i, it -> i to 10.0.pow(it) }.toMap()
 }
 
-internal fun Float.roundTo(digit : Int) : Float {
+internal fun Double.roundTo(digit : Int) : Double {
     if(digit <= 0)
-        return roundToInt().toFloat()
+        return roundToLong().toDouble()
 
     val pow = pow10[digit-1] ?: return this
     return ((this * pow).roundToInt() / pow)

@@ -21,8 +21,10 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsApplier
+import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MaskMode
+import io.github.alexzhirkevich.compottie.internal.helpers.asComposeBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.isInvert
 import io.github.alexzhirkevich.compottie.internal.helpers.isLuma
 import io.github.alexzhirkevich.compottie.internal.platform.Luma
@@ -47,8 +49,11 @@ internal abstract class BaseLayer : Layer {
     private val canvasMatrix = Matrix()
     private val canvasBounds = MutableRect(0f, 0f, 0f, 0f)
 
-    private val contentPaint = Paint().apply {
-        isAntiAlias = true
+    private val contentPaint by lazy {
+        Paint().apply {
+            isAntiAlias = true
+            blendMode = this@BaseLayer.blendMode.asComposeBlendMode()
+        }
     }
 
     private val clearPaint by lazy {
@@ -69,6 +74,12 @@ internal abstract class BaseLayer : Layer {
         Paint().apply {
             blendMode = BlendMode.DstOut
             isAntiAlias = true
+        }
+    }
+
+    private val solidWhitePaint by lazy {
+        Paint().apply {
+            color = Color.White
         }
     }
 
@@ -157,7 +168,7 @@ internal abstract class BaseLayer : Layer {
 
                 alpha = (alpha * parentAlpha.coerceIn(0f, 1f))
 
-                if (matteLayer == null && !hasMasks()) {
+                if (matteLayer == null && !hasMasks() && blendMode == LottieBlendMode.Normal) {
                     matrix.preConcat(transform.matrix(state))
                     drawLayer(drawScope, matrix, alpha, state)
                     return@onLayer
@@ -192,7 +203,6 @@ internal abstract class BaseLayer : Layer {
                         contentPaint.alpha = 1f
                         canvas.saveLayer(rect, contentPaint)
 
-                        // Clear the off screen buffer. This is necessary for some phones.
                         clearCanvas(canvas)
                         drawLayer(drawScope, matrix, alpha, state)
 

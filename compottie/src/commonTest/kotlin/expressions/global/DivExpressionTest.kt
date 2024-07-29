@@ -1,6 +1,7 @@
 package expressions.global
 
 import expressions.assertExprEquals
+import expressions.assertSimpleExprEquals
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import kotlin.test.Test
 
@@ -34,9 +35,25 @@ class DivExpressionTest {
 
     @Test
     fun div_sum_order() {
-        "2 - 2 / 2".assertExprEquals(1f)
-        "2 + 2 / 2".assertExprEquals(3f)
-        "(2 + 4) / 2".assertExprEquals(3f)
-        "(6 - 2) * 2".assertExprEquals(8f)
+        "2 - 2 / 2".assertExprEquals(1L)
+        "2 + 2 / 2".assertExprEquals(3L)
+        "(2 + 4) / 2".assertExprEquals(3L)
+        "(6 - 2) * 2".assertExprEquals(8L)
+    }
+
+    @Test
+    fun number_type_propagation() {
+        "4/2".assertSimpleExprEquals(2L)
+        "4/2.0".assertSimpleExprEquals(2.0)
+        "4.0/2".assertSimpleExprEquals(2.0)
+        "4.0/2.0".assertSimpleExprEquals(2.0)
+    }
+
+    @Test
+    fun division_by_zero() {
+        "1/0".assertSimpleExprEquals(Double.POSITIVE_INFINITY)
+        "1.0/0".assertSimpleExprEquals(Double.POSITIVE_INFINITY)
+        "1/0.0".assertSimpleExprEquals(Double.POSITIVE_INFINITY)
+        "1.0/0.0".assertSimpleExprEquals(Double.POSITIVE_INFINITY)
     }
 }

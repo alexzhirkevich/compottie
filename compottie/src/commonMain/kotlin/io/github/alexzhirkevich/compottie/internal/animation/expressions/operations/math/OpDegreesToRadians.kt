@@ -7,11 +7,11 @@ import io.github.alexzhirkevich.compottie.internal.utils.radiansToDegree
 internal fun OpDegreesToRadians(
     degrees : Expression
 ) = Expression { property, context, state ->
-    degreeToRadians((degrees(property, context,state) as Number).toFloat())
+    degreeToRadians((degrees(property, context,state).validateJsNumber() as Number).toDouble())
 }
 
 internal fun OpRadiansToDegree(
     rad : Expression
 ) = Expression { property, context, state ->
-    radiansToDegree((rad(property, context,state) as Number).toFloat())
+    radiansToDegree((rad(property, context,state).validateJsNumber() as Number).toDouble())
 }

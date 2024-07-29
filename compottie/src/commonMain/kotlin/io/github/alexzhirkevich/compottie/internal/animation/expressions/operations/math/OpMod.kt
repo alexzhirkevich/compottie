@@ -13,11 +13,11 @@ internal fun OpMod(
 }
 
 internal fun OpMod(a : Any, b : Any) : Any {
+    val a = a.validateJsNumber()
+    val b = b.validateJsNumber()
     return when {
-        a is Int && b is Int -> a % b
         a is Long && b is Long -> a % b
-        a is Int && b is Long || a is Long && b is Int -> (a as Number).toLong() % (b as Number).toLong()
-        a is Number && b is Number -> a.toFloat() % b.toFloat()
+        a is Number && b is Number -> a.toDouble() % b.toDouble()
         else -> error("Can't get mod of $a and $b")
     }
 }

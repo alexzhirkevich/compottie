@@ -7,13 +7,17 @@ internal fun OpClamp(
     from : Expression,
     to : Expression,
 ) = Expression { property, context, state ->
-    val v = v(property, context, state)
-    val from = from(property, context, state)
-    val to = to(property, context, state)
+    val v = v(property, context, state).validateJsNumber()
+    val from = from(property, context, state).validateJsNumber()
+    val to = to(property, context, state).validateJsNumber()
 
     require(v is Number && from is Number && to is Number) {
         "Cant clamp ($v, $from, $to) : not a number"
     }
 
-    v.toFloat().coerceIn(from.toFloat(), to.toFloat(),)
+    if (v is Long && from is Long && to is Long) {
+        v.coerceIn(from, to)
+    } else {
+        v.toDouble().coerceIn(from.toDouble(), to.toDouble(),)
+    }
 }

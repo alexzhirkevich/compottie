@@ -43,6 +43,9 @@ private class ExpressionEvaluatorImpl(
                     Compottie.logger?.warn(
                         "Error occurred in a Lottie expression. Try to disable expressions for Painter using enableExpressions=false: ${t.message}"
                     )
+                    if (EXPR_DEBUG_PRINT_ENABLED){
+                        t.printStackTrace()
+                    }
                 }
             } else {
                 throw t
