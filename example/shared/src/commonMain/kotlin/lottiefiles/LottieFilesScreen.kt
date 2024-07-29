@@ -39,6 +39,7 @@ import androidx.compose.material.icons.rounded.ArrowBackIos
 import androidx.compose.material.icons.rounded.ArrowForwardIos
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -73,6 +74,7 @@ import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -330,33 +332,68 @@ private val PageSelectorSize = 36.dp
 
 @Composable
 private fun Landing(modifier: Modifier = Modifier) {
-    BoxWithConstraints {
+    with(LocalDensity.current) {
+        BoxWithConstraints {
+            if (constraints.maxWidth > 1.5 * constraints.maxHeight) {
+                val fontScale = (constraints.maxHeight / 600.dp.toPx()).coerceAtMost(1f)
+                Row(
+                    modifier = modifier,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        LandingText(
+                            modifier = Modifier
+                                .widthIn(max = 550.dp)
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            textAlign = TextAlign.Start,
+                            leadingTextStyle = MaterialTheme.typography.displayLarge,
+                            descriptionTextStyle = MaterialTheme.typography.titleLarge,
+                            fontScale = fontScale
+                        )
+                    }
 
-        if (constraints.maxWidth > 1.5 * constraints.maxHeight) {
-            Row(
-                modifier = modifier,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                LandingAnimation(Modifier.weight(1f))
-                LandingText(
-                    Modifier
-                        .weight(1f)
-                        .padding(24.dp)
-                        .widthIn(max = 500.dp)
-                )
-            }
-        } else {
-            Column(
-                modifier = modifier,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                LandingAnimation(Modifier.weight(1f))
-                LandingText(
-                    Modifier
-                        .weight(1f)
-                        .padding(12.dp)
-                        .widthIn(max = 500.dp)
-                )
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        LandingAnimation(
+                            Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            } else {
+                val fontScale = (constraints.maxHeight / 800.dp.toPx()).coerceIn(.75f, 1f)
+                val animWeight =
+                    ((1.25f * constraints.maxWidth) / constraints.maxHeight).coerceAtMost(1f)
+
+                val showAnim = constraints.maxHeight > 500.dp.toPx()
+                Column(
+                    modifier = modifier,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if (showAnim) {
+                        LandingAnimation(Modifier.weight(animWeight))
+                    }
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        LandingText(
+                            modifier = Modifier
+                                .padding(12.dp)
+                                .widthIn(max = 500.dp)
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.Center,
+                            leadingTextStyle = MaterialTheme.typography.displayMedium,
+                            descriptionTextStyle = MaterialTheme.typography.bodyLarge,
+                            fontScale = if (showAnim) fontScale else 1f
+                        )
+                    }
+                }
             }
         }
     }
@@ -382,29 +419,50 @@ private fun LandingAnimation(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun LandingText(modifier: Modifier = Modifier) {
+private fun LandingText(
+    modifier: Modifier = Modifier,
+    leadingTextStyle: TextStyle,
+    descriptionTextStyle: TextStyle,
+    textAlign: TextAlign,
+    fontScale : Float
+) {
 
     val uriHandler = LocalUriHandler.current
 
     Column(
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = if (textAlign == TextAlign.Center)
+            Alignment.CenterHorizontally
+        else Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Text(
             text = "Compottie example made with LottieFiles",
-            style = MaterialTheme.typography.displayMedium,
+            style = leadingTextStyle.copy(
+                fontSize = leadingTextStyle.fontSize * fontScale,
+                lineHeight = leadingTextStyle.lineHeight * fontScale
+            ),
             fontWeight = FontWeight.ExtraBold,
-            textAlign = TextAlign.Center
+            textAlign = textAlign
         )
         Text(
             text = "Here you can search for free Lottie animations, test them with Compottie pure Kotlin renderer and download them to use in your Compose Multiplatform app",
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center
+            style = descriptionTextStyle.copy(
+                fontSize = descriptionTextStyle.fontSize * fontScale,
+                lineHeight = descriptionTextStyle.lineHeight * fontScale
+            ),
+            textAlign = textAlign
         )
+
+        val coercedFontScale = fontScale.coerceIn(.75f, 1f)
         Button(
             onClick = {
                 uriHandler.openUri("https://lottiefiles.com")
+            },
+            contentPadding = if (textAlign == TextAlign.Center){
+                ButtonDefaults.ContentPadding
+            } else {
+                PaddingValues(38.dp * coercedFontScale, 16.dp * coercedFontScale)
             }
         ) {
             Icon(
@@ -412,7 +470,15 @@ private fun LandingText(modifier: Modifier = Modifier) {
                 contentDescription = null
             )
             Spacer(Modifier.width(8.dp))
-            Text("Open site")
+            Text(
+                text = "Open site",
+                style = if (textAlign == TextAlign.Center) {
+                    LocalTextStyle.current
+                } else {
+                    LocalTextStyle.current
+                        .copy(fontSize = descriptionTextStyle.fontSize * coercedFontScale)
+                }
+            )
         }
     }
 }

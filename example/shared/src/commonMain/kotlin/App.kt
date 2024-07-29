@@ -48,6 +48,7 @@ import io.github.alexzhirkevich.compottie.rememberResourcesAssetsManager
 import io.github.alexzhirkevich.compottie.rememberResourcesFontManager
 import io.github.alexzhirkevich.shared.generated.resources.ComicNeue
 import io.github.alexzhirkevich.shared.generated.resources.Res
+import lottiefiles.LottieFilesScreen
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import kotlin.math.roundToInt
 
@@ -68,6 +69,7 @@ private val WONDERS = "wonders.json"
 private val PRECOMP_WITH_REMAPPING = "precomp_with_remapping.json"
 private val MASK_ADD = "mask_add.json"
 private val MATTE_LUMA = "luma_matte.json"
+private val BLENDING = "blending.json"
 private val DASH = "dash.json"
 private val ROUNDING_CORENERS = "rounding_corners.json"
 private val REPEATER = "repeater.json"
@@ -99,6 +101,7 @@ private val ALL = listOf(
     PRECOMP_WITH_REMAPPING,
     MASK_ADD,
     MATTE_LUMA,
+    BLENDING,
     DASH,
     ROUNDING_CORENERS,
     REPEATER,
@@ -127,7 +130,7 @@ public suspend fun LottieCompositionSpec.Companion.ResourceString(
 @Composable
 public fun App() {
 
-//    return LottieFilesScreen()
+    return LottieFilesScreen()
 
 
 //    return LottieFontExample()
@@ -140,10 +143,10 @@ public fun App() {
 //            Res.readBytes("files/$DOT_WITH_IMAGE")
 //        )
 
-        LottieCompositionSpec.ResourceString("expr/move_horizontal.json")
+//        LottieCompositionSpec.ResourceString("expr/move_horizontal.json")
 //        LottieCompositionSpec.ResourceString("expr/wiggle.json")
 //        LottieCompositionSpec.ResourceString("expr/noise.json")
-//        LottieCompositionSpec.ResourceString(IMAGE_ASSET)
+        LottieCompositionSpec.ResourceString(BLENDING)
 //
 //        LottieCompositionSpec.Url(
 //            "https://assets-v2.lottiefiles.com/a/9286b092-117a-11ee-b857-2712bc869389/WSepKUr5be.lottie"

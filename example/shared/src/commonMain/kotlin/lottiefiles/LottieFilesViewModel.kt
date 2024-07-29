@@ -51,7 +51,6 @@ internal class LottieFilesViewModel() : ViewModel() {
     private val _suggestions = MutableStateFlow<List<Suggestion>>(emptyList())
     val suggestions: StateFlow<List<Suggestion>> = _suggestions.asStateFlow()
 
-
     private val _selectedFile = MutableStateFlow<LottieFile?>(null)
     val selectedFile: StateFlow<LottieFile?> = _selectedFile.asStateFlow()
 
@@ -68,7 +67,6 @@ internal class LottieFilesViewModel() : ViewModel() {
             combine(search.debounce(1000), sortOrder, page) { q, s, p ->
                 Triple(q, s, p)
             }.collectLatest { (q, s, p) ->
-
                 try {
                     val resp = httpClient.get(
                         "https://lottiefiles.com/api/search/get-animations"
