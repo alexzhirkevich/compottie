@@ -2,6 +2,8 @@ package io.github.alexzhirkevich.compottie
 
 
 import androidx.compose.ui.util.fastForEach
+import io.github.alexzhirkevich.compottie.DiskLruCache.Editor
+import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CoroutineDispatcher
@@ -131,7 +133,7 @@ internal class DiskLruCache(
     private var operationsSinceRewrite = 0
     private var journalWriter: BufferedSink? = null
     private var hasJournalErrors = false
-    private var initialized = false
+    private val initialized = atomic(false)
     private var closed = false
     private var mostRecentTrimFailed = false
     private var mostRecentRebuildFailed = false
@@ -144,45 +146,46 @@ internal class DiskLruCache(
         }
     }
 
-    fun initialize() = synchronized(lock) {
-        if (initialized) return
+    fun initialize()  {
+        if (initialized.compareAndSet(false, true)) {
 
-        // If a temporary file exists, delete it.
-        fileSystem.delete(journalFileTmp)
+            // If a temporary file exists, delete it.
+            fileSystem.delete(journalFileTmp)
 
-        // If a backup file exists, use it instead.
-        if (fileSystem.exists(journalFileBackup)) {
-            // If journal file also exists just delete backup file.
+            // If a backup file exists, use it instead.
+            if (fileSystem.exists(journalFileBackup)) {
+                // If journal file also exists just delete backup file.
+                if (fileSystem.exists(journalFile)) {
+                    fileSystem.delete(journalFileBackup)
+                } else {
+                    fileSystem.atomicMove(journalFileBackup, journalFile)
+                }
+            }
+
+            // Prefer to pick up where we left off.
             if (fileSystem.exists(journalFile)) {
-                fileSystem.delete(journalFileBackup)
-            } else {
-                fileSystem.atomicMove(journalFileBackup, journalFile)
+                try {
+                    readJournal()
+                    processJournal()
+                    initialized.value = true
+                    return
+                } catch (_: IOException) {
+                    // The journal is corrupt.
+                }
+
+                // The cache is corrupted; attempt to delete the contents of the directory.
+                // This can throw and we'll let that propagate out as it likely means there
+                // is a severe filesystem problem.
+                try {
+                    delete()
+                } finally {
+                    closed = false
+                }
             }
+
+            writeJournal()
+            initialized.value = true
         }
-
-        // Prefer to pick up where we left off.
-        if (fileSystem.exists(journalFile)) {
-            try {
-                readJournal()
-                processJournal()
-                initialized = true
-                return
-            } catch (_: IOException) {
-                // The journal is corrupt.
-            }
-
-            // The cache is corrupted; attempt to delete the contents of the directory.
-            // This can throw and we'll let that propagate out as it likely means there
-            // is a severe filesystem problem.
-            try {
-                delete()
-            } finally {
-                closed = false
-            }
-        }
-
-        writeJournal()
-        initialized = true
     }
 
     /**
@@ -342,7 +345,7 @@ internal class DiskLruCache(
      * Returns a snapshot of the entry named [key], or null if it doesn't exist or is not currently
      * readable. If a value is returned, it is moved to the head of the LRU queue.
      */
-    operator fun get(key: String): Snapshot? = synchronized(lock) {
+    operator fun get(key: String): Snapshot? {
         checkNotClosed()
         validateKey(key)
         initialize()
@@ -555,7 +558,7 @@ internal class DiskLruCache(
 
     /** Closes this cache. Stored values will remain on the filesystem. */
     override fun close() = synchronized(lock) {
-        if (!initialized || closed) {
+        if (!initialized.value || closed) {
             closed = true
             return
         }
@@ -574,7 +577,7 @@ internal class DiskLruCache(
     }
 
     fun flush() = synchronized(lock) {
-        if (!initialized) return
+        if (!initialized.value) return
 
         checkNotClosed()
         trimToSize()
@@ -628,7 +631,7 @@ internal class DiskLruCache(
     private fun launchCleanup() {
         cleanupScope.launch {
             synchronized(lock) {
-                if (!initialized || closed) return@launch
+                if (initialized.value || closed) return@launch
                 try {
                     trimToSize()
                 } catch (_: IOException) {
@@ -671,13 +674,6 @@ internal class DiskLruCache(
                         removeEntry(entry)
                     }
                 }
-            }
-        }
-
-        fun closeAndEdit(): Editor? {
-            synchronized(lock) {
-                close()
-                return edit(entry.key)
             }
         }
     }

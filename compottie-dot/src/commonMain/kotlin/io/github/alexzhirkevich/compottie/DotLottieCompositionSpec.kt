@@ -18,7 +18,7 @@ private var _useStableWasmMemoryManagement : Boolean = false
  * It is disabled by default. Turn this on if you have problems with dotLottie decompression on wasm
  * */
 @ExperimentalCompottieApi
-public var Compottie.useStableWasmMemoryManagement by ::_useStableWasmMemoryManagement
+public var Compottie.useStableWasmMemoryManagement: Boolean by ::_useStableWasmMemoryManagement
 
 /**
  * [LottieComposition] from a dotLottie zip archive.

@@ -77,9 +77,6 @@ public interface DiskCache {
 
         /** Close the snapshot to allow editing. */
         override fun close()
-
-        /** Close the snapshot and call [openEditor] for this entry atomically. */
-        public fun closeAndOpenEditor(): Editor?
     }
 
     /**
