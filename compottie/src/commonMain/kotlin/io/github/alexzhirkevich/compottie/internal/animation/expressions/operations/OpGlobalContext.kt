@@ -9,7 +9,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Evaluat
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.VariableScope
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.VariableType
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.argAt
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.argForNameOrIndex
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
@@ -53,7 +53,13 @@ internal object OpGlobalContext : ExpressionContext<Undefined> {
     override fun interpret(callable: String?, args: List<Expression>?): Expression? {
         return when (callable) {
             "var", "let", "const" -> {
-                OpVar(if (callable == "var") VariableScope.Global else VariableScope.Block)
+                OpVar(
+                    when (callable) {
+                        "var" -> VariableType.Var
+                        "let" -> VariableType.Let
+                        else -> VariableType.Const
+                    }
+                )
             }
             "Infinity" -> {
                 OpConstant(Float.POSITIVE_INFINITY)

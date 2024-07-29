@@ -7,7 +7,7 @@ internal fun OpRandomNumber(
     minValOrArray2 : Expression? = null,
     isGauss : Boolean = false
 ) = Expression { property, context, state ->
-    with(context.randomSource) {
+    with(context.random) {
         when {
             minValOrArray1 == null && minValOrArray2 == null ->
                 if (isGauss) gaussRandom() else random()

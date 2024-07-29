@@ -1,18 +1,20 @@
 package expressions.global
 
 import expressions.assertExprEquals
+import expressions.assertSimpleExprEquals
+import expressions.assertSimpleExprReturns
 import kotlin.test.Test
 
 class NumberFormatTest {
 
     @Test
     fun test(){
-        "123".assertExprEquals(123f)
-        "123.1".assertExprEquals(123.1f)
-        ".1".assertExprEquals(.1f)
+        "123".assertSimpleExprEquals(123)
+        "123.1".assertSimpleExprEquals(123.1f)
+        ".1".assertSimpleExprEquals(.1f)
 
-        "0xff".assertExprEquals(255f)
-        "0b11".assertExprEquals(3f)
-        "0o123".assertExprEquals(83f)
+        "0xff".assertSimpleExprEquals(255)
+        "0b11".assertSimpleExprEquals(3)
+        "0o123".assertSimpleExprEquals(83)
     }
 }

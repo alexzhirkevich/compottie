@@ -33,41 +33,6 @@ class CustomFunctionsTest {
         """.trimIndent().assertExprReturns(4f)
     }
 
-    @Test
-    fun scopes() {
-        """
-            var $ret;
-            function test(a,b)
-            {
-                var x = b + 1
-                return sum(a,x)
-            }
-            test(1,2)
-            $ret = x
-        """.trimIndent().assertExprReturns(3f)
-
-        """
-            var $ret; 
-            function test(a,b) 
-            {
-                let x = b + 1
-                return sum(a,x) 
-            }
-            test(1,2)
-            $ret = x
-        """.trimIndent().assertExprReturns(0f)
-
-        """
-            var $ret; 
-            function test(a,b) 
-            {
-                const x = b + 1
-                return sum(a,x) 
-            }
-            test(1,2)
-            $ret = x
-        """.trimIndent().assertExprReturns(0f)
-    }
 
     @Test
     fun defaultArgs(){

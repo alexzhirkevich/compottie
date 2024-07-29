@@ -4,134 +4,100 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.unresolvedReference
 
 
-internal enum class VariableScope {
-    Global, Block
+internal enum class VariableType {
+    Var, Let, Const
 }
 
 internal interface EvaluationContext {
 
-    val randomSource : RandomSource
+    val random: RandomSource
 
-    fun registerFunction(function: OpFunction)
+    fun getVariable(name: String): Any?
 
-    fun getFunction(name: String) : OpFunction?
+    fun setVariable(name: String, value: Any, type: VariableType?)
 
-    fun getVariable(name : String) : Any?
-
-    fun setVariable(name: String, value : Any, scope: VariableScope?)
-
-    fun withScope(extraVariables : Map<String ,Any>, block : (EvaluationContext) -> Any) : Any
-
+    fun withScope(
+        extraVariables: Map<String, Pair<VariableType, Any>> = emptyMap(),
+        block : (EvaluationContext) -> Any
+    ) : Any
 }
 
 internal class DefaultEvaluatorContext(
-    override val randomSource: RandomSource = RandomSource(),
-) : EvaluationContext {
-
-    private val globalVariables: MutableMap<String, Any> = mutableMapOf()
-
-    private val blockVariables: MutableMap<String, Any> = mutableMapOf()
+    override val random: RandomSource = RandomSource(),
+) : BaseEvaluationContext() {
 
     private val functions: MutableMap<String, OpFunction> = mutableMapOf()
-
-    private val child by lazy {
-        BlockEvaluatorContext(this)
-    }
 
     val result: Any? get() = getVariable("\$bm_rt")
 
     fun reset() {
-        globalVariables.clear()
-        blockVariables.clear()
-    }
-
-    override fun setVariable(name: String, value: Any, scope: VariableScope?) {
-        val map = when {
-            scope == VariableScope.Global -> globalVariables
-            scope == VariableScope.Block -> blockVariables
-            name in blockVariables -> blockVariables
-            name in globalVariables -> globalVariables
-            else -> unresolvedReference(name)
-        }
-        map[name] = value
-    }
-
-    override fun registerFunction(function: OpFunction) {
-        functions[function.name] = function
-    }
-
-    override fun getFunction(name: String): OpFunction? {
-        return functions[name]
-    }
-
-    override fun getVariable(name: String): Any? {
-        return when {
-            blockVariables.containsKey(name) -> blockVariables[name]
-            globalVariables.containsKey(name) -> globalVariables[name]
-            else -> null
-        }
-    }
-
-    override fun withScope(
-        extraVariables: Map<String, Any>,
-        block: (EvaluationContext) -> Any
-    ) : Any {
-        child.reset()
-        extraVariables.forEach { (n, v) ->
-            child.setVariable(n, v, VariableScope.Block)
-        }
-        return block(child)
+        variables.clear()
+        functions.clear()
     }
 }
 
 private class BlockEvaluatorContext(
-   private val parent : EvaluationContext
-) : EvaluationContext {
+    private val parent : EvaluationContext
+) : BaseEvaluationContext() {
 
-    private val child by lazy {
-        BlockEvaluatorContext(this)
-    }
-
-    private val scopeVariables: MutableMap<String, Any> = mutableMapOf()
-    private val scopeFunctions: MutableMap<String, OpFunction> = mutableMapOf()
-
-    override val randomSource: RandomSource
-        get() = parent.randomSource
-
-    override fun registerFunction(function: OpFunction) {
-        scopeFunctions[function.name] = function
-    }
-
-    override fun getFunction(name: String): OpFunction? {
-        return scopeFunctions[name] ?: parent.getFunction(name)
-    }
+    override val random: RandomSource
+        get() = parent.random
 
     override fun getVariable(name: String): Any? {
-        return if (scopeVariables.containsKey(name)) {
-            scopeVariables[name]
+        return if (name in variables) {
+            super.getVariable(name)
         } else {
             parent.getVariable(name)
         }
     }
 
-    override fun setVariable(name: String, value: Any, scope: VariableScope?) {
+    override fun setVariable(name: String, value: Any, type: VariableType?) {
         when {
-            scope == VariableScope.Global -> parent.setVariable(name, value, scope)
-            scope == VariableScope.Block || name in scopeVariables -> scopeVariables[name] = value
-            else -> parent.setVariable(name, value, scope)
+            type == VariableType.Var -> parent.setVariable(name, value, type)
+            type != null || name in variables -> super.setVariable(name, value, type)
+            else -> parent.setVariable(name, value, type)
         }
     }
 
-    override fun withScope(extraVariables: Map<String, Any>, block: (EvaluationContext) -> Any) : Any {
+    fun reset() {
+        variables.clear()
+    }
+}
+
+internal abstract class BaseEvaluationContext : EvaluationContext {
+
+    protected val variables: MutableMap<String, Pair<VariableType, Any>> = mutableMapOf()
+
+    private val child by lazy {
+        BlockEvaluatorContext(this)
+    }
+
+    override fun setVariable(name: String, value: Any, type: VariableType?) {
+        if (type == null && name !in variables) {
+            unresolvedReference(name)
+        }
+        if (type != null && name in variables) {
+            error("Identifier '$name' is already declared")
+        }
+        if (type == null && variables[name]?.first == VariableType.Const) {
+            error("TypeError: Assignment to constant variable ('$name')")
+        }
+        variables[name] = (type ?: variables[name]?.first)!! to value
+    }
+
+    override fun getVariable(name: String): Any? {
+        return variables[name]?.second
+    }
+
+    final override fun withScope(
+        extraVariables: Map<String, Pair<VariableType, Any>>,
+        block: (EvaluationContext) -> Any
+    ) : Any {
         child.reset()
         extraVariables.forEach { (n, v) ->
-            child.setVariable(n, v, VariableScope.Block)
+            child.setVariable(n, v.second, v.first)
         }
         return block(child)
     }
 
-    fun reset() {
-        scopeFunctions.clear()
-        scopeVariables.clear()
-    }
 }

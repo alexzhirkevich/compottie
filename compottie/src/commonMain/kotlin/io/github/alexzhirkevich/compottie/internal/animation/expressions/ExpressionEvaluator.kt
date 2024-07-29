@@ -10,16 +10,18 @@ internal interface ExpressionEvaluator {
     fun RawProperty<*>.evaluate(state: AnimationState): Any
 }
 
-
-internal fun ExpressionEvaluator(expression: String) : ExpressionEvaluator =
-    ExpressionEvaluatorImpl(expression)
+internal fun ExpressionEvaluator(expression: String, catchErrors : Boolean = true) : ExpressionEvaluator =
+    ExpressionEvaluatorImpl(expression, catchErrors)
 
 internal object RawExpressionEvaluator : ExpressionEvaluator {
     override fun RawProperty<*>.evaluate(state: AnimationState): Any = raw(state)
 }
 
 
-private class ExpressionEvaluatorImpl(expr : String) : ExpressionEvaluator {
+private class ExpressionEvaluatorImpl(
+    expr : String,
+    private val catchErrors: Boolean = true
+) : ExpressionEvaluator {
 
     private val context = DefaultEvaluatorContext()
 
@@ -32,17 +34,22 @@ private class ExpressionEvaluatorImpl(expr : String) : ExpressionEvaluator {
             return raw(state)
 
         return try {
-            context.reset()
             expression.invoke(this, context, state)
             context.result?.toListOrThis()
         } catch (t: Throwable) {
-            if (t.message !in errors) {
-                errors += t.message
-                Compottie.logger?.warn(
-                    "Error occurred in a Lottie expression. Try to disable expressions for Painter using enableExpressions=false: ${t.message}"
-                )
+            if (catchErrors){
+                if (t.message !in errors) {
+                    errors += t.message
+                    Compottie.logger?.warn(
+                        "Error occurred in a Lottie expression. Try to disable expressions for Painter using enableExpressions=false: ${t.message}"
+                    )
+                }
+            } else {
+                throw t
             }
             null
+        } finally {
+            context.reset()
         } ?: raw(state)
     }
 }

@@ -5,6 +5,7 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.VariableType
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.argForNameOrIndex
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.unresolvedReference
 
@@ -18,7 +19,7 @@ internal class OpFunction(
     private val parameters : List<FunctionParam>,
     private val body : Expression
 ) {
-    private val arguments = mutableMapOf<String, Any>()
+    private val arguments = mutableMapOf<String, Pair<VariableType, Any>>()
 
     fun invoke(
         args: List<Expression>,
@@ -28,14 +29,15 @@ internal class OpFunction(
     ): Any {
         arguments.clear()
         parameters.fastForEachIndexed { i, p ->
-            arguments[p.name] = requireNotNull(args.argForNameOrIndex(i, p.name) ?: p.default) {
-                "'${p.name}' argument of '$name' function is missing"
-            }.invoke(property, context, state)
+            arguments[p.name] = Pair(
+                VariableType.Let,
+                requireNotNull(args.argForNameOrIndex(i, p.name) ?: p.default) {
+                    "'${p.name}' argument of '$name' function is missing"
+                }.invoke(property, context, state)
+            )
         }
 
-        return context.withScope(
-            extraVariables = arguments
-        ){
+        return context.withScope(arguments){
             body.invoke(property, it, state)
         }
     }
@@ -45,7 +47,8 @@ internal fun OpFunctionExec(
     name : String,
     parameters : List<Expression>,
 ) = Expression { property, context, state ->
-    val function = context.getFunction(name) ?: unresolvedReference(name)
+    val function = context.getVariable(name) as? OpFunction
+        ?: unresolvedReference(name)
 
     function.invoke(
         args = parameters,

@@ -7,10 +7,13 @@ import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.OpUndefined
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.argAt
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random.OpRandomNumber
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.unresolvedReference
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpConstant
 import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.acosh
@@ -73,7 +76,7 @@ internal object OpMath : Expression, ExpressionContext<OpMath> {
             "LOG2E" -> LOG2E
             "SQRT1_2" -> SQRT1_2
             "SQRT2" -> SQRT2
-            else -> unresolvedReference("$op", "Math")
+            else -> OpUndefined
         }
     }
     private fun interpretFun(
@@ -115,7 +118,7 @@ internal object OpMath : Expression, ExpressionContext<OpMath> {
             "tanh" -> op1(args, ::tanh, op)
             "trunc" -> op1(args, ::truncate, op)
 
-            else -> unresolvedReference("$op", "Math")
+            else -> OpUndefined
         }
     }
 

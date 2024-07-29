@@ -5,6 +5,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.FunctionParam
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpBlock
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpBoolean
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpDoWhileLoop
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpEquals
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpFunction
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpFunctionExec
@@ -13,11 +14,15 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpReturn
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpWhileLoop
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpAdd
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpDecrement
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpDiv
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpIncrement
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpMod
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpMul
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpSub
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpUnaryMinus
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.OpUnaryPlus
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.isAssignable
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.unresolvedReference
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpAssign
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpAssignByIndex
@@ -128,7 +133,8 @@ internal class ExpressionInterpreterImpl(
         }
 
         return if (expr.indexOf(seq, startIndex = pos-1) == pos-1){
-            seq.drop(1).forEach(::eat)
+            pos += seq.length -1
+            ch = expr[pos.coerceIn(expr.indices)]
             true
         } else {
             pos = p
@@ -150,7 +156,6 @@ internal class ExpressionInterpreterImpl(
         }
 
         return if (expr.indexOf(seq, startIndex = pos-1) == pos-1){
-            seq.drop(1).forEach(::eat)
             pos = p
             ch = c
             true
@@ -164,7 +169,7 @@ internal class ExpressionInterpreterImpl(
     private fun parseAssignment(context: Expression): Expression {
         var x = parseExpressionOp(context)
         if (EXPR_DEBUG_PRINT_ENABLED){
-            println("Parsed ${x::class.simpleName} as assignment")
+            println("Parsing assignment for $x")
         }
         while (true) {
             prepareNextChar()
@@ -173,7 +178,10 @@ internal class ExpressionInterpreterImpl(
                 eatSequence("-=") -> parseAssignmentValue(x, ::OpSub)
                 eatSequence("*=") -> parseAssignmentValue(x, ::OpMul)
                 eatSequence("/=") -> parseAssignmentValue(x, ::OpDiv)
+                eatSequence("%=") -> parseAssignmentValue(x, ::OpMod)
                 eat('=') -> parseAssignmentValue(x, null)
+                x.isAssignable() && eatSequence("++") -> OpIncrement(x)
+                x.isAssignable() && eatSequence("--") -> OpDecrement(x)
                 else -> return x
             }
         }
@@ -182,9 +190,9 @@ internal class ExpressionInterpreterImpl(
     private fun parseAssignmentValue(x : Expression, merge : ((Any, Any) -> Any)? = null) =  when {
         x is OpIndex && x.variable is OpGetVariable -> OpAssignByIndex(
             variableName = x.variable.name,
-            scope = x.variable.assignInScope ?: VariableScope.Global,
+            scope = x.variable.assignmentType,
             index = x.index,
-            assignableValue = parseExpressionOp(OpGlobalContext),
+            assignableValue = parseAssignment(OpGlobalContext),
             merge = merge
         ).also {
             if (EXPR_DEBUG_PRINT_ENABLED) {
@@ -194,12 +202,12 @@ internal class ExpressionInterpreterImpl(
 
         x is OpGetVariable -> OpAssign(
             variableName = x.name,
-            assignableValue = parseExpressionOp(OpGlobalContext),
-            scope = x.assignInScope,
+            assignableValue = parseAssignment(OpGlobalContext),
+            type = x.assignmentType,
             merge = merge
         ).also {
             if (EXPR_DEBUG_PRINT_ENABLED) {
-                println("parsing assignment for ${x.name} in ${it.scope} scope")
+                println("parsing assignment for ${x.name} in ${it.type} scope")
             }
         }
 
@@ -227,8 +235,8 @@ internal class ExpressionInterpreterImpl(
                 eatSequence("==") -> OpEquals(x, parseExpressionOp(OpGlobalContext, LogicalContext.Compare), false)
                 eatSequence("!==") -> OpNot(OpEquals(x, parseExpressionOp(OpGlobalContext, LogicalContext.Compare), false))
                 eatSequence("!=") -> OpNot(OpEquals(x, parseExpressionOp(OpGlobalContext, LogicalContext.Compare), true))
-                !nextSequenceIs("+=") && eat('+') -> OpAdd(x, parseTermOp(OpGlobalContext))
-                !nextSequenceIs("-=") && eat('-') -> OpSub(x, parseTermOp(OpGlobalContext))
+                !nextSequenceIs("++") && !nextSequenceIs("+=") && eat('+') -> OpAdd(x, parseTermOp(OpGlobalContext))
+                !nextSequenceIs("--") && !nextSequenceIs("-=") && eat('-') -> OpSub(x, parseTermOp(OpGlobalContext))
                 else -> return x
             }
         }
@@ -241,6 +249,7 @@ internal class ExpressionInterpreterImpl(
             x = when {
                 !nextSequenceIs("*=") && eat('*') -> OpMul(x, parseFactorOp(OpGlobalContext))
                 !nextSequenceIs("/=") && eat('/') -> OpDiv(x, parseFactorOp(OpGlobalContext))
+                !nextSequenceIs("%=") &&eat('%') -> OpMod(x, parseFactorOp(OpGlobalContext))
                 else -> return x
             }
         }
@@ -248,6 +257,24 @@ internal class ExpressionInterpreterImpl(
 
     private fun parseFactorOp(context: Expression): Expression {
         val parsedOp = when {
+            context is OpGlobalContext && eatSequence("++") -> {
+                val start = pos
+                val variable = parseFactorOp(OpGlobalContext)
+                require(variable.isAssignable()){
+                    "Unexpected '++' as $start"
+                }
+                OpIncrement(variable)
+            }
+
+            context is OpGlobalContext && eatSequence("--") -> {
+                val start = pos
+                val variable = parseFactorOp(OpGlobalContext)
+                require(variable.isAssignable()){
+                    "Unexpected '--' as $start"
+                }
+                OpDecrement(variable)
+            }
+
             context is OpGlobalContext && eat('+') ->
                 OpUnaryPlus(parseFactorOp(context))
 
@@ -466,19 +493,30 @@ internal class ExpressionInterpreterImpl(
                     println("making while loop")
                 }
 
-                check(eat('(')){
-                    "Missing while loop condition"
-                }
-
-                val condition = parseExpressionOp(OpGlobalContext)
-
-                check(eat(')')){
-                    "Missing closing ')' in loop condition"
-                }
-
                 OpWhileLoop(
-                    condition = condition,
+                    condition = parseWhileCondition(),
                     body = parseBlock()
+                )
+            }
+            "do" -> {
+                if (EXPR_DEBUG_PRINT_ENABLED) {
+                    println("making do/while loop")
+                }
+
+                val body = parseBlock()
+
+                check(body is OpBlock){
+                    "Invalid do/while syntax"
+                }
+
+                check(eatSequence("while")){
+                    "Missing while condition in do/while block"
+                }
+                val condition = parseWhileCondition()
+
+                OpDoWhileLoop(
+                    condition = condition,
+                    body = body
                 )
             }
 
@@ -499,7 +537,7 @@ internal class ExpressionInterpreterImpl(
 
                 return when (context) {
                     is ExpressionContext<*> -> context.interpret(func, args)
-                        ?: (if (args != null && func != null && this.context.getFunction(func) != null) {
+                        ?: (if (args != null && func != null && this.context.getVariable(func) is OpFunction) {
                             if (EXPR_DEBUG_PRINT_ENABLED) {
                                 println("parsed call for defined function $func")
                             }
@@ -519,6 +557,19 @@ internal class ExpressionInterpreterImpl(
                 }
             }
         }
+    }
+
+    private fun parseWhileCondition(): Expression {
+        check(eat('(')){
+            "Missing while loop condition"
+        }
+
+        val condition = parseExpressionOp(OpGlobalContext)
+
+        check(eat(')')){
+            "Missing closing ')' in loop condition"
+        }
+        return condition
     }
 
     private fun parseFunctionDefinition() : Expression{
@@ -562,12 +613,14 @@ internal class ExpressionInterpreterImpl(
             scoped = false // function scope will be used
         )
 
-        this.context.registerFunction(
-            OpFunction(
+        this.context.setVariable(
+            name = name,
+            value = OpFunction(
                 name = name,
                 parameters = args,
                 body = block
-            )
+            ),
+            type = VariableType.Const
         )
         if (EXPR_DEBUG_PRINT_ENABLED) {
             println("registered function $name")

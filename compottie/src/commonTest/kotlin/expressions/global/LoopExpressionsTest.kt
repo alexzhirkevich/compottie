@@ -15,11 +15,21 @@ class LoopExpressionsTest {
             }
         """.trimIndent().assertExprReturns(3)
 
-//        """
-//            var $ret = 0
-//            while($ret < 3)
-//                $ret += 1
-//
-//        """.trimIndent().assertExprReturns(3)
+        """
+            var $ret = 0
+            while($ret < 3)
+                $ret += 1
+
+        """.trimIndent().assertExprReturns(3)
+    }
+
+    @Test
+    fun doWhileLoop() {
+        """
+            var $ret = 0
+            do {
+                $ret+=1
+            } while($ret != 3)
+        """.trimIndent().assertExprReturns(3)
     }
 }

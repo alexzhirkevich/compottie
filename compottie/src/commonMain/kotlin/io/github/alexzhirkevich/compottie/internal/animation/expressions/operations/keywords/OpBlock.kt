@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords
 
 import androidx.compose.ui.util.fastForEach
+import androidx.compose.ui.util.fastForEachIndexed
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
@@ -9,7 +10,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefin
 
 internal class OpBlock(
     val expressions: List<Expression>,
-    var scoped : Boolean,
+    private val scoped : Boolean,
 ) : Expression {
 
     override fun invoke(
@@ -17,9 +18,9 @@ internal class OpBlock(
         context: EvaluationContext,
         state: AnimationState
     ): Any {
-        return if (scoped){
-            context.withScope(emptyMap()){
-               invokeInternal(property, it, state)
+        return if (scoped) {
+            context.withScope {
+                invokeInternal(property, it, state)
             }
         } else {
             invokeInternal(property, context, state)
@@ -30,14 +31,21 @@ internal class OpBlock(
         property: RawProperty<Any>,
         context: EvaluationContext,
         state: AnimationState
-    ) : Any {
-        expressions.fastForEach {
-            if (it is OpReturn) {
-                return it(property, context, state)
-            } else {
-                it(property, context, state)
+    ): Any {
+        if (expressions.isEmpty()) {
+            return Undefined
+        }
+
+        if (expressions.size > 1) {
+            repeat(expressions.size - 1) {
+                val expr = expressions[it]
+                val res = expr(property, context, state)
+
+                if (expr is OpReturn) {
+                    return res
+                }
             }
         }
-        return Undefined
+        return expressions.last().invoke(property, context, state)
     }
 }

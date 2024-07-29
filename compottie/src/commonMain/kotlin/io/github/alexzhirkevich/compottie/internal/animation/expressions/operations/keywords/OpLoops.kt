@@ -5,6 +5,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.VariableType
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpAssign
 
 internal class OpForLoop(
@@ -39,7 +40,7 @@ internal class OpForLoop(
         property: RawProperty<Any>,
         context: EvaluationContext,
         state: AnimationState
-    ){
+    ) {
         val block = { ctx: EvaluationContext ->
             while (condition) {
                 body.invoke(property, ctx, state)
@@ -47,25 +48,45 @@ internal class OpForLoop(
             }
         }
 
-        if (assignment != null) {
+        if (assignment?.type == VariableType.Let || assignment?.type == VariableType.Const) {
             context.withScope(
                 extraVariables = mapOf(
-                    assignment.variableName to
-                            assignment.assignableValue(property, context, state)
+                    Pair(
+                        assignment.variableName,
+                        Pair(
+                            assignment.type,
+                            assignment.assignableValue(
+                                property,
+                                context,
+                                state
+                            )
+                        )
+                    )
                 ),
                 block = block
             )
         } else {
-            context.withScope(emptyMap(), block)
+            assignment?.invoke(property, context, state)
+            context.withScope(block = block)
         }
     }
 }
+
+
+internal fun OpDoWhileLoop(
+    condition : Expression,
+    body : OpBlock
+) = Expression { property, context, state ->
+    do {
+        body.invoke(property, context, state)
+    } while (!condition.invoke(property, context, state).isFalse())
+}
+
 
 internal fun OpWhileLoop(
     condition : Expression,
     body : Expression
 ) = Expression { property, context, state ->
-
     while (!condition.invoke(property, context, state).isFalse()){
         body.invoke(property, context, state)
     }

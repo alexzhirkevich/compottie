@@ -17,8 +17,12 @@ internal const val ret = "\$bm_rt"
 internal fun String.executeExpression() : Any {
     val value = AnimatedNumber.Default(0f, this)
     val state = MockAnimationState(0f)
-    val evaluator = ExpressionEvaluator(this)
-    return value.run { evaluator.run { evaluate(state) } }
+    val evaluator = ExpressionEvaluator(expression = this, catchErrors = false)
+    return value.run {
+        evaluator.run {
+            evaluate(state)
+        }
+    }
 }
 
 internal fun String.assertSimpleExprEquals(expected : Any) {

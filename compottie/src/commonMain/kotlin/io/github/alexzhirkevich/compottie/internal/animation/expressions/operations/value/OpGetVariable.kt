@@ -4,11 +4,11 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.VariableScope
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.VariableType
 
 internal class OpGetVariable(
     val name : String,
-    val assignInScope : VariableScope? = null
+    val assignmentType : VariableType? = null
 ) : Expression {
 
     override fun invoke(
@@ -16,8 +16,8 @@ internal class OpGetVariable(
         context: EvaluationContext,
         state: AnimationState
     ): Any {
-        return if (assignInScope != null) {
-            context.setVariable(name, 0f, assignInScope)
+        return if (assignmentType != null) {
+            context.setVariable(name, 0f, assignmentType)
         } else checkNotNull(context.getVariable(name)) {
             "Undefined variable: $name"
         }
