@@ -1,9 +1,7 @@
 package lottiefiles
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -65,11 +63,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -101,12 +99,9 @@ import io.github.alexzhirkevich.compottie.Url
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import io.github.alexzhirkevich.shared.generated.resources.Res
-import io.github.alexzhirkevich.shared.generated.resources.gh
 import io.ktor.http.encodeURLPath
-import kotlinx.coroutines.launch
 import lottiefiles.theme.LottieFilesTheme
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
 import kotlin.math.abs
 
 @Composable
@@ -144,6 +139,14 @@ internal fun LottieFilesScreen(
                     }
                 )
             }
+        }
+
+        val files by viewModel.files.collectAsState()
+        val pageCount by viewModel.pageCount.collectAsState()
+        val gridState = rememberLazyGridState()
+
+        LaunchedEffect(files) {
+            gridState.animateScrollToItem(0)
         }
 
         Surface(modifier) {
@@ -227,8 +230,6 @@ internal fun LottieFilesScreen(
                         }
                     }
 
-                    val files by viewModel.files.collectAsState()
-                    val pageCount by viewModel.pageCount.collectAsState()
 
                     when {
                         files.isEmpty() -> {
@@ -236,7 +237,6 @@ internal fun LottieFilesScreen(
                         }
 
                         else -> {
-                            val gridState = rememberLazyGridState()
                             HorizontalDivider()
 
                             LazyVerticalGrid(
@@ -253,6 +253,7 @@ internal fun LottieFilesScreen(
                                 ) {
                                     LottieCard(
                                         file = it,
+                                        visible = selectedFile != it,
                                         onClick = { viewModel.onFileSelected(it) },
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -260,7 +261,6 @@ internal fun LottieFilesScreen(
                                 }
                             }
 
-                            val scope = rememberCoroutineScope()
 
                             AnimatedVisibility(
                                 visible = pageCount > 1,
@@ -273,9 +273,6 @@ internal fun LottieFilesScreen(
                                     pageCount = pageCount,
                                     onPageSelected = {
                                         viewModel.onPageSelected(it)
-                                        scope.launch {
-                                            gridState.animateScrollToItem(0)
-                                        }
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -464,7 +461,6 @@ private fun Landing(modifier: Modifier = Modifier) {
     }
 }
 
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 private fun LandingAnimation(
     modifier: Modifier = Modifier,
@@ -551,29 +547,37 @@ private fun LandingText(
 
             Spacer(Modifier.width(18.dp))
 
-            val github by rememberLottieComposition {
-                LottieCompositionSpec.DotLottie(
-                    Res.readBytes("files/dotlottie/github.lottie")
-                )
-            }
-
-            Icon(
-                modifier = Modifier
-                    .size(58.dp)
-                    .clip(CircleShape)
-                    .clickable {
-                        uriHandler.openUri("https://github.com/alexzhirkevich/compottie")
-                     }
-                    .padding(4.dp),
-                painter = rememberLottiePainter(
-                    composition = github,
-                    iterations = Compottie.IterateForever
-                ),
-                tint = MaterialTheme.colorScheme.secondary,
-                contentDescription = "Github"
-            )
+            GithubButton()
         }
     }
+}
+
+@OptIn(ExperimentalResourceApi::class)
+@Composable
+private fun GithubButton(modifier: Modifier = Modifier) {
+
+    val uriHandler = LocalUriHandler.current
+    val github by rememberLottieComposition {
+        LottieCompositionSpec.DotLottie(
+            Res.readBytes("files/dotlottie/github.lottie")
+        )
+    }
+
+    Icon(
+        modifier = Modifier
+            .size(58.dp)
+            .clip(CircleShape)
+            .clickable {
+                uriHandler.openUri("https://github.com/alexzhirkevich/compottie")
+            }
+            .padding(4.dp),
+        painter = rememberLottiePainter(
+            composition = github,
+            iterations = Compottie.IterateForever
+        ),
+        tint = MaterialTheme.colorScheme.secondary,
+        contentDescription = "Github"
+    )
 }
 
 @Composable
@@ -739,6 +743,7 @@ private fun PageButton(
 @Composable
 private fun LottieCard(
     file : LottieFile,
+    visible : Boolean,
     onClick : () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -762,12 +767,15 @@ private fun LottieCard(
                     .aspectRatio(1f),
                 onClick = onClick,
                 colors = CardDefaults.elevatedCardColors(
-                    containerColor = file.bgColor?.let(::parseColorValue) ?: Color.White
+                    containerColor = file.bgColor?.let(::parseColorValue)
+//                        ?.takeUnless { it == Color.White }
+                        ?: MaterialTheme.colorScheme.surface
                 )
             ) {
                 AnimatedVisibility(
-                    visible = composition != null,
+                    visible = composition != null && visible,
                     enter = fadeIn(),
+                    exit = fadeOut()
                 ) {
                     Image(
                         modifier = Modifier.fillMaxSize(),

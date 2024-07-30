@@ -25,7 +25,7 @@ internal class OpLayerToComp(
         property: RawProperty<Any>,
         context: EvaluationContext,
         state: AnimationState
-    ): Any {
+    ): List<Number> {
         val t = time.takeIf { it !is OpGetTime }
 
         return if (t == null) {
@@ -49,7 +49,7 @@ internal class OpLayerToComp(
         layer: Layer,
         point : Any,
         state: AnimationState,
-    ) : Any {
+    ) : List<Number> {
 
         val layerMatrix = layer.totalTransformMatrix(state)
         val compMatrix = state.currentComposition.transformMatrix(state)

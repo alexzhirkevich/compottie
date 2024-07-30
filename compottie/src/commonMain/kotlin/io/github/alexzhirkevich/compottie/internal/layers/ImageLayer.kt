@@ -6,8 +6,6 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import io.github.alexzhirkevich.compottie.Compottie
-import io.github.alexzhirkevich.compottie.assets.ImageRepresentable
 import io.github.alexzhirkevich.compottie.dynamic.DynamicImageLayerProvider
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
@@ -92,9 +90,7 @@ internal class ImageLayer(
 ) : BaseLayer() {
 
     @Transient
-    private val paint = Paint().apply {
-        isAntiAlias = true
-    }
+    private val paint = Paint()
 
     private val effectState by lazy {
         LayerEffectsState()
@@ -127,12 +123,12 @@ internal class ImageLayer(
 
         drawScope.drawIntoCanvas { canvas ->
             canvas.save()
-            canvas.concat(parentMatrix)
-
-            drawScope.drawIntoCanvas {
-                it.drawImage(bitmap, Offset.Zero, paint)
+            try {
+                canvas.concat(parentMatrix)
+                canvas.drawImage(bitmap, Offset.Zero, paint)
+            } finally {
+                canvas.restore()
             }
-            canvas.restore()
         }
     }
 

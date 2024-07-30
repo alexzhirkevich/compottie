@@ -11,11 +11,11 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroupImpl
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
-import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
-import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
+import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.shapes.Shape
 import io.github.alexzhirkevich.compottie.internal.shapes.TransformShape
 import io.github.alexzhirkevich.compottie.internal.utils.firstInstanceOf
@@ -93,6 +93,10 @@ internal class ShapeLayer(
     @SerialName("shapes")
     val shapes: List<Shape> = emptyList(),
 ) : BaseLayer() {
+
+    internal val shapesByName by lazy {
+        shapes.associateBy(Shape::name)
+    }
 
     @Transient
     private val contentGroup: ContentGroup = ContentGroupImpl(

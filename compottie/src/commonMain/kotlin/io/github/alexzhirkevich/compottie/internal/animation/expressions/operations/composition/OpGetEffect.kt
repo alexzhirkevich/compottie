@@ -1,11 +1,9 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition
 
-import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.toExpressionType
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 
@@ -18,7 +16,7 @@ internal class OpGetEffect(
         property: RawProperty<Any>,
         context: EvaluationContext,
         state: AnimationState
-    ): Any {
+    ): LayerEffect {
         return invoke(
             layer(property, context, state) as Layer,
             nameOrIndex(property, context, state),

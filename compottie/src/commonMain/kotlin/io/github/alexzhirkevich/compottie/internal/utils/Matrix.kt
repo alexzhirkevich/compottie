@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie.internal.utils
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.isIdentity
+import kotlin.math.absoluteValue
 import kotlin.math.hypot
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
@@ -27,9 +28,11 @@ internal val Matrix.scale: Float get() {
 }
 
 internal fun Matrix.preTranslate(x : Float, y : Float) {
-
+    if (x.absoluteValue < Float.MIN_VALUE && y.absoluteValue< Float.MIN_VALUE) {
+        return
+    }
 //    preConcat(tempMatrixTransform.apply {
-//        reset()
+//        fastReset()
 //        translate(x, y)
 //    })
     return translate(x, y)
@@ -74,8 +77,11 @@ internal fun Matrix.setValues(values : FloatArray){
 }
 
 internal fun Matrix.preRotate(degree : Float) {
+    if (degree.absoluteValue < Float.MIN_VALUE) {
+        return
+    }
 //    preConcat(tempMatrixTransform.apply {
-//        reset()
+//        fastReset()
 //        rotateZ(degree)
 //    })
 //
@@ -83,6 +89,9 @@ internal fun Matrix.preRotate(degree : Float) {
 }
 
 internal fun Matrix.preRotateX(degree : Float) {
+    if (degree.absoluteValue < Float.MIN_VALUE) {
+        return
+    }
     preConcat(tempMatrixTransform.apply {
         fastReset()
         rotateX(degree)
@@ -90,12 +99,18 @@ internal fun Matrix.preRotateX(degree : Float) {
 }
 
 internal fun Matrix.preRotateY(degree : Float) {
+    if (degree.absoluteValue < Float.MIN_VALUE) {
+        return
+    }
     preConcat(tempMatrixTransform.apply {
         fastReset()
         rotateY(degree)
     })
 }
 internal fun Matrix.preRotateZ(degree : Float) {
+    if (degree.absoluteValue < Float.MIN_VALUE) {
+        return
+    }
     preConcat(tempMatrixTransform.apply {
         fastReset()
         rotateZ(degree)
@@ -103,10 +118,13 @@ internal fun Matrix.preRotateZ(degree : Float) {
 }
 
 internal fun Matrix.preScale(x : Float, y : Float) {
+    if (x == 1f && y == 1f) {
+        return
+    }
 //    preConcat(tempMatrixTransform.apply {
-//        reset()
+//        fastReset()
 //        scale(x, y)
 //    })
-    return scale(x,y)
+   scale(x,y)
 }
 

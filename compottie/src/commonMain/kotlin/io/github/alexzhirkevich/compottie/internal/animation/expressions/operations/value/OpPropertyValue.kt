@@ -37,8 +37,8 @@ internal class OpPropertyValue(
 
 internal fun Any.toExpressionType() : Any {
     return when (this) {
-        is Vec2 -> listOf(x, y)
-        is Color -> listOf(red, green, blue, alpha)
+        is Vec2 -> mutableListOf<Number>(x, y)
+        is Color -> mutableListOf<Number>(red, green, blue, alpha)
         else -> this
     }
 }

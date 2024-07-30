@@ -4,8 +4,8 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Express
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Undefined
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.argAt
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.argForNameOrIndex
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgsNotNull
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpConstant
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
@@ -33,6 +33,13 @@ internal sealed class OpLayerContext : Expression, ExpressionContext<Layer> {
                 if (this is PrecompositionLayer) composition else Undefined
             }
 
+            "content" -> {
+                checkArgs(args, 1, callable)
+                OpGetShape(
+                    layerOrGroup = this,
+                    name = args.argAt(0)
+                )
+            }
             "active" -> withContext { _, _, s -> isActive(s) }
             "enabled" -> withContext { _, _, s -> !isHidden(s) }
             "hasParent" -> withContext { _, _, _ -> parentLayer != null }

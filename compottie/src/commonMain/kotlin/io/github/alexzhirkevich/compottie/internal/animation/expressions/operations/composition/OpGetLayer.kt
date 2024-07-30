@@ -3,8 +3,9 @@ package io.github.alexzhirkevich.compottie.internal.animation.expressions.operat
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionComposition
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionComposition
+import io.github.alexzhirkevich.compottie.internal.layers.Layer
 
 internal class OpGetLayer(
     private val comp : Expression? = null,
@@ -15,7 +16,7 @@ internal class OpGetLayer(
         property: RawProperty<Any>,
         context: EvaluationContext,
         state: AnimationState
-    ): Any {
+    ): Layer {
         return if (nameOrIndex == null) {
             state.layer
         } else {

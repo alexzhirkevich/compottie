@@ -1,6 +1,5 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.utils.fastReset
@@ -44,15 +43,14 @@ internal class RepeaterTransform(
     fun repeaterMatrix(state: AnimationState, amount: Float): Matrix {
         matrix.fastReset()
 
-        position.interpolated(state).takeIf { it != Vec2.Zero }?.let {
+        position.interpolated(state).let {
             matrix.preTranslate(
                 it.x * amount,
                 it.y * amount
             )
         }
 
-        scale.interpolatedNorm(state).takeIf { it.x != 1f || it.y != 1f }
-            ?.let {
+        scale.interpolatedNorm(state).let {
             matrix.preScale(
                 it.x.pow(amount),
                 it.y.pow(amount)
@@ -61,15 +59,9 @@ internal class RepeaterTransform(
 
         rotation.interpolated(state).let {
             val anchorPoint = anchorPoint.interpolated(state)
-
-            if (anchorPoint != Vec2.Zero) {
-                matrix.translate(anchorPoint.x, anchorPoint.y)
-            }
+            matrix.translate(anchorPoint.x, anchorPoint.y)
             matrix.preRotate(it * amount)
-
-            if (anchorPoint != Vec2.Zero) {
-                matrix.translate(-anchorPoint.x, -anchorPoint.y)
-            }
+            matrix.translate(-anchorPoint.x, -anchorPoint.y)
         }
 
         return matrix

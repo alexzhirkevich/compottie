@@ -10,7 +10,6 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.operati
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpGetTime
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.layers.totalTransformMatrix
-import io.github.alexzhirkevich.compottie.internal.utils.fastSetFrom
 
 internal class OpLayerToWorld(
     private val layer : Expression,
@@ -25,7 +24,7 @@ internal class OpLayerToWorld(
         property: RawProperty<Any>,
         context: EvaluationContext,
         state: AnimationState
-    ): Any {
+    ): List<Number> {
         val t = time.takeIf { it !is OpGetTime }
 
         return if (t == null) {
@@ -49,7 +48,7 @@ internal class OpLayerToWorld(
         layer: Layer,
         point : Any,
         state: AnimationState,
-    ) : Any {
+    ) : List<Number> {
         val layerMatrix = layer.totalTransformMatrix(state)
 
         val offset = Offset(

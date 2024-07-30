@@ -4,8 +4,6 @@ import androidx.compose.ui.graphics.Matrix
 import io.github.alexzhirkevich.compottie.dynamic.DynamicTransformProvider
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
-import io.github.alexzhirkevich.compottie.internal.platform.ComposeBackend
-import io.github.alexzhirkevich.compottie.internal.platform.currentComposeBackend
 import io.github.alexzhirkevich.compottie.internal.utils.degreeToRadians
 import io.github.alexzhirkevich.compottie.internal.utils.fastReset
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
@@ -71,13 +69,12 @@ internal abstract class AnimatedTransform {
         }
 
         val interpolatedPosition = position.interpolated(state)
-            .takeIf { it != Vec2.Zero }
-            ?.also {
+            .also {
                 matrix.preTranslate(it.x, it.y)
             }
 
         if (autoOrient){
-            if (interpolatedPosition != null) {
+            if (interpolatedPosition != Vec2.Zero) {
                 // Store the start X and Y values because the pointF will be overwritten by the next getValue call.
                 val startX = interpolatedPosition.x
                 val startY = interpolatedPosition.y
@@ -105,15 +102,13 @@ internal abstract class AnimatedTransform {
             }
         }
 
-//        if (currentComposeBackend != ComposeBackend.Android) {
-            rotationX?.let {
-                matrix.preRotateX(it.interpolated(state))
-            }
+        rotationX?.let {
+            matrix.preRotateX(it.interpolated(state))
+        }
 
-            rotationY?.let {
-                matrix.preRotateY(it.interpolated(state))
-            }
-//        }
+        rotationY?.let {
+            matrix.preRotateY(it.interpolated(state))
+        }
 
         rotationZ?.let {
             matrix.preRotateZ(it.interpolated(state))
@@ -164,14 +159,12 @@ internal abstract class AnimatedTransform {
 
 
         scale.interpolatedNorm(state)
-            .takeIf { it.x != 1f || it.y != 1f }
-            ?.let {
+            .let {
                 matrix.preScale(it.x, it.y)
             }
 
         anchorPoint.interpolated(state)
-            .takeIf { it != Vec2.Zero }
-            ?.let {
+            .let {
                 matrix.preTranslate(-it.x, -it.y)
             }
 
