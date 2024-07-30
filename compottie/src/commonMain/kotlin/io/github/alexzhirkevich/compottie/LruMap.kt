@@ -10,7 +10,8 @@ internal class LruMap<T : Any>(
     private val limit : () -> Int,
 ) : MutableMap<Any, T> by delegate {
 
-    private val suspendGetOrPutMutex = Mutex()
+    @OptIn(InternalCompottieApi::class)
+    private val suspendGetOrPutMutex = MapMutex()
     private val lock = SynchronizedObject()
 
     override fun put(key: Any, value: T): T?  = synchronized(lock) {
@@ -44,16 +45,10 @@ internal class LruMap<T : Any>(
         }
     }
 
-    suspend fun getOrPutSuspend(key: Any?, put: suspend () -> T): T {
-        return suspendGetOrPutMutex.withLock {
-            if (key == null)
-                return@withLock put()
-
-            getRaw(key) ?: run {
-                val v = put()
-                putRaw(key, v)
-                v
-            }
+    @OptIn(InternalCompottieApi::class)
+    suspend fun getOrPutSuspend(key: Any, put: suspend () -> T): T {
+        return suspendGetOrPutMutex.withLock(key) {
+            getRaw(key) ?: put().also { putRaw(key, it) }
         }
     }
 

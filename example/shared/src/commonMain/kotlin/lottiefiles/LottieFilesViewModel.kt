@@ -9,6 +9,7 @@ import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.statement.bodyAsText
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -89,6 +90,8 @@ internal class LottieFilesViewModel() : ViewModel() {
                     _pageCount.value = resp.get("originalPageCount")?.jsonPrimitive?.intOrNull ?: 0
                     _page.value = if (prevSearch == q) p else 1
                     prevSearch = q
+                } catch (c: CancellationException) {
+                    throw c
                 } catch (t: Throwable) {
                     t.printStackTrace()
                 }

@@ -13,7 +13,7 @@ public interface LottieCompositionSpec {
      * */
     public val key : String?
 
-    public suspend fun load(cacheKey : Any? = null) : LottieComposition
+    public suspend fun load() : LottieComposition
 
     public companion object {
 
@@ -39,11 +39,9 @@ private value class JsonStringImpl(
         get() = "string_${jsonString.hashCode()}"
 
     @OptIn(InternalCompottieApi::class)
-    override suspend fun load(cacheKey: Any?): LottieComposition {
+    override suspend fun load(): LottieComposition {
         return withContext(ioDispatcher()) {
-            LottieComposition.getOrCreate(cacheKey) {
-                LottieComposition.parse(jsonString)
-            }
+            LottieComposition.parse(jsonString)
         }
     }
 

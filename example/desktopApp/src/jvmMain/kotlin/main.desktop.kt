@@ -7,7 +7,7 @@ fun main() {
     singleWindowApplication(
         title = "Compottie 2.0 Example",
         state = WindowState(
-            size = DpSize(800.dp, 600.dp)
+            size = DpSize(1024.dp, 720.dp)
         )
     ) {
         App()

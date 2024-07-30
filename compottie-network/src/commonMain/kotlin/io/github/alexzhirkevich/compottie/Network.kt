@@ -9,6 +9,9 @@ import kotlinx.coroutines.withContext
 import okio.Path
 
 @OptIn(InternalCompottieApi::class)
+private val NetworkLock = MapMutex()
+
+@OptIn(InternalCompottieApi::class)
 internal suspend fun networkLoad(
     client: HttpClient,
     cacheStrategy: LottieCacheStrategy,
@@ -16,32 +19,37 @@ internal suspend fun networkLoad(
     url: String
 ): Pair<Path?, ByteArray?> {
     return withContext(ioDispatcher()) {
-        try {
+        NetworkLock.withLock(url) {
             try {
-                cacheStrategy.load(url)?.let {
-                    return@withContext cacheStrategy.path(url) to it
+                try {
+                    cacheStrategy.load(url)?.let {
+                        return@withLock cacheStrategy.path(url) to it
+                    }
+                } catch (_: Throwable) {
                 }
-            } catch (_: Throwable) {
-            }
 
-            val ktorUrl = try {
-                Url(url)
-            } catch (t: URLParserException) {
-                return@withContext null to null
-            }
-
-            val bytes = request(client, ktorUrl).execute().bodyAsChannel().toByteArray()
-
-            try {
-                cacheStrategy.save(url, bytes)?.let {
-                    return@withContext it to bytes
+                val ktorUrl = try {
+                    Url(url)
+                } catch (t: URLParserException) {
+                    return@withLock null to null
                 }
-            } catch (e: Throwable) {
-                Compottie.logger?.error("${this::class.simpleName} failed to cache downloaded asset", e)
+
+                val bytes = request(client, ktorUrl).execute().bodyAsChannel().toByteArray()
+
+                try {
+                    cacheStrategy.save(url, bytes)?.let {
+                        return@withLock it to bytes
+                    }
+                } catch (e: Throwable) {
+                    Compottie.logger?.error(
+                        "${this::class.simpleName} failed to cache downloaded asset",
+                        e
+                    )
+                }
+                null to bytes
+            } catch (t: Throwable) {
+                null to null
             }
-            null to bytes
-        } catch (t: Throwable) {
-            null to null
         }
     }
 }

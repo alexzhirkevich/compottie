@@ -25,12 +25,14 @@ private class ExpressionEvaluatorImpl(
 
     private val context = DefaultEvaluatorContext()
 
-    private val expression: Expression = ExpressionInterpreterImpl(expr, context).interpret()
+    private val expression = kotlin.runCatching {
+        ExpressionInterpreterImpl(expr, context).interpret()
+    }.getOrNull()
 
     private val errors = mutableSetOf<String?>()
 
     override fun RawProperty<*>.evaluate(state: AnimationState): Any {
-        if (!state.enableExpressions)
+        if (!state.enableExpressions || expression == null)
             return raw(state)
 
         return try {

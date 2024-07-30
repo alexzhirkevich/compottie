@@ -3,7 +3,6 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.DiskLruCache.Editor
-import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CoroutineDispatcher
@@ -133,7 +132,7 @@ internal class DiskLruCache(
     private var operationsSinceRewrite = 0
     private var journalWriter: BufferedSink? = null
     private var hasJournalErrors = false
-    private val initialized = atomic(false)
+    private var initialized = false
     private var closed = false
     private var mostRecentTrimFailed = false
     private var mostRecentRebuildFailed = false
@@ -146,8 +145,8 @@ internal class DiskLruCache(
         }
     }
 
-    fun initialize()  {
-        if (initialized.compareAndSet(false, true)) {
+    private fun initialize() {
+        if (!initialized) {
 
             // If a temporary file exists, delete it.
             fileSystem.delete(journalFileTmp)
@@ -167,7 +166,7 @@ internal class DiskLruCache(
                 try {
                     readJournal()
                     processJournal()
-                    initialized.value = true
+                    initialized = true
                     return
                 } catch (_: IOException) {
                     // The journal is corrupt.
@@ -184,7 +183,7 @@ internal class DiskLruCache(
             }
 
             writeJournal()
-            initialized.value = true
+            initialized = true
         }
     }
 
@@ -345,7 +344,7 @@ internal class DiskLruCache(
      * Returns a snapshot of the entry named [key], or null if it doesn't exist or is not currently
      * readable. If a value is returned, it is moved to the head of the LRU queue.
      */
-    operator fun get(key: String): Snapshot? {
+    operator fun get(key: String): Snapshot? = synchronized(lock) {
         checkNotClosed()
         validateKey(key)
         initialize()
@@ -558,7 +557,7 @@ internal class DiskLruCache(
 
     /** Closes this cache. Stored values will remain on the filesystem. */
     override fun close() = synchronized(lock) {
-        if (!initialized.value || closed) {
+        if (!initialized || closed) {
             closed = true
             return
         }
@@ -577,7 +576,7 @@ internal class DiskLruCache(
     }
 
     fun flush() = synchronized(lock) {
-        if (!initialized.value) return
+        if (!initialized) return
 
         checkNotClosed()
         trimToSize()
@@ -631,7 +630,7 @@ internal class DiskLruCache(
     private fun launchCleanup() {
         cleanupScope.launch {
             synchronized(lock) {
-                if (initialized.value || closed) return@launch
+                if (initialized || closed) return@launch
                 try {
                     trimToSize()
                 } catch (_: IOException) {

@@ -54,65 +54,13 @@ private class NetworkCompositionSpec(
     private val fontManager = NetworkFontManager(client, request, cacheStrategy)
 
     @OptIn(InternalCompottieApi::class)
-    override suspend fun load(cacheKey : Any?): LottieComposition {
+    override suspend fun load(): LottieComposition {
         return withContext(ioDispatcher()) {
-            mainMutex.withLock { mutexByUrl.getOrPut(url) { Mutex() } }.withLock {
-                try {
-                    LottieComposition.getOrCreate(cacheKey) {
-                        try {
-                            Compottie.logger?.info("Looking for animation in cache...")
-                            cacheStrategy.load(url)?.let {
-                                Compottie.logger?.info("Animation was found in cache. Parsing...")
-                                return@getOrCreate it.decodeToLottieComposition(format).also {
-                                    Compottie.logger?.info("Animation was successfully loaded from cache")
-                                }
-                            } ?: run {
-                                Compottie.logger?.info("Animation wasn't found in cache")
-                            }
-                        } catch (t : UnsupportedFileSystemException) {
-                            Compottie.logger?.info("File system cache is disabled for this strategy on the current platform")
-                        } catch (_: Throwable) {
-                            Compottie.logger?.warn("Failed to load or decode animation from cache")
-                        }
 
-                        Compottie.logger?.info("Fetching animation from web...")
+            val (_, bytes) = networkLoad(client, cacheStrategy, request, url)
 
-                        val bytes = try {
-                            val response = request(client, Url(url)).execute()
-
-                            if (!response.status.isSuccess()) {
-                                Compottie.logger?.warn("Animation request failed with ${response.status.value} status code")
-                                throw ClientRequestException(response, response.bodyAsText())
-                            }
-
-                            response.bodyAsChannel().toByteArray()
-                        } catch (t : ClientRequestException){
-                            Compottie.logger?.warn("Animation request failed with ${t.response.status.value} status code")
-                            throw t
-                        }
-                        Compottie.logger?.info("Animation was loaded from web. Parsing...")
-
-                        val composition = bytes.decodeToLottieComposition(format)
-                        Compottie.logger?.info("Animation was successfully loaded from web. Caching...")
-
-                        try {
-                            cacheStrategy.save(url, bytes)
-                            Compottie.logger?.info("Animation was successfully saved to cache")
-                        } catch (t : UnsupportedFileSystemException) {
-                          Compottie.logger?.info("File system cache is disabled for this strategy on the current platform")
-                        } catch (t: Throwable) {
-                            Compottie.logger?.error(
-                                "Failed to cache animation",
-                                t
-                            )
-                        }
-                        composition
-                    }
-                } finally {
-                    mainMutex.withLock {
-                        mutexByUrl.remove(url)
-                    }
-                }
+            checkNotNull(bytes?.decodeToLottieComposition(format)){
+                "Failed to load animation $url"
             }.apply {
                 launch {
                     prepareAssets(assetsManager)

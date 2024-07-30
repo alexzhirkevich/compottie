@@ -30,27 +30,27 @@ internal sealed class LayerEffect {
     abstract fun copy(): LayerEffect
 
     @Serializable
-    class UnsupportedEffect(
-        @SerialName("ef")
-        override val values: List<EffectValue<@Contextual RawProperty<@Contextual Any>>>,
+    class UnsupportedEffect() : LayerEffect() {
 
-        @SerialName("nm")
-        override val name: String? = null,
+//        @SerialName("ef")
+        override val values: List<EffectValue<@Contextual RawProperty<@Contextual Any>>> = emptyList()
 
-        @SerialName("ix")
-        override val index: Int? = null,
+//        @SerialName("nm")
+        override val name: String? = null
 
-        @SerialName("en")
-        @Serializable(with = BooleanIntSerializer::class)
-        override val enabled: Boolean = true,
-    ) : LayerEffect() {
+//        @SerialName("ix")
+        override val index: Int? = null
+
+//        @SerialName("en")
+//        @Serializable(with = BooleanIntSerializer::class)
+        override val enabled: Boolean = true
 
         override fun copy(): LayerEffect {
             return UnsupportedEffect(
-                values = values.map(EffectValue<RawProperty<*>>::copy),
-                name = name,
-                index = index,
-                enabled = enabled
+//                values = values.map(EffectValue<RawProperty<*>>::copy),
+//                name = name,
+//                index = index,
+//                enabled = enabled
             )
         }
     }

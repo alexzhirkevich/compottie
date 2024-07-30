@@ -1,8 +1,14 @@
 package lottiefiles
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
@@ -46,6 +52,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -88,15 +95,18 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.DotLottie
+import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.Url
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import io.github.alexzhirkevich.shared.generated.resources.Res
+import io.github.alexzhirkevich.shared.generated.resources.gh
 import io.ktor.http.encodeURLPath
 import kotlinx.coroutines.launch
 import lottiefiles.theme.LottieFilesTheme
 import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.painterResource
 import kotlin.math.abs
 
 @Composable
@@ -155,7 +165,7 @@ internal fun LottieFilesScreen(
                         SearchBar(
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(bottom = 12.dp),
+                                .padding(bottom = 8.dp),
                             viewModel = viewModel
                         )
 
@@ -165,7 +175,7 @@ internal fun LottieFilesScreen(
 
                         val sort by viewModel.sortOrder.collectAsState()
 
-                        Box {
+                        Box() {
                             AssistChip(
                                 onClick = {
                                     sortExpanded = true
@@ -177,7 +187,11 @@ internal fun LottieFilesScreen(
                                     )
                                 },
                                 label = {
-                                    Text(if (isWideScreen) sort.name else sort.name.take(1))
+                                    Text(
+                                        text = if (isWideScreen) sort.name else sort.name.take(1),
+                                        maxLines = 1,
+                                        lineHeight = LocalTextStyle.current.fontSize,
+                                    )
                                 }
                             )
                             DropdownMenu(
@@ -197,7 +211,11 @@ internal fun LottieFilesScreen(
                                             }
                                         } else null,
                                         text = {
-                                            Text(it.name)
+                                            Text(
+                                                text = it.name,
+                                                maxLines = 1,
+                                                lineHeight = LocalTextStyle.current.fontSize,
+                                            )
                                         },
                                         onClick = {
                                             sortExpanded = false
@@ -219,6 +237,7 @@ internal fun LottieFilesScreen(
 
                         else -> {
                             val gridState = rememberLazyGridState()
+                            HorizontalDivider()
 
                             LazyVerticalGrid(
                                 state = gridState,
@@ -248,6 +267,7 @@ internal fun LottieFilesScreen(
                                 enter = slideInVertically { it } + expandVertically(),
                                 exit = slideOutVertically { it } + shrinkVertically()
                             ) {
+                                HorizontalDivider()
                                 PageSelector(
                                     page = viewModel.page.collectAsState().value,
                                     pageCount = pageCount,
@@ -329,13 +349,23 @@ private fun SearchBar(
 }
 
 private val PageSelectorSize = 36.dp
+private val LandingAnimDuration = 500
+private val LandingAnimSlideFactor = 8
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 private fun Landing(modifier: Modifier = Modifier) {
+
+    val composition by rememberLottieComposition {
+        LottieCompositionSpec.DotLottie(
+            archive = Res.readBytes("files/dotlottie/lottiefiles.lottie")
+        )
+    }
+
     with(LocalDensity.current) {
         BoxWithConstraints {
             if (constraints.maxWidth > 1.5 * constraints.maxHeight) {
-                val fontScale = (constraints.maxHeight / 600.dp.toPx()).coerceAtMost(1f)
+                val fontScale = (constraints.maxHeight / 500.dp.toPx()).coerceAtMost(1f)
                 Row(
                     modifier = modifier,
                     verticalAlignment = Alignment.CenterVertically
@@ -344,25 +374,42 @@ private fun Landing(modifier: Modifier = Modifier) {
                         modifier = Modifier.weight(1f),
                         contentAlignment = Alignment.Center
                     ) {
-                        LandingText(
-                            modifier = Modifier
-                                .widthIn(max = 550.dp)
-                                .fillMaxWidth()
-                                .padding(24.dp),
-                            textAlign = TextAlign.Start,
-                            leadingTextStyle = MaterialTheme.typography.displayLarge,
-                            descriptionTextStyle = MaterialTheme.typography.titleLarge,
-                            fontScale = fontScale
-                        )
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = composition != null,
+                            enter = fadeIn(tween(LandingAnimDuration)) +
+                                    slideInHorizontally(tween(LandingAnimDuration)) { -it / LandingAnimSlideFactor }
+                        ) {
+                            LandingText(
+                                modifier = Modifier
+                                    .widthIn(max = 550.dp)
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 42.dp),
+                                textAlign = TextAlign.Start,
+                                leadingTextStyle = MaterialTheme.typography.displayLarge,
+                                descriptionTextStyle = MaterialTheme.typography.bodyLarge,
+                                fontScale = fontScale
+                            )
+                        }
                     }
 
                     Box(
                         modifier = Modifier.weight(1f),
                         contentAlignment = Alignment.Center
                     ) {
-                        LandingAnimation(
-                            Modifier.fillMaxWidth()
-                        )
+                        androidx.compose.animation.AnimatedVisibility(
+                            modifier = Modifier.fillMaxSize(),
+                            visible = composition != null,
+                            enter = fadeIn(tween(LandingAnimDuration)) +
+                                    slideInHorizontally(tween(LandingAnimDuration)) { it / LandingAnimSlideFactor }
+                        ) {
+                            LandingAnimation(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp)
+                                    .padding(bottom = this@BoxWithConstraints.constraints.maxHeight.toDp()/5),
+                                composition = composition,
+                            )
+                        }
                     }
                 }
             } else {
@@ -376,22 +423,40 @@ private fun Landing(modifier: Modifier = Modifier) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     if (showAnim) {
-                        LandingAnimation(Modifier.weight(animWeight))
+                        androidx.compose.animation.AnimatedVisibility(
+                            modifier = Modifier.weight(animWeight),
+                            visible = composition != null,
+                            enter = fadeIn(tween(LandingAnimDuration)) +
+                                    slideInVertically(tween(LandingAnimDuration)) { -it / LandingAnimSlideFactor }
+                        ) {
+                            LandingAnimation(
+                                modifier = Modifier.fillMaxSize(),
+                                composition = composition,
+                            )
+                        }
                     }
                     Box(
                         modifier = Modifier.weight(1f),
                         contentAlignment = Alignment.Center
                     ) {
-                        LandingText(
+                        androidx.compose.animation.AnimatedVisibility(
                             modifier = Modifier
-                                .padding(12.dp)
                                 .widthIn(max = 500.dp)
-                                .fillMaxWidth(),
-                            textAlign = TextAlign.Center,
-                            leadingTextStyle = MaterialTheme.typography.displayMedium,
-                            descriptionTextStyle = MaterialTheme.typography.bodyLarge,
-                            fontScale = if (showAnim) fontScale else 1f
-                        )
+                                .fillMaxSize(),
+                            visible = !showAnim || composition != null,
+                            enter = fadeIn(tween(LandingAnimDuration)) +
+                                    slideInVertically(tween(LandingAnimSlideFactor)) { it * 2 / LandingAnimSlideFactor }
+                        ) {
+                            LandingText(
+                                modifier = Modifier
+                                    .padding(12.dp)
+                                    .fillMaxWidth(),
+                                textAlign = TextAlign.Center,
+                                leadingTextStyle = MaterialTheme.typography.displayMedium,
+                                descriptionTextStyle = MaterialTheme.typography.bodyLarge,
+                                fontScale = if (showAnim) fontScale else 1f
+                            )
+                        }
                     }
                 }
             }
@@ -401,13 +466,10 @@ private fun Landing(modifier: Modifier = Modifier) {
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
-private fun LandingAnimation(modifier: Modifier = Modifier) {
-    val composition by rememberLottieComposition {
-        LottieCompositionSpec.DotLottie(
-            archive = Res.readBytes("files/dotlottie/lottiefiles.lottie")
-        )
-    }
-
+private fun LandingAnimation(
+    modifier: Modifier = Modifier,
+    composition: LottieComposition?,
+) {
     Image(
         modifier = modifier,
         painter = rememberLottiePainter(
@@ -418,6 +480,7 @@ private fun LandingAnimation(modifier: Modifier = Modifier) {
     )
 }
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 private fun LandingText(
     modifier: Modifier = Modifier,
@@ -442,42 +505,72 @@ private fun LandingText(
                 fontSize = leadingTextStyle.fontSize * fontScale,
                 lineHeight = leadingTextStyle.lineHeight * fontScale
             ),
+            color = MaterialTheme.colorScheme.secondary,
             fontWeight = FontWeight.ExtraBold,
             textAlign = textAlign
         )
         Text(
-            text = "Here you can search for free Lottie animations, test them with Compottie pure Kotlin renderer and download them to use in your Compose Multiplatform app",
+            text = "Here you can search for free Lottie animations, test them with Compottie renderer and download to use in your Compose Multiplatform app",
             style = descriptionTextStyle.copy(
                 fontSize = descriptionTextStyle.fontSize * fontScale,
                 lineHeight = descriptionTextStyle.lineHeight * fontScale
             ),
-            textAlign = textAlign
+            textAlign = textAlign,
         )
 
         val coercedFontScale = fontScale.coerceIn(.75f, 1f)
-        Button(
-            onClick = {
-                uriHandler.openUri("https://lottiefiles.com")
-            },
-            contentPadding = if (textAlign == TextAlign.Center){
-                ButtonDefaults.ContentPadding
-            } else {
-                PaddingValues(38.dp * coercedFontScale, 16.dp * coercedFontScale)
-            }
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-                contentDescription = null
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = "Open site",
-                style = if (textAlign == TextAlign.Center) {
-                    LocalTextStyle.current
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Button(
+                onClick = {
+                    uriHandler.openUri("https://lottiefiles.com")
+                },
+                contentPadding = if (textAlign == TextAlign.Center) {
+                    ButtonDefaults.ContentPadding
                 } else {
-                    LocalTextStyle.current
-                        .copy(fontSize = descriptionTextStyle.fontSize * coercedFontScale)
+                    PaddingValues(38.dp * coercedFontScale, 16.dp * coercedFontScale)
                 }
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                    contentDescription = null
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = "LottieFiles.com",
+                    style = if (textAlign == TextAlign.Center) {
+                        LocalTextStyle.current
+                    } else {
+                        LocalTextStyle.current
+                            .copy(fontSize = descriptionTextStyle.fontSize * coercedFontScale)
+                    },
+                    maxLines = 1,
+                    lineHeight = LocalTextStyle.current.fontSize,
+                )
+            }
+
+            Spacer(Modifier.width(18.dp))
+
+            val github by rememberLottieComposition {
+                LottieCompositionSpec.DotLottie(
+                    Res.readBytes("files/dotlottie/github.lottie")
+                )
+            }
+
+            Icon(
+                modifier = Modifier
+                    .size(58.dp)
+                    .clip(CircleShape)
+                    .clickable {
+                        uriHandler.openUri("https://github.com/alexzhirkevich/compottie")
+                     }
+                    .padding(4.dp),
+                painter = rememberLottiePainter(
+                    composition = github,
+                    iterations = Compottie.IterateForever
+                ),
+                tint = MaterialTheme.colorScheme.secondary,
+                contentDescription = "Github"
             )
         }
     }
@@ -559,7 +652,11 @@ private fun PageSelector(
                     }
 
                     SelectorButton.Dots -> PageButton() {
-                        Text("...")
+                        Text(
+                            text = "...",
+                            maxLines = 1,
+                            lineHeight = LocalTextStyle.current.fontSize,
+                        )
                     }
 
                     SelectorButton.Forward -> PageButton(
@@ -575,7 +672,11 @@ private fun PageSelector(
                         selected = it.i == page,
                         onClick = { onPageSelected(it.i) }
                     ) {
-                        Text(it.i.toString())
+                        Text(
+                            text = it.i.toString(),
+                            maxLines = 1,
+                            lineHeight = LocalTextStyle.current.fontSize,
+                        )
                     }
                 }
             }
@@ -664,14 +765,19 @@ private fun LottieCard(
                     containerColor = file.bgColor?.let(::parseColorValue) ?: Color.White
                 )
             ) {
-                Image(
-                    modifier = Modifier.fillMaxSize(),
-                    painter = rememberLottiePainter(
-                        composition = composition,
-                        iterations = Compottie.IterateForever
-                    ),
-                    contentDescription = file.name
-                )
+                AnimatedVisibility(
+                    visible = composition != null,
+                    enter = fadeIn(),
+                ) {
+                    Image(
+                        modifier = Modifier.fillMaxSize(),
+                        painter = rememberLottiePainter(
+                            composition = composition,
+                            iterations = Compottie.IterateForever
+                        ),
+                        contentDescription = file.name
+                    )
+                }
             }
 
             Row(

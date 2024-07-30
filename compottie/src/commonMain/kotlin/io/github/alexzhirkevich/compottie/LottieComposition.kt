@@ -70,7 +70,7 @@ public fun rememberLottieComposition(
                     null -> null
                     else -> key
                 }
-                specInstance.load(k)
+                LottieComposition.getOrCreate(k, specInstance::load)
             }
             result.complete(composition)
         } catch (c: CancellationException) {
