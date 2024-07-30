@@ -23,12 +23,11 @@ buildscript {
 
 subprojects {
 
-    plugins.apply("org.jetbrains.compose")
-    plugins.apply("org.jetbrains.kotlin.plugin.compose")
-
     if (!name.startsWith("compottie")) {
         return@subprojects
     }
+    plugins.apply("org.jetbrains.compose")
+    plugins.apply("org.jetbrains.kotlin.plugin.compose")
 
     plugins.apply("module.publication")
     plugins.apply("module.android")

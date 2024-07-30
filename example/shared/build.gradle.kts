@@ -6,6 +6,8 @@ plugins {
     id("module.multiplatform")
     id("ktorwasm.workaround")
     alias(libs.plugins.serialization)
+    alias(libs.plugins.compose)
+    alias(libs.plugins.composeCompiler)
 }
 
 kotlin {
@@ -23,6 +25,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(project(":compottie"))
+            implementation(project(":skriptie"))
             implementation(project(":compottie-dot"))
             implementation(project(":compottie-network"))
             implementation(project(":compottie-resources"))

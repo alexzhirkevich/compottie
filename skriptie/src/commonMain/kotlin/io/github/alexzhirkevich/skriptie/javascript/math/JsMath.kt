@@ -1,44 +1,16 @@
-package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math
+package io.github.alexzhirkevich.skriptie.javascript.math
 
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.InterpretationContext
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.OpUndefined
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.argAt
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random.OpRandomNumber
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpConstant
-import io.github.alexzhirkevich.skriptie.ecmascript.operations.value.fastMap
-import io.github.alexzhirkevich.skriptie.ecmascript.operations.value.fastSumBy
+import io.github.alexzhirkevich.skriptie.Expression
+import io.github.alexzhirkevich.skriptie.InterpretationContext
+import io.github.alexzhirkevich.skriptie.argAt
+import io.github.alexzhirkevich.skriptie.common.OpConstant
+import io.github.alexzhirkevich.skriptie.common.fastMap
+import io.github.alexzhirkevich.skriptie.common.fastSumBy
+import io.github.alexzhirkevich.skriptie.ecmascript.checkArgs
 import io.github.alexzhirkevich.skriptie.javascript.JSScriptContext
 import io.github.alexzhirkevich.skriptie.javascript.validateJsNumber
-import kotlin.math.abs
-import kotlin.math.acos
-import kotlin.math.acosh
-import kotlin.math.asin
-import kotlin.math.asinh
-import kotlin.math.atan
-import kotlin.math.atan2
-import kotlin.math.atanh
-import kotlin.math.cbrt
-import kotlin.math.ceil
-import kotlin.math.cos
-import kotlin.math.cosh
-import kotlin.math.exp
-import kotlin.math.expm1
-import kotlin.math.floor
-import kotlin.math.ln1p
-import kotlin.math.log
-import kotlin.math.log10
-import kotlin.math.log2
-import kotlin.math.pow
-import kotlin.math.roundToInt
-import kotlin.math.sign
-import kotlin.math.sin
-import kotlin.math.sinh
-import kotlin.math.sqrt
-import kotlin.math.tan
-import kotlin.math.tanh
-import kotlin.math.truncate
+import kotlin.math.*
+import kotlin.random.Random
 
 internal val JsInfinity =  OpConstant<JSScriptContext>(Double.POSITIVE_INFINITY)
 
@@ -69,7 +41,7 @@ internal object JsMath : InterpretationContext<JSScriptContext> {
             "LOG2E" -> LOG2E
             "SQRT1_2" -> SQRT1_2
             "SQRT2" -> SQRT2
-            else -> OpUndefined
+            else -> OpConstant(Unit)
         }
     }
     private fun interpretFun(
@@ -101,7 +73,7 @@ internal object JsMath : InterpretationContext<JSScriptContext> {
             "max" -> opN(args, List<Double>::max, op)
             "min" -> opN(args, List<Double>::min, op)
             "pow" -> op2(args, Double::pow, op)
-            "random" -> OpRandomNumber()
+            "random" -> Expression { Random.nextDouble() }
             "round" -> op1(args, Double::roundToInt, op)
             "sign" -> op1(args, Double::sign, op)
             "sin" -> op1(args, ::sin, op)
@@ -111,7 +83,7 @@ internal object JsMath : InterpretationContext<JSScriptContext> {
             "tanh" -> op1(args, ::tanh, op)
             "trunc" -> op1(args, ::truncate, op)
 
-            else -> OpUndefined
+            else -> OpConstant(Unit)
         }
     }
 
@@ -124,7 +96,7 @@ internal object JsMath : InterpretationContext<JSScriptContext> {
 
         val a = args.argAt(0)
         return Expression {
-            val a = a(it).validateJsNumber()
+            val a = a(it)?.validateJsNumber() ?: 0.0
             require(a is Number) {
                 "Can't get Math.$name of $a"
             }
@@ -142,8 +114,8 @@ internal object JsMath : InterpretationContext<JSScriptContext> {
         val a = args.argAt(0)
         val b = args.argAt(1)
         return Expression {
-            val a = a(it).validateJsNumber()
-            val b = b(it).validateJsNumber()
+            val a = a(it)?.validateJsNumber() ?: 0
+            val b = b(it)?.validateJsNumber() ?: 0
             require(a is Number && b is Number) {
                 "Can't get Math.$name of ($a,$b)"
             }
@@ -162,13 +134,13 @@ internal object JsMath : InterpretationContext<JSScriptContext> {
         return Expression {  context ->
 
             val a = args.fastMap {
-                val n = it(context).validateJsNumber().also {
-                    check(it is Number) {
+                val n = it(context)?.validateJsNumber().also {
+                    check(it is Number?) {
                         "Illegal arguments for Math.$name"
                     }
-                } as Number
+                } as Number?
 
-                n.toDouble()
+                n?.toDouble() ?: 0.0
             }
 
             func(a)

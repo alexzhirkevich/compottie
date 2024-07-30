@@ -15,7 +15,7 @@ internal operator fun Any.div(other : Any) : Any {
     val b = other.validateJsNumber()
 
     return when {
-        a is Number && b is Undefined || a is Undefined && b is Number -> Float.NaN
+        a is Number && b is Undefined || a is Undefined && b is Number -> Double.NaN
         a is Long && b is Long -> when {
             b == 0 -> Double.POSITIVE_INFINITY
             a % b == 0L -> a / b

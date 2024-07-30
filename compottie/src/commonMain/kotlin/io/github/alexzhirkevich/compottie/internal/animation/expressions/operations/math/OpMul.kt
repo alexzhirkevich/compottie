@@ -14,7 +14,7 @@ internal operator fun Any.times(other : Any) : Any  {
     val a = validateJsNumber()
     val b = other.validateJsNumber()
     return when {
-        a is Number && b is Undefined || a is Undefined && b is Number -> Float.NaN
+        a is Number && b is Undefined || a is Undefined && b is Number -> Double.NaN
         a is Long && b is Long -> a*b
         a is Double && b is Double -> a*b
         a is Long && b is Long -> if (b == 0) Float.POSITIVE_INFINITY else a/b

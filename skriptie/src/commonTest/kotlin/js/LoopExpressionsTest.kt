@@ -1,7 +1,5 @@
 package js
 
-import expressions.assertExprReturns
-import expressions.ret
 import kotlin.test.Test
 
 class LoopExpressionsTest {
@@ -9,27 +7,29 @@ class LoopExpressionsTest {
     @Test
     fun whileLoop() {
         """
-            var $ret = 0
-            while($ret != 3) {
-                $ret += 1
+            var x = 0
+            while(x != 3) {
+                x += 1
             }
-        """.trimIndent().assertExprReturns(3L)
+            x
+        """.trimIndent().runJs().assertEqualsTo(3L)
 
         """
-            var $ret = 0
-            while($ret < 3)
-                $ret += 1
-
-        """.trimIndent().assertExprReturns(3L)
+            var x = 0
+            while(x < 3)
+                x += 1
+            x
+        """.trimIndent().runJs().assertEqualsTo(3L)
     }
 
     @Test
     fun doWhileLoop() {
         """
-            var $ret = 0
+            var x = 0
             do {
-                $ret+=1
-            } while($ret != 3)
-        """.trimIndent().assertExprReturns(3L)
+                x+=1
+            } while(x != 3)
+            x
+        """.trimIndent().runJs().assertEqualsTo(3L)
     }
 }

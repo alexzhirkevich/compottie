@@ -1,32 +1,40 @@
-package io.github.alexzhirkevich.compottie.internal.animation.expressions
+package io.github.alexzhirkevich.skriptie.ecmascript
 
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.FunctionParam
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpBlock
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpBoolean
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpDoWhileLoop
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpEquals
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpFunction
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpFunctionExec
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpIfCondition
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpNot
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpReturn
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpTryCatch
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.OpWhileLoop
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.unresolvedReference
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpAssign
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpAssignByIndex
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpCompare
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpConstant
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpEqualsComparator
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpGreaterComparator
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpIndex
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpLessComparator
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpMakeArray
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpVar
-import io.github.alexzhirkevich.skriptie.ecmascript.ExtensionContext
-import io.github.alexzhirkevich.skriptie.ecmascript.GlobalContext
-import io.github.alexzhirkevich.skriptie.ecmascript.operations.value.Delegate
-import io.github.alexzhirkevich.skriptie.ecmascript.operations.value.OpGetVariable
+import io.github.alexzhirkevich.skriptie.Expression
+import io.github.alexzhirkevich.skriptie.ExtensionContext
+import io.github.alexzhirkevich.skriptie.GlobalContext
+import io.github.alexzhirkevich.skriptie.InterpretationContext
+import io.github.alexzhirkevich.skriptie.Script
+import io.github.alexzhirkevich.skriptie.ScriptContext
+import io.github.alexzhirkevich.skriptie.ScriptInterpreter
+import io.github.alexzhirkevich.skriptie.VariableType
+import io.github.alexzhirkevich.skriptie.asScript
+import io.github.alexzhirkevich.skriptie.common.FunctionParam
+import io.github.alexzhirkevich.skriptie.common.OpBlock
+import io.github.alexzhirkevich.skriptie.common.OpBoolean
+import io.github.alexzhirkevich.skriptie.common.OpDoWhileLoop
+import io.github.alexzhirkevich.skriptie.common.OpEquals
+import io.github.alexzhirkevich.skriptie.common.OpFunction
+import io.github.alexzhirkevich.skriptie.common.OpFunctionExec
+import io.github.alexzhirkevich.skriptie.common.OpIfCondition
+import io.github.alexzhirkevich.skriptie.common.OpNot
+import io.github.alexzhirkevich.skriptie.common.OpReturn
+import io.github.alexzhirkevich.skriptie.common.OpTryCatch
+import io.github.alexzhirkevich.skriptie.common.OpWhileLoop
+import io.github.alexzhirkevich.skriptie.common.unresolvedReference
+import io.github.alexzhirkevich.skriptie.common.OpAssign
+import io.github.alexzhirkevich.skriptie.common.OpAssignByIndex
+import io.github.alexzhirkevich.skriptie.common.OpCompare
+import io.github.alexzhirkevich.skriptie.common.OpConstant
+import io.github.alexzhirkevich.skriptie.common.OpEqualsComparator
+import io.github.alexzhirkevich.skriptie.common.OpGreaterComparator
+import io.github.alexzhirkevich.skriptie.common.OpIndex
+import io.github.alexzhirkevich.skriptie.common.OpLessComparator
+import io.github.alexzhirkevich.skriptie.common.OpMakeArray
+import io.github.alexzhirkevich.skriptie.common.OpVar
+import io.github.alexzhirkevich.skriptie.common.Delegate
+import io.github.alexzhirkevich.skriptie.common.OpGetVariable
+import io.github.alexzhirkevich.skriptie.isAssignable
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -62,7 +70,6 @@ internal class EcmascriptInterpreter<C : ScriptContext>(
                     break
                 }
 
-//                x = parseAssignment(if (x is InterpretationContext<C>) x else globalContext)
                 add(parseAssignment(globalContext))
             } while (pos < expr.length)
 
@@ -189,7 +196,7 @@ internal class EcmascriptInterpreter<C : ScriptContext>(
         }
     }
 
-    private fun parseAssignmentValue(x : Expression<C>, merge : ((Any, Any) -> Any)? = null) =  when {
+    private fun parseAssignmentValue(x : Expression<C>, merge : ((Any?, Any?) -> Any?)? = null) =  when {
         x is OpIndex && x.variable is OpGetVariable -> OpAssignByIndex(
             variableName = x.variable.name,
             scope = x.variable.assignmentType,
@@ -485,12 +492,14 @@ internal class EcmascriptInterpreter<C : ScriptContext>(
             "var", "let", "const" -> {
                 OpVar(
                     when (func) {
-                        "var" -> VariableType.Var
-                        "let" -> VariableType.Let
+                        "var" -> VariableType.Global
+                        "let" -> VariableType.Local
                         else -> VariableType.Const
                     }
                 )
             }
+            "undefined" -> OpConstant(Unit)
+            "null" -> OpConstant(null)
             "true" -> OpConstant(true)
             "false" -> OpConstant(false)
             "function" -> parseFunctionDefinition()
@@ -532,6 +541,8 @@ internal class EcmascriptInterpreter<C : ScriptContext>(
                     print("parsing if...")
                 }
 
+                val condition = parseExpressionOp(globalContext)
+
                 val onTrue = parseBlock()
 
                 val onFalse = if (eatSequence("else")) {
@@ -539,7 +550,7 @@ internal class EcmascriptInterpreter<C : ScriptContext>(
                 } else null
 
                 OpIfCondition(
-                    condition = parseExpressionOp(globalContext),
+                    condition = condition,
                     onTrue = onTrue,
                     onFalse = onFalse
                 )
@@ -598,6 +609,16 @@ internal class EcmascriptInterpreter<C : ScriptContext>(
                             }
                             OpFunctionExec(func, args)
                         } else null)
+                        ?: run {
+                            if (args == null && func != null) {
+                                if (EXPR_DEBUG_PRINT_ENABLED) {
+                                    println("making GetVariable $func...")
+                                }
+                                OpGetVariable(func)
+                            } else {
+                                null
+                            }
+                        }
                         ?: unresolvedReference(
                             ref = func ?: "null",
                             obj = context::class.simpleName
@@ -678,7 +699,7 @@ internal class EcmascriptInterpreter<C : ScriptContext>(
         if (EXPR_DEBUG_PRINT_ENABLED) {
             println("registered function $name")
         }
-        return OpConstant(Undefined)
+        return OpConstant(Unit)
     }
 
     private fun parseBlock(scoped : Boolean = true, requireBlock : Boolean = false): Expression<C> {

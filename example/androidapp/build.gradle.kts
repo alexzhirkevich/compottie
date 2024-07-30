@@ -3,6 +3,8 @@
 plugins {
     id("org.jetbrains.kotlin.android")
     alias(libs.plugins.android.application)
+    alias(libs.plugins.compose)
+    alias(libs.plugins.composeCompiler)
 }
 
 val _jvmTarget = findProperty("jvmTarget") as String

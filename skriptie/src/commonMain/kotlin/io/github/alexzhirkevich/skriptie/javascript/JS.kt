@@ -1,8 +1,8 @@
 package io.github.alexzhirkevich.skriptie.javascript
 
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.EcmascriptInterpreter
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Script
-import io.github.alexzhirkevich.skriptie.ecmascript.ScriptEngine
+import io.github.alexzhirkevich.skriptie.Script
+import io.github.alexzhirkevich.skriptie.ScriptEngine
+import io.github.alexzhirkevich.skriptie.ecmascript.EcmascriptInterpreter
 
 public class JS(
     override val context: JSScriptContext = JSScriptContext(),

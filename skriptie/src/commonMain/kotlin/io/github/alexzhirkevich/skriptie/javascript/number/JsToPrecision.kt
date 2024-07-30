@@ -1,7 +1,8 @@
-package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.js.number
+package io.github.alexzhirkevich.skriptie.javascript.number
 
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.unresolvedReference
+import io.github.alexzhirkevich.skriptie.Expression
+import io.github.alexzhirkevich.skriptie.common.checkNotEmpty
+import io.github.alexzhirkevich.skriptie.common.unresolvedReference
 import io.github.alexzhirkevich.skriptie.javascript.JSScriptContext
 import io.github.alexzhirkevich.skriptie.javascript.validateJsNumber
 import kotlin.math.pow
@@ -13,8 +14,7 @@ internal fun JsToPrecision(
     digits : Expression<JSScriptContext>? = null
 ) = Expression<JSScriptContext> { context ->
 
-    val number = (number(context).validateJsNumber() as? Number?)?.toDouble()
-        ?: unresolvedReference("toFixed")
+    val number = checkNotEmpty(number(context)?.validateJsNumber() as? Number?).toDouble()
 
     val digits = (digits?.invoke(context)?.validateJsNumber() as Number?)?.toInt()
         ?.takeIf { it > 0 }
@@ -27,8 +27,7 @@ internal fun JsToFixed(
     number : Expression<JSScriptContext>,
     digits : Expression<JSScriptContext>?
 ) = Expression<JSScriptContext> { context ->
-    val number = (number(context).validateJsNumber()as? Number?)?.toDouble()
-        ?: unresolvedReference("toFixed")
+    val number = checkNotEmpty(number(context)?.validateJsNumber() as? Number?).toDouble()
 
     val digits = (digits?.invoke(context)?.validateJsNumber() as Number?)?.toInt() ?: 0
 

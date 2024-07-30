@@ -15,7 +15,7 @@ internal operator fun Any.plus(other : Any) : Any {
     val a = validateJsNumber()
     val b = other.validateJsNumber()
     return when {
-        a is Number && b is Undefined || a is Undefined && b is Number -> Float.NaN
+        a is Number && b is Undefined || a is Undefined && b is Number -> Double.NaN
         a is Long && b is Long -> a+b
         a is Number && b is Number -> a.toDouble() + b.toDouble()
         a is List<*> && b is List<*> -> {

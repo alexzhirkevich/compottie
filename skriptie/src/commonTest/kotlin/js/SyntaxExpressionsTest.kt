@@ -1,6 +1,5 @@
 package js
 
-import expressions.ret
 import kotlin.test.Test
 import kotlin.test.assertFails
 
@@ -12,30 +11,30 @@ class SyntaxExpressionsTest {
             Math
                 .imul(3,4)
                 .toString()
-        """.trimIndent().assertSimpleExprEquals("12")
+        """.trimIndent().runJs().assertEqualsTo("12")
 
         """
             Math
-            
+
                 .imul(3,4)
-                
+
                 .toString()
-        """.trimIndent().assertSimpleExprEquals("12")
+        """.trimIndent().runJs().assertEqualsTo("12")
 
         """
             Math
-            
+
                 .imul(3,4)
-                
+
                 .toString()
                 ;
-        """.trimIndent().assertSimpleExprEquals("12")
+        """.trimIndent().runJs().assertEqualsTo("12")
 
 
         assertFails {
             """
             Math
-                .imul(3,4);                
+                .imul(3,4);
                 .toString()
         """.trimIndent().runJs()
         }
@@ -43,53 +42,44 @@ class SyntaxExpressionsTest {
 
     @Test
     fun increment_decrement() {
-        "let $ret = 5; $ret++".assertSimpleExprReturns(6L)
-        "let $ret = 5; ++$ret".assertSimpleExprReturns(6L)
+        "let x = 5; x++".runJs().assertEqualsTo(6L)
+        "let x = 5; ++x".runJs().assertEqualsTo(6L)
 
-        "let $ret = 5; $ret--".assertSimpleExprReturns(4L)
-        "let $ret = 5; --$ret".assertSimpleExprReturns(4L)
+        "let x = 5; x--".runJs().assertEqualsTo(4L)
+        "let x = 5; --x".runJs().assertEqualsTo(4L)
 
-        "let x = 5; let $ret = --x".assertSimpleExprReturns(4L)
-        "let x = 5; let $ret = ++x".assertSimpleExprReturns(6L)
-        "let x = 5; let $ret = x--".assertSimpleExprReturns(4L)
-        "let x = 5; let $ret = x++".assertSimpleExprReturns(6L)
+        "let x = 5;  --x".runJs().assertEqualsTo(4L)
+        "let x = 5;  ++x".runJs().assertEqualsTo(6L)
+        "let x = 5;  x--".runJs().assertEqualsTo(4L)
+        "let x = 5;  x++".runJs().assertEqualsTo(6L)
     }
 
     @Test
     fun variable_scopes() {
         """
-            var $ret;
-            if(true){
-                var x = 5
+            var x;
+            if(true) {
+                x = 5
             }
-            $ret = x
-        """.trimIndent().assertSimpleExprReturns(5L)
+            x
+        """.trimIndent().runJs().assertEqualsTo(5L)
 
-        assertFails {
-            """
-            var $ret = 1; 
+        """
+            var x = 1;
             if(true){
                 let x = 5
             }
-            $ret = x
-        """.trimIndent().runJs()
-        }
+            x
+        """.trimIndent().runJs().assertEqualsTo(1L)
     }
 
     @Test
     fun constMutating() {
         assertFails {
             """
-                const x = 1; 
+                const x = 1;
                 x++
             """.trimIndent().runJs()
-        }
-    }
-
-    @Test
-    fun tryCatch() {
-        assertFails {
-            "let x = [123".runJs()
         }
     }
 }

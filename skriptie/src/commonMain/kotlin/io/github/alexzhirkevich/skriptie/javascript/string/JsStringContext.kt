@@ -1,14 +1,14 @@
-package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.js.string
+package io.github.alexzhirkevich.skriptie.javascript.string
 
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.argAt
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.argForNameOrIndex
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgsNotNull
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.cast
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.value.OpIndex
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.withCast
-import io.github.alexzhirkevich.skriptie.ecmascript.ExtensionContext
+import io.github.alexzhirkevich.skriptie.Expression
+import io.github.alexzhirkevich.skriptie.ExtensionContext
+import io.github.alexzhirkevich.skriptie.argAt
+import io.github.alexzhirkevich.skriptie.argForNameOrIndex
+import io.github.alexzhirkevich.skriptie.common.OpIndex
+import io.github.alexzhirkevich.skriptie.common.cast
+import io.github.alexzhirkevich.skriptie.common.withCast
+import io.github.alexzhirkevich.skriptie.ecmascript.checkArgs
+import io.github.alexzhirkevich.skriptie.ecmascript.checkArgsNotNull
 import io.github.alexzhirkevich.skriptie.javascript.JSScriptContext
 
 internal object JsStringContext : ExtensionContext<JSScriptContext> {

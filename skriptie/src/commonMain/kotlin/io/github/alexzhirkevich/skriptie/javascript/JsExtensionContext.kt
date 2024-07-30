@@ -1,13 +1,12 @@
 package io.github.alexzhirkevich.skriptie.javascript
 
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.argAt
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgs
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.js.number.JsNumberContext
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.js.string.JsStringContext
-import io.github.alexzhirkevich.skriptie.ecmascript.ExtensionContext
+import io.github.alexzhirkevich.skriptie.javascript.number.JsNumberContext
+import io.github.alexzhirkevich.skriptie.javascript.string.JsStringContext
+import io.github.alexzhirkevich.skriptie.Expression
+import io.github.alexzhirkevich.skriptie.ExtensionContext
+import io.github.alexzhirkevich.skriptie.argAt
+import io.github.alexzhirkevich.skriptie.ecmascript.checkArgs
 import io.github.alexzhirkevich.skriptie.javascript.iterable.JsIndexOf
-
 
 public open class JsExtensionContext: ExtensionContext<JSScriptContext> {
 
@@ -18,7 +17,7 @@ public open class JsExtensionContext: ExtensionContext<JSScriptContext> {
     ): Expression<JSScriptContext>? {
         return if (args != null){
             when (op) {
-                "toString" -> Expression<JSScriptContext> { parent(it).toString() }
+                "toString" -> Expression { parent(it).toString() }
                 "indexOf", "lastIndexOf" -> {
                     checkArgs(args, 1, op)
                     JsIndexOf(

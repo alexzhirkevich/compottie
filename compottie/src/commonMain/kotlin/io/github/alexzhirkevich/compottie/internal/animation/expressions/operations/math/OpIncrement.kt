@@ -45,7 +45,9 @@ private fun decrement(v : Any) : Any {
     }
 }
 
-private fun OpIncDec(variable: Expression, op: (Any) -> Any, name : String) : Expression {
+private fun OpIncDec(
+    variable: Expression,
+    op: (Any) -> Any, name : String) : Expression {
     return when {
         variable is OpGetVariable && variable.assignmentType == null ->
             OpAssign(

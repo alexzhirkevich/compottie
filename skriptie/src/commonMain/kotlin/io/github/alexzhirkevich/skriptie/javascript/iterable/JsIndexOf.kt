@@ -1,7 +1,8 @@
 package io.github.alexzhirkevich.skriptie.javascript.iterable
 
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.unresolvedReference
+import io.github.alexzhirkevich.skriptie.Expression
+import io.github.alexzhirkevich.skriptie.common.checkNotEmpty
+import io.github.alexzhirkevich.skriptie.common.unresolvedReference
 import io.github.alexzhirkevich.skriptie.javascript.JSScriptContext
 
 internal class JsIndexOf(
@@ -12,9 +13,9 @@ internal class JsIndexOf(
 
     override fun invoke(
         context: JSScriptContext,
-    ): Any {
-        val value = value(context)
-        val search = search(context)
+    ): Any? {
+        val value = checkNotEmpty(value(context))
+        val search = checkNotEmpty(search(context))
 
         return when {
             value is String && (search is String || search is Char) -> {

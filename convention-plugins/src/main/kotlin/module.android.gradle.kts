@@ -1,8 +1,4 @@
 import org.gradle.api.JavaVersion
-import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.api.tasks.bundling.Jar
-
-import java.util.Base64
 
 
 plugins {

@@ -1,8 +1,8 @@
-package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.js.number
+package io.github.alexzhirkevich.skriptie.javascript.number
 
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.checkArgsNotNull
-import io.github.alexzhirkevich.skriptie.ecmascript.ExtensionContext
+import io.github.alexzhirkevich.skriptie.Expression
+import io.github.alexzhirkevich.skriptie.ExtensionContext
+import io.github.alexzhirkevich.skriptie.ecmascript.checkArgsNotNull
 import io.github.alexzhirkevich.skriptie.javascript.JSScriptContext
 
 internal object JsNumberContext : ExtensionContext<JSScriptContext> {

@@ -1,6 +1,6 @@
-package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.js.string
+package io.github.alexzhirkevich.skriptie.javascript.string
 
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
+import io.github.alexzhirkevich.skriptie.Expression
 import io.github.alexzhirkevich.skriptie.javascript.JSScriptContext
 
 internal fun JsEndsWith(
