@@ -42,12 +42,12 @@ internal class EcmascriptInterpreter<C : ScriptContext>(
     private val scriptContext: C,
     private val globalContext : GlobalContext<C>,
     private val extensionContext : ExtensionContext<C>
-) : ExpressionInterpreter<C> {
+) : ScriptInterpreter<C> {
 
     private var pos = -1
     private var ch: Char = ' '
 
-    override fun interpret(): Expression<C> {
+    override fun interpret(): Script<C> {
         val expressions = buildList {
             pos = -1
             ch = ' '
@@ -73,7 +73,7 @@ internal class EcmascriptInterpreter<C : ScriptContext>(
         return OpBlock(
             expressions = expressions,
             scoped = false
-        ).also {
+        ).asScript().also {
             pos = -1
             ch = ' '
             if (EXPR_DEBUG_PRINT_ENABLED) {

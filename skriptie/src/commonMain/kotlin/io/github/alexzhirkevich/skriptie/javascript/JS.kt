@@ -7,18 +7,16 @@ import io.github.alexzhirkevich.skriptie.ecmascript.ScriptEngine
 public class JS(
     override val context: JSScriptContext = JSScriptContext(),
     private val globalContext: JsGlobalContext = JsGlobalContext(),
-    private val extensionContext : JsExtensionContext = JsExtensionContext()
+    private val extensionContext : JsExtensionContext = JsExtensionContext(),
 ) : ScriptEngine<JSScriptContext> {
 
     override fun compile(script: String): Script<JSScriptContext> {
-        val expression = EcmascriptInterpreter(
+        return EcmascriptInterpreter(
             expr = script,
             scriptContext = context,
             globalContext = globalContext,
             extensionContext = extensionContext
         ).interpret()
-
-        return Script { expression.invoke(it.context) }
     }
 
     override fun reset() {
