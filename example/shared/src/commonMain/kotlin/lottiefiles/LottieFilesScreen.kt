@@ -32,15 +32,10 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.FileDownload
-import androidx.compose.material.icons.rounded.ArrowBackIos
-import androidx.compose.material.icons.rounded.ArrowForwardIos
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -100,6 +95,11 @@ import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import io.github.alexzhirkevich.shared.generated.resources.Res
 import io.ktor.http.encodeURLPath
+import lottiefiles.icons.ArrowBackIos
+import lottiefiles.icons.ArrowForwardIos
+import lottiefiles.icons.FileDownload
+import lottiefiles.icons.OpenInNew
+import lottiefiles.icons.Sort
 import lottiefiles.theme.LottieFilesTheme
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import kotlin.math.abs
@@ -112,7 +112,6 @@ internal fun LottieFilesScreen(
     LottieFilesTheme {
         DisposableEffect(0) {
             val l = Compottie.logger
-//        Compottie.logger = null
             onDispose {
                 Compottie.logger = l
             }

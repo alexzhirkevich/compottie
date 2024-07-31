@@ -1,8 +1,6 @@
-import androidx.compose.ui.ExperimentalComposeUiApi
 
-@OptIn(ExperimentalComposeUiApi::class)
 fun main() {
-    CompatComposeWindow {
+    CompatComposeWindow("Compottie") {
         App()
     }
 }

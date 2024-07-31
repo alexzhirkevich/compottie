@@ -34,7 +34,6 @@ kotlin {
             implementation("org.jetbrains.androidx.navigation:navigation-compose:2.7.0-alpha07")
             implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
             implementation(compose.material3)
-            implementation(compose.materialIconsExtended)
             implementation(compose.components.resources)
             implementation(libs.serialization)
             implementation(libs.coil.compose)
