@@ -9,6 +9,8 @@ import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.encodeURLPath
+import io.ktor.http.encodedPath
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -70,13 +72,8 @@ internal class LottieFilesViewModel() : ViewModel() {
             }.collectLatest { (q, s, p) ->
                 try {
                     val resp = httpClient.get(
-                        "https://lottiefiles.com/api/search/get-animations"
-                    ) {
-                        parameter("query", q)
-                        parameter("type", "free")
-                        parameter("sort", s.name.lowercase())
-                        parameter("page", p)
-                    }.bodyAsText().let {
+                        "https://corsproxy.io/?https://lottiefiles.com/api/search/get-animations?query=${q.encodeURLPath()}&type=free&sort=popular&page=$p"
+                    ).bodyAsText().let {
                         json.decodeFromString<JsonObject>(it)
                     }
 
@@ -96,28 +93,6 @@ internal class LottieFilesViewModel() : ViewModel() {
                     t.printStackTrace()
                 }
             }
-        }
-
-        @OptIn(InternalCompottieApi::class)
-        viewModelScope.launch(ioDispatcher()) {
-            search.debounce(1000)
-                .collectLatest { s ->
-                    if (s.isBlank()){
-                        _suggestions.value = emptyList()
-                    } else {
-                        try {
-                            val resp = httpClient.get(
-                                "https://lottiefiles.com/api/search"
-                            ) {
-                                parameter("query", s)
-                            }.bodyAsText()
-
-                            _suggestions.value = json.decodeFromString<List<Suggestion>>(resp)
-                        } catch (t: Throwable) {
-                            t.printStackTrace()
-                        }
-                    }
-                }
         }
     }
 
