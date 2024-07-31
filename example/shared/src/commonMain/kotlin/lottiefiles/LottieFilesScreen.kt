@@ -112,6 +112,8 @@ internal fun LottieFilesScreen(
     LottieFilesTheme {
         DisposableEffect(0) {
             val l = Compottie.logger
+            Compottie.compositionCacheLimit = 20 // page
+            Compottie.logger = null
             onDispose {
                 Compottie.logger = l
             }
