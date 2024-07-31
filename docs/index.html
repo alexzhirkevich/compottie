@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Compottie example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <canvas id="ComposeTarget"></canvas>
+
+<script type="module">
+import { gc } from "https://unpkg.com/wasm-feature-detect?module";
+const wasmGCSupported = await gc()
+
+if (!wasmGCSupported){
+    let skikoScript = document.createElement("script")
+    skikoScript.src = "skiko-0114ed671f22b46c0b6225b15fa41f35.js"
+    document.head.appendChild(skikoScript)
+}
+
+let script = document.createElement("script")
+script.src = wasmGCSupported 
+    ? "webApp-wasm-130998cae67fca6cee0aaabb04238180.js" 
+    : "webApp-js-d3435a8c28829d9a8d1542dbb66a5ed2.js"
+document.body.appendChild(script)
+
+</script>
+</body>
+</html>
