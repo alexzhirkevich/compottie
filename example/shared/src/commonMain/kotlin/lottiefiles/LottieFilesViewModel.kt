@@ -72,7 +72,7 @@ internal class LottieFilesViewModel() : ViewModel() {
             }.collectLatest { (q, s, p) ->
                 try {
                     val resp = httpClient.get(
-                        "https://corsproxy.io/?https://lottiefiles.com/api/search/get-animations?query=${q.encodeURLPath()}&type=free&sort=${s.name}&page=$p"
+                        "https://corsproxy.io/?https://lottiefiles.com/api/search/get-animations?query=${q.encodeURLPath()}&type=free&sort=${s.name.lowercase()}&page=$p"
                     ).bodyAsText().let {
                         json.decodeFromString<JsonObject>(it)
                     }
