@@ -2,9 +2,8 @@ package io.github.alexzhirkevich.skriptie.javascript.number
 
 import io.github.alexzhirkevich.skriptie.Expression
 import io.github.alexzhirkevich.skriptie.common.checkNotEmpty
-import io.github.alexzhirkevich.skriptie.common.unresolvedReference
 import io.github.alexzhirkevich.skriptie.javascript.JSScriptContext
-import io.github.alexzhirkevich.skriptie.javascript.validateJsNumber
+import io.github.alexzhirkevich.skriptie.javascript.numberOrThis
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
@@ -14,9 +13,9 @@ internal fun JsToPrecision(
     digits : Expression<JSScriptContext>? = null
 ) = Expression<JSScriptContext> { context ->
 
-    val number = checkNotEmpty(number(context)?.validateJsNumber() as? Number?).toDouble()
+    val number = checkNotEmpty(number(context)?.numberOrThis() as? Number?).toDouble()
 
-    val digits = (digits?.invoke(context)?.validateJsNumber() as Number?)?.toInt()
+    val digits = (digits?.invoke(context)?.numberOrThis() as Number?)?.toInt()
         ?.takeIf { it > 0 }
         ?: return@Expression number
 
@@ -27,9 +26,9 @@ internal fun JsToFixed(
     number : Expression<JSScriptContext>,
     digits : Expression<JSScriptContext>?
 ) = Expression<JSScriptContext> { context ->
-    val number = checkNotEmpty(number(context)?.validateJsNumber() as? Number?).toDouble()
+    val number = checkNotEmpty(number(context)?.numberOrThis() as? Number?).toDouble()
 
-    val digits = (digits?.invoke(context)?.validateJsNumber() as Number?)?.toInt() ?: 0
+    val digits = (digits?.invoke(context)?.numberOrThis() as Number?)?.toInt() ?: 0
 
     if (digits == 0) {
         return@Expression number.roundToLong().toString()

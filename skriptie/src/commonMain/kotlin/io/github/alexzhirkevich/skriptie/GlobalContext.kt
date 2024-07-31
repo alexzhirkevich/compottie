@@ -2,6 +2,8 @@ package io.github.alexzhirkevich.skriptie
 
 public interface GlobalContext<C : ScriptContext> : InterpretationContext<C> {
 
+    public fun isFalse(a : Any?) : Boolean
+
     public fun sum(a : Any?, b : Any?) : Any?
     public fun sub(a : Any?, b : Any?) : Any?
     public fun mul(a : Any?, b : Any?) : Any?
@@ -12,4 +14,5 @@ public interface GlobalContext<C : ScriptContext> : InterpretationContext<C> {
     public fun dec(a : Any?) : Any
 
     public fun neg(a : Any?) : Any?
+    public fun pos(a : Any?) : Any?
 }

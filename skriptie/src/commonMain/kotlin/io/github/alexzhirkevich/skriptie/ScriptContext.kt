@@ -1,5 +1,7 @@
 package io.github.alexzhirkevich.skriptie
 
+import io.github.alexzhirkevich.skriptie.common.SyntaxError
+import io.github.alexzhirkevich.skriptie.common.TypeError
 import io.github.alexzhirkevich.skriptie.common.unresolvedReference
 
 
@@ -19,13 +21,12 @@ public interface ScriptContext {
         extraVariables: Map<String, Pair<VariableType, Any?>> = emptyMap(),
         block: (ScriptContext) -> Any?
     ): Any?
-
     public fun reset()
 }
 
 private class BlockScriptContext(
     private val parent : ScriptContext
-) : BaseScriptContext() {
+) : EcmascriptContext() {
 
     override fun getVariable(name: String): Any? {
         return if (name in variables) {
@@ -48,7 +49,7 @@ private class BlockScriptContext(
     }
 }
 
-public abstract class BaseScriptContext : ScriptContext {
+public abstract class EcmascriptContext : ScriptContext {
 
     protected val variables: MutableMap<String, Pair<VariableType, Any?>> = mutableMapOf()
 
@@ -65,10 +66,10 @@ public abstract class BaseScriptContext : ScriptContext {
             unresolvedReference(name)
         }
         if (type != null && name in variables) {
-            error("Identifier '$name' is already declared")
+            throw SyntaxError("Identifier '$name' is already declared")
         }
         if (type == null && variables[name]?.first == VariableType.Const) {
-            error("TypeError: Assignment to constant variable ('$name')")
+            throw TypeError("Assignment to constant variable ('$name')")
         }
         variables[name] = (type ?: variables[name]?.first)!! to value
     }

@@ -1,98 +1,111 @@
 package io.github.alexzhirkevich.skriptie.javascript
 
-import io.github.alexzhirkevich.skriptie.javascript.math.JsInfinity
-import io.github.alexzhirkevich.skriptie.javascript.math.JsMath
 import io.github.alexzhirkevich.skriptie.Expression
 import io.github.alexzhirkevich.skriptie.GlobalContext
+import io.github.alexzhirkevich.skriptie.argAt
 import io.github.alexzhirkevich.skriptie.common.fastMap
-import kotlin.math.min
+import io.github.alexzhirkevich.skriptie.ecmascript.checkArgs
+import io.github.alexzhirkevich.skriptie.javascript.iterable.JsIndexOf
+import io.github.alexzhirkevich.skriptie.javascript.number.JsNumberContext
+import io.github.alexzhirkevich.skriptie.javascript.string.JsStringContext
+import kotlin.math.absoluteValue
 
-public open class JsGlobalContext : GlobalContext<JSScriptContext> {
+public open class JSInterpretationContext : GlobalContext<JSScriptContext> {
 
     override fun interpret(
         callable: String?,
         args: List<Expression<JSScriptContext>>?
+    ): Expression<JSScriptContext>? = null
+
+    override fun interpret(
+        parent: Expression<JSScriptContext>,
+        op: String?,
+        args: List<Expression<JSScriptContext>>?
     ): Expression<JSScriptContext>? {
-        return when (callable) {
-            "Infinity" -> JsInfinity
-            "Math" -> JsMath
-            else -> null
+        return if (args != null){
+            when (op) {
+                "toString" -> Expression { parent(it).toString() }
+                "indexOf", "lastIndexOf" -> {
+                    checkArgs(args, 1, op)
+                    JsIndexOf(
+                        value = parent,
+                        search = args.argAt(0),
+                        last = op == "lastIndexOf"
+                    )
+                }
+
+                else -> JsNumberContext.interpret(parent, op, args)
+                    ?: JsStringContext.interpret(parent, op, args)
+            }
+        } else {
+            JsNumberContext.interpret(parent, op, args)
+                ?: JsStringContext.interpret(parent, op, args)
         }
     }
 
+    override fun isFalse(a: Any?): Boolean {
+        return a == null
+                || a == false
+                || a is Number && a.toDouble() == 0.0
+                || a is CharSequence && a.isEmpty()
+                || a is Unit
+    }
+
     override fun sum(a: Any?, b: Any?): Any? {
-        return jssum(a?.validateJsNumber(), b?.validateJsNumber())
+        return jssum(
+            a?.numberOrThis(false),
+            b?.numberOrThis(false)
+        )
     }
 
     override fun sub(a: Any?, b: Any?): Any? {
-        return jssub(a?.validateJsNumber(), b?.validateJsNumber())
+        return jssub(a?.numberOrThis(), b?.numberOrThis())
     }
 
     override fun mul(a: Any?, b: Any?): Any? {
-        return jsmul(a?.validateJsNumber(), b?.validateJsNumber())
+        return jsmul(a?.numberOrThis(), b?.numberOrThis())
     }
 
     override fun div(a: Any?, b: Any?): Any? {
-        return jsdiv(a?.validateJsNumber(), b?.validateJsNumber())
+        return jsdiv(a?.numberOrThis(), b?.numberOrThis())
     }
 
     override fun mod(a: Any?, b: Any?): Any {
-        return jsmod(a?.validateJsNumber(), b?.validateJsNumber())
+        return jsmod(a?.numberOrThis(), b?.numberOrThis())
     }
 
     override fun inc(a: Any?): Any {
-        return jsinc(a?.validateJsNumber())
+        return jsinc(a?.numberOrThis())
     }
 
     override fun dec(a: Any?): Any {
-        return jsdec(a?.validateJsNumber())
+        return jsdec(a?.numberOrThis())
     }
 
     override fun neg(a: Any?): Any {
-        return jsneg(a?.validateJsNumber())
+        return jsneg(a?.numberOrThis())
+    }
+
+    override fun pos(a: Any?): Any {
+        return jspos(a?.numberOrThis())
     }
 }
 
 
 private fun jssum(a : Any?, b : Any?) : Any? {
+    val a = if (a is List<*>)
+        a.joinToString(",")
+    else a
+    val b = if (b is List<*>)
+        b.joinToString(",")
+    else b
     return when {
         a == null && b == null -> 0L
         a == null && b is Number || a is Number && b == null -> a ?: b
         b is Unit || a is Unit -> Double.NaN
         a is Long && b is Long -> a + b
         a is Number && b is Number -> a.toDouble() + b.toDouble()
-        a is List<*> && b is List<*> -> {
-            a as List<Number>
-            b as List<Number>
-
-            List(min(a.size, b.size)) {
-                a[it].toDouble() + b[it].toDouble()
-            }
-        }
-
-        a is List<*> && b is Number -> {
-            if (a is MutableList<*>) {
-                a as MutableList<Number>
-                a[0] = a[0].toDouble() + b.toDouble()
-                a
-            } else {
-                listOf((a as List<Number>).first().toDouble() + b.toDouble()) + a.drop(1)
-            }
-        }
-
-        a is Number && b is List<*> -> {
-            if (b is MutableList<*>) {
-                b as MutableList<Number>
-                b[0] = b[0].toDouble() + a.toDouble()
-                b
-            } else {
-                listOf(a.toDouble() + (b as List<Number>).first().toDouble()) + b.drop(1)
-            }
-        }
-
-        a is CharSequence || b is CharSequence -> a.toString() + b.toString()
-
-        else -> error("Cant calculate the sum of $a and $b")
+        else ->  a.toString() + b.toString()
     }
 }
 
@@ -103,42 +116,7 @@ private fun jssub(a : Any?, b : Any?) : Any? {
         a is Long? && b is Long? -> (a ?: 0L) - (b ?: 0L)
         a is Double? && b is Double? ->(a ?: 0.0) - (b ?: 0.0)
         a is Number? && b is Number? ->(a?.toDouble() ?: 0.0) - (b?.toDouble() ?: 0.0)
-        a is List<*> && b is List<*> -> {
-            a as List<Number>
-            b as List<Number>
-            List(min(a.size, b.size)) {
-                a[it].toDouble() - b[it].toDouble()
-            }
-        }
-        a is CharSequence || b is CharSequence -> {
-            stringMath(a?.toString(), b?.toString(), Long::minus, Double::minus)
-        }
-        else -> error("Cant subtract $b from $a")
-    }
-}
-
-private fun stringMath(
-    a : String?,
-    b : String?,
-    long : (Long, Long) -> Long,
-    double: (Double,Double) -> Double
-) : Any {
-    val sa = a ?: "0"
-    val sb = b ?: "0"
-
-    val la = sa.toLongOrNull()
-    val lb = sb.toLongOrNull()
-
-    return if (la != null && lb != null) {
-        long(la, lb)
-    } else {
-        val da = sa.toDoubleOrNull()
-        val db = sb.toDoubleOrNull()
-        if (da != null && db != null) {
-            double(da, db)
-        } else {
-            Double.NaN
-        }
+        else -> Double.NaN
     }
 }
 
@@ -160,10 +138,7 @@ private fun jsmul(a : Any?, b : Any?) : Any? {
             val af = a.toDouble()
             b.fastMap { it.toDouble() * af }
         }
-        a is CharSequence || b is CharSequence -> {
-            stringMath(a.toString(), b.toString(), Long::times, Double::times)
-        }
-        else -> error("Cant multiply $a by $b")
+        else -> Double.NaN
     }
 }
 
@@ -189,21 +164,18 @@ private fun jsdiv(a : Any?, b : Any?) : Any {
             a.fastMap { it.toDouble() / bf }
         }
 
-        a is CharSequence || b is CharSequence -> {
-            stringMath(a?.toString(), b?.toString(), Long::div, Double::div)
-        }
-
-        else -> error("Cant divide $a by $b")
+        else -> Double.NaN
     }
 }
 
 private fun jsmod(a : Any?, b : Any?) : Any {
     return when {
+        b == null || a == Unit || b == Unit -> Double.NaN
+        (b as? Number)?.toDouble()?.absoluteValue?.let { it < Double.MIN_VALUE } == true -> Double.NaN
         a == null -> 0L
-        b == null -> Double.NaN
         a is Long && b is Long -> a % b
         a is Number && b is Number -> a.toDouble() % b.toDouble()
-        else -> error("Can't get mod of $a and $b")
+        else -> Double.NaN
     }
 }
 
@@ -214,7 +186,7 @@ private fun jsinc(v : Any?) : Any {
         is Long -> v + 1
         is Double -> v + 1
         is Number -> v.toDouble() + 1
-        else -> error("can't increment $v")
+        else -> Double.NaN
     }
 }
 
@@ -224,7 +196,7 @@ private fun jsdec(v : Any?) : Any {
         is Long -> v - 1
         is Double -> v - 1
         is Number -> v.toDouble() - 1
-        else -> error("can't decrement $v")
+        else -> Double.NaN
     }
 }
 
@@ -238,11 +210,20 @@ private fun jsneg(v : Any?) : Any {
             v.fastMap { -it.toDouble() }
         }
 
-        else -> error("Cant apply unary minus to $v")
+        else -> Double.NaN
     }
 }
 
-internal fun Any.validateJsNumber() = when(this) {
+private fun jspos(v : Any?) : Any {
+    return when (v) {
+        null -> 0
+        is Number -> v
+        else -> Double.NaN
+    }
+}
+
+
+public fun Any.numberOrNull(withNaNs : Boolean = true) : Any? = when(this) {
     is Byte -> toLong()
     is UByte -> toLong()
     is Short -> toLong()
@@ -251,6 +232,19 @@ internal fun Any.validateJsNumber() = when(this) {
     is UInt -> toLong()
     is ULong -> toLong()
     is Float -> toDouble()
-    else -> this
+    is Long, is Double -> this
+    is String -> if (withNaNs) {
+        toLongOrNull() ?: toDoubleOrNull()
+    } else null
+    is List<*> -> {
+        if (withNaNs) {
+            singleOrNull()?.numberOrNull(withNaNs)
+        } else{
+            null
+        }
+    }
+    else -> null
 }
 
+
+public fun Any.numberOrThis(withMagic : Boolean = true) : Any = numberOrNull(withMagic) ?: this

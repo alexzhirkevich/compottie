@@ -10,9 +10,15 @@ internal class OpVar<C : ScriptContext>(
 ) : Expression<C>, InterpretationContext<C> {
 
     override fun interpret(callable: String?, args: List<Expression<C>>?): Expression<C>? {
-        return if (callable == null)
+        return if (callable == null) {
             OpConstant(Unit)
-        else OpGetVariable(callable, assignmentType = scope)
+        } else {
+            OpGetVariable(
+                name = callable,
+                receiver = null,
+                assignmentType = scope
+            )
+        }
     }
 }
 

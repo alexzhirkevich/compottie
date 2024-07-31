@@ -3,11 +3,13 @@ package io.github.alexzhirkevich.skriptie
 import io.github.alexzhirkevich.skriptie.common.OpAssign
 
 
-public interface InterpretationContext<C : ScriptContext> : Expression<C> {
+public interface InterpretationContext<C : ScriptContext> : ExtensionContext<C>, Expression<C> {
 
     override fun invoke(context: C): Any? = this
 
     public fun interpret(callable: String?, args: List<Expression<C>>?): Expression<C>?
+
+    public override fun interpret(parent: Expression<C>, op: String?, args: List<Expression<C>>?): Expression<C>? = null
 }
 
 internal fun <C: ScriptContext> List<Expression<C>>.argForNameOrIndex(
@@ -15,13 +17,14 @@ internal fun <C: ScriptContext> List<Expression<C>>.argForNameOrIndex(
     vararg name : String,
 ) : Expression<C>? {
 
-    forEach { op ->
-        if (op is OpAssign && name.any { op.variableName == it }) {
-            return op.assignableValue
-        }
-    }
-
     return argAtOrNull(index)
+//    forEach { op ->
+//        if (op is OpAssign && name.any { op.variableName == it }) {
+//            return op.assignableValue
+//        }
+//    }
+//
+//    return argAtOrNull(index)
 }
 
 internal fun <C: ScriptContext> List<Expression<C>>.argAt(
@@ -39,9 +42,10 @@ internal fun <C: ScriptContext> List<Expression<C>>.argAtOrNull(
     index : Int,
 ) : Expression<C>? {
 
-    return getOrNull(index).let {
-        if (it is OpAssign)
-            it.assignableValue
-        else it
-    }
+    return getOrNull(index)
+//        /**/.let {
+//        if (it is OpAssign)
+//            it.assignableValue
+//        else it
+//    }
 }

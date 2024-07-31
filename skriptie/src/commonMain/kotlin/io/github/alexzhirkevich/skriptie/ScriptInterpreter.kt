@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.skriptie
 
-internal interface ScriptInterpreter<C : ScriptContext> {
-    fun interpret() : Script<C>
+public interface ScriptInterpreter<C : ScriptContext> {
+
+    public fun interpret(script : String) : Script<C>
 }

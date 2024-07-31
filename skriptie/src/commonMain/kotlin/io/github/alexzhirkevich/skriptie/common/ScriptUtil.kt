@@ -23,11 +23,6 @@ internal fun <T : Any?> checkNotEmpty(value : T?) : T {
     return value
 }
 
-internal fun unresolvedReference(ref : String, obj : String? = null) : Nothing =
-    if (obj != null)
-        error("Unresolved reference '$ref' for $obj")
-    else error("Unresolved reference: $ref")
-
 
 internal fun <C : ScriptContext, T, R : Any> Expression<C>.cast(block: (T) -> R) : Expression<C> =
     Expression { block(invoke(it) as T) }

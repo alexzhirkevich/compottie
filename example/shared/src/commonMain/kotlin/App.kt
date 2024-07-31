@@ -132,7 +132,7 @@ public suspend fun LottieCompositionSpec.Companion.ResourceString(
 public fun App() {
 
 //    return InteractiveControlsScreen()
-    return LottieFilesScreen()
+//    return LottieFilesScreen()
 
 
 //    return LottieFontExample()
