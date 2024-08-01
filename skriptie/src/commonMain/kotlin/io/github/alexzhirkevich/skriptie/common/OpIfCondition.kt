@@ -1,10 +1,11 @@
 package io.github.alexzhirkevich.skriptie.common
 
 import io.github.alexzhirkevich.skriptie.Expression
-import io.github.alexzhirkevich.skriptie.ScriptContext
+import io.github.alexzhirkevich.skriptie.ScriptRuntime
+import io.github.alexzhirkevich.skriptie.invoke
 
 
-internal fun <C : ScriptContext> OpIfCondition(
+internal fun <C : ScriptRuntime> OpIfCondition(
     condition : Expression<C> = OpConstant(true),
     onTrue : Expression<C>? = null,
     onFalse : Expression<C>? = null

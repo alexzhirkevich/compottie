@@ -1,23 +1,25 @@
 package io.github.alexzhirkevich.skriptie.common
 
 import io.github.alexzhirkevich.skriptie.Expression
-import io.github.alexzhirkevich.skriptie.ScriptContext
+import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.VariableType
 import io.github.alexzhirkevich.skriptie.argForNameOrIndex
-import io.github.alexzhirkevich.skriptie.ecmascript.Object
+import io.github.alexzhirkevich.skriptie.ecmascript.ESAny
+import io.github.alexzhirkevich.skriptie.ecmascript.ESObject
+import io.github.alexzhirkevich.skriptie.invoke
 
-internal class FunctionParam<C : ScriptContext>(
-    val name : String,
-    val isVararg : Boolean = false,
-    val default : Expression<C>? = null
+public class FunctionParam<C : ScriptRuntime>(
+    public val name : String,
+    public val isVararg : Boolean = false,
+    public val default : Expression<C>? = null
 )
 
-internal infix fun <C : ScriptContext> String.with(default: Expression<C>?) : FunctionParam<C> {
+internal infix fun <C : ScriptRuntime> String.with(default: Expression<C>?) : FunctionParam<C> {
     return FunctionParam(this, false, default)
 }
 
 
-internal class OpFunction<C : ScriptContext>(
+internal class OpFunction<C : ScriptRuntime>(
     val name : String,
     private val parameters : List<FunctionParam<C>>,
     private val body : Expression<C>
@@ -59,7 +61,7 @@ internal class OpFunction<C : ScriptContext>(
     }
 }
 
-internal fun <C : ScriptContext> OpFunctionExec(
+internal fun <C : ScriptRuntime> OpFunctionExec(
     name : String,
     receiver : Expression<C>?,
     parameters : List<Expression<C>>,
@@ -67,7 +69,11 @@ internal fun <C : ScriptContext> OpFunctionExec(
 
     val function = when (val res = receiver?.invoke(ctx)) {
         null -> ctx.getVariable(name)
-        is Object -> res[name]
+        is ESObject<*> -> res[name]
+        is ESAny<*> -> {
+            res as ESAny<C>
+            return@Expression res.invoke(name, ctx, parameters)
+        }
         else -> null
     } as? OpFunction<C> ?: unresolvedReference(name)
 

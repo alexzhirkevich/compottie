@@ -1,12 +1,11 @@
 package io.github.alexzhirkevich.skriptie.ecmascript
 
 import io.github.alexzhirkevich.skriptie.Expression
-import io.github.alexzhirkevich.skriptie.GlobalContext
 import io.github.alexzhirkevich.skriptie.InterpretationContext
+import io.github.alexzhirkevich.skriptie.LangContext
 import io.github.alexzhirkevich.skriptie.Script
-import io.github.alexzhirkevich.skriptie.ScriptContext
+import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.VariableType
-import io.github.alexzhirkevich.skriptie.asScript
 import io.github.alexzhirkevich.skriptie.common.Delegate
 import io.github.alexzhirkevich.skriptie.common.FunctionParam
 import io.github.alexzhirkevich.skriptie.common.OpAssign
@@ -33,15 +32,15 @@ import io.github.alexzhirkevich.skriptie.common.OpMakeArray
 import io.github.alexzhirkevich.skriptie.common.OpNot
 import io.github.alexzhirkevich.skriptie.common.OpReturn
 import io.github.alexzhirkevich.skriptie.common.OpTryCatch
-import io.github.alexzhirkevich.skriptie.common.OpVar
 import io.github.alexzhirkevich.skriptie.common.OpWhileLoop
 import io.github.alexzhirkevich.skriptie.common.SyntaxError
 import io.github.alexzhirkevich.skriptie.common.unresolvedReference
+import io.github.alexzhirkevich.skriptie.invoke
 import io.github.alexzhirkevich.skriptie.isAssignable
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-internal val EXPR_DEBUG_PRINT_ENABLED = false
+internal val EXPR_DEBUG_PRINT_ENABLED = true
 
 internal enum class LogicalContext {
     And, Or, Compare
@@ -52,9 +51,10 @@ internal enum class BlockContext {
 }
 
 
-internal class EcmascriptInterpreterImpl<C : ScriptContext>(
+internal class EcmascriptInterpreterImpl<C : ScriptRuntime>(
     private val expr : String,
-    private val globalContext : GlobalContext<C>,
+    private val langContext: LangContext,
+    private val globalContext : InterpretationContext<C>,
 ) {
 
     private var pos = -1
@@ -92,7 +92,10 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
         if (EXPR_DEBUG_PRINT_ENABLED) {
             println("Expression parsed: $expr")
         }
-        return block.asScript()
+
+        return Script {
+            langContext.toKotlin(block(it))
+        }
     }
 
     private fun prepareNextChar() {
@@ -189,11 +192,11 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
         while (true) {
             prepareNextChar()
             x = when {
-                eatSequence("+=") -> parseAssignmentValue(x, globalContext::sum)
-                eatSequence("-=") -> parseAssignmentValue(x, globalContext::sub)
-                eatSequence("*=") -> parseAssignmentValue(x, globalContext::mul)
-                eatSequence("/=") -> parseAssignmentValue(x, globalContext::div)
-                eatSequence("%=") -> parseAssignmentValue(x, globalContext::mod)
+                eatSequence("+=") -> parseAssignmentValue(x, langContext::sum)
+                eatSequence("-=") -> parseAssignmentValue(x, langContext::sub)
+                eatSequence("*=") -> parseAssignmentValue(x, langContext::mul)
+                eatSequence("/=") -> parseAssignmentValue(x, langContext::div)
+                eatSequence("%=") -> parseAssignmentValue(x, langContext::mod)
                 eat('=') -> parseAssignmentValue(x, null)
                 eatSequence("++") -> {
                     check(x.isAssignable()) {
@@ -202,7 +205,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
                     OpIncDecAssign(
                         variable = x,
                         preAssign = false,
-                        op = globalContext::inc
+                        op = langContext::inc
                     )
                 }
 
@@ -213,7 +216,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
                     OpIncDecAssign(
                         variable = x,
                         preAssign = false,
-                        op = globalContext::dec
+                        op = langContext::dec
                     )
                 }
 
@@ -263,14 +266,14 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
                     OpBoolean(
                         parseExpressionOp(globalContext, LogicalContext.And,blockContext),
                         x,
-                        globalContext::isFalse, Boolean::and
+                        langContext::isFalse, Boolean::and
                     )
 
                 logicalContext == null && eatSequence("||") ->
                     OpBoolean(
                         parseExpressionOp(globalContext, LogicalContext.Or,blockContext),
                         x,
-                        globalContext::isFalse, Boolean::or
+                        langContext::isFalse, Boolean::or
                     )
 
                 eatSequence("<=") -> OpCompare(
@@ -317,7 +320,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
                         parseExpressionOp(globalContext, LogicalContext.Compare,blockContext),
                         false
                     ),
-                    globalContext::isFalse
+                    langContext::isFalse
                 )
 
                 eatSequence("!=") -> OpNot(
@@ -326,14 +329,14 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
                         parseExpressionOp(globalContext, LogicalContext.Compare, blockContext),
                         true
                     ),
-                    globalContext::isFalse
+                    langContext::isFalse
                 )
 
                 !nextSequenceIs("++") && !nextSequenceIs("+=") && eat('+') ->
-                    Delegate(x, parseTermOp(globalContext, blockContext), globalContext::sum)
+                    Delegate(x, parseTermOp(globalContext, blockContext), langContext::sum)
 
                 !nextSequenceIs("--") && !nextSequenceIs("-=") && eat('-') ->
-                    Delegate(x, parseTermOp(globalContext, blockContext), globalContext::sub)
+                    Delegate(x, parseTermOp(globalContext, blockContext), langContext::sub)
 
                 else -> return x
             }
@@ -348,19 +351,19 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
                 !nextSequenceIs("*=") && eat('*') -> Delegate(
                     x,
                     parseFactorOp(globalContext,blockContext),
-                    globalContext::mul
+                    langContext::mul
                 )
 
                 !nextSequenceIs("/=") && eat('/') -> Delegate(
                     x,
                     parseFactorOp(globalContext,blockContext),
-                    globalContext::div
+                    langContext::div
                 )
 
                 !nextSequenceIs("%=") && eat('%') -> Delegate(
                     x,
                     parseFactorOp(globalContext, blockContext),
-                    globalContext::mod
+                    langContext::mod
                 )
 
                 else -> return x
@@ -373,7 +376,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
 
             nextCharIs('{'::equals) -> parseBlock(context = emptyList())
 
-            context is GlobalContext<C> && eatSequence("++") -> {
+            context === globalContext && eatSequence("++") -> {
                 val start = pos
                 val variable = parseFactorOp(globalContext, blockContext)
                 require(variable.isAssignable()) {
@@ -382,11 +385,11 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
                 OpIncDecAssign(
                     variable = variable,
                     preAssign = true,
-                    op = globalContext::inc
+                    op = langContext::inc
                 )
             }
 
-            context is GlobalContext<C> && eatSequence("--") -> {
+            context === globalContext && eatSequence("--") -> {
                 val start = pos
                 val variable = parseFactorOp(globalContext, blockContext)
                 require(variable.isAssignable()) {
@@ -395,20 +398,20 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
                 OpIncDecAssign(
                     variable = variable,
                     preAssign = true,
-                    op = globalContext::dec
+                    op = langContext::dec
                 )
             }
 
-            context is GlobalContext<C> && eat('+') ->
-                Delegate(parseFactorOp(context, blockContext), globalContext::pos)
+             context === globalContext && eat('+') ->
+                Delegate(parseFactorOp(context, blockContext), langContext::pos)
 
-            context is GlobalContext<C> && eat('-') ->
-                Delegate(parseFactorOp(context, blockContext), globalContext::neg)
+             context === globalContext && eat('-') ->
+                Delegate(parseFactorOp(context, blockContext), langContext::neg)
 
-            context is GlobalContext<C> && !nextSequenceIs("!=") && eat('!') ->
-                OpNot(parseExpressionOp(context, blockContext = blockContext),  globalContext::isFalse)
+             context === globalContext && !nextSequenceIs("!=") && eat('!') ->
+                OpNot(parseExpressionOp(context, blockContext = blockContext),  langContext::isFalse)
 
-            context is GlobalContext<C> && eat('(') -> {
+             context === globalContext && eat('(') -> {
                 parseExpressionOp(context, blockContext = blockContext).also {
                     require(eat(')')) {
                         "Bad expression: Missing ')'"
@@ -416,7 +419,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
                 }
             }
 
-            context is GlobalContext<C> && nextCharIs { it.isDigit() || it == '.' } -> {
+             context === globalContext && nextCharIs { it.isDigit() || it == '.' } -> {
                 if (EXPR_DEBUG_PRINT_ENABLED) {
                     print("making const number... ")
                 }
@@ -481,10 +484,10 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
                 if (EXPR_DEBUG_PRINT_ENABLED) {
                     println(num)
                 }
-                OpConstant(num)
+                OpConstant(langContext.fromKotlin(num))
             }
 
-            context is GlobalContext<C> && nextCharIs('\''::equals) || nextCharIs('"'::equals) -> {
+             context === globalContext && nextCharIs('\''::equals) || nextCharIs('"'::equals) -> {
                 if (EXPR_DEBUG_PRINT_ENABLED) {
                     print("making const string... ")
                 }
@@ -497,10 +500,21 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
                 if (EXPR_DEBUG_PRINT_ENABLED) {
                     println(str)
                 }
-                OpConstant(str)
+                OpConstant(langContext.fromKotlin(str))
             }
 
-            context is GlobalContext<C> && eat('[') -> { // make array
+            context !== globalContext && eat('[') -> { // index
+                if (EXPR_DEBUG_PRINT_ENABLED) {
+                    println("making index... ")
+                }
+                OpIndex(context, parseExpressionOp(globalContext, blockContext = blockContext)).also {
+                    require(eat(']')) {
+                        "Bad expression: Missing ']'"
+                    }
+                }
+            }
+
+           eat('[') -> { // make array
                 if (EXPR_DEBUG_PRINT_ENABLED) {
                     println("making array... ")
                 }
@@ -517,18 +531,6 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
                 }
                 OpMakeArray(arrayArgs)
             }
-
-            context !is GlobalContext<C> && eat('[') -> { // index
-                if (EXPR_DEBUG_PRINT_ENABLED) {
-                    println("making index... ")
-                }
-                OpIndex(context, parseExpressionOp(globalContext, blockContext = blockContext)).also {
-                    require(eat(']')) {
-                        "Bad expression: Missing ']'"
-                    }
-                }
-            }
-
 
             ch.isFun() -> {
 
@@ -562,8 +564,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
                 parseFunction(this, null, blockContext)
             }
             // begin condition || property || index
-            this is OpVar<*>
-                    || eat('.')
+            eat('.')
                     || nextCharIs('['::equals) ->
                 parseFactorOp(this, blockContext) // continue with receiver
 
@@ -602,13 +603,33 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
 
         return when (func) {
             "var", "let", "const" -> {
-                OpVar(
-                    when (func) {
-                        "var" -> VariableType.Global
-                        "let" -> VariableType.Local
-                        else -> VariableType.Const
+                val scope = when (func) {
+                    "var" -> VariableType.Global
+                    "let" -> VariableType.Local
+                    else -> VariableType.Const
+                }
+
+                val start = pos
+
+                when(val expr = parseAssignment(globalContext, emptyList())){
+                    is OpAssign -> {
+                        OpAssign(
+                            type = scope,
+                            variableName = expr.variableName,
+                            assignableValue = expr.assignableValue,
+                            merge = null
+                        )
                     }
-                )
+                    is OpGetVariable -> {
+                        OpAssign(
+                            type = scope,
+                            variableName = expr.name,
+                            assignableValue = OpConstant(Unit),
+                            merge = null
+                        )
+                    }
+                    else -> throw SyntaxError("Unexpected identifier '${this.expr.substring(start).substringBefore(' ').trim()}'")
+                }
             }
 
             "undefined" -> OpConstant(Unit)
@@ -634,7 +655,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
                 OpWhileLoop(
                     condition = parseWhileCondition(),
                     body = parseBlock(context = blockContext + BlockContext.Loop),
-                    isFalse = globalContext::isFalse
+                    isFalse = langContext::isFalse
                 )
             }
 
@@ -657,7 +678,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
                 OpDoWhileLoop(
                     condition = condition,
                     body = body,
-                    isFalse = globalContext::isFalse
+                    isFalse = langContext::isFalse
 
                 )
             }
@@ -759,30 +780,25 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
                         )
 
                     else -> {
-                        globalContext.interpret(context, func, args)
-                            ?: run {
-                                if (args != null && func != null) {
-                                    if (EXPR_DEBUG_PRINT_ENABLED) {
-                                        println("parsed call for function $func with receiver $context")
-                                    }
-                                    OpFunctionExec(
-                                        name = func,
-                                        receiver = context,
-                                        parameters = args
-                                    )
-                                } else null
-                            }
-                            ?: run {
-                                if (args == null && func != null) {
-                                    if (EXPR_DEBUG_PRINT_ENABLED) {
-                                        println("making GetVariable $func with receiver $context... ")
-                                    }
-                                    OpGetVariable(name = func, receiver = context)
-                                } else {
-                                    null
+                        kotlin.run {
+                            if (args != null && func != null) {
+                                if (EXPR_DEBUG_PRINT_ENABLED) {
+                                    println("parsed call for function $func with receiver $context")
                                 }
+                                return@run OpFunctionExec(
+                                    name = func,
+                                    receiver = context,
+                                    parameters = args
+                                )
                             }
-                            ?: unresolvedReference(func ?: "null")
+                            if (args == null && func != null) {
+                                if (EXPR_DEBUG_PRINT_ENABLED) {
+                                    println("making GetVariable $func with receiver $context... ")
+                                }
+                                return@run OpGetVariable(name = func, receiver = context)
+                            }
+                            unresolvedReference(func ?: "null")
+                        }
                     }
                 }
             }
@@ -860,7 +876,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptContext>(
             assignment = assign,
             increment = increment,
             comparison = comparison,
-            isFalse = globalContext::isFalse,
+            isFalse = langContext::isFalse,
             body = body
         )
     }

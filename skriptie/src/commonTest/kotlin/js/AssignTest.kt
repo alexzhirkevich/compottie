@@ -1,6 +1,7 @@
 package js
 
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 
 
 class AssignTest {
@@ -15,9 +16,9 @@ class AssignTest {
         "var x = 144; x /=6".eval().assertEqualsTo(24L)
 
         "var x = []; x[0] = 5; x[1] = 10; x[(5-5)] += 10-3; x[5-4] += (4*2); x"
-            .eval().assertEqualsTo(listOf(12L, 18L))
+            .eval().let { assertContentEquals(it as Iterable<*>, listOf(12L, 18L)) }
 
         "var x = []\n x[0] = 5\n x[1] = 10\n x[(5-5)] += 10-3\n x[5-4] += (4*2); x"
-            .eval().assertEqualsTo(listOf(12L, 18L))
+            .eval().let { assertContentEquals(it as Iterable<*>, listOf(12L, 18L)) }
     }
 }

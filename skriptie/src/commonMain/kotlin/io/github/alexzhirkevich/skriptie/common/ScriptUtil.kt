@@ -1,17 +1,18 @@
 package io.github.alexzhirkevich.skriptie.common
 
 import io.github.alexzhirkevich.skriptie.Expression
-import io.github.alexzhirkevich.skriptie.ScriptContext
+import io.github.alexzhirkevich.skriptie.ScriptRuntime
+import io.github.alexzhirkevich.skriptie.invoke
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-internal fun <C : ScriptContext> Delegate(
+internal fun <C : ScriptRuntime> Delegate(
     a : Expression<C>,
     b : Expression<C>,
     op : (Any?, Any?) -> Any?
 ) = Expression<C> { op(a(it), b(it)) }
 
-internal fun <C : ScriptContext> Delegate(a : Expression<C>, op : (Any?) -> Any?) = Expression<C> {
+internal fun <C : ScriptRuntime> Delegate(a : Expression<C>, op : (Any?) -> Any?) = Expression<C> {
     op(a(it))
 }
 
@@ -24,10 +25,10 @@ internal fun <T : Any?> checkNotEmpty(value : T?) : T {
 }
 
 
-internal fun <C : ScriptContext, T, R : Any> Expression<C>.cast(block: (T) -> R) : Expression<C> =
+internal fun <C : ScriptRuntime, T, R : Any> Expression<C>.cast(block: (T) -> R) : Expression<C> =
     Expression { block(invoke(it) as T) }
 
-internal fun <C : ScriptContext, T, R : Any> Expression<C>.withCast(block: T.(
+internal fun <C : ScriptRuntime, T, R : Any> Expression<C>.withCast(block: T.(
     context: C,
 ) -> R) : Expression<C> = Expression {
     block(invoke(it) as T, it)

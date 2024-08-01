@@ -1,46 +1,19 @@
 package io.github.alexzhirkevich.skriptie.javascript
 
-import io.github.alexzhirkevich.skriptie.Expression
-import io.github.alexzhirkevich.skriptie.GlobalContext
-import io.github.alexzhirkevich.skriptie.argAt
+import io.github.alexzhirkevich.skriptie.EcmascriptRuntime
+import io.github.alexzhirkevich.skriptie.VariableType
 import io.github.alexzhirkevich.skriptie.common.fastMap
-import io.github.alexzhirkevich.skriptie.ecmascript.checkArgs
-import io.github.alexzhirkevich.skriptie.javascript.iterable.JsIndexOf
-import io.github.alexzhirkevich.skriptie.javascript.number.JsNumberContext
-import io.github.alexzhirkevich.skriptie.javascript.string.JsStringContext
 import kotlin.math.absoluteValue
 
-public open class JSInterpretationContext : GlobalContext<JSScriptContext> {
+public open class JSRuntime : EcmascriptRuntime() {
 
-    override fun interpret(
-        callable: String?,
-        args: List<Expression<JSScriptContext>>?
-    ): Expression<JSScriptContext>? = null
+    init {
+        recreate()
+    }
 
-    override fun interpret(
-        parent: Expression<JSScriptContext>,
-        op: String?,
-        args: List<Expression<JSScriptContext>>?
-    ): Expression<JSScriptContext>? {
-        return if (args != null){
-            when (op) {
-                "toString" -> Expression { parent(it).toString() }
-                "indexOf", "lastIndexOf" -> {
-                    checkArgs(args, 1, op)
-                    JsIndexOf(
-                        value = parent,
-                        search = args.argAt(0),
-                        last = op == "lastIndexOf"
-                    )
-                }
-
-                else -> JsNumberContext.interpret(parent, op, args)
-                    ?: JsStringContext.interpret(parent, op, args)
-            }
-        } else {
-            JsNumberContext.interpret(parent, op, args)
-                ?: JsStringContext.interpret(parent, op, args)
-        }
+    override fun reset() {
+        super.reset()
+        recreate()
     }
 
     override fun isFalse(a: Any?): Boolean {
@@ -49,48 +22,77 @@ public open class JSInterpretationContext : GlobalContext<JSScriptContext> {
                 || a is Number && a.toDouble() == 0.0
                 || a is CharSequence && a.isEmpty()
                 || a is Unit
+                || (a as? JsNumber)?.value?.let(::isFalse) == true
     }
 
     override fun sum(a: Any?, b: Any?): Any? {
-        return jssum(
-            a?.numberOrThis(false),
-            b?.numberOrThis(false)
+        return fromKotlin(
+            jssum(
+                fromKotlin(a)?.numberOrThis(false),
+                fromKotlin(b)?.numberOrThis(false)
+            )
         )
     }
 
     override fun sub(a: Any?, b: Any?): Any? {
-        return jssub(a?.numberOrThis(), b?.numberOrThis())
+        return fromKotlin(jssub(fromKotlin(a)?.numberOrThis(), fromKotlin(b)?.numberOrThis()))
     }
 
     override fun mul(a: Any?, b: Any?): Any? {
-        return jsmul(a?.numberOrThis(), b?.numberOrThis())
+        return fromKotlin(jsmul(fromKotlin(a)?.numberOrThis(), fromKotlin(b)?.numberOrThis()))
     }
 
     override fun div(a: Any?, b: Any?): Any? {
-        return jsdiv(a?.numberOrThis(), b?.numberOrThis())
+        return fromKotlin(jsdiv(fromKotlin(a)?.numberOrThis(), fromKotlin(b)?.numberOrThis()))
     }
 
-    override fun mod(a: Any?, b: Any?): Any {
-        return jsmod(a?.numberOrThis(), b?.numberOrThis())
+    override fun mod(a: Any?, b: Any?): Any? {
+        return fromKotlin(jsmod(fromKotlin(a)?.numberOrThis(), fromKotlin(b)?.numberOrThis()))
     }
 
-    override fun inc(a: Any?): Any {
-        return jsinc(a?.numberOrThis())
+    override fun inc(a: Any?): Any? {
+        return fromKotlin(jsinc(fromKotlin(a)?.numberOrThis()))
     }
 
-    override fun dec(a: Any?): Any {
-        return jsdec(a?.numberOrThis())
+    override fun dec(a: Any?): Any? {
+        return fromKotlin(jsdec(fromKotlin(a)?.numberOrThis()))
     }
 
-    override fun neg(a: Any?): Any {
-        return jsneg(a?.numberOrThis())
+    override fun neg(a: Any?): Any? {
+        return fromKotlin(jsneg(fromKotlin(a)?.numberOrThis()))
     }
 
-    override fun pos(a: Any?): Any {
-        return jspos(a?.numberOrThis())
+    override fun pos(a: Any?): Any? {
+        return fromKotlin(jspos(fromKotlin(a)?.numberOrThis()))
+    }
+
+    override fun fromKotlin(a: Any?): Any? {
+        return when (a){
+            is Number -> JsNumber(a)
+            is UByte -> JsNumber(a.toLong())
+            is UShort -> JsNumber(a.toLong())
+            is UInt -> JsNumber(a.toLong())
+            is ULong -> JsNumber(a.toLong())
+            is List<*> -> JsArray(a.fastMap(::fromKotlin).toMutableList())
+            is CharSequence -> JsString(a.toString())
+            else -> a
+        }
+    }
+
+    override fun toKotlin(a: Any?): Any? {
+        return when(a){
+            is JsNumber -> a.value
+            is JsArray -> a.value.fastMap(::toKotlin)
+            is JsString -> a.value
+            else -> a
+        }
+    }
+
+    private fun recreate(){
+        variables["Math"] = VariableType.Const to JsMath()
+        variables["Infinity"] = VariableType.Const to Double.POSITIVE_INFINITY
     }
 }
-
 
 private fun jssum(a : Any?, b : Any?) : Any? {
     val a = if (a is List<*>)
@@ -223,7 +225,11 @@ private fun jspos(v : Any?) : Any {
 }
 
 
-public fun Any.numberOrNull(withNaNs : Boolean = true) : Any? = when(this) {
+internal fun Any?.numberOrNull(withNaNs : Boolean = true) : Number? = when(this) {
+    null -> 0
+    is JsString -> if (withNaNs) value.numberOrNull(withNaNs) else null
+    is JsArray -> if (withNaNs) value.numberOrNull(withNaNs) else null
+    is JsWrapper<*> -> value.numberOrNull()
     is Byte -> toLong()
     is UByte -> toLong()
     is Short -> toLong()
@@ -232,7 +238,8 @@ public fun Any.numberOrNull(withNaNs : Boolean = true) : Any? = when(this) {
     is UInt -> toLong()
     is ULong -> toLong()
     is Float -> toDouble()
-    is Long, is Double -> this
+    is Long -> this
+    is Double -> this
     is String -> if (withNaNs) {
         toLongOrNull() ?: toDoubleOrNull()
     } else null
@@ -245,6 +252,8 @@ public fun Any.numberOrNull(withNaNs : Boolean = true) : Any? = when(this) {
     }
     else -> null
 }
+internal fun Any?.number(withNaNs : Boolean = true) : Number = checkNotNull(numberOrNull(withNaNs)){
+    "Expected number but got $this"
+}
 
-
-public fun Any.numberOrThis(withMagic : Boolean = true) : Any = numberOrNull(withMagic) ?: this
+internal fun Any.numberOrThis(withMagic : Boolean = true) : Any = numberOrNull(withMagic) ?: this

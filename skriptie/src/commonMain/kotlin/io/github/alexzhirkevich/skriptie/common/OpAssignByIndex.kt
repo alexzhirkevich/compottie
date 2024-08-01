@@ -1,10 +1,13 @@
 package io.github.alexzhirkevich.skriptie.common
 
 import io.github.alexzhirkevich.skriptie.Expression
-import io.github.alexzhirkevich.skriptie.ScriptContext
+import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.VariableType
+import io.github.alexzhirkevich.skriptie.invoke
+import io.github.alexzhirkevich.skriptie.javascript.JsArray
+import io.github.alexzhirkevich.skriptie.javascript.numberOrNull
 
-internal class OpAssignByIndex<C : ScriptContext>(
+internal class OpAssignByIndex<C : ScriptRuntime>(
     private val variableName : String,
     private val scope : VariableType?,
     private val index : Expression<C>,
@@ -12,7 +15,7 @@ internal class OpAssignByIndex<C : ScriptContext>(
     private val merge : ((Any?, Any?) -> Any?)?
 ) : Expression<C> {
 
-    override tailrec fun invoke(context: C): Any? {
+    override tailrec fun invokeRaw(context: C): Any? {
         val v = assignableValue.invoke(context)
         val current = context.getVariable(variableName)
 
@@ -24,7 +27,7 @@ internal class OpAssignByIndex<C : ScriptContext>(
             context.setVariable(variableName, mutableListOf<Any>(), scope)
             return invoke(context)
         } else {
-            val i = index.invoke(context)
+            val i = index.invoke(context).numberOrNull()
 
             val index = checkNotNull(i as? Number) {
                 "Unexpected index: $i"
@@ -32,9 +35,7 @@ internal class OpAssignByIndex<C : ScriptContext>(
 
             return when (current) {
 
-                is MutableList<*> -> {
-                    current as MutableList<Any?>
-
+                is JsArray-> {
                     while (current.lastIndex < index) {
                         current.add(Unit)
                     }
@@ -48,12 +49,6 @@ internal class OpAssignByIndex<C : ScriptContext>(
                     }
                     current[index]
                 }
-
-                is List<*> -> {
-                    context.setVariable(variableName, current.toMutableList(), scope)
-                    return invoke(context)
-                }
-
                 else -> error("Can't assign '$current' by index ($index)")
             }
         }

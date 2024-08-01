@@ -1,6 +1,6 @@
 package io.github.alexzhirkevich.skriptie
 
-public interface ScriptEngine<C : ScriptContext> : ScriptInterpreter<C> {
+public interface ScriptEngine<C : ScriptRuntime> : ScriptInterpreter<C> {
 
     public val context : C
 
@@ -9,11 +9,11 @@ public interface ScriptEngine<C : ScriptContext> : ScriptInterpreter<C> {
     }
 }
 
-public fun <C : ScriptContext> ScriptEngine<C>.invoke(script: String) : Any? {
+public fun <C : ScriptRuntime> ScriptEngine<C>.invoke(script: String) : Any? {
     return interpret(script).invoke(context)
 }
 
-public fun <C : ScriptContext> ScriptEngine(
+public fun <C : ScriptRuntime> ScriptEngine(
     context: C,
     interpreter: ScriptInterpreter<C>
 ): ScriptEngine<C> = object : ScriptEngine<C>, ScriptInterpreter<C> by interpreter {

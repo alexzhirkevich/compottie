@@ -1,11 +1,12 @@
 package io.github.alexzhirkevich.skriptie.common
 
 import io.github.alexzhirkevich.skriptie.Expression
-import io.github.alexzhirkevich.skriptie.ScriptContext
+import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.VariableType
+import io.github.alexzhirkevich.skriptie.invoke
 
 
-internal class OpForLoop<C : ScriptContext>(
+internal class OpForLoop<C : ScriptRuntime>(
     private val assignment : OpAssign<C>?,
     private val increment: Expression<C>?,
     private val comparison : Expression<C>?,
@@ -20,7 +21,7 @@ internal class OpForLoop<C : ScriptContext>(
         { !isFalse(comparison.invoke(it)) }
     }
 
-    override fun invoke(
+    override fun invokeRaw(
         context: C
     ): Any {
 
@@ -31,7 +32,7 @@ internal class OpForLoop<C : ScriptContext>(
                         assignment.variableName,
                         Pair(
                             assignment.type,
-                            assignment.assignableValue.invoke(context,)
+                            assignment.assignableValue(context,)
                         )
                     )
                 ),
@@ -46,7 +47,7 @@ internal class OpForLoop<C : ScriptContext>(
     private fun block(ctx: C) {
         while (condition(ctx)) {
             try {
-                body.invoke(ctx)
+                body(ctx)
             } catch (_: BlockContinue) {
                 continue
             } catch (_: BlockBreak) {
@@ -59,7 +60,7 @@ internal class OpForLoop<C : ScriptContext>(
 }
 
 
-internal fun <C : ScriptContext> OpDoWhileLoop(
+internal fun <C : ScriptRuntime> OpDoWhileLoop(
     condition : Expression<C>,
     body : OpBlock<C>,
     isFalse : (Any?) -> Boolean
@@ -76,7 +77,7 @@ internal fun <C : ScriptContext> OpDoWhileLoop(
 }
 
 
-internal fun <C : ScriptContext> OpWhileLoop(
+internal fun <C : ScriptRuntime> OpWhileLoop(
     condition : Expression<C>,
     body : Expression<C>,
     isFalse : (Any?) -> Boolean

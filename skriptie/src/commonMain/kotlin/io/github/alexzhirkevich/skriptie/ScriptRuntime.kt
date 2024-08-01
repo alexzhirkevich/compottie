@@ -9,7 +9,7 @@ public enum class VariableType {
     Global, Local, Const
 }
 
-public interface ScriptContext {
+public interface ScriptRuntime : LangContext {
 
     public fun hasVariable(name: String): Boolean
 
@@ -19,14 +19,14 @@ public interface ScriptContext {
 
     public fun withScope(
         extraVariables: Map<String, Pair<VariableType, Any?>> = emptyMap(),
-        block: (ScriptContext) -> Any?
+        block: (ScriptRuntime) -> Any?
     ): Any?
     public fun reset()
 }
 
 private class BlockScriptContext(
-    private val parent : ScriptContext
-) : EcmascriptContext() {
+    private val parent : ScriptRuntime
+) : EcmascriptRuntime(), LangContext by parent {
 
     override fun getVariable(name: String): Any? {
         return if (name in variables) {
@@ -49,7 +49,7 @@ private class BlockScriptContext(
     }
 }
 
-public abstract class EcmascriptContext : ScriptContext {
+public abstract class EcmascriptRuntime : ScriptRuntime {
 
     protected val variables: MutableMap<String, Pair<VariableType, Any?>> = mutableMapOf()
 
@@ -80,7 +80,7 @@ public abstract class EcmascriptContext : ScriptContext {
 
     final override fun withScope(
         extraVariables: Map<String, Pair<VariableType, Any?>>,
-        block: (ScriptContext) -> Any?
+        block: (ScriptRuntime) -> Any?
     ): Any? {
         child.reset()
         extraVariables.forEach { (n, v) ->

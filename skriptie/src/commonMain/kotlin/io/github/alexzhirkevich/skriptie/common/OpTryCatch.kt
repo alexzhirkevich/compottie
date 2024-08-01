@@ -1,10 +1,11 @@
 package io.github.alexzhirkevich.skriptie.common
 
 import io.github.alexzhirkevich.skriptie.Expression
-import io.github.alexzhirkevich.skriptie.ScriptContext
+import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.VariableType
+import io.github.alexzhirkevich.skriptie.invoke
 
-internal fun <C : ScriptContext>  OpTryCatch(
+internal fun <C : ScriptRuntime>  OpTryCatch(
     tryBlock : Expression<C>,
     catchVariableName : String?,
     catchBlock : Expression<C>?,
@@ -18,7 +19,7 @@ internal fun <C : ScriptContext>  OpTryCatch(
     else -> error("SyntaxError: Missing catch or finally after try")
 }
 
-private fun <C : ScriptContext>  TryCatchFinally(
+private fun <C : ScriptRuntime>  TryCatchFinally(
     tryBlock : Expression<C>,
     catchVariableName : String?,
     catchBlock : Expression<C>,
@@ -39,7 +40,7 @@ private fun <C : ScriptContext>  TryCatchFinally(
     }
 }
 
-private fun <C : ScriptContext> TryCatch(
+private fun <C : ScriptRuntime> TryCatch(
     tryBlock : Expression<C>,
     catchVariableName : String?,
     catchBlock : Expression<C>
@@ -58,7 +59,7 @@ private fun <C : ScriptContext> TryCatch(
 }
 
 
-private fun <C : ScriptContext> TryFinally(
+private fun <C : ScriptRuntime> TryFinally(
     tryBlock : Expression<C>,
     finallyBlock : Expression<C>,
 ) = Expression<C> {

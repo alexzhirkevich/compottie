@@ -139,4 +139,11 @@ class SyntaxTest {
         }
         "let x = 1; { let x = 2 }; x".eval().assertEqualsTo(1L)
     }
+
+    @Test
+    fun typeOf(){
+        "typeof(1)".eval().assertEqualsTo("number")
+        "typeof(null)".eval().assertEqualsTo("object")
+        "typeof(undefined)".eval().assertEqualsTo("undefined")
+    }
 }
