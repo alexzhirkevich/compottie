@@ -5,17 +5,17 @@ import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.VariableType
 import io.github.alexzhirkevich.skriptie.invoke
 
-internal class OpAssign<C : ScriptRuntime>(
+internal class OpAssign(
     val type : VariableType? = null,
     val variableName : String,
-    val assignableValue : Expression<C>,
+    val assignableValue : Expression,
     private val merge : ((Any?, Any?) -> Any?)?
-) : Expression<C> {
+) : Expression {
 
-    override fun invokeRaw(context: C): Any? {
+    override fun invokeRaw(context: ScriptRuntime): Any? {
         val v = assignableValue.invoke(context)
 
-        val current = context.getVariable(variableName)
+        val current = context.get(variableName)
 
         check(merge == null || current != null) {
             "Cant modify $variableName as it is undefined"
@@ -25,8 +25,8 @@ internal class OpAssign<C : ScriptRuntime>(
             merge.invoke(current, v)
         } else v
 
-        context.setVariable(
-            name = variableName,
+        context.set(
+            variable = variableName,
             value = value,
             type = type
         )

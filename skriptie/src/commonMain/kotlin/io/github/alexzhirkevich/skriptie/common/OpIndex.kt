@@ -5,21 +5,21 @@ import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.invoke
 import io.github.alexzhirkevich.skriptie.javascript.number
 
-internal class OpIndex<C : ScriptRuntime>(
-    val variable : Expression<C>,
-    val index : Expression<C>,
-) : Expression<C> {
+internal class OpIndex(
+    val variable : Expression,
+    val index : Expression,
+) : Expression {
 
-    override fun invokeRaw(context: C): Any {
+    override fun invokeRaw(context: ScriptRuntime): Any {
         return invoke(context, variable, index)
     }
 
     companion object {
-        fun <C : ScriptRuntime> invoke(context: C, variable : Expression<C>, index : Expression<C>) : Any{
+        fun  invoke(context: ScriptRuntime, variable : Expression, index : Expression) : Any{
             val v = checkNotEmpty(variable(context))
             val idx = (index(context).number()).toInt()
 
-            return v.tryGet(idx)
+            return v.valueAtIndexOrUnit(idx)
         }
     }
 }

@@ -6,23 +6,23 @@ import io.github.alexzhirkevich.skriptie.VariableType
 import io.github.alexzhirkevich.skriptie.invoke
 
 
-internal class OpForLoop<C : ScriptRuntime>(
-    private val assignment : OpAssign<C>?,
-    private val increment: Expression<C>?,
-    private val comparison : Expression<C>?,
+internal class OpForLoop(
+    private val assignment : OpAssign?,
+    private val increment: Expression?,
+    private val comparison : Expression?,
     private val isFalse : (Any?) -> Boolean,
-    private val body: Expression<C>
-) : Expression<C> {
+    private val body: Expression
+) : Expression {
 
 
-    private val condition: (C) -> Boolean = if (comparison == null) {
+    private val condition: (ScriptRuntime) -> Boolean = if (comparison == null) {
         { true }
     } else {
         { !isFalse(comparison.invoke(it)) }
     }
 
     override fun invokeRaw(
-        context: C
+        context: ScriptRuntime
     ): Any {
 
         if (assignment?.type == VariableType.Local || assignment?.type == VariableType.Const) {
@@ -36,15 +36,15 @@ internal class OpForLoop<C : ScriptRuntime>(
                         )
                     )
                 ),
-            ) { block(it as C) }
+            ) { block(it) }
         } else {
             assignment?.invoke(context)
-            context.withScope { block(it as C) }
+            context.withScope { block(it) }
         }
         return Unit
     }
 
-    private fun block(ctx: C) {
+    private fun block(ctx: ScriptRuntime) {
         while (condition(ctx)) {
             try {
                 body(ctx)
@@ -60,11 +60,11 @@ internal class OpForLoop<C : ScriptRuntime>(
 }
 
 
-internal fun <C : ScriptRuntime> OpDoWhileLoop(
-    condition : Expression<C>,
-    body : OpBlock<C>,
+internal fun  OpDoWhileLoop(
+    condition : Expression,
+    body : OpBlock,
     isFalse : (Any?) -> Boolean
-) = Expression<C> {
+) = Expression {
     do {
         try {
             body.invoke(it)
@@ -77,11 +77,11 @@ internal fun <C : ScriptRuntime> OpDoWhileLoop(
 }
 
 
-internal fun <C : ScriptRuntime> OpWhileLoop(
-    condition : Expression<C>,
-    body : Expression<C>,
+internal fun  OpWhileLoop(
+    condition : Expression,
+    body : Expression,
     isFalse : (Any?) -> Boolean
-) = Expression<C> {
+) = Expression {
     while (!isFalse(condition.invoke(it))) {
         try {
             body.invoke(it)

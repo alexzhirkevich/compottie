@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.skriptie.javascript
 
 import io.github.alexzhirkevich.skriptie.Expression
+import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.argAt
 import io.github.alexzhirkevich.skriptie.common.checkNotEmpty
 import io.github.alexzhirkevich.skriptie.ecmascript.ESAny
@@ -11,7 +12,7 @@ import kotlin.jvm.JvmInline
 @JvmInline
 internal value class JsArray(
     override val value : MutableList<Any?>
-) : MutableList<Any?> by value, ESAny<JSRuntime>, JsWrapper<MutableList<Any?>> {
+) : MutableList<Any?> by value, ESAny, JsWrapper<MutableList<Any?>> {
 
 //    override fun compareTo(other: JsArray): Int {
 //        repeat(min(v.size, other.v.size)) {
@@ -32,8 +33,8 @@ internal value class JsArray(
 
     override fun invoke(
         function: String,
-        context: JSRuntime,
-        arguments: List<Expression<JSRuntime>>
+        context: ScriptRuntime,
+        arguments: List<Expression>
     ): Any? {
         return when (function){
             "indexOf" -> value.indexOf(false,function, context, arguments)
@@ -46,8 +47,8 @@ internal value class JsArray(
 private fun List<*>.indexOf(
     last : Boolean,
     function: String,
-    context: JSRuntime,
-    arguments: List<Expression<JSRuntime>>
+    context: ScriptRuntime,
+    arguments: List<Expression>
 ): Any {
     checkArgs(arguments, 1, function)
     val search = checkNotEmpty(arguments.argAt(0).invoke(context))

@@ -9,12 +9,12 @@ import io.github.alexzhirkevich.skriptie.invoke
 
 public open class JSGlobalContext(
     namedArgumentsEnabled : Boolean = false
-) : EcmascriptInterpretationContext<JSRuntime>(namedArgumentsEnabled) {
+) : EcmascriptInterpretationContext(namedArgumentsEnabled) {
 
     override fun interpret(
         callable: String?,
-        args: List<Expression<JSRuntime>>?
-    ): Expression<JSRuntime>? {
+        args: List<Expression>?
+    ): Expression? {
         return if (args != null){
             when (callable) {
                 "typeof" -> {
@@ -29,12 +29,12 @@ public open class JSGlobalContext(
 
 
 
-private fun JsTypeof(value : Expression<JSRuntime>) = Expression<JSRuntime> {
+private fun JsTypeof(value : Expression) = Expression {
     value(it).let {
         when (it) {
             null -> "object"
             Unit -> "undefined"
-            is ESAny<*> -> it.type
+            is ESAny -> it.type
             else -> it::class.simpleName
         }
     }

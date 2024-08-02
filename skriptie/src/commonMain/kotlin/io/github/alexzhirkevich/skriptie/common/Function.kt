@@ -8,22 +8,26 @@ import io.github.alexzhirkevich.skriptie.ecmascript.ESAny
 import io.github.alexzhirkevich.skriptie.ecmascript.ESObject
 import io.github.alexzhirkevich.skriptie.invoke
 
-public class FunctionParam<C : ScriptRuntime>(
+public class FunctionParam(
     public val name : String,
     public val isVararg : Boolean = false,
-    public val default : Expression<C>? = null
+    public val default : Expression? = null
 )
 
-internal infix fun <C : ScriptRuntime> String.with(default: Expression<C>?) : FunctionParam<C> {
+internal infix fun String.with(default: Expression?) : FunctionParam {
     return FunctionParam(this, false, default)
 }
 
 
-internal class OpFunction<C : ScriptRuntime>(
+internal interface Callable {
+    operator fun invoke(args: List<Expression>, context: ScriptRuntime) : Any?
+}
+
+internal class Function(
     val name : String,
-    private val parameters : List<FunctionParam<C>>,
-    private val body : Expression<C>
-) {
+    private val parameters : List<FunctionParam>,
+    private val body : Expression
+) : Callable {
     init {
         val varargs = parameters.count { it.isVararg }
 
@@ -32,9 +36,9 @@ internal class OpFunction<C : ScriptRuntime>(
         }
     }
 
-    fun invoke(
-        args: List<Expression<C>>,
-        context: C,
+    override fun invoke(
+        args: List<Expression>,
+        context: ScriptRuntime,
     ): Any? {
         try {
             val arguments = buildMap {
@@ -52,30 +56,28 @@ internal class OpFunction<C : ScriptRuntime>(
                     )
                 }
             }
-            return context.withScope(arguments) {
-                body.invoke(it as C)
-            }
+            return context.withScope(arguments, body::invoke)
         } catch (ret: BlockReturn) {
             return ret.value
         }
     }
 }
 
-internal fun <C : ScriptRuntime> OpFunctionExec(
+internal fun OpFunctionExec(
     name : String,
-    receiver : Expression<C>?,
-    parameters : List<Expression<C>>,
-) = Expression<C> { ctx ->
+    receiver : Expression?,
+    parameters : List<Expression>,
+) = Expression { ctx ->
 
     val function = when (val res = receiver?.invoke(ctx)) {
-        null -> ctx.getVariable(name)
-        is ESObject<*> -> res[name]
-        is ESAny<*> -> {
-            res as ESAny<C>
+        null -> ctx.get(name)
+        is Callable -> res
+        is ESObject -> res[name]
+        is ESAny -> {
             return@Expression res.invoke(name, ctx, parameters)
         }
         else -> null
-    } as? OpFunction<C> ?: unresolvedReference(name)
+    } as Callable? ?: unresolvedReference(name)
 
     function.invoke(
         args = parameters,

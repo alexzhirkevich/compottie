@@ -13,12 +13,13 @@ internal fun Any?.assertEqualsTo(other : Double, tolerance: Double = 0.0001) {
 }
 
 internal fun String.eval() : Any? {
-    val scriptContext = JSRuntime()
+    val runtime = JSRuntime()
+
     return ScriptEngine(
-        JSRuntime(),
+        runtime,
         EcmascriptInterpreter(
             JSGlobalContext(false),
-            scriptContext
+            runtime
         )
     ).invoke(this)
 }

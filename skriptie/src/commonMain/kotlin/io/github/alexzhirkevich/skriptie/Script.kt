@@ -1,8 +1,8 @@
 package io.github.alexzhirkevich.skriptie
 
-public fun interface Script<C : ScriptRuntime> {
-    public operator fun invoke(context: C): Any?
+public fun interface Script {
+    public operator fun invoke(context: ScriptRuntime): Any?
 }
 
-public fun <C : ScriptRuntime> Expression<C>.asScript(): Script<C> = Script { invoke(it) }
+public fun Expression.asScript(): Script = Script { invoke(it) }
 

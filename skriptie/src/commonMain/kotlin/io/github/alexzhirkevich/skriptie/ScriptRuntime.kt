@@ -11,45 +11,46 @@ public enum class VariableType {
 
 public interface ScriptRuntime : LangContext {
 
-    public fun hasVariable(name: String): Boolean
+    public operator fun contains(variable: String): Boolean
 
-    public fun getVariable(name: String): Any?
+    public operator fun get(variable: String): Any?
 
-    public fun setVariable(name: String, value: Any?, type: VariableType?)
+    public fun set(variable: String, value: Any?, type: VariableType?)
 
     public fun withScope(
         extraVariables: Map<String, Pair<VariableType, Any?>> = emptyMap(),
         block: (ScriptRuntime) -> Any?
     ): Any?
+
     public fun reset()
 }
 
 private class BlockScriptContext(
     private val parent : ScriptRuntime
-) : EcmascriptRuntime(), LangContext by parent {
+) : DefaultRuntime(), LangContext by parent {
 
-    override fun getVariable(name: String): Any? {
-        return if (name in variables) {
-            super.getVariable(name)
+    override fun get(variable: String): Any? {
+        return if (variable in variables) {
+            super.get(variable)
         } else {
-            parent.getVariable(name)
+            parent.get(variable)
         }
     }
 
-    override fun hasVariable(name: String): Boolean {
-        return super.hasVariable(name) || parent.hasVariable(name)
+    override fun contains(variable: String): Boolean {
+        return super.contains(variable) || parent.contains(variable)
     }
 
-    override fun setVariable(name: String, value: Any?, type: VariableType?) {
+    override fun set(variable: String, value: Any?, type: VariableType?) {
         when {
-            type == VariableType.Global -> parent.setVariable(name, value, type)
-            type != null || name in variables -> super.setVariable(name, value, type)
-            else -> parent.setVariable(name, value, type)
+            type == VariableType.Global -> parent.set(variable, value, type)
+            type != null || variable in variables -> super.set(variable, value, type)
+            else -> parent.set(variable, value, type)
         }
     }
 }
 
-public abstract class EcmascriptRuntime : ScriptRuntime {
+public abstract class DefaultRuntime : ScriptRuntime {
 
     protected val variables: MutableMap<String, Pair<VariableType, Any?>> = mutableMapOf()
 
@@ -57,25 +58,25 @@ public abstract class EcmascriptRuntime : ScriptRuntime {
         BlockScriptContext(this)
     }
 
-    override fun hasVariable(name: String): Boolean {
-        return name in variables
+    override fun contains(variable: String): Boolean {
+        return variable in variables
     }
 
-    override fun setVariable(name: String, value: Any?, type: VariableType?) {
-        if (type == null && name !in variables) {
-            unresolvedReference(name)
+    override fun set(variable: String, value: Any?, type: VariableType?) {
+        if (type == null && variable !in variables) {
+            unresolvedReference(variable)
         }
-        if (type != null && name in variables) {
-            throw SyntaxError("Identifier '$name' is already declared")
+        if (type != null && variable in variables) {
+            throw SyntaxError("Identifier '$variable' is already declared")
         }
-        if (type == null && variables[name]?.first == VariableType.Const) {
-            throw TypeError("Assignment to constant variable ('$name')")
+        if (type == null && variables[variable]?.first == VariableType.Const) {
+            throw TypeError("Assignment to constant variable ('$variable')")
         }
-        variables[name] = (type ?: variables[name]?.first)!! to value
+        variables[variable] = (type ?: variables[variable]?.first)!! to value
     }
 
-    override fun getVariable(name: String): Any? {
-        return variables[name]?.second
+    override fun get(variable: String): Any? {
+        return variables[variable]?.second
     }
 
     final override fun withScope(
@@ -84,7 +85,7 @@ public abstract class EcmascriptRuntime : ScriptRuntime {
     ): Any? {
         child.reset()
         extraVariables.forEach { (n, v) ->
-            child.setVariable(n, v.second, v.first)
+            child.set(n, v.second, v.first)
         }
         return block(child)
     }

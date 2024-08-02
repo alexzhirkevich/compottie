@@ -1,22 +1,22 @@
 package io.github.alexzhirkevich.skriptie
 
-public interface ScriptEngine<C : ScriptRuntime> : ScriptInterpreter<C> {
+public interface ScriptEngine : ScriptInterpreter {
 
-    public val context : C
+    public val runtime : ScriptRuntime
 
     public fun reset() {
-        context.reset()
+        runtime.reset()
     }
 }
 
-public fun <C : ScriptRuntime> ScriptEngine<C>.invoke(script: String) : Any? {
-    return interpret(script).invoke(context)
+public fun ScriptEngine.invoke(script: String) : Any? {
+    return interpret(script).invoke(runtime)
 }
 
-public fun <C : ScriptRuntime> ScriptEngine(
-    context: C,
-    interpreter: ScriptInterpreter<C>
-): ScriptEngine<C> = object : ScriptEngine<C>, ScriptInterpreter<C> by interpreter {
-    override val context: C
+public fun ScriptEngine(
+    context: ScriptRuntime,
+    interpreter: ScriptInterpreter
+): ScriptEngine = object : ScriptEngine, ScriptInterpreter by interpreter {
+    override val runtime: ScriptRuntime
         get() = context
 }

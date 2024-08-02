@@ -1,7 +1,6 @@
 package io.github.alexzhirkevich.skriptie.javascript
 
 import io.github.alexzhirkevich.skriptie.Expression
-import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.argAt
 import io.github.alexzhirkevich.skriptie.common.FunctionParam
 import io.github.alexzhirkevich.skriptie.common.fastMap
@@ -13,9 +12,9 @@ import io.github.alexzhirkevich.skriptie.invoke
 import kotlin.math.*
 import kotlin.random.Random
 
-internal fun JsMath() : ESObject<JSRuntime> {
+internal fun JsMath() : ESObject {
 
-    return Object<JSRuntime>("Math") {
+    return Object("Math") {
 
         "PI" eq PI
         "E" eq E
@@ -73,46 +72,38 @@ internal fun JsMath() : ESObject<JSRuntime> {
     }
 }
 
-private fun <C: ScriptRuntime> op1(
-    args: List<Expression<C>>,
+private fun  op1(
+    args: List<Expression>,
     func: (Double) -> Number
-): Expression<C> {
+): Expression {
     checkArgs(args, 1, "")
 
-    val a = args.argAt(0)
+    val numExpr = args.argAt(0)
 
     return Expression {
-        var a = a(it)?.numberOrThis() ?: 0.0
+        val value = numExpr(it)?.numberOrThis() ?: 0.0
 
-        if (a !is Number){
-           a = a.toString().toDoubleOrNull() ?: return@Expression Double.NaN
-        }
-
-        if (a is Number){
-            func(a.toDouble())
+        if (value is Number){
+            func(value.toDouble())
         } else {
             Double.NaN
         }
     }
 }
 
-private fun <C: ScriptRuntime> op2(
-    args: List<Expression<C>>,
+private fun  op2(
+    args: List<Expression>,
     func: (Double, Double) -> Number,
-): Expression<C> {
+): Expression {
     checkArgs(args, 2, "")
 
-    val a = args.argAt(0)
-    val b = args.argAt(1)
+    val aExpr = args.argAt(0)
+    val bExpr = args.argAt(1)
+
     return Expression {
-        var a = a(it)?.numberOrThis() ?: 0.0
-        var b = b(it)?.numberOrThis() ?: 0.0
-        if (a !is Number){
-            a = a.toString().toDoubleOrNull() ?: return@Expression Double.NaN
-        }
-        if (b !is Number){
-            b = b.toString().toDoubleOrNull() ?: return@Expression Double.NaN
-        }
+        val a = aExpr(it)?.numberOrThis() ?: 0.0
+        val b = bExpr(it)?.numberOrThis() ?: 0.0
+
         if (a is Number && b is Number){
             func(a.toDouble(), b.toDouble())
         } else {
@@ -121,16 +112,16 @@ private fun <C: ScriptRuntime> op2(
     }
 }
 
-private fun <C: ScriptRuntime> opVararg(
-    args: List<Expression<C>>,
+private fun  opVararg(
+    args: List<Expression>,
     func: (List<Double>) -> Number,
-): Expression<C> {
+): Expression {
     check(args.isNotEmpty()){
 
     }
     return Expression {  context ->
         val a = (args[0].invoke(context) as List<*>).fastMap {
-            it.numberOrNull(withNaNs = false)?.toDouble() ?: return@Expression Double.NaN
+            context.toNumber(it, strict = false).toDouble()
         }
         func(a)
     }

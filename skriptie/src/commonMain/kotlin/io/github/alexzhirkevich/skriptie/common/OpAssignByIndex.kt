@@ -5,33 +5,34 @@ import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.VariableType
 import io.github.alexzhirkevich.skriptie.invoke
 import io.github.alexzhirkevich.skriptie.javascript.JsArray
-import io.github.alexzhirkevich.skriptie.javascript.numberOrNull
 
-internal class OpAssignByIndex<C : ScriptRuntime>(
+internal class OpAssignByIndex(
     private val variableName : String,
     private val scope : VariableType?,
-    private val index : Expression<C>,
-    private val assignableValue : Expression<C>,
+    private val index : Expression,
+    private val assignableValue : Expression,
     private val merge : ((Any?, Any?) -> Any?)?
-) : Expression<C> {
+) : Expression {
 
-    override tailrec fun invokeRaw(context: C): Any? {
+    override tailrec fun invokeRaw(context: ScriptRuntime): Any? {
         val v = assignableValue.invoke(context)
-        val current = context.getVariable(variableName)
+        val current = context.get(variableName)
 
         check(merge == null || current != null) {
             "Cant modify $variableName as it is undefined"
         }
 
         if (current == null) {
-            context.setVariable(variableName, mutableListOf<Any>(), scope)
+            context.set(variableName, mutableListOf<Any>(), scope)
             return invoke(context)
         } else {
-            val i = index.invoke(context).numberOrNull()
+            val i = context.toNumber(index.invoke(context))
 
-            val index = checkNotNull(i as? Number) {
+            check(!i.toDouble().isNaN()) {
                 "Unexpected index: $i"
-            }.toInt()
+            }
+
+            val index = i.toInt()
 
             return when (current) {
 

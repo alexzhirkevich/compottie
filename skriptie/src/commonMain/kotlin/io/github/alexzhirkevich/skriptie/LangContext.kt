@@ -16,6 +16,8 @@ public interface LangContext {
     public fun neg(a : Any?) : Any?
     public fun pos(a : Any?) : Any?
 
+    public fun toNumber(a: Any?, strict : Boolean = false) : Number
+
     public fun fromKotlin(a : Any?) : Any?
     public fun toKotlin(a : Any?) : Any?
 }

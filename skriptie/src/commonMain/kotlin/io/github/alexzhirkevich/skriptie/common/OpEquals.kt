@@ -1,14 +1,13 @@
 package io.github.alexzhirkevich.skriptie.common
 
 import io.github.alexzhirkevich.skriptie.Expression
-import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.invoke
 
-internal fun <C : ScriptRuntime> OpEquals(
-    a : Expression<C>,
-    b : Expression<C>,
+internal fun  OpEquals(
+    a : Expression,
+    b : Expression,
     isTyped : Boolean
-) = Expression<C> {
+) = Expression {
     OpEqualsImpl(a(it), b(it), isTyped)
 }
 

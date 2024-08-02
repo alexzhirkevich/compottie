@@ -7,6 +7,7 @@ import io.github.alexzhirkevich.skriptie.Script
 import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.VariableType
 import io.github.alexzhirkevich.skriptie.common.Delegate
+import io.github.alexzhirkevich.skriptie.common.Function
 import io.github.alexzhirkevich.skriptie.common.FunctionParam
 import io.github.alexzhirkevich.skriptie.common.OpAssign
 import io.github.alexzhirkevich.skriptie.common.OpAssignByIndex
@@ -20,7 +21,6 @@ import io.github.alexzhirkevich.skriptie.common.OpDoWhileLoop
 import io.github.alexzhirkevich.skriptie.common.OpEquals
 import io.github.alexzhirkevich.skriptie.common.OpEqualsComparator
 import io.github.alexzhirkevich.skriptie.common.OpForLoop
-import io.github.alexzhirkevich.skriptie.common.OpFunction
 import io.github.alexzhirkevich.skriptie.common.OpFunctionExec
 import io.github.alexzhirkevich.skriptie.common.OpGetVariable
 import io.github.alexzhirkevich.skriptie.common.OpGreaterComparator
@@ -40,7 +40,7 @@ import io.github.alexzhirkevich.skriptie.isAssignable
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-internal val EXPR_DEBUG_PRINT_ENABLED = true
+internal val EXPR_DEBUG_PRINT_ENABLED = false
 
 internal enum class LogicalContext {
     And, Or, Compare
@@ -51,17 +51,17 @@ internal enum class BlockContext {
 }
 
 
-internal class EcmascriptInterpreterImpl<C : ScriptRuntime>(
+internal class EcmascriptInterpreterImpl(
     private val expr : String,
     private val langContext: LangContext,
-    private val globalContext : InterpretationContext<C>,
+    private val globalContext : InterpretationContext,
 ) {
 
     private var pos = -1
     private var ch: Char = ' '
-    private var blockFunctionRegistrar = mutableListOf<Expression<C>>()
+    private var blockFunctionRegistrar = mutableListOf<Expression>()
 
-    fun interpret(): Script<C> {
+    fun interpret(): Script {
         val expressions = buildList {
             pos = -1
             ch = ' '
@@ -184,7 +184,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptRuntime>(
         }
     }
 
-    private fun parseAssignment(context: Expression<C>, blockContext : List<BlockContext>): Expression<C> {
+    private fun parseAssignment(context: Expression, blockContext : List<BlockContext>): Expression {
         var x = parseExpressionOp(context, blockContext = blockContext)
         if (EXPR_DEBUG_PRINT_ENABLED) {
             println("Parsing assignment for $x")
@@ -225,7 +225,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptRuntime>(
         }
     }
 
-    private fun parseAssignmentValue(x: Expression<C>, merge: ((Any?, Any?) -> Any?)? = null) =
+    private fun parseAssignmentValue(x: Expression, merge: ((Any?, Any?) -> Any?)? = null) =
         when {
             x is OpIndex && x.variable is OpGetVariable -> OpAssignByIndex(
                 variableName = x.variable.name,
@@ -254,10 +254,10 @@ internal class EcmascriptInterpreterImpl<C : ScriptRuntime>(
         }
 
     private fun parseExpressionOp(
-        context: Expression<C>,
+        context: Expression,
         logicalContext: LogicalContext? = null,
         blockContext : List<BlockContext>
-    ): Expression<C> {
+    ): Expression {
         var x = parseTermOp(context, blockContext)
         while (true) {
             prepareNextChar()
@@ -343,7 +343,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptRuntime>(
         }
     }
 
-    private fun parseTermOp(context: Expression<C>, blockContext : List<BlockContext>): Expression<C> {
+    private fun parseTermOp(context: Expression, blockContext : List<BlockContext>): Expression {
         var x = parseFactorOp(context, blockContext)
         while (true) {
             prepareNextChar()
@@ -371,7 +371,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptRuntime>(
         }
     }
 
-    private fun parseFactorOp(context: Expression<C>, blockContext : List<BlockContext>): Expression<C> {
+    private fun parseFactorOp(context: Expression, blockContext : List<BlockContext>): Expression {
         val parsedOp = when {
 
             nextCharIs('{'::equals) -> parseBlock(context = emptyList())
@@ -557,10 +557,10 @@ internal class EcmascriptInterpreterImpl<C : ScriptRuntime>(
         return parsedOp.finish(blockContext)
     }
 
-    private fun Expression<C>.finish(blockContext : List<BlockContext>): Expression<C> {
+    private fun Expression.finish(blockContext : List<BlockContext>): Expression {
         return when {
             // inplace function invocation
-            this is InterpretationContext<*> && nextCharIs { it == '(' } -> {
+            this is InterpretationContext && nextCharIs { it == '(' } -> {
                 parseFunction(this, null, blockContext)
             }
             // begin condition || property || index
@@ -572,7 +572,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptRuntime>(
         }
     }
 
-    private fun parseFunctionArgs(name: String?): List<Expression<C>>? {
+    private fun parseFunctionArgs(name: String?): List<Expression>? {
 
         if (!nextCharIs('('::equals)) {
             return null
@@ -596,10 +596,10 @@ internal class EcmascriptInterpreterImpl<C : ScriptRuntime>(
     }
 
     private fun parseFunction(
-        context: Expression<C>,
+        context: Expression,
         func: String?,
         blockContext : List<BlockContext>
-    ): Expression<C> {
+    ): Expression {
 
         return when (func) {
             "var", "let", "const" -> {
@@ -666,7 +666,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptRuntime>(
 
                 val body = parseBlock(context = blockContext + BlockContext.Loop)
 
-                check(body is OpBlock<C>) {
+                check(body is OpBlock) {
                     "Invalid do/while syntax"
                 }
 
@@ -753,7 +753,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptRuntime>(
                 }
 
                 return when (context) {
-                    is InterpretationContext<C> -> context.interpret(func, args)
+                    is InterpretationContext -> context.interpret(func, args)
                         ?: run {
                             if (args != null && func != null) {
                                 if (EXPR_DEBUG_PRINT_ENABLED) {
@@ -805,7 +805,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptRuntime>(
         }
     }
 
-    private fun parseWhileCondition(): Expression<C> {
+    private fun parseWhileCondition(): Expression {
         check(eat('(')) {
             "Missing while loop condition"
         }
@@ -818,7 +818,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptRuntime>(
         return condition
     }
 
-    private fun parseTryCatch(blockContext : List<BlockContext>) : Expression<C> {
+    private fun parseTryCatch(blockContext : List<BlockContext>) : Expression {
         val tryBlock = parseBlock(requireBlock = true, context = blockContext)
         val catchBlock = if (eatSequence("catch")) {
 
@@ -849,7 +849,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptRuntime>(
         )
     }
 
-    private fun parseForLoop(parentBlockContext: List<BlockContext>): Expression<C> {
+    private fun parseForLoop(parentBlockContext: List<BlockContext>): Expression {
         check(eat('('))
 
         val assign = if (eat(';')) null else parseAssignment(globalContext, emptyList())
@@ -881,7 +881,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptRuntime>(
         )
     }
 
-    private fun parseFunctionDefinition(name: String? = null, blockContext: List<BlockContext>): Expression<C> {
+    private fun parseFunctionDefinition(name: String? = null, blockContext: List<BlockContext>): Expression {
 
         val start = pos
 
@@ -900,8 +900,8 @@ internal class EcmascriptInterpreterImpl<C : ScriptRuntime>(
         val args = parseFunctionArgs(actualName).let { args ->
             args?.map {
                 when (it) {
-                    is OpGetVariable<C> -> FunctionParam<C>(name = it.name, default = null)
-                    is OpAssign<C> -> FunctionParam<C>(
+                    is OpGetVariable -> FunctionParam(name = it.name, default = null)
+                    is OpAssign -> FunctionParam(
                         name = it.variableName,
                         default = it.assignableValue
                     )
@@ -926,7 +926,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptRuntime>(
             context = blockContext + BlockContext.Function
         )
 
-        val function = OpFunction(
+        val function = Function(
             name = actualName,
             parameters = args,
             body = block
@@ -944,7 +944,7 @@ internal class EcmascriptInterpreterImpl<C : ScriptRuntime>(
         scoped: Boolean = true,
         requireBlock: Boolean = false,
         context: List<BlockContext>
-    ): Expression<C> {
+    ): Expression {
 
         val oldRegistrar = blockFunctionRegistrar
         try {

@@ -1,15 +1,14 @@
 package io.github.alexzhirkevich.skriptie.common
 
 import io.github.alexzhirkevich.skriptie.Expression
-import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.VariableType
 import io.github.alexzhirkevich.skriptie.invoke
 
-internal fun <C : ScriptRuntime>  OpTryCatch(
-    tryBlock : Expression<C>,
+internal fun  OpTryCatch(
+    tryBlock : Expression,
     catchVariableName : String?,
-    catchBlock : Expression<C>?,
-    finallyBlock : Expression<C>?,
+    catchBlock : Expression?,
+    finallyBlock : Expression?,
 ) = when {
     catchBlock != null && finallyBlock != null ->
         TryCatchFinally(tryBlock, catchVariableName, catchBlock, finallyBlock)
@@ -19,19 +18,20 @@ internal fun <C : ScriptRuntime>  OpTryCatch(
     else -> error("SyntaxError: Missing catch or finally after try")
 }
 
-private fun <C : ScriptRuntime>  TryCatchFinally(
-    tryBlock : Expression<C>,
+private fun  TryCatchFinally(
+    tryBlock : Expression,
     catchVariableName : String?,
-    catchBlock : Expression<C>,
-    finallyBlock : Expression<C>,
-) = Expression<C> {
+    catchBlock : Expression,
+    finallyBlock : Expression,
+) = Expression {
     try {
         tryBlock(it)
     } catch (t: Throwable) {
         if (catchVariableName != null) {
-            it.withScope(mapOf(catchVariableName to (VariableType.Const to t))) {
-                catchBlock(it as C)
-            }
+            it.withScope(
+                extraVariables = mapOf(catchVariableName to (VariableType.Const to t)),
+                block = catchBlock::invoke
+            )
         } else {
             catchBlock(it)
         }
@@ -40,18 +40,19 @@ private fun <C : ScriptRuntime>  TryCatchFinally(
     }
 }
 
-private fun <C : ScriptRuntime> TryCatch(
-    tryBlock : Expression<C>,
+private fun TryCatch(
+    tryBlock : Expression,
     catchVariableName : String?,
-    catchBlock : Expression<C>
-) = Expression<C> {
+    catchBlock : Expression
+) = Expression {
     try {
         tryBlock(it)
     } catch (t: Throwable) {
         if (catchVariableName != null) {
-            it.withScope(mapOf(catchVariableName to (VariableType.Const to t))) {
-                catchBlock(it as C)
-            }
+            it.withScope(
+                extraVariables = mapOf(catchVariableName to (VariableType.Const to t)),
+                block = catchBlock::invoke
+            )
         } else {
             catchBlock(it)
         }
@@ -59,10 +60,10 @@ private fun <C : ScriptRuntime> TryCatch(
 }
 
 
-private fun <C : ScriptRuntime> TryFinally(
-    tryBlock : Expression<C>,
-    finallyBlock : Expression<C>,
-) = Expression<C> {
+private fun TryFinally(
+    tryBlock : Expression,
+    finallyBlock : Expression,
+) = Expression {
     try {
         tryBlock(it)
     } finally {

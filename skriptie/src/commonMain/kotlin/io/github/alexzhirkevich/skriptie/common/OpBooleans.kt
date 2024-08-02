@@ -1,22 +1,21 @@
 package io.github.alexzhirkevich.skriptie.common
 
 import io.github.alexzhirkevich.skriptie.Expression
-import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.invoke
 
-internal fun <C : ScriptRuntime> OpNot(
-    condition : Expression<C>,
+internal fun  OpNot(
+    condition : Expression,
     isFalse : (Any?) -> Boolean,
-) = Expression<C> {
+) = Expression {
     isFalse(condition(it))
 }
 
-internal fun <C : ScriptRuntime> OpBoolean(
-    a : Expression<C>,
-    b : Expression<C>,
+internal fun  OpBoolean(
+    a : Expression,
+    b : Expression,
     isFalse : (Any?) -> Boolean,
     op : (Boolean, Boolean) -> Boolean,
-) = Expression<C> {
+) = Expression {
     op(!isFalse(a(it)), !(isFalse(b(it))))
 }
 

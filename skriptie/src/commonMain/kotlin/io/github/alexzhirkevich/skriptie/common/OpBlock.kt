@@ -5,22 +5,20 @@ import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.invoke
 
 
-internal class OpBlock<C : ScriptRuntime>(
-    val expressions: List<Expression<C>>,
+internal class OpBlock(
+    val expressions: List<Expression>,
     private val scoped : Boolean,
-) : Expression<C> {
+) : Expression {
 
-    override fun invokeRaw(context: C): Any? {
+    override fun invokeRaw(context: ScriptRuntime): Any? {
         return if (scoped) {
-            context.withScope {
-                invokeInternal(it as C)
-            }
+            context.withScope(block = ::invokeInternal)
         } else {
             invokeInternal(context)
         }
     }
 
-    private fun invokeInternal(context: C): Any? {
+    private fun invokeInternal(context: ScriptRuntime): Any? {
         if (expressions.isEmpty()) {
             return Unit
         }
@@ -34,7 +32,7 @@ internal class OpBlock<C : ScriptRuntime>(
         return invoke(expressions.last(), context)
     }
 
-    private fun invoke(expression: Expression<C>, context: C) : Any? {
+    private fun invoke(expression: Expression, context: ScriptRuntime) : Any? {
         val res = expression.invoke(context)
         return when(expression){
             is OpReturn -> throw BlockReturn(res)
@@ -51,10 +49,10 @@ internal data object BlockContinue : BlockException()
 internal data object BlockBreak : BlockException()
 internal class BlockReturn(val value: Any?) : BlockException()
 
-internal class OpReturn<C : ScriptRuntime>(
-    val value : Expression<C>
-) : Expression<C> by value
+internal class OpReturn(
+    val value : Expression
+) : Expression by value
 
-internal class OpContinue<C : ScriptRuntime> : Expression<C> by OpConstant(Unit)
-internal class OpBreak<C : ScriptRuntime> : Expression<C> by OpConstant(Unit)
+internal class OpContinue : Expression by OpConstant(Unit)
+internal class OpBreak : Expression by OpConstant(Unit)
 

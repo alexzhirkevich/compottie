@@ -1,11 +1,11 @@
 package io.github.alexzhirkevich.skriptie.javascript
 
-import io.github.alexzhirkevich.skriptie.EcmascriptRuntime
 import io.github.alexzhirkevich.skriptie.VariableType
 import io.github.alexzhirkevich.skriptie.common.fastMap
+import io.github.alexzhirkevich.skriptie.ecmascript.ESRuntime
 import kotlin.math.absoluteValue
 
-public open class JSRuntime : EcmascriptRuntime() {
+public open class JSRuntime : ESRuntime() {
 
     init {
         recreate()
@@ -26,44 +26,46 @@ public open class JSRuntime : EcmascriptRuntime() {
     }
 
     override fun sum(a: Any?, b: Any?): Any? {
-        return fromKotlin(
-            jssum(
-                fromKotlin(a)?.numberOrThis(false),
-                fromKotlin(b)?.numberOrThis(false)
-            )
+        return jssum(
+            a?.numberOrThis(false),
+            b?.numberOrThis(false)
         )
     }
 
     override fun sub(a: Any?, b: Any?): Any? {
-        return fromKotlin(jssub(fromKotlin(a)?.numberOrThis(), fromKotlin(b)?.numberOrThis()))
+        return jssub(a?.numberOrThis(), b?.numberOrThis())
     }
 
     override fun mul(a: Any?, b: Any?): Any? {
-        return fromKotlin(jsmul(fromKotlin(a)?.numberOrThis(), fromKotlin(b)?.numberOrThis()))
+        return jsmul(a?.numberOrThis(), b?.numberOrThis())
     }
 
     override fun div(a: Any?, b: Any?): Any? {
-        return fromKotlin(jsdiv(fromKotlin(a)?.numberOrThis(), fromKotlin(b)?.numberOrThis()))
+        return jsdiv(a?.numberOrThis(), b?.numberOrThis())
     }
 
     override fun mod(a: Any?, b: Any?): Any? {
-        return fromKotlin(jsmod(fromKotlin(a)?.numberOrThis(), fromKotlin(b)?.numberOrThis()))
+        return jsmod(a?.numberOrThis(), b?.numberOrThis())
     }
 
     override fun inc(a: Any?): Any? {
-        return fromKotlin(jsinc(fromKotlin(a)?.numberOrThis()))
+        return jsinc(a?.numberOrThis())
     }
 
     override fun dec(a: Any?): Any? {
-        return fromKotlin(jsdec(fromKotlin(a)?.numberOrThis()))
+        return jsdec(a?.numberOrThis())
     }
 
     override fun neg(a: Any?): Any? {
-        return fromKotlin(jsneg(fromKotlin(a)?.numberOrThis()))
+        return jsneg(a?.numberOrThis())
     }
 
     override fun pos(a: Any?): Any? {
-        return fromKotlin(jspos(fromKotlin(a)?.numberOrThis()))
+        return jspos(a?.numberOrThis())
+    }
+
+    override fun toNumber(a: Any?, strict : Boolean): Number {
+        return a.numberOrNull(withNaNs = !strict) ?: Double.NaN
     }
 
     override fun fromKotlin(a: Any?): Any? {
@@ -89,8 +91,7 @@ public open class JSRuntime : EcmascriptRuntime() {
     }
 
     private fun recreate(){
-        variables["Math"] = VariableType.Const to JsMath()
-        variables["Infinity"] = VariableType.Const to Double.POSITIVE_INFINITY
+        set("Math", JsMath(), VariableType.Const)
     }
 }
 
@@ -256,4 +257,4 @@ internal fun Any?.number(withNaNs : Boolean = true) : Number = checkNotNull(numb
     "Expected number but got $this"
 }
 
-internal fun Any.numberOrThis(withMagic : Boolean = true) : Any = numberOrNull(withMagic) ?: this
+internal fun Any?.numberOrThis(withMagic : Boolean = true) : Any? = numberOrNull(withMagic) ?: this

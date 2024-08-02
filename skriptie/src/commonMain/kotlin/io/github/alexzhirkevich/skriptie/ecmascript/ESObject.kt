@@ -2,34 +2,33 @@ package io.github.alexzhirkevich.skriptie.ecmascript
 
 import io.github.alexzhirkevich.skriptie.Expression
 import io.github.alexzhirkevich.skriptie.ScriptRuntime
+import io.github.alexzhirkevich.skriptie.common.Callable
+import io.github.alexzhirkevich.skriptie.common.Function
 import io.github.alexzhirkevich.skriptie.common.FunctionParam
-import io.github.alexzhirkevich.skriptie.common.OpFunction
 import io.github.alexzhirkevich.skriptie.common.OpGetVariable
 import io.github.alexzhirkevich.skriptie.common.unresolvedReference
 
-public interface ESObject<C : ScriptRuntime> : ESAny<C> {
+public interface ESObject : ESAny {
     public operator fun set(property: String, value: Any?)
     public operator fun contains(property: String): Boolean
 
-    override fun invoke(function: String, context: C, arguments: List<Expression<C>>): Any? {
+    override fun invoke(function: String, context: ScriptRuntime, arguments: List<Expression>): Any? {
         val f = get(function)
-        if (f !is OpFunction<*>) {
+        if (f !is Callable) {
             unresolvedReference(function)
         }
-
-        f as OpFunction<C>
         return f.invoke(arguments, context)
     }
 }
 
-public class ObjectImpl<C : ScriptRuntime>(
-    private val name : String,
+internal open class ESObjectBase(
+    internal val name : String,
     private val map : MutableMap<String, Any?> = mutableMapOf()
-) : ESObject<C> {
+) : ESObject {
 
     init {
         if ("toString" !in map){
-            map["toString"] = OpFunction(
+            map["toString"] = Function(
                 name = "toString",
                 parameters = emptyList(),
                 body = Expression { toString() })
@@ -55,19 +54,19 @@ public class ObjectImpl<C : ScriptRuntime>(
 }
 
 
-public sealed interface ObjectScope<C : ScriptRuntime> {
+public sealed interface ObjectScope {
 
     public infix fun String.eq(value: Any?)
 
     public fun String.func(
-        vararg args: FunctionParam<C>,
-        body: (args: List<Expression<C>>) -> Expression<C>
+        vararg args: FunctionParam,
+        body: (args: List<Expression>) -> Expression
     )
 
     public fun String.func(
         vararg args: String,
-        params: (String) -> FunctionParam<C> = { FunctionParam(it) },
-        body: (args: List<Expression<C>>) -> Expression<C>
+        params: (String) -> FunctionParam = { FunctionParam(it) },
+        body: (args: List<Expression>) -> Expression
     ) {
         func(
             args = args.map(params).toTypedArray(),
@@ -76,14 +75,14 @@ public sealed interface ObjectScope<C : ScriptRuntime> {
     }
 }
 
-private class ObjectScopeImpl<C : ScriptRuntime>(name: String) : ObjectScope<C> {
-    val o = ObjectImpl<C>(name)
+private class ObjectScopeImpl(name: String) : ObjectScope {
+    val o = ESObjectBase(name)
 
     override fun String.func(
-        vararg args: FunctionParam<C>,
-        body: (args: List<Expression<C>>) -> Expression<C>
+        vararg args: FunctionParam,
+        body: (args: List<Expression>) -> Expression
     ) {
-        this eq OpFunction(
+        this eq Function(
             this,
             parameters = args.toList(),
             body = body(args.map { OpGetVariable(it.name, null) })
@@ -95,6 +94,32 @@ private class ObjectScopeImpl<C : ScriptRuntime>(name: String) : ObjectScope<C> 
     }
 }
 
-public fun <C: ScriptRuntime> Object(name: String, builder : ObjectScope<C>.() -> Unit) : ESObject<C> {
-    return ObjectScopeImpl<C>(name).also(builder).o
+
+public fun  Object(name: String, builder : ObjectScope.() -> Unit) : ESObject {
+    return ObjectScopeImpl(name).also(builder).o
 }
+
+internal fun ESObject.setFunction(function: Function) = set(function.name, function)
+
+internal fun  String.func(
+    vararg args: FunctionParam,
+    body: ScriptRuntime.(args: List<Any?>) -> Any?
+) = Function(
+    this,
+    parameters = args.toList(),
+    body = {
+        with(it) {
+            body(args.map { get(it.name) })
+        }
+    }
+)
+
+
+internal fun  String.func(
+    vararg args: String,
+    params: (String) -> FunctionParam = { FunctionParam(it) },
+    body: ScriptRuntime.(args: List<Any?>) -> Any?
+) : Function = func(
+    args = args.map(params).toTypedArray(),
+    body = body
+)

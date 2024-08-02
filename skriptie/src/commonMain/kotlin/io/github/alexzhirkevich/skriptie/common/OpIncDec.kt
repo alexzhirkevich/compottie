@@ -1,16 +1,15 @@
 package io.github.alexzhirkevich.skriptie.common
 
 import io.github.alexzhirkevich.skriptie.Expression
-import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.invoke
 
-internal fun <C: ScriptRuntime> OpIncDecAssign(
-    variable: Expression<C>,
+internal fun  OpIncDecAssign(
+    variable: Expression,
     preAssign : Boolean,
     op: (Any?) -> Any?
-) : Expression<C> {
+) : Expression {
 
-    val value = Expression<C> { op(variable(it)) }
+    val value = Expression { op(variable(it)) }
     val assignment = when {
         variable is OpGetVariable && variable.assignmentType == null ->
             OpAssign(

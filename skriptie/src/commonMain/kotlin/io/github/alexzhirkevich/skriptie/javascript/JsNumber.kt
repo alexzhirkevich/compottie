@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.skriptie.javascript
 
 import io.github.alexzhirkevich.skriptie.Expression
+import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.argAtOrNull
 import io.github.alexzhirkevich.skriptie.common.unresolvedReference
 import io.github.alexzhirkevich.skriptie.ecmascript.ESAny
@@ -12,9 +13,9 @@ import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
 @JvmInline
-internal value class JsNumber(
+public value class JsNumber(
     override val value : Number
-) : ESAny<JSRuntime>, JsWrapper<Number>, Comparable<JsNumber> {
+) : ESAny, JsWrapper<Number>, Comparable<JsNumber> {
 
     override val type: String get() = "number"
 
@@ -28,8 +29,8 @@ internal value class JsNumber(
 
     override fun invoke(
         function: String,
-        context: JSRuntime,
-        arguments: List<Expression<JSRuntime>>
+        context: ScriptRuntime,
+        arguments: List<Expression>
     ): Any? {
         return when(function){
             "toFixed" -> {

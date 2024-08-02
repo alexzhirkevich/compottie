@@ -1,10 +1,11 @@
 package io.github.alexzhirkevich.skriptie.javascript
 
 import io.github.alexzhirkevich.skriptie.Expression
+import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.argAt
 import io.github.alexzhirkevich.skriptie.argAtOrNull
 import io.github.alexzhirkevich.skriptie.common.checkNotEmpty
-import io.github.alexzhirkevich.skriptie.common.tryGet
+import io.github.alexzhirkevich.skriptie.common.valueAtIndexOrUnit
 import io.github.alexzhirkevich.skriptie.ecmascript.ESAny
 import io.github.alexzhirkevich.skriptie.ecmascript.checkArgs
 import io.github.alexzhirkevich.skriptie.ecmascript.checkArgsNotNull
@@ -14,7 +15,7 @@ import kotlin.jvm.JvmInline
 @JvmInline
 internal value class JsString(
     override val value : String
-) : ESAny<JSRuntime>, JsWrapper<String>, Comparable<JsString> {
+) : ESAny, JsWrapper<String>, Comparable<JsString> {
 
     override val type: String
         get() = "string"
@@ -33,8 +34,8 @@ internal value class JsString(
 
     override fun invoke(
         function: String,
-        context: JSRuntime,
-        arguments: List<Expression<JSRuntime>>
+        context: ScriptRuntime,
+        arguments: List<Expression>
     ): Any? {
         return when (function) {
             "charAt", "at" -> value.charAt(function, context, arguments)
@@ -67,19 +68,19 @@ internal value class JsString(
 
 private fun String.charAt(
     function: String,
-    context: JSRuntime,
-    arguments: List<Expression<JSRuntime>>
+    context: ScriptRuntime,
+    arguments: List<Expression>
 ): Any {
     checkArgs(arguments, 1, function)
     val idx = (arguments.argAt(0).invoke(context).number()).toInt()
-    return tryGet(idx)
+    return valueAtIndexOrUnit(idx)
 }
 
 private fun String.indexOf(
     last : Boolean,
     function: String,
-    context: JSRuntime,
-    arguments: List<Expression<JSRuntime>>
+    context: ScriptRuntime,
+    arguments: List<Expression>
 ): Any {
     checkArgs(arguments, 1, function)
     val search = checkNotEmpty(arguments.argAt(0).invoke(context).toString()[0])
@@ -91,8 +92,8 @@ private fun String.indexOf(
 
 private fun String.charCodeAt(
     function: String,
-    context: JSRuntime,
-    arguments: List<Expression<JSRuntime>>
+    context: ScriptRuntime,
+    arguments: List<Expression>
 ): Int {
     checkArgs(arguments, 1, function)
     val ind = arguments.argAt(0).invoke(context).number().toInt()
@@ -101,8 +102,8 @@ private fun String.charCodeAt(
 
 private fun String.endsWith(
     function: String,
-    context: JSRuntime,
-    arguments: List<Expression<JSRuntime>>
+    context: ScriptRuntime,
+    arguments: List<Expression>
 ): Boolean {
     checkArgsNotNull(arguments, function)
     val searchString = arguments.argAt(0).invoke(context).toString()
@@ -116,8 +117,8 @@ private fun String.endsWith(
 
 private fun String.startsWith(
     function: String,
-    context: JSRuntime,
-    arguments: List<Expression<JSRuntime>>
+    context: ScriptRuntime,
+    arguments: List<Expression>
 ): Boolean {
     val searchString = arguments.argAt(0).invoke(context).toString()
     val position = arguments.argAtOrNull(1)?.number()?.toInt()
@@ -131,8 +132,8 @@ private fun String.startsWith(
 
 private fun String.includes(
     function: String,
-    context: JSRuntime,
-    arguments: List<Expression<JSRuntime>>
+    context: ScriptRuntime,
+    arguments: List<Expression>
 ): Boolean {
     val searchString = arguments.argAt(0).invoke(context).toString()
     val position = arguments.argAtOrNull(1)?.invoke(context)?.number()?.toInt()
@@ -145,8 +146,8 @@ private fun String.includes(
 }
 private fun String.padStart(
     function: String,
-    context: JSRuntime,
-    arguments: List<Expression<JSRuntime>>
+    context: ScriptRuntime,
+    arguments: List<Expression>
 ): String {
     val targetLength = arguments.argAt(0).invoke(context).number().toInt()
     val padString = arguments.argAtOrNull(1)?.invoke(context)?.toString() ?: " "
@@ -161,8 +162,8 @@ private fun String.padStart(
 }
 private fun String.padEnd(
     function: String,
-    context: JSRuntime,
-    arguments: List<Expression<JSRuntime>>
+    context: ScriptRuntime,
+    arguments: List<Expression>
 ): String {
     val targetLength = arguments.argAt(0).invoke(context).number().toInt()
     val padString = arguments.argAtOrNull(1)?.invoke(context)?.toString() ?: " "
@@ -177,8 +178,8 @@ private fun String.padEnd(
 
 private fun String.match(
     function: String,
-    context: JSRuntime,
-    arguments: List<Expression<JSRuntime>>
+    context: ScriptRuntime,
+    arguments: List<Expression>
 ): Boolean {
     checkArgs(arguments, 1, function)
     val regex = arguments.argAt(0).invoke(context).toString()
@@ -188,8 +189,8 @@ private fun String.match(
 private fun String.replace(
     all : Boolean,
     function: String,
-    context: JSRuntime,
-    arguments: List<Expression<JSRuntime>>
+    context: ScriptRuntime,
+    arguments: List<Expression>
 ): String {
     checkArgs(arguments, 2, function)
     val pattern = arguments.argAt(0).invoke(context).toString()
@@ -204,8 +205,8 @@ private fun String.replace(
 
 private fun String.repeat(
     function: String,
-    context: JSRuntime,
-    arguments: List<Expression<JSRuntime>>
+    context: ScriptRuntime,
+    arguments: List<Expression>
 ): String {
     checkArgs(arguments, 1, function)
     val count = arguments.argAt(0).invoke(context).number().toInt()
@@ -214,8 +215,8 @@ private fun String.repeat(
 
 private fun String.substring(
     function: String,
-    context: JSRuntime,
-    arguments: List<Expression<JSRuntime>>
+    context: ScriptRuntime,
+    arguments: List<Expression>
 ): String {
     val start = arguments.get(0).invoke(context).number().toInt()
     val end = arguments.get(0).invoke(context)?.number()?.toInt()?.coerceAtMost(length) ?: length

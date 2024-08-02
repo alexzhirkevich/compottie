@@ -1,17 +1,17 @@
 package io.github.alexzhirkevich.skriptie
 
 
-public interface InterpretationContext<C : ScriptRuntime> :  Expression<C> {
+public interface InterpretationContext :  Expression {
 
-    override fun invokeRaw(context: C): Any? = this
+    override fun invokeRaw(context: ScriptRuntime): Any? = this
 
-    public fun interpret(callable: String?, args: List<Expression<C>>?): Expression<C>?
+    public fun interpret(callable: String?, args: List<Expression>?): Expression?
 }
 
-internal fun <C: ScriptRuntime> List<Expression<C>>.argForNameOrIndex(
+internal fun  List<Expression>.argForNameOrIndex(
     index : Int,
     vararg name : String,
-) : Expression<C>? {
+) : Expression? {
 
     return argAtOrNull(index)
 //    forEach { op ->
@@ -23,9 +23,9 @@ internal fun <C: ScriptRuntime> List<Expression<C>>.argForNameOrIndex(
 //    return argAtOrNull(index)
 }
 
-internal fun <C: ScriptRuntime> List<Expression<C>>.argAt(
+internal fun  List<Expression>.argAt(
     index : Int,
-) : Expression<C> {
+) : Expression {
 
     return get(index)
 //        .let {
@@ -35,9 +35,9 @@ internal fun <C: ScriptRuntime> List<Expression<C>>.argAt(
 //    }
 }
 
-internal fun <C: ScriptRuntime> List<Expression<C>>.argAtOrNull(
+internal fun  List<Expression>.argAtOrNull(
     index : Int,
-) : Expression<C>? {
+) : Expression? {
 
     return getOrNull(index)
 //        /**/.let {

@@ -6,13 +6,13 @@ import io.github.alexzhirkevich.skriptie.invoke
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-internal fun <C : ScriptRuntime> Delegate(
-    a : Expression<C>,
-    b : Expression<C>,
+internal fun  Delegate(
+    a : Expression,
+    b : Expression,
     op : (Any?, Any?) -> Any?
-) = Expression<C> { op(a(it), b(it)) }
+) = Expression { op(a(it), b(it)) }
 
-internal fun <C : ScriptRuntime> Delegate(a : Expression<C>, op : (Any?) -> Any?) = Expression<C> {
+internal fun  Delegate(a : Expression, op : (Any?) -> Any?) = Expression {
     op(a(it))
 }
 
@@ -25,22 +25,22 @@ internal fun <T : Any?> checkNotEmpty(value : T?) : T {
 }
 
 
-internal fun <C : ScriptRuntime, T, R : Any> Expression<C>.cast(block: (T) -> R) : Expression<C> =
+internal fun <T, R : Any> Expression.cast(block: (T) -> R) : Expression =
     Expression { block(invoke(it) as T) }
 
-internal fun <C : ScriptRuntime, T, R : Any> Expression<C>.withCast(block: T.(
-    context: C,
-) -> R) : Expression<C> = Expression {
+internal fun <T, R : Any> Expression.withCast(block: T.(
+    context: ScriptRuntime,
+) -> R) : Expression = Expression {
     block(invoke(it) as T, it)
 }
 
-internal operator fun Any.get(index : Int) : Any {
-    return checkNotNull(tryGet(index)){
+internal fun Any.valueAtIndex(index : Int) : Any {
+    return checkNotNull(valueAtIndexOrUnit(index)){
         "Index $index out of bounds of $this length"
     }
 }
 
-internal fun Any.tryGet(index : Int) : Any {
+internal fun Any.valueAtIndexOrUnit(index : Int) : Any {
     return when (this) {
         is Map<*, *> -> {
             (this as Map<Int, *>)
