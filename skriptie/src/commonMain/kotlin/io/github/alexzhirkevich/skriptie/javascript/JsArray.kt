@@ -24,8 +24,8 @@ internal value class JsArray(
 //        }
 //    }
 
-    override fun get(property: String): Any {
-        return when (property){
+    override fun get(variable: String): Any {
+        return when (variable){
             "length" -> value.size
             else -> Unit
         }

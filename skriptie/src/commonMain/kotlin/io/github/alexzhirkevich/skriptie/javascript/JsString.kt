@@ -25,8 +25,8 @@ internal value class JsString(
         return value
     }
 
-    override fun get(property: String): Any {
-        return when(property){
+    override fun get(variable: String): Any {
+        return when(variable){
             "length" -> value.length
             else -> Unit
         }

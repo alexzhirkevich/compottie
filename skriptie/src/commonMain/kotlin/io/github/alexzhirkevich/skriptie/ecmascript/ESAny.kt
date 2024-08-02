@@ -7,7 +7,7 @@ public interface ESAny {
 
     public val type : String get() = "object"
 
-    public operator fun get(property: String): Any?
+    public operator fun get(variable: String): Any?
 
     public operator fun invoke(function: String, context: ScriptRuntime, arguments: List<Expression>): Any? {
         return when {

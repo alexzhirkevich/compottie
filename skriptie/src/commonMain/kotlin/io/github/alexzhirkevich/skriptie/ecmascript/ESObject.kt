@@ -9,8 +9,8 @@ import io.github.alexzhirkevich.skriptie.common.OpGetVariable
 import io.github.alexzhirkevich.skriptie.common.unresolvedReference
 
 public interface ESObject : ESAny {
-    public operator fun set(property: String, value: Any?)
-    public operator fun contains(property: String): Boolean
+    public operator fun set(variable: String, value: Any?)
+    public operator fun contains(variable: String): Boolean
 
     override fun invoke(function: String, context: ScriptRuntime, arguments: List<Expression>): Any? {
         val f = get(function)
@@ -35,14 +35,14 @@ internal open class ESObjectBase(
         }
     }
 
-    override fun get(property: String): Any? {
-        return if (contains(property)) map[property] else Unit
+    override fun get(variable: String): Any? {
+        return if (contains(variable)) map[variable] else Unit
     }
-    override fun set(property: String, value: Any?) {
-        map[property] = value
+    override fun set(variable: String, value: Any?) {
+        map[variable] = value
     }
 
-    override fun contains(property: String): Boolean = property in map
+    override fun contains(variable: String): Boolean = variable in map
 
     override fun toString(): String {
         return if (name.isNotBlank()){

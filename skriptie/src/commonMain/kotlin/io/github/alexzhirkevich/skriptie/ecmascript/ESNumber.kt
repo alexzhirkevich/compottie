@@ -16,8 +16,8 @@ internal class ESNumber : ESFunctionBase("Number") {
         )
     }
 
-    override fun get(property: String): Any? {
-        return when (property) {
+    override fun get(variable: String): Any? {
+        return when (variable) {
             "EPSILON" -> Double.MIN_VALUE
             "length" -> Double.MIN_VALUE
             "MAX_SAFE_INTEGER" -> Long.MAX_VALUE
@@ -26,7 +26,7 @@ internal class ESNumber : ESFunctionBase("Number") {
             "NaN" -> Double.NaN
             "NEGATIVE_INFINITY" -> Double.NEGATIVE_INFINITY
             "POSITIVE_INFINITY" -> Double.POSITIVE_INFINITY
-            else -> super.get(property)
+            else -> super.get(variable)
         }
     }
 
