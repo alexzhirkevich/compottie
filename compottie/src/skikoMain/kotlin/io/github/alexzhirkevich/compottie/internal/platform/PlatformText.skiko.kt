@@ -19,17 +19,6 @@ internal actual fun CharSequence.codePointAt(index : Int) : Int {
 internal actual fun charCount(codePoint : Int): Int =
     if (codePoint >= MIN_SUPPLEMENTARY_CODE_POINT) 2 else 1
 
-private val modifierSet = setOf(
-    CharCategory.FORMAT,
-    CharCategory.MODIFIER_SYMBOL,
-    CharCategory.NON_SPACING_MARK,
-    CharCategory.OTHER_SYMBOL,
-    CharCategory.SURROGATE,
-)
-
-internal actual fun isModifier(codePoint : Int): Boolean {
-    return modifierSet.any { it.contains(codePoint.toChar()) }
-}
 
 internal actual fun StringBuilder.addCodePoint(codePoint: Int) {
     if (codePoint < MIN_SUPPLEMENTARY_CODE_POINT) {
