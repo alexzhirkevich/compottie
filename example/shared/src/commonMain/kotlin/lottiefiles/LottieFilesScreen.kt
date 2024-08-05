@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -73,6 +74,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -145,6 +147,13 @@ internal fun LottieFilesScreen(
         val files by viewModel.files.collectAsState()
         val pageCount by viewModel.pageCount.collectAsState()
         val gridState = rememberLazyGridState()
+
+        val keyboard = LocalSoftwareKeyboardController.current
+        LaunchedEffect(gridState.isScrollInProgress){
+            if (gridState.isScrollInProgress){
+                keyboard?.hide()
+            }
+        }
 
         LaunchedEffect(files) {
             gridState.animateScrollToItem(0)
@@ -277,6 +286,7 @@ internal fun LottieFilesScreen(
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()
+                                        .navigationBarsPadding()
                                         .padding(
                                             horizontal = 24.dp,
                                             vertical = 12.dp
