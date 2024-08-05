@@ -24,8 +24,8 @@ import io.github.alexzhirkevich.compottie.assets.EmptyAssetsManager
 import io.github.alexzhirkevich.compottie.assets.EmptyFontManager
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.LottieFontManager
-import io.github.alexzhirkevich.compottie.dynamic.LottieDynamicProperties
 import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
+import io.github.alexzhirkevich.compottie.dynamic.LottieDynamicProperties
 import io.github.alexzhirkevich.compottie.dynamic.rememberLottieDynamicProperties
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
@@ -82,9 +82,15 @@ public fun rememberLottiePainter(
 
     val updatedProgress by rememberUpdatedState(progress)
 
+    val dp = when (dynamicProperties) {
+        is DynamicCompositionProvider -> dynamicProperties
+        null -> null
+    }
+
     val painter by produceState<Painter>(
         EmptyPainter,
         composition,
+        dp != null
     ) {
         if (composition != null) {
             val assets = async(ioDispatcher()) {
@@ -95,12 +101,11 @@ public fun rememberLottiePainter(
             }
 
             value = LottiePainter(
-                composition = composition.deepCopy(),
+                composition = if (dp != null)
+                    composition.deepCopy() 
+                else composition,
                 progress = { updatedProgress() },
-                dynamicProperties = when (dynamicProperties) {
-                    is DynamicCompositionProvider -> dynamicProperties
-                    null -> null
-                },
+                dynamicProperties = dp,
                 clipTextToBoundingBoxes = clipTextToBoundingBoxes,
                 fontFamilyResolver = fontFamilyResolver,
                 clipToCompositionBounds = clipToCompositionBounds,
@@ -135,14 +140,9 @@ public fun rememberLottiePainter(
 
     LaunchedEffect(
         painter,
-        dynamicProperties
+        dp
     ) {
-        (painter as? LottiePainter)?.setDynamicProperties(
-            when (dynamicProperties) {
-                is DynamicCompositionProvider -> dynamicProperties
-                null -> null
-            },
-        )
+        (painter as? LottiePainter)?.setDynamicProperties(dp)
     }
 
     return painter
