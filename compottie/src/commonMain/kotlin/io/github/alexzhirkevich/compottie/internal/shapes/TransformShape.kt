@@ -5,11 +5,9 @@ import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.content.Content
-import io.github.alexzhirkevich.compottie.internal.content.ModifierContent
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.defaultAnchorPoint
 import io.github.alexzhirkevich.compottie.internal.animation.defaultOpacity
 import io.github.alexzhirkevich.compottie.internal.animation.defaultPosition
@@ -17,6 +15,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.defaultRotation
 import io.github.alexzhirkevich.compottie.internal.animation.defaultScale
 import io.github.alexzhirkevich.compottie.internal.animation.defaultSkew
 import io.github.alexzhirkevich.compottie.internal.animation.defaultSkewAxis
+import io.github.alexzhirkevich.compottie.internal.content.Content
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -54,7 +53,7 @@ internal class TransformShape(
 
     @SerialName("sa")
     override val skewAxis: AnimatedNumber = AnimatedNumber.defaultSkewAxis(),
-) : AnimatedTransform(), Shape, ModifierContent {
+) : AnimatedTransform(), Shape {
 
     @Transient
     private var dynamicShape : DynamicShapeProvider? = null
