@@ -35,12 +35,12 @@ public value class JsNumber(
         return when(function){
             "toFixed" -> {
                 checkArgsNotNull(arguments, function)
-                val digit = arguments.argAtOrNull(0)?.invoke(context)?.number()?.toInt()
+                val digit = arguments.argAtOrNull(0)?.invoke(context)?.let(context::toNumber)?.toInt()
                 value.toFixed(digit ?: 0)
             }
             "toPrecision" -> {
                 checkArgsNotNull(arguments, function)
-                val digit = arguments.argAtOrNull(0)?.invoke(context)?.number()?.toInt()
+                val digit = arguments.argAtOrNull(0)?.invoke(context)?.let(context::toNumber)?.toInt()
                 value.toPrecision(digit)
             }
 

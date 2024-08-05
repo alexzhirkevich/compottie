@@ -14,7 +14,7 @@ public class FunctionParam(
     public val default : Expression? = null
 )
 
-internal infix fun String.with(default: Expression?) : FunctionParam {
+internal infix fun String.defaults(default: Expression?) : FunctionParam {
     return FunctionParam(this, false, default)
 }
 
@@ -71,7 +71,7 @@ internal fun OpFunctionExec(
 
     val res = receiver?.invoke(ctx)
     val function = when {
-        res == null -> ctx.get(name)
+        res == null -> ctx[name]
         res is Callable && name.isBlank() -> res
         res is ESObject -> res[name]
         res is ESAny -> {

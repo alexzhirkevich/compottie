@@ -2,7 +2,10 @@ package io.github.alexzhirkevich.skriptie.javascript
 
 import io.github.alexzhirkevich.skriptie.VariableType
 import io.github.alexzhirkevich.skriptie.common.fastMap
+import io.github.alexzhirkevich.skriptie.ecmascript.ESNumber
+import io.github.alexzhirkevich.skriptie.ecmascript.ESObject
 import io.github.alexzhirkevich.skriptie.ecmascript.ESRuntime
+import io.github.alexzhirkevich.skriptie.ecmascript.init
 import kotlin.math.absoluteValue
 
 public open class JSRuntime : ESRuntime() {
@@ -19,10 +22,10 @@ public open class JSRuntime : ESRuntime() {
     override fun isFalse(a: Any?): Boolean {
         return a == null
                 || a == false
-                || a is Number && a.toDouble() == 0.0
-                || a is CharSequence && a.isEmpty()
                 || a is Unit
-                || (a as? JsNumber)?.value?.let(::isFalse) == true
+                || a is Number && a.toDouble().let { it == 0.0 || it.isNaN() }
+                || a is CharSequence && a.isEmpty()
+                || (a as? JsWrapper<*>)?.value?.let(::isFalse) == true
     }
 
     override fun sum(a: Any?, b: Any?): Any? {
@@ -64,12 +67,12 @@ public open class JSRuntime : ESRuntime() {
         return jspos(a?.numberOrThis())
     }
 
-    override fun toNumber(a: Any?, strict : Boolean): Number {
+    override fun toNumber(a: Any?, strict: Boolean): Number {
         return a.numberOrNull(withNaNs = !strict) ?: Double.NaN
     }
 
     override fun fromKotlin(a: Any?): Any? {
-        return when (a){
+        return when (a) {
             is Number -> JsNumber(a)
             is UByte -> JsNumber(a.toLong())
             is UShort -> JsNumber(a.toLong())
@@ -82,7 +85,7 @@ public open class JSRuntime : ESRuntime() {
     }
 
     override fun toKotlin(a: Any?): Any? {
-        return when(a){
+        return when (a) {
             is JsNumber -> a.value
             is JsArray -> a.value.fastMap(::toKotlin)
             is JsString -> a.value
@@ -90,8 +93,20 @@ public open class JSRuntime : ESRuntime() {
         }
     }
 
-    private fun recreate(){
+    private fun recreate() {
         set("Math", JsMath(), VariableType.Const)
+
+        init {
+            val number = get("Number") as ESNumber
+            val globalThis = get("globalThis") as ESObject
+
+            globalThis["parseInt"] = number.parseInt
+            globalThis["parseFloat"] = number.parseFloat
+            globalThis["isFinite"] = number.isFinite
+            globalThis["isNan"] = number.isNan
+            globalThis["isInteger"] = number.isInteger
+            globalThis["isSafeInteger"] = number.isSafeInteger
+        }
     }
 }
 
@@ -226,7 +241,7 @@ private fun jspos(v : Any?) : Any {
 }
 
 
-internal fun Any?.numberOrNull(withNaNs : Boolean = true) : Number? = when(this) {
+private fun Any?.numberOrNull(withNaNs : Boolean = true) : Number? = when(this) {
     null -> 0
     is JsString -> if (withNaNs) value.numberOrNull(withNaNs) else null
     is JsArray -> if (withNaNs) value.numberOrNull(withNaNs) else null
@@ -254,8 +269,5 @@ internal fun Any?.numberOrNull(withNaNs : Boolean = true) : Number? = when(this)
     }
     else -> null
 }
-internal fun Any?.number(withNaNs : Boolean = true) : Number = checkNotNull(numberOrNull(withNaNs)){
-    "Expected number but got $this"
-}
 
-internal fun Any?.numberOrThis(withMagic : Boolean = true) : Any? = numberOrNull(withMagic) ?: this
+private fun Any?.numberOrThis(withMagic : Boolean = true) : Any? = numberOrNull(withMagic) ?: this

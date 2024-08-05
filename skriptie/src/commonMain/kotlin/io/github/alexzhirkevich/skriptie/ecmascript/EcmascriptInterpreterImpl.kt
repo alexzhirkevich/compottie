@@ -51,50 +51,17 @@ internal enum class BlockContext {
 
 
 internal class EcmascriptInterpreterImpl(
-    private val expr : String,
+    expr : String,
     private val langContext: LangContext,
     private val globalContext : InterpretationContext,
 ) {
-
+    private var expr = "{$expr}"
     private var pos = -1
     private var ch: Char = ' '
-    private var blockFunctionRegistrar = mutableListOf<Expression>()
 
     fun interpret(): Script {
-        val expressions = buildList {
-            pos = -1
-            ch = ' '
-            if (EXPR_DEBUG_PRINT_ENABLED) {
-                println("Parsing $expr")
-            }
-            nextChar()
-            do {
-                while (eat(';')) {
-                }
-                if (pos >= expr.length) {
-                    break
-                }
-
-                add(parseAssignment(globalContext, emptyList()))
-            } while (pos < expr.length)
-
-            require(pos <= expr.length) {
-                "Unexpected Lottie expression $expr"
-            }
-        }
-        val block = OpBlock(
-            expressions = blockFunctionRegistrar + expressions,
-            scoped = false
-        )
-        pos = -1
-        ch = ' '
-        if (EXPR_DEBUG_PRINT_ENABLED) {
-            println("Expression parsed: $expr")
-        }
-
-        return Script {
-            langContext.toKotlin(block(it))
-        }
+        val block = parseBlock(scoped = false, context = emptyList())
+        return Script { langContext.toKotlin(block(it)) }
     }
 
     private fun prepareNextChar() {
@@ -183,7 +150,7 @@ internal class EcmascriptInterpreterImpl(
         }
     }
 
-    private fun parseAssignment(context: Expression, blockContext : List<BlockContext>): Expression {
+    private fun parseAssignment(context: Expression, blockContext: List<BlockContext>): Expression {
         var x = parseExpressionOp(context, blockContext = blockContext)
         if (EXPR_DEBUG_PRINT_ENABLED) {
             println("Parsing assignment for $x")
@@ -240,7 +207,7 @@ internal class EcmascriptInterpreterImpl(
 
             x is OpGetVariable -> OpAssign(
                 variableName = x.name,
-                assignableValue = parseAssignment(globalContext,  emptyList()),
+                assignableValue = parseAssignment(globalContext, emptyList()),
                 type = x.assignmentType,
                 merge = merge
             ).also {
@@ -255,7 +222,7 @@ internal class EcmascriptInterpreterImpl(
     private fun parseExpressionOp(
         context: Expression,
         logicalContext: LogicalContext? = null,
-        blockContext : List<BlockContext>
+        blockContext: List<BlockContext>
     ): Expression {
         var x = parseTermOp(context, blockContext)
         while (true) {
@@ -263,60 +230,60 @@ internal class EcmascriptInterpreterImpl(
             x = when {
                 logicalContext != LogicalContext.Compare && eatSequence("&&") ->
                     OpBoolean(
-                        parseExpressionOp(globalContext, LogicalContext.And,blockContext),
+                        parseExpressionOp(globalContext, LogicalContext.And, blockContext),
                         x,
                         langContext::isFalse, Boolean::and
                     )
 
                 logicalContext == null && eatSequence("||") ->
                     OpBoolean(
-                        parseExpressionOp(globalContext, LogicalContext.Or,blockContext),
+                        parseExpressionOp(globalContext, LogicalContext.Or, blockContext),
                         x,
                         langContext::isFalse, Boolean::or
                     )
 
                 eatSequence("<=") -> OpCompare(
                     x,
-                    parseExpressionOp(globalContext, LogicalContext.Compare,blockContext)
+                    parseExpressionOp(globalContext, LogicalContext.Compare, blockContext)
                 ) { a, b ->
                     OpLessComparator(a, b) || OpEqualsComparator(a, b)
                 }
 
                 eatSequence("<") -> OpCompare(
                     x,
-                    parseExpressionOp(globalContext, LogicalContext.Compare,blockContext),
+                    parseExpressionOp(globalContext, LogicalContext.Compare, blockContext),
                     OpLessComparator
                 )
 
                 eatSequence(">=") -> OpCompare(
                     x,
-                    parseExpressionOp(globalContext, LogicalContext.Compare,blockContext)
+                    parseExpressionOp(globalContext, LogicalContext.Compare, blockContext)
                 ) { a, b ->
                     OpGreaterComparator(a, b) || OpEqualsComparator(a, b)
                 }
 
                 eatSequence(">") -> OpCompare(
                     x,
-                    parseExpressionOp(globalContext, LogicalContext.Compare,blockContext),
+                    parseExpressionOp(globalContext, LogicalContext.Compare, blockContext),
                     OpGreaterComparator
                 )
 
                 eatSequence("===") -> OpEquals(
                     x,
-                    parseExpressionOp(globalContext, LogicalContext.Compare,blockContext),
+                    parseExpressionOp(globalContext, LogicalContext.Compare, blockContext),
                     true
                 )
 
                 eatSequence("==") -> OpEquals(
                     x,
-                    parseExpressionOp(globalContext, LogicalContext.Compare,blockContext),
+                    parseExpressionOp(globalContext, LogicalContext.Compare, blockContext),
                     false
                 )
 
                 eatSequence("!==") -> OpNot(
                     OpEquals(
                         x,
-                        parseExpressionOp(globalContext, LogicalContext.Compare,blockContext),
+                        parseExpressionOp(globalContext, LogicalContext.Compare, blockContext),
                         false
                     ),
                     langContext::isFalse
@@ -342,20 +309,20 @@ internal class EcmascriptInterpreterImpl(
         }
     }
 
-    private fun parseTermOp(context: Expression, blockContext : List<BlockContext>): Expression {
+    private fun parseTermOp(context: Expression, blockContext: List<BlockContext>): Expression {
         var x = parseFactorOp(context, blockContext)
         while (true) {
             prepareNextChar()
             x = when {
                 !nextSequenceIs("*=") && eat('*') -> Delegate(
                     x,
-                    parseFactorOp(globalContext,blockContext),
+                    parseFactorOp(globalContext, blockContext),
                     langContext::mul
                 )
 
                 !nextSequenceIs("/=") && eat('/') -> Delegate(
                     x,
-                    parseFactorOp(globalContext,blockContext),
+                    parseFactorOp(globalContext, blockContext),
                     langContext::div
                 )
 
@@ -370,7 +337,7 @@ internal class EcmascriptInterpreterImpl(
         }
     }
 
-    private fun parseFactorOp(context: Expression, blockContext : List<BlockContext>): Expression {
+    private fun parseFactorOp(context: Expression, blockContext: List<BlockContext>): Expression {
         val parsedOp = when {
 
             nextCharIs('{'::equals) -> parseBlock(context = emptyList())
@@ -401,16 +368,16 @@ internal class EcmascriptInterpreterImpl(
                 )
             }
 
-             context === globalContext && eat('+') ->
+            context === globalContext && eat('+') ->
                 Delegate(parseFactorOp(context, blockContext), langContext::pos)
 
-             context === globalContext && eat('-') ->
+            context === globalContext && eat('-') ->
                 Delegate(parseFactorOp(context, blockContext), langContext::neg)
 
-             context === globalContext && !nextSequenceIs("!=") && eat('!') ->
-                OpNot(parseExpressionOp(context, blockContext = blockContext),  langContext::isFalse)
+            context === globalContext && !nextSequenceIs("!=") && eat('!') ->
+                OpNot(parseExpressionOp(context, blockContext = blockContext), langContext::isFalse)
 
-             context === globalContext && eat('(') -> {
+            context === globalContext && eat('(') -> {
                 parseExpressionOp(context, blockContext = blockContext).also {
                     require(eat(')')) {
                         "Bad expression: Missing ')'"
@@ -418,7 +385,7 @@ internal class EcmascriptInterpreterImpl(
                 }
             }
 
-             context === globalContext && nextCharIs { it.isDigit() || it == '.' } -> {
+            context === globalContext && nextCharIs { it.isDigit() || it == '.' } -> {
                 if (EXPR_DEBUG_PRINT_ENABLED) {
                     print("making const number... ")
                 }
@@ -486,7 +453,7 @@ internal class EcmascriptInterpreterImpl(
                 OpConstant(langContext.fromKotlin(num))
             }
 
-             context === globalContext && nextCharIs('\''::equals) || nextCharIs('"'::equals) -> {
+            context === globalContext && nextCharIs('\''::equals) || nextCharIs('"'::equals) -> {
                 if (EXPR_DEBUG_PRINT_ENABLED) {
                     print("making const string... ")
                 }
@@ -506,14 +473,17 @@ internal class EcmascriptInterpreterImpl(
                 if (EXPR_DEBUG_PRINT_ENABLED) {
                     println("making index... ")
                 }
-                OpIndex(context, parseExpressionOp(globalContext, blockContext = blockContext)).also {
+                OpIndex(
+                    context,
+                    parseExpressionOp(globalContext, blockContext = blockContext)
+                ).also {
                     require(eat(']')) {
                         "Bad expression: Missing ']'"
                     }
                 }
             }
 
-           eat('[') -> { // make array
+            eat('[') -> { // make array
                 if (EXPR_DEBUG_PRINT_ENABLED) {
                     println("making array... ")
                 }
@@ -522,7 +492,7 @@ internal class EcmascriptInterpreterImpl(
                         if (eat(']')) { // empty list
                             return@buildList
                         }
-                        add(parseExpressionOp(context,blockContext = blockContext))
+                        add(parseExpressionOp(context, blockContext = blockContext))
                     } while (eat(','))
                     require(eat(']')) {
                         "Bad expression: missing ]"
@@ -556,11 +526,15 @@ internal class EcmascriptInterpreterImpl(
         return parsedOp.finish(blockContext)
     }
 
-    private fun Expression.finish(blockContext : List<BlockContext>): Expression {
+    private fun Expression.finish(blockContext: List<BlockContext>): Expression {
         return when {
             // inplace function invocation
             this is InterpretationContext && nextCharIs { it == '(' } -> {
-                parseFunction(this, null, blockContext)
+                parseFunction(
+                    context = this,
+                    func = null,
+                    blockContext = blockContext
+                )
             }
             // begin condition || property || index
             eat('.')
@@ -585,10 +559,10 @@ internal class EcmascriptInterpreterImpl(
                         return@buildList //empty args
                     }
                     do {
-                        add(parseAssignment(globalContext,  emptyList()))
+                        add(parseAssignment(globalContext, emptyList()))
                     } while (eat(','))
 
-                    if(!eat(')')) {
+                    if (!eat(')')) {
                         throw SyntaxError("Invalid or unexpected token at pos $start")
                     }
                 }
@@ -599,7 +573,7 @@ internal class EcmascriptInterpreterImpl(
     private fun parseFunction(
         context: Expression,
         func: String?,
-        blockContext : List<BlockContext>
+        blockContext: List<BlockContext>
     ): Expression {
 
         return when (func) {
@@ -612,7 +586,7 @@ internal class EcmascriptInterpreterImpl(
 
                 val start = pos
 
-                when(val expr = parseAssignment(globalContext, emptyList())){
+                when (val expr = parseAssignment(globalContext, emptyList())) {
                     is OpAssign -> {
                         OpAssign(
                             type = scope,
@@ -621,6 +595,7 @@ internal class EcmascriptInterpreterImpl(
                             merge = null
                         )
                     }
+
                     is OpGetVariable -> {
                         OpAssign(
                             type = scope,
@@ -629,20 +604,23 @@ internal class EcmascriptInterpreterImpl(
                             merge = null
                         )
                     }
-                    else -> throw SyntaxError("Unexpected identifier '${this.expr.substring(start).substringBefore(' ').trim()}'")
+
+                    else -> throw SyntaxError(
+                        "Unexpected identifier '${
+                            this.expr.substring(start).substringBefore(' ').trim()
+                        }'"
+                    )
                 }
             }
 
-            "undefined" -> OpConstant(Unit)
-            "NaN" -> OpConstant(Double.NaN)
-            "Infinity" -> OpConstant(Double.POSITIVE_INFINITY)
+
             "null" -> OpConstant(null)
             "true" -> OpConstant(true)
             "false" -> OpConstant(false)
             "function" -> {
-                blockFunctionRegistrar += parseFunctionDefinition(blockContext = blockContext)
-                OpConstant(Unit)
+                OpConstant(parseFunctionDefinition(blockContext = blockContext))
             }
+
             "for" -> {
                 if (EXPR_DEBUG_PRINT_ENABLED) {
                     println("making for loop")
@@ -682,7 +660,6 @@ internal class EcmascriptInterpreterImpl(
                     condition = condition,
                     body = body,
                     isFalse = langContext::isFalse
-
                 )
             }
 
@@ -708,30 +685,30 @@ internal class EcmascriptInterpreterImpl(
             }
 
             "continue" -> {
-                if(BlockContext.Loop in blockContext){
+                if (BlockContext.Loop in blockContext) {
                     if (EXPR_DEBUG_PRINT_ENABLED) {
                         println("parsing loop continue")
                     }
                     OpContinue()
-                } else{
+                } else {
                     throw SyntaxError("Illegal continue statement: no surrounding iteration statement")
                 }
             }
 
             "break" -> {
-                if(BlockContext.Loop in blockContext){
+                if (BlockContext.Loop in blockContext) {
                     if (EXPR_DEBUG_PRINT_ENABLED) {
                         println("parsing loop break")
                     }
                     OpBreak()
-                } else{
+                } else {
                     throw SyntaxError("Illegal break statement")
                 }
             }
 
             "return" -> {
                 if (BlockContext.Function in blockContext) {
-                    val expr = parseExpressionOp(globalContext,blockContext = blockContext)
+                    val expr = parseExpressionOp(globalContext, blockContext = blockContext)
                     if (EXPR_DEBUG_PRINT_ENABLED) {
                         println("making return with $expr")
                     }
@@ -821,7 +798,7 @@ internal class EcmascriptInterpreterImpl(
         return condition
     }
 
-    private fun parseTryCatch(blockContext : List<BlockContext>) : Expression {
+    private fun parseTryCatch(blockContext: List<BlockContext>): Expression {
         val tryBlock = parseBlock(requireBlock = true, context = blockContext)
         val catchBlock = if (eatSequence("catch")) {
 
@@ -884,7 +861,10 @@ internal class EcmascriptInterpreterImpl(
         )
     }
 
-    private fun parseFunctionDefinition(name: String? = null, blockContext: List<BlockContext>): Expression {
+    private fun parseFunctionDefinition(
+        name: String? = null,
+        blockContext: List<BlockContext>
+    ): Function {
 
         val start = pos
 
@@ -929,17 +909,10 @@ internal class EcmascriptInterpreterImpl(
             context = blockContext + BlockContext.Function
         )
 
-        val function = Function(
+        return Function(
             name = actualName,
             parameters = args,
             body = block
-        )
-
-        return OpAssign(
-            type = VariableType.Const,
-            variableName = actualName,
-            assignableValue = OpConstant(function),
-            merge = null
         )
     }
 
@@ -948,27 +921,28 @@ internal class EcmascriptInterpreterImpl(
         requireBlock: Boolean = false,
         context: List<BlockContext>
     ): Expression {
+        var funcIndex = 0
+        val list = buildList {
+            if (eat('{')) {
+                while (!eat('}') && pos < expr.length) {
+                    val expr = parseAssignment(globalContext, context)
 
-        val oldRegistrar = blockFunctionRegistrar
-        try {
-            blockFunctionRegistrar = mutableListOf()
-            val list = buildList {
-                if (eat('{')) {
-                    while (!eat('}') && pos < expr.length) {
-                        add(parseAssignment(globalContext, context))
-                        eat(';')
+                    if (expr is OpConstant && expr.value is Function) {
+                        add(funcIndex++, OpAssign(VariableType.Local, expr.value.name, expr, null))
+                    } else {
+                        add(expr)
                     }
-                } else {
-                    if (requireBlock) {
-                        throw SyntaxError("Unexpected token at $pos: block start was expected")
-                    }
-                    add(parseAssignment(globalContext, context))
+                    eat(';')
+                    eat(';')
                 }
+            } else {
+                if (requireBlock) {
+                    throw SyntaxError("Unexpected token at $pos: block start was expected")
+                }
+                add(parseAssignment(globalContext, context))
             }
-            return OpBlock(blockFunctionRegistrar + list, scoped)
-        } finally {
-            blockFunctionRegistrar = oldRegistrar
         }
+        return OpBlock(list, scoped)
     }
 }
 

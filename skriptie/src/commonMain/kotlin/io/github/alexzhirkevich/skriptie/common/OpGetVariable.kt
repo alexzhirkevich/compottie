@@ -6,8 +6,11 @@ import io.github.alexzhirkevich.skriptie.VariableType
 import io.github.alexzhirkevich.skriptie.ecmascript.ESAny
 import io.github.alexzhirkevich.skriptie.invoke
 
-internal fun  OpConstant(value: Any?) =
-    Expression {  value }
+internal class OpConstant(val value: Any?) : Expression {
+    override fun invokeRaw(context: ScriptRuntime): Any? {
+        return value
+    }
+}
 
 internal class OpGetVariable(
     val name : String,
@@ -20,14 +23,13 @@ internal class OpGetVariable(
             context.set(name, 0f, assignmentType)
         } else {
             when (val res = receiver?.invoke(context)) {
-//                is JsObject<*> -> if (name in res) res[name] else Unit
                 is ESAny -> res[name]
-
-                else -> if (context.contains(name)) {
-                    context.get(name)
-                } else {
-                    unresolvedReference(name)
-                }
+                else ->
+                    if (name in context) {
+                        context[name]
+                    } else {
+                        unresolvedReference(name)
+                    }
             }
         }
     }

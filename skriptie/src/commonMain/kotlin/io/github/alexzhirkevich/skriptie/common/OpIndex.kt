@@ -3,7 +3,6 @@ package io.github.alexzhirkevich.skriptie.common
 import io.github.alexzhirkevich.skriptie.Expression
 import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.invoke
-import io.github.alexzhirkevich.skriptie.javascript.number
 
 internal class OpIndex(
     val variable : Expression,
@@ -17,7 +16,7 @@ internal class OpIndex(
     companion object {
         fun  invoke(context: ScriptRuntime, variable : Expression, index : Expression) : Any{
             val v = checkNotEmpty(variable(context))
-            val idx = (index(context).number()).toInt()
+            val idx = (index(context).let(context::toNumber)).toInt()
 
             return v.valueAtIndexOrUnit(idx)
         }

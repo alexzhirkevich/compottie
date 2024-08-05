@@ -72,7 +72,7 @@ private fun String.charAt(
     arguments: List<Expression>
 ): Any {
     checkArgs(arguments, 1, function)
-    val idx = (arguments.argAt(0).invoke(context).number()).toInt()
+    val idx = arguments.argAt(0).invoke(context).let(context::toNumber).toInt()
     return valueAtIndexOrUnit(idx)
 }
 
@@ -96,7 +96,7 @@ private fun String.charCodeAt(
     arguments: List<Expression>
 ): Int {
     checkArgs(arguments, 1, function)
-    val ind = arguments.argAt(0).invoke(context).number().toInt()
+    val ind = arguments.argAt(0).invoke(context).let(context::toNumber).toInt()
     return get(ind).code
 }
 
@@ -107,7 +107,7 @@ private fun String.endsWith(
 ): Boolean {
     checkArgsNotNull(arguments, function)
     val searchString = arguments.argAt(0).invoke(context).toString()
-    val position = arguments.argAtOrNull(1)?.invoke(context)?.number()?.toInt()
+    val position = arguments.argAtOrNull(1)?.invoke(context)?.let(context::toNumber)?.toInt()
     return if (position == null) {
         endsWith(searchString)
     } else {
@@ -121,7 +121,7 @@ private fun String.startsWith(
     arguments: List<Expression>
 ): Boolean {
     val searchString = arguments.argAt(0).invoke(context).toString()
-    val position = arguments.argAtOrNull(1)?.number()?.toInt()
+    val position = arguments.argAtOrNull(1)?.let(context::toNumber)?.toInt()
     return if (position == null) {
         startsWith(searchString)
     } else {
@@ -136,7 +136,7 @@ private fun String.includes(
     arguments: List<Expression>
 ): Boolean {
     val searchString = arguments.argAt(0).invoke(context).toString()
-    val position = arguments.argAtOrNull(1)?.invoke(context)?.number()?.toInt()
+    val position = arguments.argAtOrNull(1)?.invoke(context)?.let(context::toNumber)?.toInt()
 
     return if (position == null) {
         contains(searchString)
@@ -149,7 +149,7 @@ private fun String.padStart(
     context: ScriptRuntime,
     arguments: List<Expression>
 ): String {
-    val targetLength = arguments.argAt(0).invoke(context).number().toInt()
+    val targetLength = arguments.argAt(0).invoke(context).let(context::toNumber).toInt()
     val padString = arguments.argAtOrNull(1)?.invoke(context)?.toString() ?: " "
     val toAppend = targetLength - length
 
@@ -165,7 +165,7 @@ private fun String.padEnd(
     context: ScriptRuntime,
     arguments: List<Expression>
 ): String {
-    val targetLength = arguments.argAt(0).invoke(context).number().toInt()
+    val targetLength = arguments.argAt(0).invoke(context).let(context::toNumber).toInt()
     val padString = arguments.argAtOrNull(1)?.invoke(context)?.toString() ?: " "
 
     return buildString(targetLength) {
@@ -209,7 +209,7 @@ private fun String.repeat(
     arguments: List<Expression>
 ): String {
     checkArgs(arguments, 1, function)
-    val count = arguments.argAt(0).invoke(context).number().toInt()
+    val count = arguments.argAt(0).invoke(context).let(context::toNumber).toInt()
     return repeat(count)
 }
 
@@ -218,7 +218,7 @@ private fun String.substring(
     context: ScriptRuntime,
     arguments: List<Expression>
 ): String {
-    val start = arguments.get(0).invoke(context).number().toInt()
-    val end = arguments.get(0).invoke(context)?.number()?.toInt()?.coerceAtMost(length) ?: length
+    val start = arguments.get(0).invoke(context).let(context::toNumber).toInt()
+    val end = arguments.get(0).invoke(context)?.let(context::toNumber)?.toInt()?.coerceAtMost(length) ?: length
     return substring(start, end)
 }

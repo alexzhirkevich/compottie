@@ -17,12 +17,27 @@ public abstract class ESRuntime : DefaultRuntime(), ESObject {
         init()
     }
 
+
     private fun init() {
         set("Number", ESNumber(), VariableType.Const)
+
         set("globalThis", this, VariableType.Const)
+        set("Infinity", Double.POSITIVE_INFINITY, VariableType.Const)
+        set("NaN", Double.NaN, VariableType.Const)
+        set("undefined", Unit, VariableType.Const)
     }
 
     final override fun get(variable: String): Any? {
+        if (variable in this){
+            return super.get(variable)
+        }
+
+        val globalThis = get("globalThis") as? ESObject? ?: return super.get(variable)
+
+        if (variable in globalThis){
+            return globalThis[variable]
+        }
+
         return super.get(variable)
     }
 

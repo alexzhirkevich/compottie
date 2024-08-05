@@ -6,6 +6,8 @@ import io.github.alexzhirkevich.skriptie.common.Callable
 import io.github.alexzhirkevich.skriptie.common.Function
 import io.github.alexzhirkevich.skriptie.common.FunctionParam
 import io.github.alexzhirkevich.skriptie.common.unresolvedReference
+import kotlin.properties.PropertyDelegateProvider
+import kotlin.properties.ReadOnlyProperty
 
 public interface ESObject : ESAny {
     public operator fun set(variable: String, value: Any?)
@@ -109,6 +111,35 @@ public fun  Object(name: String, builder : ObjectScope.() -> Unit) : ESObject {
 internal fun ESObject.init(scope: ObjectScope.() -> Unit) {
     ObjectScopeImpl("", this).apply(scope)
 }
+
+internal fun func(
+    vararg args: String,
+    params: (String) -> FunctionParam = { FunctionParam(it) },
+    body: ScriptRuntime.(args: List<Any?>) -> Any?
+) : PropertyDelegateProvider<ESObject, ReadOnlyProperty<ESObject, Callable>> =  func(
+    args = args.map(params).toTypedArray(),
+    body = body
+)
+
+internal fun func(
+    vararg args: FunctionParam,
+    body: ScriptRuntime.(args: List<Any?>) -> Any?
+): PropertyDelegateProvider<ESObject, ReadOnlyProperty<ESObject, Callable>> =  PropertyDelegateProvider { obj, prop ->
+    obj[prop.name] = Function(
+        name = prop.name,
+        parameters = args.toList(),
+        body = {
+            with(it) {
+                body(args.map { get(it.name) })
+            }
+        }
+    )
+
+    ReadOnlyProperty { thisRef, property ->
+        thisRef[property.name] as Callable
+    }
+}
+
 
 internal fun  String.func(
     vararg args: FunctionParam,
