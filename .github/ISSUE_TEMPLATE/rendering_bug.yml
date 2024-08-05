@@ -13,7 +13,7 @@ body:
     id: what-happened
     attributes:
       label: What happened?
-      description: Please describe what happened, attach the bug screenshot and the screenshot of what you expect to see (from AE or other Lottie player). You can attach images by clicking this area to highlight it and then dragging files in.
+      description: Please describe what happened, attach the bug screenshot and the screenshot of what you expect to see (from AE or other Lottie player). Attach the animation JSON/EAP file is possible. You can attach files by clicking this area to highlight it and then dragging files in.
       placeholder: Tell us what you see!
       value: "A rendering bug happened!"
     validations:
@@ -22,7 +22,7 @@ body:
     id: unsupported-features
     attributes:
       label: Unsupported features 
-      description: Please check that your animation is not using [unsupported features](/unsupported_features.md). 
+      description: Please check that your animation is not using [unsupported features](https://github.com/alexzhirkevich/compottie/unsupported_features.md). 
       options:
         - label: My animation doesn't use unsupported features
     validations:
