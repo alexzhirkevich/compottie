@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie
 
 
 import org.khronos.webgl.Int8Array
+import org.khronos.webgl.Uint8Array
 
 @OptIn(ExperimentalCompottieApi::class)
 internal actual suspend fun decompress(array: ByteArray, decompressedSize : Int) : ByteArray {
@@ -28,10 +29,10 @@ internal actual suspend fun decompress(array: ByteArray, decompressedSize : Int)
             break
         }
 
-        val chunk = Int8Array(result.value.buffer).toByteArray()
+        val chunk = Uint8Array(result.value.buffer).toByteArray()
 
         chunk.copyInto(decompressed, ind)
-        ind += array.size
+        ind += chunk.size
     }
 
     return decompressed

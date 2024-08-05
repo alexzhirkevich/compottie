@@ -10,7 +10,6 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
-plugins.apply("ktorwasm.workaround")
 
 
 val jsAppName = project.name + "-js"
@@ -56,6 +55,7 @@ kotlin {
     }
 }
 
+plugins.apply("ktorwasm.workaround")
 
 /**
 ./gradlew clean compatBrowserProductionDistribution

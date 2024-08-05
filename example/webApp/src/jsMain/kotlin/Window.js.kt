@@ -4,7 +4,7 @@ import androidx.compose.ui.window.CanvasBasedWindow
 import org.jetbrains.skiko.wasm.onWasmReady
 
 @OptIn(ExperimentalComposeUiApi::class)
-internalactual fun CompatComposeWindow(
+internal actual fun CompatComposeWindow(
     title : String?,
     content : @Composable () -> Unit
 ){

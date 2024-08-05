@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -32,15 +33,10 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.FileDownload
-import androidx.compose.material.icons.rounded.ArrowBackIos
-import androidx.compose.material.icons.rounded.ArrowForwardIos
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -78,6 +74,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -100,6 +97,11 @@ import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import io.github.alexzhirkevich.shared.generated.resources.Res
 import io.ktor.http.encodeURLPath
+import lottiefiles.icons.ArrowBackIos
+import lottiefiles.icons.ArrowForwardIos
+import lottiefiles.icons.FileDownload
+import lottiefiles.icons.OpenInNew
+import lottiefiles.icons.Sort
 import lottiefiles.theme.LottieFilesTheme
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import kotlin.math.abs
@@ -112,7 +114,8 @@ internal fun LottieFilesScreen(
     LottieFilesTheme {
         DisposableEffect(0) {
             val l = Compottie.logger
-//        Compottie.logger = null
+            Compottie.compositionCacheLimit = 20 // page
+            Compottie.logger = null
             onDispose {
                 Compottie.logger = l
             }
@@ -144,6 +147,13 @@ internal fun LottieFilesScreen(
         val files by viewModel.files.collectAsState()
         val pageCount by viewModel.pageCount.collectAsState()
         val gridState = rememberLazyGridState()
+
+        val keyboard = LocalSoftwareKeyboardController.current
+        LaunchedEffect(gridState.isScrollInProgress){
+            if (gridState.isScrollInProgress){
+                keyboard?.hide()
+            }
+        }
 
         LaunchedEffect(files) {
             gridState.animateScrollToItem(0)
@@ -276,6 +286,7 @@ internal fun LottieFilesScreen(
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()
+                                        .navigationBarsPadding()
                                         .padding(
                                             horizontal = 24.dp,
                                             vertical = 12.dp
