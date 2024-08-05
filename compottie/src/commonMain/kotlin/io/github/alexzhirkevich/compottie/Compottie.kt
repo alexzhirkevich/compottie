@@ -21,19 +21,11 @@ public object Compottie {
      * - This value represents the trade-off between memory usage and gradient animations performance.
      *
      * - Most of the time gradients are not animated therefore only 1 instance will be stored
-     *
-     * - Single animated gradient caches ~10 shaders per refresh rate (so assume on 60hz devices
-     * each animated gradient will try to cache ~600 shader instances)
-     *
-     * - By default each animated gradient instance keeps up to 1000 shader instances.
-     * If you have many composed animations that have many animated gradients,
-     * you can experience high memory usage. In that case you can lower this value.
-     *
      * - You can set this value at any time (for example when you receive memory usage warning).
      * All running animations will shrink their shader cache size.
      * */
     @ExperimentalCompottieApi
-    public var shaderCacheLimit : Int = 1000
+    public var shaderCacheLimit : Int = 15
 
     /**
      * Limit the number of in-memory cached lottie compositions.
