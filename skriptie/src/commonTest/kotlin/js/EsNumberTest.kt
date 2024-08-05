@@ -48,5 +48,17 @@ class EsNumberTest {
     @Test
     fun static_methods(){
         "Number.isFinite(123)".eval().assertEqualsTo(true)
+        "Number.isInteger(123)".eval().assertEqualsTo(true)
+        "Number.isInteger(123.3)".eval().assertEqualsTo(false)
+        "Number.isNan(123.3)".eval().assertEqualsTo(false)
+        "Number.isNan(NaN)".eval().assertEqualsTo(true)
+        "Number.isSafeInteger(123.3)".eval().assertEqualsTo(false)
+        "Number.isSafeInteger(123)".eval().assertEqualsTo(true)
+        "Number.parseFloat('123.3')".eval().assertEqualsTo(123.3)
+        "Number.parseFloat('123.3sdfsdf')".eval().assertEqualsTo(123.3)
+        "Number.parseInt('123')".eval().assertEqualsTo(123L)
+        "Number.parseInt('123.3')".eval().assertEqualsTo(123L)
+        "Number.parseInt('123.3sdfsdf')".eval().assertEqualsTo(123L)
+        "Number.parseInt(' 0xff', 16)".eval().assertEqualsTo(255L)
     }
 }

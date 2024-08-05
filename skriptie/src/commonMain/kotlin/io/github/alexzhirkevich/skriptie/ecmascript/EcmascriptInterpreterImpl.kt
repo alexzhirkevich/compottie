@@ -4,7 +4,6 @@ import io.github.alexzhirkevich.skriptie.Expression
 import io.github.alexzhirkevich.skriptie.InterpretationContext
 import io.github.alexzhirkevich.skriptie.LangContext
 import io.github.alexzhirkevich.skriptie.Script
-import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.VariableType
 import io.github.alexzhirkevich.skriptie.common.Delegate
 import io.github.alexzhirkevich.skriptie.common.Function
@@ -577,6 +576,8 @@ internal class EcmascriptInterpreterImpl(
         if (!nextCharIs('('::equals)) {
             return null
         }
+
+        val start = pos
         return buildList {
             when {
                 eat('(') -> {
@@ -587,8 +588,8 @@ internal class EcmascriptInterpreterImpl(
                         add(parseAssignment(globalContext,  emptyList()))
                     } while (eat(','))
 
-                    require(eat(')')) {
-                        "Bad expression:Missing ')' after argument to $name"
+                    if(!eat(')')) {
+                        throw SyntaxError("Invalid or unexpected token at pos $start")
                     }
                 }
             }
@@ -633,6 +634,8 @@ internal class EcmascriptInterpreterImpl(
             }
 
             "undefined" -> OpConstant(Unit)
+            "NaN" -> OpConstant(Double.NaN)
+            "Infinity" -> OpConstant(Double.POSITIVE_INFINITY)
             "null" -> OpConstant(null)
             "true" -> OpConstant(true)
             "false" -> OpConstant(false)

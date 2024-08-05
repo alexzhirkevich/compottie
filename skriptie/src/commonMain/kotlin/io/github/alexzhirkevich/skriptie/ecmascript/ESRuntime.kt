@@ -19,7 +19,6 @@ public abstract class ESRuntime : DefaultRuntime(), ESObject {
 
     private fun init() {
         set("Number", ESNumber(), VariableType.Const)
-        set("Infinity", Double.POSITIVE_INFINITY, VariableType.Const)
         set("globalThis", this, VariableType.Const)
     }
 

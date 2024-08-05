@@ -1,7 +1,7 @@
 package io.github.alexzhirkevich.skriptie.javascript
 
 import io.github.alexzhirkevich.skriptie.Expression
-import io.github.alexzhirkevich.skriptie.argAt
+import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.common.FunctionParam
 import io.github.alexzhirkevich.skriptie.common.fastMap
 import io.github.alexzhirkevich.skriptie.common.fastSumBy
@@ -72,59 +72,36 @@ internal fun JsMath() : ESObject {
     }
 }
 
-private fun  op1(
-    args: List<Expression>,
+private fun ScriptRuntime.op1(
+    args: List<Any?>,
     func: (Double) -> Number
-): Expression {
+): Any? {
     checkArgs(args, 1, "")
-
-    val numExpr = args.argAt(0)
-
-    return Expression {
-        val value = numExpr(it)?.numberOrThis() ?: 0.0
-
-        if (value is Number){
-            func(value.toDouble())
-        } else {
-            Double.NaN
-        }
-    }
+    return func(toNumber(args[0]).toDouble())
 }
 
-private fun  op2(
-    args: List<Expression>,
+private fun  ScriptRuntime.op2(
+    args: List<Any?>,
     func: (Double, Double) -> Number,
-): Expression {
+): Any? {
     checkArgs(args, 2, "")
 
-    val aExpr = args.argAt(0)
-    val bExpr = args.argAt(1)
-
-    return Expression {
-        val a = aExpr(it)?.numberOrThis() ?: 0.0
-        val b = bExpr(it)?.numberOrThis() ?: 0.0
-
-        if (a is Number && b is Number){
-            func(a.toDouble(), b.toDouble())
-        } else {
-            Double.NaN
-        }
-    }
+    val a = toNumber(args[0]).toDouble()
+    val b = toNumber(args[1]).toDouble()
+    return func(a, b)
 }
 
-private fun  opVararg(
-    args: List<Expression>,
+private fun ScriptRuntime.opVararg(
+    args: List<Any?>,
     func: (List<Double>) -> Number,
-): Expression {
+): Any? {
     check(args.isNotEmpty()){
 
     }
-    return Expression {  context ->
-        val a = (args[0].invoke(context) as List<*>).fastMap {
-            context.toNumber(it, strict = false).toDouble()
-        }
-        func(a)
+    val a = (args[0] as List<*>).fastMap {
+        toNumber(it, strict = false).toDouble()
     }
+    return func(a)
 }
 
 private fun hypotN(args : List<Double>): Double {

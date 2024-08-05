@@ -69,11 +69,12 @@ internal fun OpFunctionExec(
     parameters : List<Expression>,
 ) = Expression { ctx ->
 
-    val function = when (val res = receiver?.invoke(ctx)) {
-        null -> ctx.get(name)
-        is Callable -> res
-        is ESObject -> res[name]
-        is ESAny -> {
+    val res = receiver?.invoke(ctx)
+    val function = when {
+        res == null -> ctx.get(name)
+        res is Callable && name.isBlank() -> res
+        res is ESObject -> res[name]
+        res is ESAny -> {
             return@Expression res.invoke(name, ctx, parameters)
         }
         else -> null

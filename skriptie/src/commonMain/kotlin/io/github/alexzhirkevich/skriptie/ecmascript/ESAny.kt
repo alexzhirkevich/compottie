@@ -9,7 +9,11 @@ public interface ESAny {
 
     public operator fun get(variable: String): Any?
 
-    public operator fun invoke(function: String, context: ScriptRuntime, arguments: List<Expression>): Any? {
+    public operator fun invoke(
+        function: String,
+        context: ScriptRuntime,
+        arguments: List<Expression>
+    ): Any? {
         return when {
             function == "toString" && arguments.isEmpty() -> toString()
             else -> null

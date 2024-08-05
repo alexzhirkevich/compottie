@@ -242,7 +242,8 @@ internal fun Any?.numberOrNull(withNaNs : Boolean = true) : Number? = when(this)
     is Long -> this
     is Double -> this
     is String -> if (withNaNs) {
-        toLongOrNull() ?: toDoubleOrNull()
+        val t = trim()
+        t.toLongOrNull() ?: t.toDoubleOrNull()
     } else null
     is List<*> -> {
         if (withNaNs) {

@@ -34,7 +34,6 @@ public value class JsNumber(
     ): Any? {
         return when(function){
             "toFixed" -> {
-                println(arguments)
                 checkArgsNotNull(arguments, function)
                 val digit = arguments.argAtOrNull(0)?.invoke(context)?.number()?.toInt()
                 value.toFixed(digit ?: 0)
