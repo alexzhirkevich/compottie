@@ -11,6 +11,10 @@ public enum class VariableType {
 
 public interface ScriptRuntime : LangContext {
 
+    public val io : ScriptIO
+
+    public val comparator : Comparator<Any?>
+
     public operator fun contains(variable: String): Boolean
 
     public operator fun get(variable: String): Any?
@@ -28,6 +32,12 @@ public interface ScriptRuntime : LangContext {
 private class BlockScriptContext(
     private val parent : ScriptRuntime
 ) : DefaultRuntime(), LangContext by parent {
+
+    override val io: ScriptIO
+        get() = parent.io
+
+    override val comparator: Comparator<Any?>
+        get() = parent.comparator
 
     override fun get(variable: String): Any? {
         return if (variable in variables) {
@@ -76,7 +86,9 @@ public abstract class DefaultRuntime : ScriptRuntime {
     }
 
     override fun get(variable: String): Any? {
-        return variables[variable]?.second
+        return if (contains(variable))
+            variables[variable]?.second
+        else Unit
     }
 
     final override fun withScope(

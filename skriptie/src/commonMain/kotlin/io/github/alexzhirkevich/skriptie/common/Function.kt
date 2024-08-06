@@ -25,7 +25,7 @@ internal interface Callable {
 
 internal class Function(
     val name : String,
-    private val parameters : List<FunctionParam>,
+    val parameters : List<FunctionParam>,
     private val body : Expression
 ) : Callable {
     init {
@@ -78,8 +78,13 @@ internal fun OpFunctionExec(
             return@Expression res.invoke(name, ctx, parameters)
         }
         else -> null
-    } as Callable? ?: unresolvedReference(name)
-
+    }
+    if (function is Unit){
+        unresolvedReference(name)
+    }
+    if (function !is Callable){
+        throw TypeError("$name ($function) is not a function")
+    }
     function.invoke(
         args = parameters,
         context = ctx,

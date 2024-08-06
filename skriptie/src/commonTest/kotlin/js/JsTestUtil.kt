@@ -1,6 +1,8 @@
 package js
 
+import io.github.alexzhirkevich.skriptie.DefaultScriptIO
 import io.github.alexzhirkevich.skriptie.ScriptEngine
+import io.github.alexzhirkevich.skriptie.ScriptIO
 import io.github.alexzhirkevich.skriptie.ecmascript.EcmascriptInterpreter
 import io.github.alexzhirkevich.skriptie.invoke
 import io.github.alexzhirkevich.skriptie.javascript.JSGlobalContext
@@ -14,8 +16,8 @@ internal fun Any?.assertEqualsTo(other : Double, tolerance: Double = 0.0001) {
     assertEquals(other, this as Double, tolerance)
 }
 
-internal fun String.eval() : Any? {
-    val runtime = JSRuntime()
+internal fun String.eval(io : ScriptIO = DefaultScriptIO) : Any? {
+    val runtime = JSRuntime(io)
 
     return ScriptEngine(
         runtime,

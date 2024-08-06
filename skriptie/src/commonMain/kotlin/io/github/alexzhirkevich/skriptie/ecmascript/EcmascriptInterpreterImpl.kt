@@ -39,7 +39,7 @@ import io.github.alexzhirkevich.skriptie.isAssignable
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-internal val EXPR_DEBUG_PRINT_ENABLED = false
+internal val EXPR_DEBUG_PRINT_ENABLED = true
 
 internal enum class LogicalContext {
     And, Or, Compare
@@ -163,6 +163,7 @@ internal class EcmascriptInterpreterImpl(
                 eatSequence("*=") -> parseAssignmentValue(x, langContext::mul)
                 eatSequence("/=") -> parseAssignmentValue(x, langContext::div)
                 eatSequence("%=") -> parseAssignmentValue(x, langContext::mod)
+                eatSequence("=>") -> OpConstant(parseArrowFunction(listOf(x), blockContext))
                 eat('=') -> parseAssignmentValue(x, null)
                 eatSequence("++") -> {
                     check(x.isAssignable()) {
@@ -378,9 +379,25 @@ internal class EcmascriptInterpreterImpl(
                 OpNot(parseExpressionOp(context, blockContext = blockContext), langContext::isFalse)
 
             context === globalContext && eat('(') -> {
-                parseExpressionOp(context, blockContext = blockContext).also {
-                    require(eat(')')) {
+                val exprs = buildList {
+                    if (eat(')')){
+                        return@buildList
+                    }
+                    do {
+                        add(parseExpressionOp(context, blockContext = blockContext))
+                    } while (eat(','))
+
+                    check(eat(')')) {
                         "Bad expression: Missing ')'"
+                    }
+                }
+
+                // arrow func
+                if (eatSequence("=>")) {
+                    OpConstant(parseArrowFunction(exprs, blockContext))
+                } else {
+                    exprs.getOrElse(0){
+                        throw SyntaxError("Unexpected token ')'")
                     }
                 }
             }
@@ -569,6 +586,8 @@ internal class EcmascriptInterpreterImpl(
             }
         }
     }
+
+
 
     private fun parseFunction(
         context: Expression,
@@ -858,6 +877,21 @@ internal class EcmascriptInterpreterImpl(
             comparison = comparison,
             isFalse = langContext::isFalse,
             body = body
+        )
+    }
+
+    private fun parseArrowFunction(
+        args: List<Expression>,
+        blockContext: List<BlockContext>
+    ) : Function {
+        val fArgs = args.filterIsInstance<OpGetVariable>()
+        check(fArgs.size == args.size)
+        val lambda = parseBlock(context = blockContext + BlockContext.Function)
+
+        return Function(
+            "",
+            fArgs.map { FunctionParam(it.name) },
+            body = lambda
         )
     }
 

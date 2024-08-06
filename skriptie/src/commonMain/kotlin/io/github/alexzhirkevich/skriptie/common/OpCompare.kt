@@ -14,7 +14,10 @@ internal fun  OpCompare(
     )
 }
 
+
+
 internal val OpGreaterComparator : (Comparable<*>, Comparable<*>) -> Boolean = { a, b ->
+
     if (a is Number && b is Number) {
         a.toDouble() > b.toDouble()
     } else {

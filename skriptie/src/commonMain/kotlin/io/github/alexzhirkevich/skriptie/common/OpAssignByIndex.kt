@@ -37,18 +37,18 @@ internal class OpAssignByIndex(
             return when (current) {
 
                 is JsArray-> {
-                    while (current.lastIndex < index) {
-                        current.add(Unit)
+                    while (current.value.lastIndex < index) {
+                        current.value.add(Unit)
                     }
 
-                    val c = current[index]
+                    val c = current.value[index]
 
-                    current[index] = if (current[index] !is Unit && merge != null){
+                    current.value[index] = if (current.value[index] !is Unit && merge != null){
                         merge.invoke(c,v)
                     } else {
                         v
                     }
-                    current[index]
+                    current.value[index]
                 }
                 else -> error("Can't assign '$current' by index ($index)")
             }

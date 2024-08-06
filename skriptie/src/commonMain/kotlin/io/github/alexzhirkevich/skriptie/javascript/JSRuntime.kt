@@ -1,5 +1,7 @@
 package io.github.alexzhirkevich.skriptie.javascript
 
+import io.github.alexzhirkevich.skriptie.DefaultScriptIO
+import io.github.alexzhirkevich.skriptie.ScriptIO
 import io.github.alexzhirkevich.skriptie.VariableType
 import io.github.alexzhirkevich.skriptie.common.fastMap
 import io.github.alexzhirkevich.skriptie.ecmascript.ESNumber
@@ -8,7 +10,9 @@ import io.github.alexzhirkevich.skriptie.ecmascript.ESRuntime
 import io.github.alexzhirkevich.skriptie.ecmascript.init
 import kotlin.math.absoluteValue
 
-public open class JSRuntime : ESRuntime() {
+public open class JSRuntime(
+    io: ScriptIO = DefaultScriptIO
+) : ESRuntime(io = io) {
 
     init {
         recreate()
@@ -73,6 +77,7 @@ public open class JSRuntime : ESRuntime() {
 
     override fun fromKotlin(a: Any?): Any? {
         return when (a) {
+            is JsWrapper<*> -> a
             is Number -> JsNumber(a)
             is UByte -> JsNumber(a.toLong())
             is UShort -> JsNumber(a.toLong())
@@ -86,15 +91,15 @@ public open class JSRuntime : ESRuntime() {
 
     override fun toKotlin(a: Any?): Any? {
         return when (a) {
-            is JsNumber -> a.value
             is JsArray -> a.value.fastMap(::toKotlin)
-            is JsString -> a.value
+            is JsWrapper<*> -> toKotlin(a.value)
             else -> a
         }
     }
 
     private fun recreate() {
         set("Math", JsMath(), VariableType.Const)
+        set("console", JsConsole(), VariableType.Const)
 
         init {
             val number = get("Number") as ESNumber
@@ -241,7 +246,7 @@ private fun jspos(v : Any?) : Any {
 }
 
 
-private fun Any?.numberOrNull(withNaNs : Boolean = true) : Number? = when(this) {
+private tailrec fun Any?.numberOrNull(withNaNs : Boolean = true) : Number? = when(this) {
     null -> 0
     is JsString -> if (withNaNs) value.numberOrNull(withNaNs) else null
     is JsArray -> if (withNaNs) value.numberOrNull(withNaNs) else null

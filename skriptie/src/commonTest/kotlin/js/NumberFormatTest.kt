@@ -1,6 +1,7 @@
 package js
 
 import kotlin.test.Test
+import kotlin.test.assertTrue
 
 class NumberFormatTest {
 
@@ -13,5 +14,10 @@ class NumberFormatTest {
         "0xff".eval().assertEqualsTo(255L)
         "0b11".eval().assertEqualsTo(3L)
         "0o123".eval().assertEqualsTo(83L)
+    }
+
+    @Test
+    fun eq(){
+        assertTrue { "5 === 5.0".eval() as Boolean }
     }
 }

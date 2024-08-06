@@ -5,8 +5,10 @@ import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.VariableType
 import io.github.alexzhirkevich.skriptie.ecmascript.ESAny
 import io.github.alexzhirkevich.skriptie.invoke
+import kotlin.jvm.JvmInline
 
-internal class OpConstant(val value: Any?) : Expression {
+@JvmInline
+internal value class OpConstant(val value: Any?) : Expression {
     override fun invokeRaw(context: ScriptRuntime): Any? {
         return value
     }
