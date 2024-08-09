@@ -10,6 +10,7 @@ import io.github.alexzhirkevich.compottie.internal.helpers.GradientColors
 import io.github.alexzhirkevich.compottie.internal.helpers.GradientType
 import io.github.alexzhirkevich.compottie.internal.helpers.StrokeDash
 import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
+import io.github.alexzhirkevich.compottie.internal.utils.IdentityMatrix
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -80,7 +81,7 @@ internal class GradientStrokeShape(
                 endPoint = endPoint,
                 colors = colors,
                 state = state,
-                matrix = parentMatrix,
+                matrix = IdentityMatrix,
                 cache = gradientCache
             )
         }

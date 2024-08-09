@@ -44,6 +44,6 @@ internal fun DynamicStrokeProvider?.applyToPaint(
 
     paint.strokeWidth = strokeWidth.interpolated(state)
     paint.strokeWidth = this?.width.derive(paint.strokeWidth, state)
-    paint.strokeWidth *= parentMatrix.scale
+//    paint.strokeWidth *= parentMatrix.scale
 }
 

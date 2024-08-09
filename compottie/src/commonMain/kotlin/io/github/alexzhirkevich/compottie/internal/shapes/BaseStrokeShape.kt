@@ -37,7 +37,6 @@ import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import io.github.alexzhirkevich.compottie.internal.utils.IdentityMatrix
 import io.github.alexzhirkevich.compottie.internal.utils.appendPathEffect
-import io.github.alexzhirkevich.compottie.internal.utils.scale
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
@@ -158,7 +157,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
             paint = paint,
             state = state,
             parentAlpha = parentAlpha,
-            parentMatrix = parentMatrix,
+            parentMatrix = IdentityMatrix,
             opacity = opacity,
             strokeWidth = strokeWidth,
             size = rawBoundsRect::toRect,
@@ -169,26 +168,28 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
             return
         }
 
-        applyDashPatternIfNeeded(parentMatrix, state)
+        applyDashPatternIfNeeded(state)
 
         state.layer.effectsApplier.applyTo(paint, state, effectsState)
 
         roundShape?.applyTo(paint, state)
 
         drawScope.drawIntoCanvas { canvas ->
-
+            canvas.save()
+            canvas.concat(parentMatrix)
             pathGroups.fastForEach { pathGroup ->
 
                 if (pathGroup.trimPath != null) {
-                    applyTrimPath(canvas, state, pathGroup, parentMatrix)
+                    applyTrimPath(canvas, state, pathGroup)
                 } else {
                     path.rewind()
                     pathGroup.paths.fastForEachReversed {
-                        path.addPath(it.getPath(state), parentMatrix)
+                        path.addPath(it.getPath(state))
                     }
                     canvas.drawPath(path, paint)
                 }
             }
+            canvas.restore()
         }
     }
 
@@ -265,7 +266,6 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         canvas: Canvas,
         state: AnimationState,
         pathGroup: PathGroup,
-        parentMatrix: Matrix,
     ) {
         if (pathGroup.trimPath == null) {
             return
@@ -274,7 +274,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         path.rewind()
 
         pathGroup.paths.fastForEachReversed {
-            path.addPath(it.getPath(state).apply { transform(parentMatrix) })
+            path.addPath(it.getPath(state))
         }
         val animStartValue: Float = pathGroup.trimPath.start.interpolatedNorm(state)
         val animEndValue: Float = pathGroup.trimPath.end.interpolatedNorm(state)
@@ -304,7 +304,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
 
         pathGroup.paths.fastForEachReversed {
             trimPathPath.set(it.getPath(state))
-            trimPathPath.transform(parentMatrix)
+//            trimPathPath.transform(parentMatrix)
             pm.setPath(trimPathPath, false)
             val length: Float = pm.length
             if (endLength > totalLength && endLength - totalLength < currentLength + length && currentLength < endLength - totalLength) {
@@ -342,7 +342,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
     }
 
 
-    private fun applyDashPatternIfNeeded(parentMatrix: Matrix, state: AnimationState) {
+    private fun applyDashPatternIfNeeded(state: AnimationState) {
 
 
         val dp = dashPattern
@@ -351,9 +351,9 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
             return
         }
 
-        val scale = parentMatrix.scale
 
-        val o = dashOffset?.interpolated(state)?.times(scale) ?: 0f
+        val o = dashOffset?.interpolated(state) ?: 0f
+
 
         dp.fastForEachIndexed { i, strokeDash ->
 
@@ -368,7 +368,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
                 i % 2 == 1 -> dashPatternValues[i] = dashPatternValues[i].coerceAtLeast(.01f)
             }
 
-            dashPatternValues[i] = dashPatternValues[i] * scale
+            dashPatternValues[i] = dashPatternValues[i]
         }
 
         paint.appendPathEffect(PathEffect.dashPathEffect(dashPatternValues, o))
