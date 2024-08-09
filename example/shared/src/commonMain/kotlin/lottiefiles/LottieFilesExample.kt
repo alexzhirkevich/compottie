@@ -107,8 +107,7 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 import kotlin.math.abs
 
 @Composable
-internal fun LottieFilesScreen(
-    modifier: Modifier = Modifier.fillMaxSize(),
+internal fun LottieFilesExample(
     viewModel: LottieFilesViewModel = viewModel { LottieFilesViewModel() }
 ) {
     LottieFilesTheme {
@@ -159,7 +158,7 @@ internal fun LottieFilesScreen(
             gridState.animateScrollToItem(0)
         }
 
-        Surface(modifier) {
+        Surface() {
             BoxWithConstraints {
 
                 val isWideScreen = constraints.maxWidth > LocalDensity.current.run {
