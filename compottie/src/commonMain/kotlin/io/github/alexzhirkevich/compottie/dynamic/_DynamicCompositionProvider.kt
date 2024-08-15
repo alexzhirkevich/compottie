@@ -2,13 +2,16 @@ package io.github.alexzhirkevich.compottie.dynamic
 
 import io.github.alexzhirkevich.compottie.internal.layers.ResolvingPath
 
+private data class LayerWithPathPattern(
+    val pathPattern: List<String>,
+    val layer: DynamicLayerProvider
+)
+
 @PublishedApi
 internal class DynamicCompositionProvider : LottieDynamicProperties {
 
     private val layers = mutableMapOf<String, DynamicLayerProvider>()
-
-    val size: Int
-        get() = layers.size
+    private val layersByPattern = mutableListOf<LayerWithPathPattern>()
 
     override fun shapeLayer(vararg path: String, builder: DynamicShapeLayer.() -> Unit) {
 //        val p = path.joinToString(LayerPathSeparator, LayerPathSeparator)
@@ -40,15 +43,30 @@ internal class DynamicCompositionProvider : LottieDynamicProperties {
         appendLayer(path, DynamicLayerProvider().apply(builder))
     }
 
-    private fun <T : DynamicLayerProvider> appendLayer(path : Array<out String>, instance : T) {
-        layers[path.joinToString(LayerPathSeparator, LayerPathSeparator)] = instance
+    private fun <T : DynamicLayerProvider> appendLayer(path: Array<out String>, instance: T) {
+        if (path.any { it == "**" || it == "*" }) {
+            layersByPattern.add(LayerWithPathPattern(pathPattern = path.toList(), layer = instance))
+        } else {
+            layers[path.joinToString(LayerPathSeparator, LayerPathSeparator)] = instance
+        }
     }
 
-    operator fun get(path: ResolvingPath): DynamicLayerProvider? = layers[path.path]
+    operator fun get(path: ResolvingPath): DynamicLayerProvider? {
+        val exactLayer = layers[path.path]
+        // Prioritize an exact match over a pattern match
+        if (exactLayer != null) return exactLayer
+
+        val pathParts = path.path.split(LayerPathSeparator)
+        for (patternLayer in layersByPattern) {
+            val (pattern, layer) = patternLayer
+            if (pathMatches(path = pathParts, pattern = pattern)) return layer
+        }
+        return null
+    }
 }
 
 @PublishedApi
-internal const val LayerPathSeparator : String = "/"
+internal const val LayerPathSeparator: String = "/"
 
-internal fun layerPath(base : String?, name : String) : String = listOfNotNull(base, name)
+internal fun layerPath(base: String?, name: String): String = listOfNotNull(base, name)
     .joinToString(LayerPathSeparator)
