@@ -13,7 +13,6 @@ import io.github.alexzhirkevich.compottie.internal.utils.toSize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlin.collections.ArrayList
 
 @Serializable
 internal class AnimatedTextDocument(
@@ -131,9 +130,4 @@ private fun MutableList<Float>.fill(color : Color) : MutableList<Float> {
     return this
 }
 
-private fun MutableList<Float>.growToSize(size: Int): MutableList<Float> {
-    while (this.size < size) add(0f)
-    return this
-}
-
-private fun allocateArrayList(size: Int) = ArrayList<Float>(size).growToSize(size)
+private fun allocateArrayList(size: Int) = MutableList(size) { 0f }
