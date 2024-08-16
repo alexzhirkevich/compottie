@@ -129,7 +129,7 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         val matteLayers = mutableSetOf<BaseLayer>()
 
         val layersWithIndex = layers
-            .filter { it.index != null }
+            .fastFilter { it.index != null }
             .associateBy { it.index }
 
         layers.forEachIndexed { i, it ->

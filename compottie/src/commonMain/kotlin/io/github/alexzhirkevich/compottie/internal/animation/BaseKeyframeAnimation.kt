@@ -16,10 +16,12 @@ internal class BaseKeyframeAnimation<T : Any, K, out KF : Keyframe<K>>(
         ?: keyframes // ensure keyframes are sorted. don't store extra refs list if so
 
     private val timeIntervals = if (keyframes.isNotEmpty()) {
-        (0..<sortedKeyframes.lastIndex).map {
+        List(sortedKeyframes.lastIndex) {
             sortedKeyframes[it].time..sortedKeyframes[it + 1].time
         }
-    } else emptyList()
+    } else {
+        emptyList()
+    }
 
     private val firstFrame: Float by lazy { sortedKeyframes.first().time }
 

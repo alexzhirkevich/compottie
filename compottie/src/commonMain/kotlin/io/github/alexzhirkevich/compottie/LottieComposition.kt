@@ -11,7 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.font.FontFamily
-import io.github.alexzhirkevich.compottie.assets.LottieImageSpec
+import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.LottieFontManager
 import io.github.alexzhirkevich.compottie.internal.Animation
@@ -285,7 +285,7 @@ public class LottieComposition internal constructor(
     private suspend fun loadFontsInternal(fontManager: LottieFontManager) : Map<String, FontFamily> {
         return coroutineScope {
             storedFonts + animation.fonts?.list
-                ?.map {
+                ?.fastMap {
                     async {
                         val f = it.font ?: fontManager.font(it.spec)
 

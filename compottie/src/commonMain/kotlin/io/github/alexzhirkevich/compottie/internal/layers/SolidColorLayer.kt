@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
@@ -108,7 +109,7 @@ internal class SolidColorLayer(
         try {
             val hex = colorHex.substringAfter("#")
 
-            val chunked = hex.chunked(2).map { it.toInt(16) }
+            val chunked = hex.chunked(2).fastMap { it.toInt(16) }
             val (r, g, b) = chunked
 
             val a = if (chunked.size == 4) {

@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie.internal.layers
 
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionComposition
@@ -129,7 +130,7 @@ internal data class PrecompositionLayer(
     }
 
     override fun compose(state: AnimationState): List<Layer> {
-        return (state.assets[refId] as? PrecompositionAsset?)?.layers.orEmpty().map {
+        return (state.assets[refId] as? PrecompositionAsset?)?.layers.orEmpty().fastMap {
             it.deepCopy()
         }
     }

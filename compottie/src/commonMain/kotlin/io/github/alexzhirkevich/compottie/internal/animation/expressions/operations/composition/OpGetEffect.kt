@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.composition
 
+import androidx.compose.ui.util.fastFirstOrNull
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
@@ -27,11 +28,11 @@ internal class OpGetEffect(
         fun invoke(layer: Layer, nameOrIndex: Any): LayerEffect {
 
             return when (nameOrIndex) {
-                is String -> checkNotNull(layer.effects.firstOrNull { it.name == nameOrIndex }) {
+                is String -> checkNotNull(layer.effects.fastFirstOrNull { it.name == nameOrIndex }) {
                     "Effect with name $nameOrIndex wasn't found for layer ${layer.name}"
                 }
 
-                is Number -> checkNotNull(layer.effects.firstOrNull { it.index == nameOrIndex.toInt() }) {
+                is Number -> checkNotNull(layer.effects.fastFirstOrNull { it.index == nameOrIndex.toInt() }) {
                     "Effect with index $nameOrIndex wasn't found for layer ${layer.name}"
                 }
 

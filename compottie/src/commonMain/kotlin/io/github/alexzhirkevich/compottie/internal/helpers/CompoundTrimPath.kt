@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.helpers
 
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
@@ -28,7 +29,7 @@ internal class CompoundTrimPath(
 internal fun CompoundSimultaneousTrimPath(contents: List<Content>) : CompoundTrimPath? {
     return contents
         .filterIsInstance<TrimPathShape>()
-        .filter(Content::isSimultaneousTrimPath)
+        .fastFilter(Content::isSimultaneousTrimPath)
         .takeIf(List<*>::isNotEmpty)
         ?.let { CompoundTrimPath(it) }
 }

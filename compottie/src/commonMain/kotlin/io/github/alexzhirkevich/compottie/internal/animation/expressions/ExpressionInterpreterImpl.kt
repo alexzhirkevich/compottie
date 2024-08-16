@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
+import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.OpGlobalContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.js.JsContext
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.keywords.FunctionParam
@@ -614,7 +615,7 @@ internal class ExpressionInterpreterImpl(
         }
 
         val args = parseFunctionArgs(name).let { args ->
-            args?.map {
+            args?.fastMap {
                 when (it) {
                     is OpGetVariable -> FunctionParam(name = it.name, default = null)
                     is OpAssign -> FunctionParam(

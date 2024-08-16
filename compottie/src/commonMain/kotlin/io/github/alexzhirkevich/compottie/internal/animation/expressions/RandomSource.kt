@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
+import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import kotlin.math.PI
@@ -30,7 +31,7 @@ internal class RandomSource {
         return when (maxValOrArray) {
             is Number -> (randomInstance.nextFloat() * maxValOrArray.toFloat())
             is List<*> -> {
-                return maxValOrArray.map {
+                return maxValOrArray.fastMap {
                     (it as Number).toFloat() * randomInstance.nextFloat()
                 }
             }

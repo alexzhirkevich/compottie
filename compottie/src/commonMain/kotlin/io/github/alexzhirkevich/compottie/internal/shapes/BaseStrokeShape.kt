@@ -12,9 +12,12 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.util.fastFilter
+import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
+import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicStrokeProvider
@@ -108,7 +111,9 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
     private val pm = ExtendedPathMeasure()
 
     private val dashPattern by lazy {
-        strokeDash?.filter { it.dashType != DashType.Offset }?.map { it.value }?.let {
+        strokeDash
+            ?.fastFilter { it.dashType != DashType.Offset }
+            ?.fastMap { it.value }?.let {
 
             // If there is only 1 value then it is assumed to be equal parts on and off.
 
@@ -119,7 +124,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
     }
 
     private val dashOffset by lazy {
-        strokeDash?.firstOrNull { it.dashType == DashType.Offset }?.value
+        strokeDash?.fastFirstOrNull { it.dashType == DashType.Offset }?.value
     }
 
     private val dashPatternValues by lazy {
@@ -204,7 +209,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
 
         val trimPathContentBefore: TrimPathShape? = contentsBefore
-            .firstOrNull(Content::isIndividualTrimPath) as TrimPathShape?
+            .fastFirstOrNull(Content::isIndividualTrimPath) as TrimPathShape?
 
         var currentPathGroup: PathGroup? = null
 
