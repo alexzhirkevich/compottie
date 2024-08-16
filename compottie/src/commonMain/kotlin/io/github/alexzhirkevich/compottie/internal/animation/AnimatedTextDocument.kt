@@ -7,14 +7,12 @@ import io.github.alexzhirkevich.compottie.dynamic.DynamicTextLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionEvaluator
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.RawExpressionEvaluator.evaluate
 import io.github.alexzhirkevich.compottie.internal.helpers.text.TextDocument
 import io.github.alexzhirkevich.compottie.internal.utils.toOffset
 import io.github.alexzhirkevich.compottie.internal.utils.toSize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlin.collections.ArrayList
 
 @Serializable
 internal class AnimatedTextDocument(
@@ -40,19 +38,19 @@ internal class AnimatedTextDocument(
     var dynamic : DynamicTextLayerProvider? = null
 
     private val fillColorList by lazy {
-        ArrayList<Float>(4)
+        allocateArrayList(4)
     }
 
     private val strokeColorList by lazy {
-        ArrayList<Float>(4)
+        allocateArrayList(4)
     }
 
     private val sizeList by lazy {
-        ArrayList<Float>(2)
+        allocateArrayList(2)
     }
 
     private val positionList by lazy {
-        ArrayList<Float>(2)
+        allocateArrayList(2)
     }
 
 
@@ -131,3 +129,5 @@ private fun MutableList<Float>.fill(color : Color) : MutableList<Float> {
 
     return this
 }
+
+private fun allocateArrayList(size: Int) = MutableList(size) { 0f }
