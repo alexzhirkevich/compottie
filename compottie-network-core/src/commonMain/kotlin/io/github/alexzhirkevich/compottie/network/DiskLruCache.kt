@@ -1,8 +1,11 @@
-package io.github.alexzhirkevich.compottie
+package io.github.alexzhirkevich.compottie.network
 
 
 import androidx.compose.ui.util.fastForEach
-import io.github.alexzhirkevich.compottie.DiskLruCache.Editor
+import io.github.alexzhirkevich.compottie.InternalCompottieApi
+import io.github.alexzhirkevich.compottie.createFile
+import io.github.alexzhirkevich.compottie.deleteContents
+import io.github.alexzhirkevich.compottie.network.DiskLruCache.Editor
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CoroutineDispatcher

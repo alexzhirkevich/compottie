@@ -9,10 +9,9 @@ kotlin {
             implementation(compose.ui)
             implementation(libs.serialization)
             api(libs.okio)
-            api(libs.ktor.client.core)
+            implementation(libs.coroutines.core)
             api(project(":compottie"))
             implementation(project(":compottie-dot"))
-            api(project(":compottie-network-core"))
         }
     }
 }

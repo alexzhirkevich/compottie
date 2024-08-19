@@ -21,6 +21,7 @@ rootProject.name = "compottie"
 include(":compottie")
 include(":compottie-dot")
 include(":compottie-network")
+include(":compottie-network-core")
 include(":compottie-resources")
 include(":example:desktopApp")
 include(":example:webApp")

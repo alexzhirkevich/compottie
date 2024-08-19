@@ -1,4 +1,4 @@
-package io.github.alexzhirkevich.compottie
+package io.github.alexzhirkevich.compottie.network
 
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.platform.Font

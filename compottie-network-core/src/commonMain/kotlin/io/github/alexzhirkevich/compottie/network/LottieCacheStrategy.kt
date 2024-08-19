@@ -1,4 +1,4 @@
-package io.github.alexzhirkevich.compottie
+package io.github.alexzhirkevich.compottie.network
 
 import androidx.compose.runtime.Stable
 import okio.Path
