@@ -1,5 +1,5 @@
 [versions]
-androidx-activity-compose="1.9.0"
+androidx-activity-compose="1.9.1"
 androidx-core-ktx="1.13.1"
 androidx-startup="1.1.1"
 kotlin="2.0.0"
@@ -7,10 +7,12 @@ dokka="1.9.0"
 compose="1.6.11"
 agp = "8.1.1"
 okio = "3.9.0"
+kotlinx-io = "0.5.2"
 serialization="1.6.3"
 ktor="2.3.12"
+ktor3="3.0.0-beta-2"
 atomicfu="0.23.2"
-coroutines="1.8.0"
+coroutines="1.8.1"
 nexus-publish="2.0.0"
 coil="3.0.0-alpha08"
 
@@ -19,12 +21,14 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core-ktx" }
 androidx-startup = { module = "androidx.startup:startup-runtime", version.ref = "androidx-startup" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+kotlin-io = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinx-io" }
 okio-fakefilesystem = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okio" }
 serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
 ktor-client-ios = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor3-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor3" }
 gp-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu-gradle-plugin", version.ref = "atomicfu" }
 coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 nexus-publish = { module = "io.github.gradle-nexus.publish-plugin:io.github.gradle-nexus.publish-plugin.gradle.plugin", version.ref = "nexus-publish" }

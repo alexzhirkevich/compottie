@@ -32,8 +32,10 @@ Add as a Gradle dependency
 dependencies {
     implementation("io.github.alexzhirkevich:compottie:<version>")
     implementation("io.github.alexzhirkevich:compottie-dot:<version>")
-    implementation("io.github.alexzhirkevich:compottie-network:<version>")
     implementation("io.github.alexzhirkevich:compottie-resources:<version>")
+    implementation("io.github.alexzhirkevich:compottie-network:<version>")
+    // Use instead of compottie-network if your app depends on ktor 3.+
+    implementation("io.github.alexzhirkevich:compottie-network-ktor3:<version>") 
 }
 ```
 
@@ -45,6 +47,7 @@ compottie="<version>"
 compottie = { module = "io.github.alexzhirkevich:compottie", version.ref = "compottie" }
 compottie-dot = { module = "io.github.alexzhirkevich:compottie-dot", version.ref = "compottie" }
 compottie-network = { module = "io.github.alexzhirkevich:compottie-network", version.ref = "compottie" }
+compottie-network = { module = "io.github.alexzhirkevich:compottie-network-ktor3", version.ref = "compottie" }
 compottie-resources = { module = "io.github.alexzhirkevich:compottie-resources", version.ref = "compottie" }
 ```
 
