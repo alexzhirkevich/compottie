@@ -1,6 +1,5 @@
 package io.github.alexzhirkevich.compottie.dynamic
 
-import androidx.compose.ui.util.fastMaxBy
 import kotlin.reflect.KClass
 
 @PublishedApi
@@ -11,10 +10,9 @@ internal class DynamicShapeLayerProvider(
 
     private val nRoot get() = root ?: this
 
-    @PublishedApi
     internal val shapes = mutableMapOf<String, DynamicShape>()
 
-    internal val eachShapes = mutableMapOf<Pair<String?, KClass<out DynamicShape>>, DynamicShape>()
+    private val shapesByPattern = mutableListOf<Pair<List<String>, DynamicShape>>()
 
     override fun group(vararg path: String, builder: DynamicShapeLayer.() -> Unit) {
         DynamicShapeLayerProvider(
@@ -51,22 +49,22 @@ internal class DynamicShapeLayerProvider(
         getInternal(path, S::class) as S?
 
     private inline operator fun <reified T : DynamicShape> set(path: List<String>, instance: T) {
-        if (path.isNotEmpty()) {
-            nRoot.shapes[layerPath(basePath, path.joinToString(LayerPathSeparator))] = instance
+        if (path.any { it == "**" || it == "*" }) {
+            nRoot.shapesByPattern.add(path.toList() to  instance)
         } else {
-            nRoot.eachShapes[basePath to T::class] = instance
+            nRoot.shapes[layerPath(basePath, path.joinToString(LayerPathSeparator))] = instance
         }
     }
 
     private fun <S : DynamicShape> getInternal(path: String, clazz: KClass<S>): DynamicShape? {
-        (nRoot.shapes[path])?.let { return it }
+        nRoot.shapes[path]?.let { return it }
 
-        val key = nRoot.eachShapes.keys
-            .filter { it.second == clazz }
-            .fastMaxBy { it.first.orEmpty().commonPrefixWith(path).length }
-            ?.takeIf { it.first?.commonPrefixWith(path)?.length != 0 }
-            ?: return null
-
-        return nRoot.eachShapes[key]
+        val pathParts = path.split(LayerPathSeparator)
+        for (patternLayer in shapesByPattern) {
+            val (pattern, shape) = patternLayer
+            if (pathMatches(path = pathParts, pattern = pattern) && clazz.isInstance(shape))
+                return shape
+        }
+        return null
     }
 }

@@ -2,32 +2,14 @@ package io.github.alexzhirkevich.compottie.dynamic
 
 import io.github.alexzhirkevich.compottie.internal.layers.ResolvingPath
 
-private data class LayerWithPathPattern(
-    val pathPattern: List<String>,
-    val layer: DynamicLayerProvider
-)
 
 @PublishedApi
 internal class DynamicCompositionProvider : LottieDynamicProperties {
 
     private val layers = mutableMapOf<String, DynamicLayerProvider>()
-    private val layersByPattern = mutableListOf<LayerWithPathPattern>()
+    private val layersByPattern = mutableListOf<Pair<List<String>,DynamicLayerProvider>>()
 
     override fun shapeLayer(vararg path: String, builder: DynamicShapeLayer.() -> Unit) {
-//        val p = path.joinToString(LayerPathSeparator, LayerPathSeparator)
-//
-//        val provider = when(val existent = layers[p]) {
-//            is DynamicShapeLayerProvider -> existent
-//            is DynamicLayerProvider -> DynamicShapeLayerProvider().apply {
-//                transform = existent.transform
-//            }
-//
-//            else -> DynamicShapeLayerProvider()
-//        }
-//
-//        provider.apply(builder)
-//
-//        layers[p] = provider
         appendLayer(path, DynamicShapeLayerProvider().apply(builder))
     }
 
@@ -45,7 +27,7 @@ internal class DynamicCompositionProvider : LottieDynamicProperties {
 
     private fun <T : DynamicLayerProvider> appendLayer(path: Array<out String>, instance: T) {
         if (path.any { it == "**" || it == "*" }) {
-            layersByPattern.add(LayerWithPathPattern(pathPattern = path.toList(), layer = instance))
+            layersByPattern.add(path.toList() to  instance)
         } else {
             layers[path.joinToString(LayerPathSeparator, LayerPathSeparator)] = instance
         }
