@@ -108,7 +108,10 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
             strokeJoin = lineJoin.asStrokeJoin()
         }
     }
-    private val pm = ExtendedPathMeasure()
+
+    private val pm by lazy {
+        ExtendedPathMeasure()
+    }
 
     private val dashPattern by lazy {
         strokeDash
