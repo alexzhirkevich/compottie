@@ -33,6 +33,29 @@ val painter = rememberLottiePainter(
 ) 
 ```
 
+You can also use wildcards for declaring dynamic properties, where `**` is any level deep wildcard
+and `*` is one level deep.
+
+```kotlin
+val painter = rememberLottiePainter(
+    composition = composition,
+    dynamicProperties = rememberLottieDynamicProperties {
+        
+        // for each layer named 'Shape Layer 4' on any level deep
+        shapeLayer("**", "Shape Layer 4") {
+            transform {
+                rotation { current -> current * progress }
+            }
+            // for each fill named 'Fill 4' on the 2nd level deep
+            fill("*", "Fill 4") {
+                color { Color.Red }
+                alpha { .5f }
+            }
+        }
+    }
+) 
+```
+
 For a person that isn't familiar with After Effects / [Lottie JSON schema](https://lottiefiles.github.io/lottie-docs/schema/) this might seem scary, but it is pretty simple.
 
 # Lottie Layers

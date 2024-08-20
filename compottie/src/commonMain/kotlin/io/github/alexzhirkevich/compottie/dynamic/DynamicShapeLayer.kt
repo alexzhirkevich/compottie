@@ -6,8 +6,7 @@ public interface DynamicShapeLayer: DynamicLayer {
      * Configure generic dynamic shape.
      *
      * @param path is a path to the shape relative to the shape layer.
-     * If [path] is not set, the [builder] configuration will be be applied to each shape in
-     * the current layer/[group] recursively
+     * Can contain '**' and '*' wildcards
      *
      * @param builder shape dynamic configuration
      * */
@@ -42,8 +41,7 @@ public interface DynamicShapeLayer: DynamicLayer {
      * Configure dynamic stroke.
      *
      * @param path is a path to the stroke shape relative to the shape layer.
-     * If [path] is not set, the [builder] configuration will be be applied to each stroke in
-     * the current layer/[group] recursively
+     * Can contain '**' and '*' wildcards
      *
      * @param builder shape dynamic configuration
      * */
@@ -56,8 +54,7 @@ public interface DynamicShapeLayer: DynamicLayer {
      * Configure dynamic fill.
      *
      * @param path is a path to the fill shape relative to the shape layer.
-     * If [path] is not set, the [builder] configuration will be be applied to each fill in
-     * the current layer/[group] recursively
+     * Can contain '**' and '*' wildcards
      *
      * @param builder shape dynamic configuration
      * */
@@ -70,8 +67,7 @@ public interface DynamicShapeLayer: DynamicLayer {
      * Configure dynamic ellipse.
      *
      * @param path is a path to the ellipse shape relative to the shape layer.
-     * If [path] is not set, the [builder] configuration will be be applied to each ellipse in
-     * the current layer/[group] recursively
+     * Can contain '**' and '*' wildcards
      *
      * @param builder shape dynamic configuration
      * */
@@ -84,8 +80,7 @@ public interface DynamicShapeLayer: DynamicLayer {
      * Configure dynamic rect.
      *
      * @param path is a path to the rect shape relative to the shape layer.
-     * If [path] is not set, the [builder] configuration will be be applied to each rect in
-     * the current layer/[group] recursively
+     * Can contain '**' and '*' wildcards
      *
      * @param builder shape dynamic configuration
      * */
@@ -98,8 +93,7 @@ public interface DynamicShapeLayer: DynamicLayer {
      * Configure dynamic rect.
      *
      * @param path is a path to the polystar shape relative to the shape layer.
-     * If [path] is not set, the [builder] configuration will be be applied to each polystar in
-     * the current layer/[group] recursively
+     * Can contain '**' and '*' wildcards
      *
      * @param builder shape dynamic configuration
      * */
