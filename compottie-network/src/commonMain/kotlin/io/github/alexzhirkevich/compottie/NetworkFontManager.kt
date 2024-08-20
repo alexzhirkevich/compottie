@@ -21,21 +21,44 @@ import okio.Path
  * @param cacheStrategy caching strategy. Caching to system temp dir by default
  * */
 @Stable
+@Deprecated(
+    "Use FileLoader instead of HttpClient",
+    replaceWith = ReplaceWith("NetworkFontManager(fileLoader, cacheStrategy)")
+)
 public fun NetworkFontManager(
     client: HttpClient = DefaultHttpClient,
     request : NetworkRequest = GetRequest,
     cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
 ) : LottieFontManager = NetworkFontManagerImpl(
-    client = client,
-    cacheStrategy = cacheStrategy,
-    request = request,
+    fileLoader = KtorFileLoader(client, request),
+    cacheStrategy = cacheStrategy
+)
+
+/**
+ * Font manager that loads fonts from the web using [fileLoader].
+ *
+ * Guaranteed to work only with [LottieFontSpec.FontOrigin.FontUrl] .ttf fonts
+ * (support may be higher on non-Android platforms).
+ *
+ * Note: [LottieCacheStrategy.path] should return valid file system paths to make [NetworkFontManager] work.
+ * Default [DiskCacheStrategy] supports it.
+ *
+ * @param fileLoader loader used for loading animation
+ * @param cacheStrategy caching strategy. Caching to system temp dir by default
+ * */
+@Stable
+public fun NetworkFontManager(
+    fileLoader: FileLoader = DefaultFileLoader,
+    cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
+) : LottieFontManager = NetworkFontManagerImpl(
+    fileLoader = fileLoader,
+    cacheStrategy = cacheStrategy
 )
 
 @Stable
 private class NetworkFontManagerImpl(
-    private val client: HttpClient,
-    private val cacheStrategy: LottieCacheStrategy,
-    private val request : NetworkRequest,
+    private val fileLoader: FileLoader,
+    private val cacheStrategy: LottieCacheStrategy
 ) : LottieFontManager {
 
     override suspend fun font(font: LottieFontSpec): Font? {
@@ -45,9 +68,8 @@ private class NetworkFontManagerImpl(
         }
 
         val (path, bytes) = networkLoad(
-            client = client,
+            fileLoader = fileLoader,
             cacheStrategy = cacheStrategy,
-            request = request,
             url = font.path ?: return null
         )
 
@@ -64,17 +86,15 @@ private class NetworkFontManagerImpl(
 
         other as NetworkFontManagerImpl
 
-        if (client != other.client) return false
+        if (fileLoader != other.fileLoader) return false
         if (cacheStrategy != other.cacheStrategy) return false
-        if (request != other.request) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = client.hashCode()
+        var result = fileLoader.hashCode()
         result = 31 * result + cacheStrategy.hashCode()
-        result = 31 * result + request.hashCode()
         return result
     }
 }

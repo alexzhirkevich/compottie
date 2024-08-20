@@ -14,30 +14,44 @@ import io.ktor.client.HttpClient
  * @param cacheStrategy caching strategy. Caching to system temp dir by default
  * */
 @Stable
+@Deprecated(
+    "Use FileLoader instead of HttpClient",
+    replaceWith = ReplaceWith("NetworkAssetsManager(fileLoader, cacheStrategy)")
+)
 public fun NetworkAssetsManager(
     client: HttpClient = DefaultHttpClient,
     request : NetworkRequest = GetRequest,
     cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
 ) : LottieAssetsManager = NetworkAssetsManagerImpl(
-    client = client,
-    cacheStrategy = cacheStrategy,
-    request = request,
+    fileLoader = KtorFileLoader(client, request),
+    cacheStrategy = cacheStrategy
 )
 
-
+/**
+ * Asset manager that load images from web using [fileLoader].
+ *
+ * @param fileLoader loader used for loading animation
+ * @param cacheStrategy caching strategy. Caching to system temp dir by default
+ * */
+@Stable
+public fun NetworkAssetsManager(
+    fileLoader: FileLoader = DefaultFileLoader,
+    cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
+) : LottieAssetsManager = NetworkAssetsManagerImpl(
+    fileLoader = fileLoader,
+    cacheStrategy = cacheStrategy
+)
 
 @Stable
 private class NetworkAssetsManagerImpl(
-    private val client: HttpClient,
-    private val cacheStrategy: LottieCacheStrategy,
-    private val request : NetworkRequest,
+    private val fileLoader: FileLoader,
+    private val cacheStrategy: LottieCacheStrategy
 ) : LottieAssetsManager {
 
     override suspend fun image(image: LottieImageSpec): ImageRepresentable? {
         return networkLoad(
-            client = client,
+            fileLoader = fileLoader,
             cacheStrategy = cacheStrategy,
-            request = request,
             url = image.path + image.name
         ).second?.let(ImageRepresentable::Bytes)
     }
@@ -48,17 +62,15 @@ private class NetworkAssetsManagerImpl(
 
         other as NetworkAssetsManagerImpl
 
-        if (client != other.client) return false
+        if (fileLoader != other.fileLoader) return false
         if (cacheStrategy != other.cacheStrategy) return false
-        if (request != other.request) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = client.hashCode()
+        var result = fileLoader.hashCode()
         result = 31 * result + cacheStrategy.hashCode()
-        result = 31 * result + request.hashCode()
         return result
     }
 }

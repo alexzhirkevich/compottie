@@ -2,15 +2,8 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Stable
 import io.ktor.client.HttpClient
-import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.statement.bodyAsChannel
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.Url
-import io.ktor.http.isSuccess
-import io.ktor.util.toByteArray
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 /**
@@ -24,6 +17,10 @@ import kotlinx.coroutines.withContext
  * URL assets will be automatically prepared with [NetworkAssetsManager]
  * */
 @Stable
+@Deprecated(
+    "Use FileLoader instead of HttpClient",
+    replaceWith = ReplaceWith("Url(url, format, fileLoader, cacheStrategy)")
+)
 public fun LottieCompositionSpec.Companion.Url(
     url : String,
     format: LottieAnimationFormat = LottieAnimationFormat.Undefined,
@@ -33,31 +30,42 @@ public fun LottieCompositionSpec.Companion.Url(
 ) : LottieCompositionSpec = NetworkCompositionSpec(
     url = url,
     format = format,
-    client = client,
-    cacheStrategy = cacheStrategy,
-    request = request
+    fileLoader = KtorFileLoader(client, request),
+    cacheStrategy = cacheStrategy
+)
+
+@Stable
+public fun LottieCompositionSpec.Companion.Url(
+    url : String,
+    format: LottieAnimationFormat = LottieAnimationFormat.Undefined,
+    fileLoader: FileLoader = DefaultFileLoader,
+    cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
+) : LottieCompositionSpec = NetworkCompositionSpec(
+    url = url,
+    format = format,
+    fileLoader = fileLoader,
+    cacheStrategy = cacheStrategy
 )
 
 @Stable
 private class NetworkCompositionSpec(
     private val url : String,
     private val format: LottieAnimationFormat,
-    private val client : HttpClient,
+    private val fileLoader: FileLoader,
     private val cacheStrategy: LottieCacheStrategy,
-    private val request : NetworkRequest,
 ) : LottieCompositionSpec {
 
     override val key: String
         get() = "url_$url"
 
-    private val assetsManager = NetworkAssetsManager(client, request, cacheStrategy)
-    private val fontManager = NetworkFontManager(client, request, cacheStrategy)
+    private val assetsManager = NetworkAssetsManager(fileLoader, cacheStrategy)
+    private val fontManager = NetworkFontManager(fileLoader, cacheStrategy)
 
     @OptIn(InternalCompottieApi::class)
     override suspend fun load(): LottieComposition {
         return withContext(ioDispatcher()) {
 
-            val (_, bytes) = networkLoad(client, cacheStrategy, request, url)
+            val (_, bytes) = networkLoad(fileLoader, cacheStrategy, url)
 
             checkNotNull(bytes?.decodeToLottieComposition(format)){
                 "Failed to load animation $url"
@@ -80,9 +88,8 @@ private class NetworkCompositionSpec(
 
         if (url != other.url) return false
         if (format != other.format) return false
-        if (client != other.client) return false
+        if (fileLoader != other.fileLoader) return false
         if (cacheStrategy != other.cacheStrategy) return false
-        if (request != other.request) return false
 
         return true
     }
@@ -90,9 +97,8 @@ private class NetworkCompositionSpec(
     override fun hashCode(): Int {
         var result = url.hashCode()
         result = 31 * result + format.hashCode()
-        result = 31 * result + client.hashCode()
+        result = 31 * result + fileLoader.hashCode()
         result = 31 * result + cacheStrategy.hashCode()
-        result = 31 * result + request.hashCode()
         return result
     }
 
