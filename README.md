@@ -32,8 +32,8 @@ Add as a Gradle dependency
 dependencies {
     implementation("io.github.alexzhirkevich:compottie:<version>")
     implementation("io.github.alexzhirkevich:compottie-dot:<version>")
-    implementation("io.github.alexzhirkevich:compottie-resources:<version>")
     implementation("io.github.alexzhirkevich:compottie-network:<version>")
+    implementation("io.github.alexzhirkevich:compottie-resources:<version>")
 }
 ```
 
