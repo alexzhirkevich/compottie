@@ -26,10 +26,11 @@ internal class DynamicCompositionProvider : LottieDynamicProperties {
     }
 
     private fun <T : DynamicLayerProvider> appendLayer(path: Array<out String>, instance: T) {
-        if (path.any { it == "**" || it == "*" }) {
-            layersByPattern.add(path.toList() to  instance)
+        val list = path.toList()
+        if (list.containsWildcards()) {
+            layersByPattern.add(list to instance)
         } else {
-            layers[path.joinToString(LayerPathSeparator, LayerPathSeparator)] = instance
+            layers[list.joinToString(LayerPathSeparator, LayerPathSeparator)] = instance
         }
     }
 

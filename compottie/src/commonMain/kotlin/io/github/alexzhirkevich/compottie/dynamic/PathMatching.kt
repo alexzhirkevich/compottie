@@ -1,5 +1,7 @@
 package io.github.alexzhirkevich.compottie.dynamic
 
+internal fun Iterable<String>.containsWildcards() = any { it == "**" || it == "*" }
+
 internal fun pathMatches(path: String, pattern: String): Boolean = pathMatches(
     path = path.split(LayerPathSeparator),
     pattern = pattern.split(LayerPathSeparator)

@@ -49,7 +49,7 @@ internal class DynamicShapeLayerProvider(
         getInternal(path, S::class) as S?
 
     private inline operator fun <reified T : DynamicShape> set(path: List<String>, instance: T) {
-        if (path.any { it == "**" || it == "*" }) {
+        if (path.containsWildcards()) {
             nRoot.shapesByPattern.add(path.toList() to  instance)
         } else {
             nRoot.shapes[layerPath(basePath, path.joinToString(LayerPathSeparator))] = instance
