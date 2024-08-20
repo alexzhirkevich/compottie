@@ -152,7 +152,7 @@ internal sealed interface AnimatedShape : AnimatedProperty<Path> {
     }
 }
 
-internal class AnimatedShapeSerializer : JsonContentPolymorphicSerializer<AnimatedShape>(
+internal object AnimatedShapeSerializer : JsonContentPolymorphicSerializer<AnimatedShape>(
     baseClass = AnimatedShape::class
 ){
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedShape> {
@@ -166,6 +166,5 @@ internal class AnimatedShapeSerializer : JsonContentPolymorphicSerializer<Animat
             AnimatedShape.Animated.serializer()
         }
     }
-
 }
 

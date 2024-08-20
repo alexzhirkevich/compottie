@@ -120,7 +120,7 @@ private val COLOR_RANGE_01 = 0f..1f
 private val COLOR_RANGE_0255 = 0f..255f
 
 
-internal class AnimatedColorSerializer : JsonContentPolymorphicSerializer<AnimatedColor>(
+internal object AnimatedColorSerializer : JsonContentPolymorphicSerializer<AnimatedColor>(
     baseClass = AnimatedColor::class
 ) {
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedColor> {
