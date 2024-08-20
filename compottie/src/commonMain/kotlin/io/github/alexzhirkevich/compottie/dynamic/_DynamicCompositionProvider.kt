@@ -38,7 +38,7 @@ internal class DynamicCompositionProvider : LottieDynamicProperties {
         // Prioritize an exact match over a pattern match
         if (exactLayer != null) return exactLayer
 
-        val pathParts = path.path.split(LayerPathSeparator)
+        val pathParts = path.path.split(LayerPathSeparator).filter(String::isNotEmpty)
         for (patternLayer in layersByPattern) {
             val (pattern, layer) = patternLayer
             if (pathMatches(path = pathParts, pattern = pattern)) return layer

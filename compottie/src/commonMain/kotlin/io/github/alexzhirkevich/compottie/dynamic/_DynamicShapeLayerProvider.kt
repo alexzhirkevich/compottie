@@ -59,7 +59,7 @@ internal class DynamicShapeLayerProvider(
     private fun <S : DynamicShape> getInternal(path: String, clazz: KClass<S>): DynamicShape? {
         nRoot.shapes[path]?.let { return it }
 
-        val pathParts = path.split(LayerPathSeparator)
+        val pathParts = path.split(LayerPathSeparator).filter(String::isNotEmpty)
         for (patternLayer in shapesByPattern) {
             val (pattern, shape) = patternLayer
             if (pathMatches(path = pathParts, pattern = pattern) && clazz.isInstance(shape))
