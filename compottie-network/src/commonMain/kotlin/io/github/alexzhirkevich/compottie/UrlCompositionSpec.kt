@@ -18,7 +18,7 @@ import io.github.alexzhirkevich.compottie.network.Url as CoreUrl
 @Stable
 public fun LottieCompositionSpec.Companion.Url(
     url : String,
-    request: suspend (String) -> ByteArray = DefaultHttpRequest,
+    request: suspend (url: String) -> ByteArray = DefaultHttpRequest,
     format: LottieAnimationFormat = LottieAnimationFormat.Undefined,
     cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
 ) : LottieCompositionSpec = CoreUrl(

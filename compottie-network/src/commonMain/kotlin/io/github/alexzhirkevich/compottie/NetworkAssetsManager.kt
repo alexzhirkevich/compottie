@@ -14,6 +14,6 @@ import io.github.alexzhirkevich.compottie.network.LottieCacheStrategy
 @OptIn(InternalCompottieApi::class)
 @Stable
 public fun NetworkAssetsManager(
-    request : suspend (String) -> ByteArray = DefaultHttpRequest,
+    request : suspend (url: String) -> ByteArray = DefaultHttpRequest,
     cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
 ) : LottieAssetsManager = io.github.alexzhirkevich.compottie.network.NetworkAssetsManager(request, cacheStrategy)

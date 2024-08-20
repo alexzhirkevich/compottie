@@ -24,7 +24,7 @@ import kotlinx.coroutines.withContext
 @Stable
 public fun LottieCompositionSpec.Companion.Url(
     url : String,
-    request: suspend (String) -> ByteArray,
+    request: suspend (url: String) -> ByteArray,
     format: LottieAnimationFormat = LottieAnimationFormat.Undefined,
     cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
 ) : LottieCompositionSpec = NetworkCompositionSpec(
@@ -38,7 +38,7 @@ public fun LottieCompositionSpec.Companion.Url(
 private class NetworkCompositionSpec(
     private val url : String,
     private val format: LottieAnimationFormat,
-    private val request : suspend (String) -> ByteArray,
+    private val request : suspend (url: String) -> ByteArray,
     private val cacheStrategy: LottieCacheStrategy,
 ) : LottieCompositionSpec {
 

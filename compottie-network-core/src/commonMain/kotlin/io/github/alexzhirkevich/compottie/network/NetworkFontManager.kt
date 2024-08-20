@@ -22,7 +22,7 @@ import okio.Path
 @OptIn(InternalCompottieApi::class)
 @Stable
 public fun NetworkFontManager(
-    request : suspend (String) -> ByteArray,
+    request : suspend (url: String) -> ByteArray,
     cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
 ) : LottieFontManager = NetworkFontManagerImpl(
     request = request,
@@ -31,7 +31,7 @@ public fun NetworkFontManager(
 
 @Stable
 private class NetworkFontManagerImpl(
-    private val request : suspend (String) -> ByteArray,
+    private val request : suspend (url: String) -> ByteArray,
     private val cacheStrategy: LottieCacheStrategy,
 ) : LottieFontManager {
 

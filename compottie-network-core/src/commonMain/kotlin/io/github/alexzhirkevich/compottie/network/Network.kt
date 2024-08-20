@@ -12,7 +12,7 @@ private val NetworkLock = MapMutex()
 
 @OptIn(InternalCompottieApi::class)
 internal suspend fun networkLoad(
-    request : suspend (String) -> ByteArray,
+    request : suspend (url: String) -> ByteArray,
     cacheStrategy: LottieCacheStrategy,
     url: String
 ): Pair<Path?, ByteArray?> {

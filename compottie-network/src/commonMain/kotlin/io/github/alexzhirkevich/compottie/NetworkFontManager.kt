@@ -21,7 +21,7 @@ import io.github.alexzhirkevich.compottie.network.LottieCacheStrategy
 @OptIn(InternalCompottieApi::class)
 @Stable
 public fun NetworkFontManager(
-    request : suspend (String) -> ByteArray,
+    request : suspend (url: String) -> ByteArray,
     cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
 ) : LottieFontManager = io.github.alexzhirkevich.compottie.network.NetworkFontManager(request, cacheStrategy)
 

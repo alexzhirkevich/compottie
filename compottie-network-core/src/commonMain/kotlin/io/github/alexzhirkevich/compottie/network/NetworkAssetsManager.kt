@@ -15,7 +15,7 @@ import io.github.alexzhirkevich.compottie.assets.LottieImageSpec
 @OptIn(InternalCompottieApi::class)
 @Stable
 public fun NetworkAssetsManager(
-    request : suspend (String) -> ByteArray,
+    request : suspend (url: String) -> ByteArray,
     cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
 ) : LottieAssetsManager = NetworkAssetsManagerImpl(
     request = request,
@@ -25,7 +25,7 @@ public fun NetworkAssetsManager(
 
 @Stable
 private class NetworkAssetsManagerImpl(
-    private val request : suspend (String) -> ByteArray,
+    private val request : suspend (url: String) -> ByteArray,
     private val cacheStrategy: LottieCacheStrategy,
 ) : LottieAssetsManager {
 
