@@ -12,7 +12,7 @@ private val NetworkLock = MapMutex()
 
 @OptIn(InternalCompottieApi::class)
 internal suspend fun networkLoad(
-    client: HttpClient,
+    request : suspend (String) -> ByteArray,
     cacheStrategy: LottieCacheStrategy,
     url: String
 ): Pair<Path?, ByteArray?> {
@@ -26,7 +26,7 @@ internal suspend fun networkLoad(
                 } catch (_: Throwable) {
                 }
 
-                val bytes = client.get(url)
+                val bytes = request(url)
 
                 try {
                     cacheStrategy.save(url, bytes)?.let {

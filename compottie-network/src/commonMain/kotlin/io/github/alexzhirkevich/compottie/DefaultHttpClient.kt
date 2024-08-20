@@ -7,7 +7,7 @@ import io.ktor.client.statement.bodyAsChannel
 import io.ktor.util.toByteArray
 
 internal val DefaultHttpClient by lazy {
-    val ktorClient = HttpClient {
+    HttpClient {
         followRedirects = true
         expectSuccess = true
         install(HttpRequestRetry) {
@@ -15,10 +15,8 @@ internal val DefaultHttpClient by lazy {
             constantDelay(250, 250)
         }
     }
+}
 
-    object : io.github.alexzhirkevich.compottie.network.HttpClient {
-        override suspend fun get(url: String): ByteArray {
-            return ktorClient.get(url).bodyAsChannel().toByteArray()
-        }
-    }
+internal val DefaultHttpRequest : suspend  (String) -> ByteArray = {
+    DefaultHttpClient.get(it).bodyAsChannel().toByteArray()
 }

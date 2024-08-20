@@ -8,7 +8,7 @@ import io.github.alexzhirkevich.compottie.assets.LottieFontSpec
 import okio.Path
 
 /**
- * Font manager that loads fonts from the web using [request] with [client].
+ * Font manager that loads fonts from the web using [request].
  *
  * Guaranteed to work only with [LottieFontSpec.FontOrigin.FontUrl] .ttf fonts
  * (support may be higher on non-Android platforms).
@@ -16,23 +16,22 @@ import okio.Path
  * Note: [LottieCacheStrategy.path] should return valid file system paths to make [NetworkFontManager] work.
  * Default [DiskCacheStrategy] supports it.
  *
- * @param client http client used for loading animation
- * @param request request builder. Simple GET by default
+ * @param request network request used for loading fonts
  * @param cacheStrategy caching strategy. Caching to system temp dir by default
  * */
 @OptIn(InternalCompottieApi::class)
 @Stable
 public fun NetworkFontManager(
-    client: HttpClient,
+    request : suspend (String) -> ByteArray,
     cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
 ) : LottieFontManager = NetworkFontManagerImpl(
-    client = client,
+    request = request,
     cacheStrategy = cacheStrategy,
 )
 
 @Stable
 private class NetworkFontManagerImpl(
-    private val client: HttpClient,
+    private val request : suspend (String) -> ByteArray,
     private val cacheStrategy: LottieCacheStrategy,
 ) : LottieFontManager {
 
@@ -43,7 +42,7 @@ private class NetworkFontManagerImpl(
         }
 
         val (path, bytes) = networkLoad(
-            client = client,
+            request = request,
             cacheStrategy = cacheStrategy,
             url = font.path ?: return null
         )
@@ -61,14 +60,14 @@ private class NetworkFontManagerImpl(
 
         other as NetworkFontManagerImpl
 
-        if (client != other.client) return false
+        if (request != other.request) return false
         if (cacheStrategy != other.cacheStrategy) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = client.hashCode()
+        var result = request.hashCode()
         result = 31 * result + cacheStrategy.hashCode()
         return result
     }
