@@ -43,7 +43,6 @@ import io.github.alexzhirkevich.compottie.ExperimentalCompottieApi
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
-import io.github.alexzhirkevich.compottie.dynamic.rememberLottieDynamicProperties
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import io.github.alexzhirkevich.compottie.rememberResourcesAssetsManager
@@ -238,26 +237,7 @@ public fun AllExamples(){
                 LottieCompositionSpec.ResourceString(it)
             }
 
-            val dynamicProperties = rememberLottieDynamicProperties {
-                if (it == BOUNCING_BALL) {
-                    shapeLayer("**", "Layer") {
-                        fill {
-                            color {
-                                Color.Yellow
-                            }
-                        }
-                    }
-                } else if (it == TEXT) {
-                    textLayer("**", "Text Layer") {
-                        text {
-                            "Goodbye"
-                        }
-                        fillColor {
-                            Color.Red
-                        }
-                    }
-                }
-            }
+
             Image(
                 painter = rememberLottiePainter(
                     composition = composition,
@@ -271,7 +251,6 @@ public fun AllExamples(){
                             else -> null
                         }
                     },
-                    dynamicProperties = dynamicProperties
                 ),
                 contentDescription = null,
                 modifier = Modifier
