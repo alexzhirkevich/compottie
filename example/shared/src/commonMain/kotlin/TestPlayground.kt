@@ -237,7 +237,6 @@ public fun AllExamples(){
                 LottieCompositionSpec.ResourceString(it)
             }
 
-
             Image(
                 painter = rememberLottiePainter(
                     composition = composition,
