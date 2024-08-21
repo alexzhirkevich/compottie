@@ -13,8 +13,6 @@ import io.github.alexzhirkevich.compottie.dynamic.toScaleFactor
 import io.github.alexzhirkevich.compottie.dynamic.toSize
 import io.github.alexzhirkevich.compottie.dynamic.toVec2
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionEvaluator
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.RawExpressionEvaluator
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -204,7 +202,7 @@ internal fun AnimatedVector2.dynamicScale(
     dynamic = provider?.map(from = ScaleFactor::toVec2, to = Vec2::toScaleFactor)
 }
 
-internal class AnimatedVector2Serializer : JsonContentPolymorphicSerializer<AnimatedVector2>(AnimatedVector2::class) {
+internal object AnimatedVector2Serializer : JsonContentPolymorphicSerializer<AnimatedVector2>(AnimatedVector2::class) {
 
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedVector2> {
 

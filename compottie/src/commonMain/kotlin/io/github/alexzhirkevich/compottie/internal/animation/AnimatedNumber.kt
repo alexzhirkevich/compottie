@@ -4,22 +4,20 @@ import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.dynamic.PropertyProvider
 import io.github.alexzhirkevich.compottie.dynamic.invoke
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionEvaluator
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.RawExpressionEvaluator
 import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.JsonTransformingSerializer
+import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = AnimatedNumberSerializer::class)
 internal sealed class AnimatedNumber : DynamicProperty<Float>() {
@@ -38,6 +36,7 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
     @Serializable
     class Default(
         @SerialName("k")
+        @Serializable(with = ValueSerializer::class)
         val value: Float,
 
         @SerialName("x")
@@ -129,21 +128,33 @@ internal fun AnimatedNumber.Companion.defaultRadius() : AnimatedNumber =
 
 internal fun AnimatedNumber.interpolatedNorm(state: AnimationState) = interpolated(state) / 100f
 
-internal class AnimatedNumberSerializer : JsonContentPolymorphicSerializer<AnimatedNumber>(AnimatedNumber::class){
+internal object ValueSerializer : JsonTransformingSerializer<Float>(Float.serializer()){
+    override fun transformDeserialize(element: JsonElement): JsonElement {
+        return when(element){
+            is JsonPrimitive -> element
+            is JsonArray -> element[0]
+            else -> error("Invalid animated number. Must be json primitive, but got $element")
+        }
+    }
+}
+
+internal object AnimatedNumberSerializer : JsonContentPolymorphicSerializer<AnimatedNumber>(AnimatedNumber::class){
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedNumber> {
 
         if (element is JsonPrimitive){
             return AnimatedNumberAsPrimitiveSerializer
         }
-
         val value = requireNotNull(element.jsonObject["k"]){
             "Illegal animated number encoding: $element"
         }
 
-        return if (value is JsonPrimitive){
-            AnimatedNumber.Default.serializer()
-        } else {
+        val animated = element.jsonObject["a"]?.jsonPrimitive?.intOrNull == 1
+                || value is JsonObject
+
+        return if (animated){
             AnimatedNumber.Animated.serializer()
+        } else {
+            AnimatedNumber.Default.serializer()
         }
     }
 }

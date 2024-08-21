@@ -336,6 +336,29 @@ val painter = rememberLottiePainter(
 ) 
 ```
 
+You can also use wildcards for declaring dynamic properties, where `**` is any level deep wildcard
+and `*` is one level deep.
+
+```kotlin
+val painter = rememberLottiePainter(
+    composition = composition,
+    dynamicProperties = rememberLottieDynamicProperties {
+        
+        // for each layer named 'Shape Layer 4' on any level deep
+        shapeLayer("**", "Shape Layer 4") {
+            transform {
+                rotation { current -> current * progress }
+            }
+            // for each fill named 'Fill 4' on the 2nd level deep
+            fill("*", "Fill 4") {
+                color { Color.Red }
+                alpha { .5f }
+            }
+        }
+    }
+) 
+```
+
 Note, that final property building blocks (such as rotations, color, alpha) are called on EACH ANIMATION FRAME and should be cached if they don't rely on progress and have allocations or hard computations.
 
 More info about dynamic properties for those who is not familiar with AE / Lottie format can be found [here](/dynamic_properties.md).
