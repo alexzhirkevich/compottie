@@ -34,6 +34,15 @@ public fun LottieCompositionSpec.Companion.Url(
     cacheStrategy = cacheStrategy
 )
 
+/**
+ * [LottieComposition] from network [url]
+ *
+ * @param format animation format (JSON/dotLottie). Composition spec will try to guess format if format is not specified.
+ * @param fileLoader loader used for loading animation
+ * @param cacheStrategy caching strategy. Caching to system temp dir by default
+ *
+ * URL assets will be automatically prepared with [NetworkAssetsManager]
+ * */
 @Stable
 public fun LottieCompositionSpec.Companion.Url(
     url : String,

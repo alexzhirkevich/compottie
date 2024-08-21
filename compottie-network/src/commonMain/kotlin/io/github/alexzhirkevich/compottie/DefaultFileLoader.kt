@@ -11,6 +11,12 @@ internal val DefaultFileLoader by lazy {
     KtorFileLoader(DefaultHttpClient, GetRequest)
 }
 
+/**
+ * Default [FileLoader] that uses ktor to as http client
+ *
+ * @param client http client used for loading animations, assets and fonts
+ * @param request request builder. Simple GET by default
+ * */
 @Stable
 public class KtorFileLoader(
     private val client: HttpClient,
