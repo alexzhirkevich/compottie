@@ -8,25 +8,29 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import io.github.alexzhirkevich.compottie.internal.assets.resize
 import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
+import kotlin.jvm.JvmInline
 import androidx.compose.ui.graphics.painter.Painter as ComposePainter
 
 public interface ImageRepresentable {
 
     public fun toBitmap(width: Int, height: Int): ImageBitmap
 
-    public class Bytes(private val bytes: ByteArray) : ImageRepresentable {
+    @JvmInline
+    public value class Bytes(private val bytes: ByteArray) : ImageRepresentable {
         override fun toBitmap(width: Int, height: Int): ImageBitmap {
             return ImageBitmap.fromBytes(bytes).resize(width, height)
         }
     }
 
-    public class Painter(private val painter: ComposePainter) : ImageRepresentable {
+    @JvmInline
+    public value class Painter(private val painter: ComposePainter) : ImageRepresentable {
         override fun toBitmap(width: Int, height: Int): ImageBitmap {
             return painter.toBitmap(width, height)
         }
     }
 
-    public class Bitmap(private val bitmap: ImageBitmap) : ImageRepresentable {
+    @JvmInline
+    public value class Bitmap(private val bitmap: ImageBitmap) : ImageRepresentable {
         override fun toBitmap(width: Int, height: Int): ImageBitmap {
             return bitmap.resize(width, height)
         }
