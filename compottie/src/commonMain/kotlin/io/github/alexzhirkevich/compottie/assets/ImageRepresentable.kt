@@ -4,10 +4,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import io.github.alexzhirkevich.compottie.internal.assets.resize
 import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
@@ -37,7 +34,6 @@ public interface ImageRepresentable {
 }
 
 private fun ComposePainter.toBitmap(w : Int, h : Int) : ImageBitmap {
-    val bitmap = ImageBitmap(w, h)
 
     val bmp = ImageBitmap(w, h)
     val canvas = Canvas(bmp)
@@ -51,5 +47,5 @@ private fun ComposePainter.toBitmap(w : Int, h : Int) : ImageBitmap {
         draw(this@draw.size)
     }
 
-    return bitmap
+    return bmp
 }
