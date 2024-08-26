@@ -18,7 +18,7 @@ import kotlin.contracts.contract
 public inline fun rememberLottieDynamicProperties(
     vararg keys : Any?,
     crossinline builder: LottieDynamicProperties.() -> Unit
-) : LottieDynamicProperties = remember(keys) {
+) : LottieDynamicProperties = remember(*keys) {
     createLottieDynamicProperties(builder)
 }
 
