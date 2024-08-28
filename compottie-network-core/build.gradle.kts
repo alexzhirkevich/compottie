@@ -1,17 +1,16 @@
 plugins {
     id("kotlinx-atomicfu")
-    id("ktorwasm.workaround")
 }
 
 kotlin {
     sourceSets {
         commonMain.dependencies {
+            api(project(":compottie"))
+            implementation(project(":compottie-dot"))
             implementation(compose.ui)
             implementation(libs.serialization)
             api(libs.okio)
             implementation(libs.coroutines.core)
-            api(project(":compottie"))
-            implementation(project(":compottie-dot"))
         }
     }
 }
