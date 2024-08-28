@@ -50,7 +50,7 @@ private class DotLottieCompositionSpec(
 
     @OptIn(InternalCompottieApi::class)
     override suspend fun load(): LottieComposition {
-        return withContext(ioDispatcher()) {
+        return withContext(Compottie.ioDispatcher()) {
             val fileSystem = FakeFileSystem()
             val path = "lottie".toPath()
 

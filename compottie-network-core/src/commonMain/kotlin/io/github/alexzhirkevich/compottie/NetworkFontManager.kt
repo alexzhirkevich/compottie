@@ -1,3 +1,6 @@
+@file:JvmName("CoreNetworkFontManager")
+
+
 package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Stable
@@ -5,6 +8,7 @@ import androidx.compose.ui.text.font.Font
 import io.github.alexzhirkevich.compottie.assets.LottieFontManager
 import io.github.alexzhirkevich.compottie.assets.LottieFontSpec
 import okio.Path
+import kotlin.jvm.JvmName
 
 /**
  * Font manager that loads fonts from the web using [request].

@@ -4,5 +4,5 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 
-public actual fun ioDispatcher() : CoroutineDispatcher = Dispatchers.IO
+public actual fun Compottie.ioDispatcher() : CoroutineDispatcher = Dispatchers.IO
 

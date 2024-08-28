@@ -1,9 +1,13 @@
+@file:JvmName("CoreNetworkAssetsManager")
+
+
 package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Stable
 import io.github.alexzhirkevich.compottie.assets.ImageRepresentable
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.LottieImageSpec
+import kotlin.jvm.JvmName
 
 /**
  * Asset manager that load images from web using [request] .

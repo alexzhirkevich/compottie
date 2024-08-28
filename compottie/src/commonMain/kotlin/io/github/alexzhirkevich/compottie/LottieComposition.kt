@@ -63,7 +63,7 @@ public fun rememberLottieComposition(
 
     LaunchedEffect(result) {
         try {
-            val composition = withContext(ioDispatcher()) {
+            val composition = withContext(Compottie.ioDispatcher()) {
             val specInstance = updatedSpec()
                 val k = when (key) {
                     UnspecifiedCompositionKey -> specInstance.key
@@ -105,7 +105,7 @@ public fun rememberLottieComposition(
 
     LaunchedEffect(result) {
         try {
-            val composition = withContext(ioDispatcher()) {
+            val composition = withContext(Compottie.ioDispatcher()) {
                 spec.load()
             }
             result.complete(composition)

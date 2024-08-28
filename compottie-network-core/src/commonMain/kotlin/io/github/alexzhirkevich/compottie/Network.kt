@@ -12,7 +12,7 @@ internal suspend fun networkLoad(
     cacheStrategy: LottieCacheStrategy,
     url: String
 ): Pair<Path?, ByteArray?> {
-    return withContext(ioDispatcher()) {
+    return withContext(Compottie.ioDispatcher()) {
         NetworkLock.withLock(url) {
             try {
                 try {

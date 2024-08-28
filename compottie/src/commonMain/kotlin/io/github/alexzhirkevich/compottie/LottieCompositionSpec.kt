@@ -40,7 +40,7 @@ private value class JsonStringImpl(
 
     @OptIn(InternalCompottieApi::class)
     override suspend fun load(): LottieComposition {
-        return withContext(ioDispatcher()) {
+        return withContext(Compottie.ioDispatcher()) {
             LottieComposition.parse(jsonString)
         }
     }

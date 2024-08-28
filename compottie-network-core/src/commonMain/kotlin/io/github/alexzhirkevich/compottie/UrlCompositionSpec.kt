@@ -1,8 +1,11 @@
+@file:JvmName("CoreUrlCompositionSpec")
+
 package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.jvm.JvmName
 
 /**
  * [LottieComposition] from network [url]
@@ -50,7 +53,7 @@ private class NetworkCompositionSpec(
 
     @OptIn(InternalCompottieApi::class)
     override suspend fun load(): LottieComposition {
-        return withContext(ioDispatcher()) {
+        return withContext(Compottie.ioDispatcher()) {
 
             val (_, bytes) = networkLoad(request, cacheStrategy, url)
 

@@ -93,10 +93,10 @@ public fun rememberLottiePainter(
         dp != null
     ) {
         if (composition != null) {
-            val assets = async(ioDispatcher()) {
+            val assets = async(Compottie.ioDispatcher()) {
                 composition.loadAssets(assetsManager ?: EmptyAssetsManager, true)
             }
-            val fonts = async(ioDispatcher()) {
+            val fonts = async(Compottie.ioDispatcher()) {
                 composition.loadFonts(fontManager ?: EmptyFontManager)
             }
 
@@ -222,12 +222,12 @@ public suspend fun LottiePainter(
     enableMergePaths: Boolean = false,
     enableExpressions: Boolean = true,
 ) : Painter = coroutineScope {
-    val assets = async(ioDispatcher()) {
+    val assets = async(Compottie.ioDispatcher()) {
         assetsManager?.let {
             composition.loadAssets(it, true)
         }
     }
-    val fonts = async(ioDispatcher()) {
+    val fonts = async(Compottie.ioDispatcher()) {
         fontManager?.let {
             composition.loadFonts(it)
         }
