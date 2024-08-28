@@ -1,8 +1,6 @@
-package io.github.alexzhirkevich.compottie.network
+package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Stable
-import io.github.alexzhirkevich.compottie.InternalCompottieApi
-import io.github.alexzhirkevich.compottie.closeQuietly
 import kotlinx.coroutines.CoroutineDispatcher
 import okio.ByteString.Companion.encodeUtf8
 import okio.FileSystem

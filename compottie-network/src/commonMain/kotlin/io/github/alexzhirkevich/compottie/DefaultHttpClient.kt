@@ -12,7 +12,7 @@ internal val DefaultHttpClient by lazy {
         expectSuccess = true
         install(HttpRequestRetry) {
             maxRetries = 2
-            constantDelay(250, 250)
+            constantDelay(1000, 500)
         }
     }
 }

@@ -1,14 +1,7 @@
-package io.github.alexzhirkevich.compottie.network
+package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Stable
-import io.github.alexzhirkevich.compottie.InternalCompottieApi
-import io.github.alexzhirkevich.compottie.LottieAnimationFormat
-import io.github.alexzhirkevich.compottie.LottieComposition
-import io.github.alexzhirkevich.compottie.LottieCompositionSpec
-import io.github.alexzhirkevich.compottie.decodeToLottieComposition
-import io.github.alexzhirkevich.compottie.ioDispatcher
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 
 /**
@@ -45,8 +38,15 @@ private class NetworkCompositionSpec(
     override val key: String
         get() = "url_$url"
 
-    private val assetsManager = NetworkAssetsManager(request, cacheStrategy)
-    private val fontManager = NetworkFontManager(request, cacheStrategy)
+    private val assetsManager = NetworkAssetsManager(
+        request = request,
+        cacheStrategy = cacheStrategy
+    )
+
+    private val fontManager = NetworkFontManager(
+        request = request,
+        cacheStrategy = cacheStrategy
+    )
 
     @OptIn(InternalCompottieApi::class)
     override suspend fun load(): LottieComposition {
@@ -87,11 +87,6 @@ private class NetworkCompositionSpec(
         result = 31 * result + request.hashCode()
         result = 31 * result + cacheStrategy.hashCode()
         return result
-    }
-
-    companion object {
-        private val mainMutex = Mutex()
-        private val mutexByUrl = mutableMapOf<String, Mutex>()
     }
 }
 

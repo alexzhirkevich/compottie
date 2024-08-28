@@ -1,4 +1,4 @@
-package io.github.alexzhirkevich.compottie.network
+package io.github.alexzhirkevich.compottie
 
 public interface HttpClient {
     public suspend fun get(url: String) : ByteArray

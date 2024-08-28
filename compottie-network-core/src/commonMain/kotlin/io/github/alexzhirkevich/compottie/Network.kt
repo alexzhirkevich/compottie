@@ -1,9 +1,5 @@
-package io.github.alexzhirkevich.compottie.network
+package io.github.alexzhirkevich.compottie
 
-import io.github.alexzhirkevich.compottie.Compottie
-import io.github.alexzhirkevich.compottie.InternalCompottieApi
-import io.github.alexzhirkevich.compottie.MapMutex
-import io.github.alexzhirkevich.compottie.ioDispatcher
 import kotlinx.coroutines.withContext
 import okio.Path
 
