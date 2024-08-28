@@ -307,9 +307,7 @@ public class LottieComposition internal constructor(
     }
 
     internal fun deepCopy() : LottieComposition {
-        return LottieComposition(
-            animation
-        )
+        return LottieComposition(animation.deepCopy())
     }
 
     internal fun marker(name: String?) = markersMap[name]

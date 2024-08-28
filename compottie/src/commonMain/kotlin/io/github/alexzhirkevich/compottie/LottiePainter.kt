@@ -101,9 +101,7 @@ public fun rememberLottiePainter(
             }
 
             value = LottiePainter(
-                composition = if (dp != null)
-                    composition.deepCopy() 
-                else composition,
+                composition = composition.deepCopy(),
                 progress = { updatedProgress() },
                 dynamicProperties = dp,
                 clipTextToBoundingBoxes = clipTextToBoundingBoxes,

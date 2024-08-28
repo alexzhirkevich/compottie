@@ -1,6 +1,5 @@
 package io.github.alexzhirkevich.compottie.internal.helpers
 
-import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
@@ -54,6 +53,9 @@ internal class Transform(
             position = position.copy(),
             scale = scale.copy(),
             rotation = rotation.copy(),
+            rotationX = rotationX?.copy(),
+            rotationY = rotationY?.copy(),
+            rotationZ = rotationZ?.copy(),
             opacity = opacity.copy(),
             skew = skew.copy(),
             skewAxis = skewAxis.copy()

@@ -45,6 +45,15 @@ internal class TransformShape(
     @SerialName("r")
     override val rotation : AnimatedNumber = AnimatedNumber.defaultRotation(),
 
+    @SerialName("rx")
+    override val rotationX : AnimatedNumber? = null,
+
+    @SerialName("ry")
+    override val rotationY : AnimatedNumber? = null,
+
+    @SerialName("rz")
+    override val rotationZ : AnimatedNumber? = null,
+
     @SerialName("o")
     override val opacity : AnimatedNumber = AnimatedNumber.defaultOpacity(),
 
@@ -83,6 +92,9 @@ internal class TransformShape(
             position = position.copy(),
             scale = scale.copy(),
             rotation = rotation.copy(),
+            rotationX = rotationX?.copy(),
+            rotationY = rotationY?.copy(),
+            rotationZ = rotationZ?.copy(),
             opacity = opacity.copy(),
             skew = skew.copy(),
             skewAxis = skewAxis.copy()
