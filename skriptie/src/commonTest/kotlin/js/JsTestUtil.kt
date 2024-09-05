@@ -3,9 +3,9 @@ package js
 import io.github.alexzhirkevich.skriptie.DefaultScriptIO
 import io.github.alexzhirkevich.skriptie.ScriptEngine
 import io.github.alexzhirkevich.skriptie.ScriptIO
-import io.github.alexzhirkevich.skriptie.ecmascript.EcmascriptInterpreter
+import io.github.alexzhirkevich.skriptie.ecmascript.ESInterpreter
 import io.github.alexzhirkevich.skriptie.invoke
-import io.github.alexzhirkevich.skriptie.javascript.JSGlobalContext
+import io.github.alexzhirkevich.skriptie.javascript.JSLangContext
 import io.github.alexzhirkevich.skriptie.javascript.JSRuntime
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -19,11 +19,5 @@ internal fun Any?.assertEqualsTo(other : Double, tolerance: Double = 0.0001) {
 internal fun String.eval(io : ScriptIO = DefaultScriptIO) : Any? {
     val runtime = JSRuntime(io)
 
-    return ScriptEngine(
-        runtime,
-        EcmascriptInterpreter(
-            JSGlobalContext(false),
-            runtime
-        )
-    ).invoke(this)
+    return ScriptEngine(runtime, ESInterpreter(JSLangContext)).invoke(this)
 }

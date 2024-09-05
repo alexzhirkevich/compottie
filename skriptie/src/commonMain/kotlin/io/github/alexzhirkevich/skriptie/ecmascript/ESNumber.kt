@@ -58,7 +58,7 @@ internal class ESNumber : ESFunctionBase("Number") {
         num.toDoubleOrNull() ?: 0L
     }
 
-    override fun get(variable: String): Any? {
+    override fun get(variable: Any?): Any? {
         return when (variable) {
             "EPSILON" -> Double.MIN_VALUE
             "length" -> Double.MIN_VALUE
@@ -78,7 +78,6 @@ internal class ESNumber : ESFunctionBase("Number") {
 }
 
 private fun String.trimParseInt(radix : Int) : Long? {
-    println("$radix ${drop(2)}")
 
     return when (radix) {
         0 -> if (startsWith("0x",true)){

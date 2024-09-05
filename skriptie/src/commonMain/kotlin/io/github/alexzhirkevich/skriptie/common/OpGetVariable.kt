@@ -14,6 +14,24 @@ internal value class OpConstant(val value: Any?) : Expression {
     }
 }
 
+private object UNINITIALIZED
+
+internal class OpLazy(
+    private val init : (ScriptRuntime) -> Any?
+) : Expression {
+
+    private var value : Any? = UNINITIALIZED
+
+    override fun invokeRaw(context: ScriptRuntime): Any? {
+
+        if (value is UNINITIALIZED){
+            value = init(context)
+        }
+
+        return value
+    }
+}
+
 internal class OpGetVariable(
     val name : String,
     val receiver : Expression?,

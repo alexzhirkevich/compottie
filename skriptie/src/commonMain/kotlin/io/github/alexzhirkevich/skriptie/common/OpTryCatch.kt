@@ -4,58 +4,53 @@ import io.github.alexzhirkevich.skriptie.Expression
 import io.github.alexzhirkevich.skriptie.VariableType
 import io.github.alexzhirkevich.skriptie.invoke
 
-internal fun  OpTryCatch(
+internal class ThrowableValue(val value : Any?) : Throwable(message = value?.toString()) {
+    override fun toString(): String {
+        return value.toString() + " (thrown)"
+    }
+}
+
+internal fun OpTryCatch(
     tryBlock : Expression,
     catchVariableName : String?,
     catchBlock : Expression?,
     finallyBlock : Expression?,
 ) = when {
-    catchBlock != null && finallyBlock != null ->
-        TryCatchFinally(tryBlock, catchVariableName, catchBlock, finallyBlock)
+    catchBlock != null ->
+        TryCatchFinally(
+            tryBlock = tryBlock,
+            catchVariableName = catchVariableName,
+            catchBlock = catchBlock,
+            finallyBlock = finallyBlock
+        )
 
-    catchBlock != null -> TryCatch(tryBlock, catchVariableName, catchBlock)
-    finallyBlock != null -> TryFinally(tryBlock, finallyBlock)
-    else -> error("SyntaxError: Missing catch or finally after try")
+    finallyBlock != null -> TryFinally(
+        tryBlock = tryBlock,
+        finallyBlock = finallyBlock
+    )
+    else -> throw SyntaxError("Missing catch or finally after try")
 }
 
-private fun  TryCatchFinally(
+private fun TryCatchFinally(
     tryBlock : Expression,
     catchVariableName : String?,
     catchBlock : Expression,
-    finallyBlock : Expression,
+    finallyBlock : Expression? = null,
 ) = Expression {
     try {
         tryBlock(it)
     } catch (t: Throwable) {
         if (catchVariableName != null) {
+            val throwable = if (t is ThrowableValue) t.value else t
             it.withScope(
-                extraVariables = mapOf(catchVariableName to (VariableType.Const to t)),
+                extraVariables = mapOf(catchVariableName to (VariableType.Local to throwable)),
                 block = catchBlock::invoke
             )
         } else {
             catchBlock(it)
         }
     } finally {
-        finallyBlock(it)
-    }
-}
-
-private fun TryCatch(
-    tryBlock : Expression,
-    catchVariableName : String?,
-    catchBlock : Expression
-) = Expression {
-    try {
-        tryBlock(it)
-    } catch (t: Throwable) {
-        if (catchVariableName != null) {
-            it.withScope(
-                extraVariables = mapOf(catchVariableName to (VariableType.Const to t)),
-                block = catchBlock::invoke
-            )
-        } else {
-            catchBlock(it)
-        }
+        finallyBlock?.invoke(it)
     }
 }
 

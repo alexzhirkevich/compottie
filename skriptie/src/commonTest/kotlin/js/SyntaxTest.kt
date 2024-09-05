@@ -141,9 +141,73 @@ class SyntaxTest {
     }
 
     @Test
-    fun typeOf(){
+    fun typeOf() {
         "typeof(1)".eval().assertEqualsTo("number")
         "typeof(null)".eval().assertEqualsTo("object")
         "typeof(undefined)".eval().assertEqualsTo("undefined")
+        "typeof('str')".eval().assertEqualsTo("string")
+        "typeof('str') + 123".eval().assertEqualsTo("string123")
+
+        "typeof 1".eval().assertEqualsTo("number")
+        "typeof null".eval().assertEqualsTo("object")
+        "typeof undefined".eval().assertEqualsTo("undefined")
+
+        "typeof 1===1".eval().assertEqualsTo("boolean")
+
+        "let x = 1; typeof x++".eval().assertEqualsTo("number")
+        assertFailsWith<SyntaxError> {
+            "let x = 1; typeof x = 2".eval()
+        }
+        assertFailsWith<SyntaxError> {
+            "let x = 1; typeof x += 2".eval()
+        }
+    }
+
+    @Test
+    fun tryCatch(){
+        """
+            let error = undefined
+            try {
+                let x = null
+                x.test = 1
+            } catch(x) {
+                error = x.message
+            }
+            error
+        """.trimIndent().eval().assertEqualsTo("Cannot set properties of null (setting 'test')")
+
+        """
+            let error = undefined
+            try {
+                throw 'test'
+            } catch(x) {
+                error = x
+            }
+            error
+        """.trimIndent().eval().assertEqualsTo("test")
+
+        """
+            let a = 1
+            try {
+                throw 'test'
+            } catch(x) {
+                a++
+            } finally {
+                a++
+            }
+            a
+        """.trimIndent().eval().assertEqualsTo(3L)
+
+        """
+            let a = 1
+            try {
+               
+            } catch(x) {
+                a++
+            } finally {
+                a++
+            }
+            a
+        """.trimIndent().eval().assertEqualsTo(2L)
     }
 }

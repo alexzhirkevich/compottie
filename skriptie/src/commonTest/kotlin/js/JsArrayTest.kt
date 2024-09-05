@@ -1,6 +1,7 @@
 package js
 
 import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class JsArrayTest {
@@ -53,7 +54,14 @@ class JsArrayTest {
         assertTrue {
             """
                 let arr = [1,2,3,4]
-                arr.some(v => v ===2)
+                arr.some(v => v === 2)
+            """.trimIndent().eval() as Boolean
+        }
+
+        assertFalse {
+            """
+                let arr = [1,2,3,4]
+                arr.some(v => v === 5)
             """.trimIndent().eval() as Boolean
         }
     }
@@ -65,5 +73,14 @@ class JsArrayTest {
             arr.sort()
             arr
         """.trimIndent().eval().assertEqualsTo(listOf(2L,8L, 66L))
+    }
+
+    @Test
+    fun at(){
+        "[66,2,8].at(0)".eval().assertEqualsTo(66L)
+        "[66,2,8].at(3)".eval().assertEqualsTo(Unit)
+
+        "[66,2,8][1]".eval().assertEqualsTo(2L)
+        "[66,2,8][3]".eval().assertEqualsTo(Unit)
     }
 }

@@ -19,8 +19,8 @@ public value class JsNumber(
 
     override val type: String get() = "number"
 
-    override fun get(variable: String): Any? {
-        unresolvedReference(variable)
+    override fun get(variable: Any?): Any? {
+        unresolvedReference(variable.toString())
     }
 
     override fun toString(): String {

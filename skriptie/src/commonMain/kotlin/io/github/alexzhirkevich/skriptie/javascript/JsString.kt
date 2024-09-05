@@ -15,7 +15,7 @@ import kotlin.jvm.JvmInline
 @JvmInline
 internal value class JsString(
     override val value : String
-) : ESAny, JsWrapper<String>, Comparable<JsString> {
+) : ESAny, JsWrapper<String>, Comparable<JsString>, CharSequence by value {
 
     override val type: String
         get() = "string"
@@ -25,7 +25,7 @@ internal value class JsString(
         return value
     }
 
-    override fun get(variable: String): Any {
+    override fun get(variable: Any?): Any {
         return when(variable){
             "length" -> value.length
             else -> Unit

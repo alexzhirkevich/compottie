@@ -4,18 +4,19 @@ import io.github.alexzhirkevich.skriptie.Expression
 import io.github.alexzhirkevich.skriptie.invoke
 
 
-internal fun  OpIfCondition(
-    condition : Expression = OpConstant(true),
+internal fun OpIfCondition(
+    condition : Expression,
     onTrue : Expression? = null,
-    onFalse : Expression? = null
+    onFalse : Expression? = null,
+    expressible : Boolean = false
 ) = Expression {
-    val expr = if (condition(it) as Boolean){
-        onTrue
+    val expr = if (it.isFalse(condition(it))) onFalse else onTrue
+
+    val res = expr?.invoke(it)
+
+    if (expressible) {
+        res
     } else {
-        onFalse
+        Unit
     }
-
-    expr?.invoke(it)
-
-    Unit
 }

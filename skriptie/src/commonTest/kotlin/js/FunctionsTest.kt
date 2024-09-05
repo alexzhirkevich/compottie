@@ -138,4 +138,15 @@ class FunctionsTest {
             x
         """.trimIndent().eval().assertEqualsTo(1L)
     }
+
+    @Test
+    fun recursion(){
+        """
+           function fib(n) {
+               return n < 2 ? n : fib(n - 1) + fib(n - 2);
+           }
+
+           fib(7)
+        """.trimIndent().eval().assertEqualsTo(13L)
+    }
 }

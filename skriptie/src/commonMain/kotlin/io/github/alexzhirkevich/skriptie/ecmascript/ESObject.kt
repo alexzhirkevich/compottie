@@ -10,13 +10,20 @@ import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 
 public interface ESObject : ESAny {
-    public operator fun set(variable: String, value: Any?)
-    public operator fun contains(variable: String): Boolean
+
+    public val keys : Set<String>
+    public val entries : List<List<Any?>>
+
+    public operator fun set(variable: Any?, value: Any?)
+    public operator fun contains(variable: Any?): Boolean
 
     override fun invoke(function: String, context: ScriptRuntime, arguments: List<Expression>): Any? {
         val f = get(function)
         if (f !is Callable) {
-            unresolvedReference(function)
+            when (f){
+                "toString" -> return toString()
+                else -> unresolvedReference(function)
+            }
         }
         return f.invoke(arguments, context)
     }
@@ -24,28 +31,25 @@ public interface ESObject : ESAny {
 
 internal open class ESObjectBase(
     internal val name : String,
-    private val map : MutableMap<String, Any?> = mutableMapOf()
+    private val map : MutableMap<Any?, Any?> = mutableMapOf()
 ) : ESObject {
 
-    init {
-        if ("toString" !in map){
-            map["toString"] = Function(
-                name = "toString",
-                parameters = emptyList(),
-                body = { toString() })
-        }
-    }
+    override val keys: Set<String>
+        get() = map.keys.map { it.toString() }.toSet()
 
-    override fun get(variable: String): Any? {
+    override val entries: List<List<Any?>>
+        get() = map.entries.map { listOf(it.key, it.value) }
+
+    override fun get(variable: Any?): Any? {
         return if (variable in map)
             map[variable]
         else Unit
     }
-    override fun set(variable: String, value: Any?) {
+    override fun set(variable: Any?, value: Any?) {
         map[variable] = value
     }
 
-    override fun contains(variable: String): Boolean = variable in map
+    override fun contains(variable: Any?): Boolean = variable in map
 
     override fun toString(): String {
         return if (name.isNotBlank()){
@@ -82,6 +86,7 @@ private class ObjectScopeImpl(
     name: String,
     val o : ESObject = ESObjectBase(name)
 ) : ObjectScope {
+
     override fun String.func(
         vararg args: FunctionParam,
         body: ScriptRuntime.(args: List<Any?>) -> Any?
@@ -98,7 +103,7 @@ private class ObjectScopeImpl(
     }
 
     override fun String.eq(value: Any?) {
-        o[this] = value
+        o.set(this, value)
     }
 }
 
@@ -125,7 +130,7 @@ internal fun func(
     vararg args: FunctionParam,
     body: ScriptRuntime.(args: List<Any?>) -> Any?
 ): PropertyDelegateProvider<ESObject, ReadOnlyProperty<ESObject, Callable>> =  PropertyDelegateProvider { obj, prop ->
-    obj[prop.name] = Function(
+    obj.set(prop.name, Function(
         name = prop.name,
         parameters = args.toList(),
         body = {
@@ -133,7 +138,7 @@ internal fun func(
                 body(args.map { get(it.name) })
             }
         }
-    )
+    ))
 
     ReadOnlyProperty { thisRef, property ->
         thisRef[property.name] as Callable

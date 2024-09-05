@@ -1,5 +1,10 @@
 package io.github.alexzhirkevich.skriptie
 
+public object DummyInterpretationContext : InterpretationContext {
+    override fun interpret(callable: String?, args: List<Expression>?): Expression? {
+        return null
+    }
+}
 
 public interface InterpretationContext :  Expression {
 

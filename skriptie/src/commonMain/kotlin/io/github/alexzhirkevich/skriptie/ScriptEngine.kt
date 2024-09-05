@@ -14,9 +14,8 @@ public fun ScriptEngine.invoke(script: String) : Any? {
 }
 
 public fun ScriptEngine(
-    context: ScriptRuntime,
+    runtime: ScriptRuntime,
     interpreter: ScriptInterpreter
 ): ScriptEngine = object : ScriptEngine, ScriptInterpreter by interpreter {
-    override val runtime: ScriptRuntime
-        get() = context
+    override val runtime: ScriptRuntime get() = runtime
 }

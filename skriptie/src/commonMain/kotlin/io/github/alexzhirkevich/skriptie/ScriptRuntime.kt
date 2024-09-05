@@ -2,7 +2,6 @@ package io.github.alexzhirkevich.skriptie
 
 import io.github.alexzhirkevich.skriptie.common.SyntaxError
 import io.github.alexzhirkevich.skriptie.common.TypeError
-import io.github.alexzhirkevich.skriptie.common.unresolvedReference
 
 
 public enum class VariableType {
@@ -15,11 +14,11 @@ public interface ScriptRuntime : LangContext {
 
     public val comparator : Comparator<Any?>
 
-    public operator fun contains(variable: String): Boolean
+    public operator fun contains(variable: Any?): Boolean
 
-    public operator fun get(variable: String): Any?
+    public operator fun get(variable: Any?): Any?
 
-    public fun set(variable: String, value: Any?, type: VariableType?)
+    public fun set(variable: Any?, value: Any?, type: VariableType?)
 
     public fun withScope(
         extraVariables: Map<String, Pair<VariableType, Any?>> = emptyMap(),
@@ -29,7 +28,7 @@ public interface ScriptRuntime : LangContext {
     public fun reset()
 }
 
-private class BlockScriptContext(
+private class ScopedRuntime(
     private val parent : ScriptRuntime
 ) : DefaultRuntime(), LangContext by parent {
 
@@ -39,7 +38,7 @@ private class BlockScriptContext(
     override val comparator: Comparator<Any?>
         get() = parent.comparator
 
-    override fun get(variable: String): Any? {
+    override fun get(variable: Any?): Any? {
         return if (variable in variables) {
             super.get(variable)
         } else {
@@ -47,11 +46,11 @@ private class BlockScriptContext(
         }
     }
 
-    override fun contains(variable: String): Boolean {
+    override fun contains(variable: Any?): Boolean {
         return super.contains(variable) || parent.contains(variable)
     }
 
-    override fun set(variable: String, value: Any?, type: VariableType?) {
+    override fun set(variable: Any?, value: Any?, type: VariableType?) {
         when {
             type == VariableType.Global -> parent.set(variable, value, type)
             type != null || variable in variables -> super.set(variable, value, type)
@@ -62,30 +61,27 @@ private class BlockScriptContext(
 
 public abstract class DefaultRuntime : ScriptRuntime {
 
-    protected val variables: MutableMap<String, Pair<VariableType, Any?>> = mutableMapOf()
+    protected val variables: MutableMap<Any?, Pair<VariableType, Any?>> = mutableMapOf()
 
     private val child by lazy {
-        BlockScriptContext(this)
+        ScopedRuntime(this)
     }
 
-    override fun contains(variable: String): Boolean {
+    override fun contains(variable: Any?): Boolean {
         return variable in variables
     }
 
-    override fun set(variable: String, value: Any?, type: VariableType?) {
-        if (type == null && variable !in variables) {
-            unresolvedReference(variable)
-        }
+    override fun set(variable: Any?, value: Any?, type: VariableType?) {
         if (type != null && variable in variables) {
             throw SyntaxError("Identifier '$variable' is already declared")
         }
         if (type == null && variables[variable]?.first == VariableType.Const) {
             throw TypeError("Assignment to constant variable ('$variable')")
         }
-        variables[variable] = (type ?: variables[variable]?.first)!! to value
+        variables[variable] = (type ?: variables[variable]?.first ?: VariableType.Global) to value
     }
 
-    override fun get(variable: String): Any? {
+    override fun get(variable: Any?): Any? {
         return if (contains(variable))
             variables[variable]?.second
         else Unit

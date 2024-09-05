@@ -17,6 +17,9 @@ public abstract class ESRuntime(
         ESComparator(this)
     }
 
+    override val keys: Set<String> get() = emptySet()
+    override val entries: List<List<Any?>> get() = emptyList()
+
     init {
         init()
     }
@@ -27,6 +30,7 @@ public abstract class ESRuntime(
     }
 
     private fun init() {
+        set("Object", ESObjectAccessor(), VariableType.Const)
         set("Number", ESNumber(), VariableType.Const)
         set("globalThis", this, VariableType.Const)
         set("Infinity", Double.POSITIVE_INFINITY, VariableType.Const)
@@ -34,7 +38,7 @@ public abstract class ESRuntime(
         set("undefined", Unit, VariableType.Const)
     }
 
-    final override fun get(variable: String): Any? {
+    final override fun get(variable: Any?): Any? {
         if (variable in this){
             return super.get(variable)
         }
@@ -48,7 +52,7 @@ public abstract class ESRuntime(
         return super.get(variable)
     }
 
-    final override fun set(variable: String, value: Any?) {
+    final override fun set(variable: Any?, value: Any?) {
         set(variable, value, VariableType.Local)
     }
 

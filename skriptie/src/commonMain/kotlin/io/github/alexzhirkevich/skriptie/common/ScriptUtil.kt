@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.skriptie.common
 
 import io.github.alexzhirkevich.skriptie.Expression
 import io.github.alexzhirkevich.skriptie.ScriptRuntime
+import io.github.alexzhirkevich.skriptie.ecmascript.ESAny
 import io.github.alexzhirkevich.skriptie.invoke
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -51,13 +52,34 @@ internal fun Any.valueAtIndexOrUnit(index : Int) : Any {
             }
         }
 
-        is List<*> -> this.getOrElse(index) { Unit }
-        is Array<*> -> this.getOrElse(index) { Unit }
-        is CharSequence -> this.getOrNull(index) ?: Unit
+        is List<*> -> getOrElse(index) { Unit }
+        is Array<*> -> getOrElse(index) { Unit }
+        is CharSequence -> getOrNull(index) ?: Unit
         else -> Unit
     }!!
 }
 
+internal fun Any.valueAtIndexOrUnit(index : Any?, numberIndex : Int) : Any {
+    val indexNorm = when (index){
+        is CharSequence -> index.toString()
+        else -> index
+    }
+    return when (this) {
+        is Map<*, *> -> {
+            if (indexNorm in this) {
+                get(indexNorm)
+            } else {
+                Unit
+            }
+        }
+
+        is List<*> -> getOrElse(numberIndex) { Unit }
+        is Array<*> -> getOrElse(numberIndex) { Unit }
+        is CharSequence -> getOrNull(numberIndex) ?: Unit
+        is ESAny -> get(indexNorm)
+        else -> Unit
+    }!!
+}
 
 @Suppress("BanInlineOptIn")
 @OptIn(ExperimentalContracts::class)

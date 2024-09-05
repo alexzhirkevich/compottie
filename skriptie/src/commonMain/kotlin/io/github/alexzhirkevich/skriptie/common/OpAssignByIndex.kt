@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.skriptie.common
 import io.github.alexzhirkevich.skriptie.Expression
 import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.VariableType
+import io.github.alexzhirkevich.skriptie.ecmascript.ESObject
 import io.github.alexzhirkevich.skriptie.invoke
 import io.github.alexzhirkevich.skriptie.javascript.JsArray
 
@@ -26,17 +27,20 @@ internal class OpAssignByIndex(
             context.set(variableName, mutableListOf<Any>(), scope)
             return invoke(context)
         } else {
-            val i = context.toNumber(index.invoke(context))
 
-            check(!i.toDouble().isNaN()) {
-                "Unexpected index: $i"
-            }
 
-            val index = i.toInt()
+            val idx = index(context)
 
             return when (current) {
 
                 is JsArray-> {
+                    val i = context.toNumber(idx)
+
+                    check(!i.toDouble().isNaN()) {
+                        "Unexpected index: $i"
+                    }
+                    val index = i.toInt()
+
                     while (current.value.lastIndex < index) {
                         current.value.add(Unit)
                     }
@@ -49,6 +53,18 @@ internal class OpAssignByIndex(
                         v
                     }
                     current.value[index]
+                }
+                is ESObject -> {
+                    val idxNorm = when (idx){
+                        is CharSequence -> idx.toString()
+                        else -> idx
+                    }
+
+                    if (idxNorm in current && merge != null){
+                        current[idxNorm] = merge.invoke(current[idxNorm], v)
+                    } else {
+                        current[idxNorm] = v
+                    }
                 }
                 else -> error("Can't assign '$current' by index ($index)")
             }

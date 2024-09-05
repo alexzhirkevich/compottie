@@ -9,6 +9,7 @@ import io.github.alexzhirkevich.skriptie.common.TypeError
 import io.github.alexzhirkevich.skriptie.common.checkNotEmpty
 import io.github.alexzhirkevich.skriptie.common.fastFilter
 import io.github.alexzhirkevich.skriptie.common.fastMap
+import io.github.alexzhirkevich.skriptie.common.valueAtIndexOrUnit
 import io.github.alexzhirkevich.skriptie.ecmascript.ESAny
 import io.github.alexzhirkevich.skriptie.ecmascript.checkArgs
 import io.github.alexzhirkevich.skriptie.invoke
@@ -17,13 +18,17 @@ import kotlin.jvm.JvmInline
 @JvmInline
 internal value class JsArray(
     override val value : MutableList<Any?>
-) :  ESAny, JsWrapper<MutableList<Any?>> {
+) : ESAny, JsWrapper<MutableList<Any?>>, MutableList<Any?> by value {
 
-    override fun get(variable: String): Any {
+    override fun get(variable: Any?): Any {
         return when (variable){
             "length" -> value.size
             else -> Unit
         }
+    }
+
+    override fun toString(): String {
+        return value.joinToString(separator = ",")
     }
 
     override fun invoke(
@@ -117,6 +122,15 @@ internal value class JsArray(
 
                     value.slice(start..<end)
                 }
+            }
+            "at" -> {
+                val idx = arguments[0].invoke(context).let(context::toNumber).toInt()
+                value.valueAtIndexOrUnit(idx)
+            }
+            "includes" -> {
+                val v = arguments[0].invoke(context)
+                val fromIndex = arguments.getOrNull(1)?.let(context::toNumber)?.toInt() ?: 0
+                value.indexOf(v) > fromIndex
             }
             else -> super.invoke(function, context, arguments)
         }
