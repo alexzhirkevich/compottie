@@ -39,7 +39,7 @@ import io.github.alexzhirkevich.skriptie.isAssignable
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-internal val EXPR_DEBUG_PRINT_ENABLED = true
+internal val EXPR_DEBUG_PRINT_ENABLED = false
 
 internal enum class LogicalContext {
     And, Or, Compare
@@ -150,21 +150,54 @@ internal class EcmascriptInterpreterImpl(
         }
     }
 
-    private fun parseAssignment(context: Expression, blockContext: List<BlockContext>): Expression {
+    private fun parseAssignment(
+        context: Expression,
+        blockContext: List<BlockContext>,
+        unaryOnly : Boolean = false
+    ): Expression {
         var x = parseExpressionOp(context, blockContext = blockContext)
         if (EXPR_DEBUG_PRINT_ENABLED) {
             println("Parsing assignment for $x")
         }
+
+        val checkAssignment = {
+            if (unaryOnly)
+                throw SyntaxError("Invalid left-hand side in assignment")
+        }
+
         while (true) {
             prepareNextChar()
             x = when {
-                eatSequence("+=") -> parseAssignmentValue(x, langContext::sum)
-                eatSequence("-=") -> parseAssignmentValue(x, langContext::sub)
-                eatSequence("*=") -> parseAssignmentValue(x, langContext::mul)
-                eatSequence("/=") -> parseAssignmentValue(x, langContext::div)
-                eatSequence("%=") -> parseAssignmentValue(x, langContext::mod)
+                eatSequence("+=") -> {
+                    checkAssignment()
+                    parseAssignmentValue(x, langContext::sum)
+                }
+
+                eatSequence("-=") -> {
+                    checkAssignment()
+                    parseAssignmentValue(x, langContext::sub)
+                }
+
+                eatSequence("*=") -> {
+                    checkAssignment()
+                    parseAssignmentValue(x, langContext::mul)
+                }
+
+                eatSequence("/=") -> {
+                    checkAssignment()
+                    parseAssignmentValue(x, langContext::div)
+                }
+
+                eatSequence("%=") -> {
+                    checkAssignment()
+                    parseAssignmentValue(x, langContext::mod)
+                }
+
                 eatSequence("=>") -> OpConstant(parseArrowFunction(listOf(x), blockContext))
-                eat('=') -> parseAssignmentValue(x, null)
+                eat('=') -> {
+                    checkAssignment()
+                    parseAssignmentValue(x, null)
+                }
                 eatSequence("++") -> {
                     check(x.isAssignable()) {
                         "Not assignable"
@@ -184,6 +217,29 @@ internal class EcmascriptInterpreterImpl(
                         variable = x,
                         preAssign = false,
                         op = langContext::dec
+                    )
+                }
+
+                eat('?') -> {
+                    if (EXPR_DEBUG_PRINT_ENABLED){
+                        println("making ternary operator: onTrue...")
+                    }
+
+                    val onTrue = parseAssignment(globalContext, blockContext)
+
+                    if (!eat(':')){
+                        throw SyntaxError("Unexpected end of input")
+                    }
+                    if (EXPR_DEBUG_PRINT_ENABLED) {
+                        println("making ternary operator: onFalse...")
+                    }
+                    val onFalse = parseAssignment(globalContext, blockContext)
+
+                    OpIfCondition(
+                        condition = x,
+                        onTrue = onTrue,
+                        onFalse = onFalse,
+                        expressible = true
                     )
                 }
 
@@ -384,7 +440,7 @@ internal class EcmascriptInterpreterImpl(
                         return@buildList
                     }
                     do {
-                        add(parseExpressionOp(context, blockContext = blockContext))
+                        add(parseAssignment(context, blockContext = blockContext))
                     } while (eat(','))
 
                     check(eat(')')) {
@@ -491,8 +547,8 @@ internal class EcmascriptInterpreterImpl(
                     println("making index... ")
                 }
                 OpIndex(
-                    context,
-                    parseExpressionOp(globalContext, blockContext = blockContext)
+                    variable = context,
+                    index = parseExpressionOp(globalContext, blockContext = blockContext)
                 ).also {
                     require(eat(']')) {
                         "Bad expression: Missing ']'"
@@ -632,6 +688,23 @@ internal class EcmascriptInterpreterImpl(
                 }
             }
 
+            "typeof" -> {
+                val expr = parseAssignment(
+                    context = globalContext,
+                    blockContext = emptyList(),
+                    unaryOnly = true
+                )
+                Expression {
+                    when (val v = expr(it)) {
+                        null -> "object"
+                        Unit -> "undefined"
+                        true, false -> "boolean"
+
+                        is ESAny -> v.type
+                        else -> v::class.simpleName
+                    }
+                }
+            }
 
             "null" -> OpConstant(null)
             "true" -> OpConstant(true)
@@ -856,15 +929,12 @@ internal class EcmascriptInterpreterImpl(
         if (assign != null) {
             check(eat(';'))
         }
-        println(assign)
         val comparison = if (eat(';')) null else parseAssignment(globalContext, emptyList())
         if (comparison != null) {
             check(eat(';'))
         }
-        println(comparison)
         val increment = if (eat(')')) null else parseAssignment(globalContext, emptyList())
 
-        println(increment)
         if (increment != null) {
             check(eat(')'))
         }
