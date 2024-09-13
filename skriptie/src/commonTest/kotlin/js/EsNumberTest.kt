@@ -33,10 +33,15 @@ class EsNumberTest {
         "Number(\"123.0\")".eval().assertEqualsTo(123.0)
         "Number(\"unicorn\")".eval().assertEqualsTo(Double.NaN)
         "Number(undefined)".eval().assertEqualsTo(Double.NaN)
+        "Number(true)".eval().assertEqualsTo(1L)
+        "Number(false)".eval().assertEqualsTo(0L)
+        "1 === Number(1)".eval().assertEqualsTo(true)
+        "1 == Number(1)".eval().assertEqualsTo(true)
+        "1 == true".eval().assertEqualsTo(true)
+        "0 == false".eval().assertEqualsTo(true)
     }
     @Test
     fun static_props(){
-
         "Number.MAX_SAFE_INTEGER".eval().assertEqualsTo(Long.MAX_VALUE)
         "Number.MIN_SAFE_INTEGER".eval().assertEqualsTo(Long.MIN_VALUE)
         "Number.MAX_VALUE".eval().assertEqualsTo(Double.MAX_VALUE)

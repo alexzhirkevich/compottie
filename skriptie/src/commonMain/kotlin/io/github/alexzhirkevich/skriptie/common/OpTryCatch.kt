@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.skriptie.common
 
 import io.github.alexzhirkevich.skriptie.Expression
 import io.github.alexzhirkevich.skriptie.VariableType
+import io.github.alexzhirkevich.skriptie.ecmascript.SyntaxError
 import io.github.alexzhirkevich.skriptie.invoke
 
 internal class ThrowableValue(val value : Any?) : Throwable(message = value?.toString()) {

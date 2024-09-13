@@ -5,22 +5,25 @@ import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.common.Callable
 import io.github.alexzhirkevich.skriptie.common.Function
 import io.github.alexzhirkevich.skriptie.common.FunctionParam
-import io.github.alexzhirkevich.skriptie.common.unresolvedReference
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 
 public interface ESObject : ESAny {
 
-    public val keys : Set<String>
-    public val entries : List<List<Any?>>
+    public val keys: Set<String>
+    public val entries: List<List<Any?>>
 
     public operator fun set(variable: Any?, value: Any?)
     public operator fun contains(variable: Any?): Boolean
 
-    override fun invoke(function: String, context: ScriptRuntime, arguments: List<Expression>): Any? {
+    override fun invoke(
+        function: String,
+        context: ScriptRuntime,
+        arguments: List<Expression>
+    ): Any? {
         val f = get(function)
         if (f !is Callable) {
-            when (f){
+            when (f) {
                 "toString" -> return toString()
                 else -> unresolvedReference(function)
             }
@@ -29,8 +32,9 @@ public interface ESObject : ESAny {
     }
 }
 
+
 internal open class ESObjectBase(
-    internal val name : String,
+    open val name : String,
     private val map : MutableMap<Any?, Any?> = mutableMapOf()
 ) : ESObject {
 
@@ -121,7 +125,7 @@ internal fun func(
     vararg args: String,
     params: (String) -> FunctionParam = { FunctionParam(it) },
     body: ScriptRuntime.(args: List<Any?>) -> Any?
-) : PropertyDelegateProvider<ESObject, ReadOnlyProperty<ESObject, Callable>> =  func(
+) : PropertyDelegateProvider<ESObject, ReadOnlyProperty<ESObject, Function>> =  func(
     args = args.map(params).toTypedArray(),
     body = body
 )
@@ -129,7 +133,7 @@ internal fun func(
 internal fun func(
     vararg args: FunctionParam,
     body: ScriptRuntime.(args: List<Any?>) -> Any?
-): PropertyDelegateProvider<ESObject, ReadOnlyProperty<ESObject, Callable>> =  PropertyDelegateProvider { obj, prop ->
+): PropertyDelegateProvider<ESObject, ReadOnlyProperty<ESObject, Function>> =  PropertyDelegateProvider { obj, prop ->
     obj.set(prop.name, Function(
         name = prop.name,
         parameters = args.toList(),
@@ -141,7 +145,7 @@ internal fun func(
     ))
 
     ReadOnlyProperty { thisRef, property ->
-        thisRef[property.name] as Callable
+        thisRef[property.name] as Function
     }
 }
 

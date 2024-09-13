@@ -1,7 +1,7 @@
 package js
 
-import io.github.alexzhirkevich.skriptie.common.ReferenceError
-import io.github.alexzhirkevich.skriptie.common.TypeError
+import io.github.alexzhirkevich.skriptie.ecmascript.ReferenceError
+import io.github.alexzhirkevich.skriptie.ecmascript.TypeError
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 

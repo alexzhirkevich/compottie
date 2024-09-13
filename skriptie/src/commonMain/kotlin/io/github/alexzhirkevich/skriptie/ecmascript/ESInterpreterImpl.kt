@@ -9,6 +9,7 @@ import io.github.alexzhirkevich.skriptie.common.Callable
 import io.github.alexzhirkevich.skriptie.common.Delegate
 import io.github.alexzhirkevich.skriptie.common.Function
 import io.github.alexzhirkevich.skriptie.common.FunctionParam
+import io.github.alexzhirkevich.skriptie.common.Named
 import io.github.alexzhirkevich.skriptie.common.OpAssign
 import io.github.alexzhirkevich.skriptie.common.OpAssignByIndex
 import io.github.alexzhirkevich.skriptie.common.OpBlock
@@ -33,21 +34,19 @@ import io.github.alexzhirkevich.skriptie.common.OpNot
 import io.github.alexzhirkevich.skriptie.common.OpReturn
 import io.github.alexzhirkevich.skriptie.common.OpTryCatch
 import io.github.alexzhirkevich.skriptie.common.OpWhileLoop
-import io.github.alexzhirkevich.skriptie.common.SyntaxError
 import io.github.alexzhirkevich.skriptie.common.ThrowableValue
-import io.github.alexzhirkevich.skriptie.common.unresolvedReference
 import io.github.alexzhirkevich.skriptie.invoke
 import io.github.alexzhirkevich.skriptie.isAssignable
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-internal val EXPR_DEBUG_PRINT_ENABLED = false
+internal val EXPR_DEBUG_PRINT_ENABLED = true
 internal enum class LogicalContext {
     And, Or, Compare
 }
 
 internal enum class BlockContext {
-    None, Loop, Function
+    None, Loop, Function, Class
 }
 
 internal class ESInterpreterImpl(
@@ -60,8 +59,18 @@ internal class ESInterpreterImpl(
     private var ch: Char = ' '
 
     fun interpret(): Script {
-        val block = parseBlock(scoped = false, context = emptyList())
-        return Script { langContext.toKotlin(block(it)) }
+        val block = parseBlock(scoped = false, blockContext = emptyList())
+        return Script {
+            try {
+                langContext.toKotlin(block(it))
+            } catch (t: Throwable) {
+                if (t is ESAny) {
+                    throw t
+                } else {
+                    throw ESError(t.message, t)
+                }
+            }
+        }
     }
 
     private fun prepareNextChar() {
@@ -154,20 +163,26 @@ internal class ESInterpreterImpl(
         context: Expression,
         blockContext: List<BlockContext>,
         unaryOnly: Boolean = false,
-        isExpressionStart: Boolean = false
+        isExpressionStart: Boolean = false,
+        variableName : String? = null
     ): Expression {
-        var x = parseExpressionOp(
-            context,
-            blockContext = blockContext,
-            isExpressionStart = isExpressionStart
-        )
+        var x = if (variableName == null) {
+            parseExpressionOp(
+                context,
+                blockContext = blockContext,
+                isExpressionStart = isExpressionStart
+            )
+        } else {
+            OpGetVariable(variableName, receiver = null)
+        }
         if (EXPR_DEBUG_PRINT_ENABLED) {
             println("Parsing assignment for $x")
         }
 
         val checkAssignment = {
-            if (unaryOnly)
-                throw SyntaxError("Invalid left-hand side in assignment")
+            syntaxCheck(!unaryOnly){
+                "Invalid left-hand side in assignment"
+            }
         }
 
         while (true) {
@@ -231,7 +246,8 @@ internal class ESInterpreterImpl(
                         println("making ternary operator: onTrue...")
                     }
 
-                    val onTrue = parseAssignment(globalContext, blockContext)
+                    val bContext = blockContext.dropLastWhile { it == BlockContext.Class }
+                    val onTrue = parseAssignment(globalContext, bContext)
 
                     if (!eat(':')) {
                         throw SyntaxError("Unexpected end of input")
@@ -239,7 +255,7 @@ internal class ESInterpreterImpl(
                     if (EXPR_DEBUG_PRINT_ENABLED) {
                         println("making ternary operator: onFalse...")
                     }
-                    val onFalse = parseAssignment(globalContext, blockContext)
+                    val onFalse = parseAssignment(globalContext, bContext)
 
                     OpIfCondition(
                         condition = x,
@@ -310,8 +326,8 @@ internal class ESInterpreterImpl(
                 eatSequence("<=") -> OpCompare(
                     x,
                     parseExpressionOp(globalContext, LogicalContext.Compare, blockContext)
-                ) { a, b ->
-                    OpLessComparator(a, b) || OpEqualsComparator(a, b)
+                ) { a, b,r ->
+                    OpLessComparator(a, b,r) || OpEqualsComparator(a, b,r)
                 }
 
                 eatSequence("<") -> OpCompare(
@@ -323,8 +339,8 @@ internal class ESInterpreterImpl(
                 eatSequence(">=") -> OpCompare(
                     x,
                     parseExpressionOp(globalContext, LogicalContext.Compare, blockContext)
-                ) { a, b ->
-                    OpGreaterComparator(a, b) || OpEqualsComparator(a, b)
+                ) { a, b,r  ->
+                    OpGreaterComparator(a, b, r) || OpEqualsComparator(a, b,r)
                 }
 
                 eatSequence(">") -> OpCompare(
@@ -409,12 +425,13 @@ internal class ESInterpreterImpl(
     private fun parseFactorOp(
         context: Expression,
         blockContext: List<BlockContext>,
-        isExpressionStart: Boolean = false
+        isExpressionStart: Boolean = false,
+        allowContinueWithContext : Boolean = true
     ): Expression {
         val parsedOp = when {
 
             isExpressionStart && nextCharIs('{'::equals) ->
-                parseBlock(context = emptyList())
+                parseBlock(blockContext = emptyList())
 
             !isExpressionStart && eat('{') -> {
                 if (EXPR_DEBUG_PRINT_ENABLED) {
@@ -621,11 +638,12 @@ internal class ESInterpreterImpl(
             else -> throw SyntaxError("Unexpected token $ch at pos $pos")
         }
 
-        return parsedOp.finish(blockContext)
+        return parsedOp.finish(blockContext, allowContinueWithContext)
     }
 
-    private fun Expression.finish(blockContext: List<BlockContext>): Expression {
+    private fun Expression.finish(blockContext: List<BlockContext>, allowContinueWithContext: Boolean): Expression {
         return when {
+            !allowContinueWithContext -> this
             // inplace function invocation
             this is InterpretationContext && nextCharIs { it == '(' } -> {
                 parseFunction(
@@ -639,6 +657,22 @@ internal class ESInterpreterImpl(
                     || nextCharIs('['::equals) ->
                 parseFactorOp(this, blockContext) // continue with receiver
 
+            eatSequence("instanceof") -> {
+                val obj = parseFactorOp(globalContext, emptyList())
+
+                Expression {
+                    val o = obj(it)
+                    if (o !is ESObject) {
+                        throw TypeError("Right-hand side of 'instanceof' is not an object ($obj)")
+                    }
+                    val thisObj = this(it)
+                    if (thisObj is ESClass){
+                        thisObj.instanceOf(o, it)
+                    } else {
+                        false
+                    }
+                }
+            }
             else -> this
         }
     }
@@ -675,6 +709,22 @@ internal class ESInterpreterImpl(
         blockContext: List<BlockContext>
     ): Expression {
 
+        if (blockContext.lastOrNull() == BlockContext.Class){
+            if (func == "static") {
+                if (EXPR_DEBUG_PRINT_ENABLED){
+                    println("parsing static class member")
+                }
+                val v = parseAssignment(globalContext, blockContext = blockContext)
+                if (v is OpAssign){
+                    v.isStatic = true
+                }
+                if (v is OpConstant && v.value is Function){
+                    v.value.isStatic = true
+                }
+                return v
+            }
+        }
+
         return when (func) {
             "var", "let", "const" -> parseVariable(func)
             "typeof" -> parseTypeof()
@@ -683,6 +733,19 @@ internal class ESInterpreterImpl(
             "false" -> OpConstant(false)
             "function" -> {
                 OpConstant(parseFunctionDefinition(blockContext = blockContext))
+            }
+            "new" -> {
+                if (EXPR_DEBUG_PRINT_ENABLED){
+                    println("parsing 'new' class instantiation")
+                }
+                val decl = parseFactorOp(globalContext, emptyList(), allowContinueWithContext = false)
+                syntaxCheck(decl is OpFunctionExec) {
+                    "$decl is not a constructor"
+                }
+                ESClassInstantiation(decl.name, decl.parameters)
+            }
+            "class" -> {
+                OpConstant(parseClassDefinition())
             }
 
             "for" ->  parseForLoop(blockContext)
@@ -694,7 +757,7 @@ internal class ESInterpreterImpl(
 
                 OpWhileLoop(
                     condition = parseWhileCondition(),
-                    body = parseBlock(context = blockContext + BlockContext.Loop),
+                    body = parseBlock(blockContext = blockContext + BlockContext.Loop),
                     isFalse = langContext::isFalse
                 )
             }
@@ -758,51 +821,73 @@ internal class ESInterpreterImpl(
                 }
 
                 return when (context) {
-                    is InterpretationContext -> context.interpret(func, args)
-                        ?: run {
-                            if (args != null && func != null) {
+                    is InterpretationContext -> {
+                        val f = context.interpret(func, args)
+                        when {
+                            f != null -> f
+                            func != null && blockContext.lastOrNull() == BlockContext.Class -> {
+                                if (args != null) {
+                                    if (EXPR_DEBUG_PRINT_ENABLED) {
+                                        println("Parsing class method...")
+                                    }
+                                    OpConstant(
+                                        parseFunctionDefinition(
+                                            name = func,
+                                            args = args,
+                                            blockContext = emptyList()
+                                        )
+                                    )
+                                } else {
+                                    parseAssignment(
+                                        context = globalContext,
+                                        blockContext = blockContext.dropLastWhile { it == BlockContext.Class },
+                                        variableName = func
+                                    )
+                                }
+                            }
+                            args != null && func != null -> {
                                 if (EXPR_DEBUG_PRINT_ENABLED) {
                                     println("parsed call for defined function $func")
                                 }
                                 OpFunctionExec(func, null, args)
-                            } else null
-                        }
-                        ?: run {
-                            if (args == null && func != null) {
+                            }
+
+                            args == null && func != null -> {
                                 if (EXPR_DEBUG_PRINT_ENABLED) {
                                     println("making GetVariable $func...")
                                 }
                                 OpGetVariable(name = func, receiver = null)
-                            } else {
-                                null
                             }
-                        }
-                        ?: unresolvedReference(
-                            ref = func ?: "null",
-                            obj = context::class.simpleName
-                                ?.substringAfter("Op")
-                                ?.substringBefore("Context")
-                        )
 
+                            else -> unresolvedReference(
+                                ref = func ?: "null",
+                                obj = context::class.simpleName
+                                    ?.substringAfter("Op")
+                                    ?.substringBefore("Context")
+                            )
+                        }
+                    }
                     else -> {
-                        kotlin.run {
-                            if (args != null && func != null) {
+                        when {
+                            args != null && func != null -> {
                                 if (EXPR_DEBUG_PRINT_ENABLED) {
                                     println("parsed call for function $func with receiver $context")
                                 }
-                                return@run OpFunctionExec(
+                                OpFunctionExec(
                                     name = func,
                                     receiver = context,
                                     parameters = args
                                 )
                             }
-                            if (args == null && func != null) {
+
+                            args == null && func != null -> {
                                 if (EXPR_DEBUG_PRINT_ENABLED) {
                                     println("making GetVariable $func with receiver $context... ")
                                 }
-                                return@run OpGetVariable(name = func, receiver = context)
+                                return OpGetVariable(name = func, receiver = context)
                             }
-                            unresolvedReference(func ?: "null")
+
+                            else -> unresolvedReference(func ?: "null")
                         }
                     }
                 }
@@ -876,7 +961,7 @@ internal class ESInterpreterImpl(
             println("making do/while loop")
         }
 
-        val body = parseBlock(context = blockContext + BlockContext.Loop)
+        val body = parseBlock(blockContext = blockContext + BlockContext.Loop)
 
         syntaxCheck(body is OpBlock) {
             "Invalid do/while syntax"
@@ -903,10 +988,10 @@ internal class ESInterpreterImpl(
             blockContext = blockContext,
         )
 
-        val onTrue = parseBlock(context = blockContext)
+        val onTrue = parseBlock(blockContext = blockContext)
 
         val onFalse = if (eatSequence("else")) {
-            parseBlock(context = blockContext)
+            parseBlock(blockContext = blockContext)
         } else null
 
         return OpIfCondition(
@@ -933,7 +1018,7 @@ internal class ESInterpreterImpl(
         if (EXPR_DEBUG_PRINT_ENABLED) {
             println("making try")
         }
-        val tryBlock = parseBlock(requireBlock = true, context = blockContext)
+        val tryBlock = parseBlock(requireBlock = true, blockContext = blockContext)
         val catchBlock = if (eatSequence("catch")) {
 
             if (eat('(')) {
@@ -948,15 +1033,15 @@ internal class ESInterpreterImpl(
                 arg.name to parseBlock(
                     scoped = false,
                     requireBlock = true,
-                    context = blockContext
+                    blockContext = blockContext
                 )
             } else {
-                null to parseBlock(requireBlock = true, context = blockContext)
+                null to parseBlock(requireBlock = true, blockContext = blockContext)
             }
         } else null
 
         val finallyBlock = if (eatSequence("finally")) {
-            parseBlock(requireBlock = true, context = blockContext)
+            parseBlock(requireBlock = true, blockContext = blockContext)
         } else null
 
         return OpTryCatch(
@@ -1012,7 +1097,7 @@ internal class ESInterpreterImpl(
             }
         }
 
-        val body = parseBlock(scoped = false, context = parentBlockContext + BlockContext.Loop)
+        val body = parseBlock(scoped = false, blockContext = parentBlockContext + BlockContext.Loop)
 
         return OpForLoop(
             assignment = assign,
@@ -1031,7 +1116,7 @@ internal class ESInterpreterImpl(
         syntaxCheck(fArgs.size == args.size) {
             "Invalid arrow function"
         }
-        val lambda = parseBlock(context = blockContext + BlockContext.Function)
+        val lambda = parseBlock(blockContext = blockContext + BlockContext.Function)
 
         return Function(
             "",
@@ -1040,8 +1125,59 @@ internal class ESInterpreterImpl(
         )
     }
 
+    private fun parseClassDefinition() : ESClass {
+        if (EXPR_DEBUG_PRINT_ENABLED) {
+            println("parsing class...")
+        }
+
+        val name = parseFactorOp(globalContext, emptyList())
+
+        syntaxCheck(name is OpGetVariable) {
+            "Invalid class declaration"
+        }
+
+        val extends = if (eatSequence("extends")) {
+            parseFactorOp(globalContext, emptyList())
+        } else null
+
+        val static = mutableListOf<StaticClassMember>()
+
+        val body = parseBlock(
+            scoped = false,
+            requireBlock = true,
+            blockContext = listOf(BlockContext.Class),
+            static = static
+        ) as OpBlock
+
+        val functions = body.expressions
+            .filterIsInstance<OpConstant>()
+            .map { it.value }
+            .filterIsInstance<Function>()
+
+        syntaxCheck(functions.size == body.expressions.size) {
+            "Invalid class body (${name.name})"
+        }
+
+        val constructors = functions.filter { it.name == "constructor" }.toSet()
+
+        syntaxCheck(constructors.size <= 1) {
+            "A class may only have one constructor"
+        }
+
+        val clazz = ESClassBase(
+            name = name.name,
+            functions = functions - constructors,
+            construct = constructors.singleOrNull(),
+            extends = extends,
+            static = static
+        )
+
+        return clazz
+    }
+
     private fun parseFunctionDefinition(
         name: String? = null,
+        args: List<Expression>? = null,
         blockContext: List<BlockContext>
     ): Function {
 
@@ -1059,8 +1195,8 @@ internal class ESInterpreterImpl(
             println("making defined function $actualName")
         }
 
-        val args = parseFunctionArgs(actualName).let { args ->
-            args?.map {
+        val nArgs = (args ?: parseFunctionArgs(actualName))?.let { a ->
+            a.map {
                 when (it) {
                     is OpGetVariable -> FunctionParam(name = it.name, default = null)
                     is OpAssign -> FunctionParam(
@@ -1073,8 +1209,8 @@ internal class ESInterpreterImpl(
             }
         }
 
-        if (args == null) {
-            throw SyntaxError("Missing function args")
+        syntaxCheck(nArgs != null) {
+            "Missing function args"
         }
 
         syntaxCheck(nextCharIs('{'::equals)) {
@@ -1084,13 +1220,14 @@ internal class ESInterpreterImpl(
 
         val block = parseBlock(
             scoped = false,
-            context = blockContext + BlockContext.Function
+            blockContext = blockContext + BlockContext.Function
         )
 
         return Function(
             name = actualName,
-            parameters = args,
-            body = block
+            parameters = nArgs,
+            body = block,
+            isClassMember =  args != null
         )
     }
 
@@ -1128,13 +1265,14 @@ internal class ESInterpreterImpl(
     private fun parseBlock(
         scoped: Boolean = true,
         requireBlock: Boolean = false,
-        context: List<BlockContext>
+        blockContext: List<BlockContext>,
+        static : MutableList<StaticClassMember>? = null,
     ): Expression {
         var funcIndex = 0
         val list = buildList {
             if (eat('{')) {
                 while (!eat('}') && pos < expr.length) {
-                    val expr = parseAssignment(globalContext, context, isExpressionStart = true)
+                    val expr = parseAssignment(globalContext, blockContext, isExpressionStart = true)
 
                     if (size == 0 && expr is OpGetVariable && eat(':')) {
                         return parseObject(
@@ -1148,19 +1286,41 @@ internal class ESInterpreterImpl(
                         )
                     }
 
-                    if (expr is OpConstant && expr.value is Function) {
-                        add(
-                            funcIndex++,
-                            OpAssign(
-                                type = VariableType.Local,
-                                variableName = expr.value.name,
-                                receiver = null,
-                                assignableValue = expr,
-                                merge = null
+                    when {
+                        expr is OpAssign && expr.isStatic -> {
+                            static?.add(StaticClassMember.Variable(expr.variableName, expr.assignableValue))
+                        }
+                        expr is OpConstant && expr.value is Function && expr.value.isStatic -> {
+                            static?.add(StaticClassMember.Method(expr.value))
+                        }
+                        expr is OpConstant && (expr.value is Function && !expr.value.isClassMember || expr.value is ESClass) -> {
+                            val name = (expr.value as Named).name
+
+                            if (EXPR_DEBUG_PRINT_ENABLED){
+                                println("registering '$name' as class or top level function")
+                            }
+                            add(
+                                index = funcIndex++,
+                                element = OpAssign(
+                                    type = VariableType.Local,
+                                    variableName = name,
+                                    receiver = null,
+                                    assignableValue = expr,
+                                    merge = null
+                                )
                             )
-                        )
-                    } else {
-                        add(expr)
+                            if (expr.value is ESClass) {
+                                expr.value.static.forEach { s ->
+                                    add(
+                                        index = funcIndex++,
+                                        element = Expression {
+                                            s.assignTo(expr.value, it)
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                        else -> add(expr)
                     }
                     eat(';')
                     eat(';')
@@ -1169,7 +1329,7 @@ internal class ESInterpreterImpl(
                 if (requireBlock) {
                     throw SyntaxError("Unexpected token at $pos: block start was expected")
                 }
-                add(parseAssignment(globalContext, context))
+                add(parseAssignment(globalContext, blockContext))
             }
         }
         return OpBlock(list, scoped)

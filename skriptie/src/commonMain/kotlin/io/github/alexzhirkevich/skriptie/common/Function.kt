@@ -6,6 +6,10 @@ import io.github.alexzhirkevich.skriptie.VariableType
 import io.github.alexzhirkevich.skriptie.argForNameOrIndex
 import io.github.alexzhirkevich.skriptie.ecmascript.ESAny
 import io.github.alexzhirkevich.skriptie.ecmascript.ESObject
+import io.github.alexzhirkevich.skriptie.ecmascript.ESObjectBase
+import io.github.alexzhirkevich.skriptie.ecmascript.SyntaxError
+import io.github.alexzhirkevich.skriptie.ecmascript.TypeError
+import io.github.alexzhirkevich.skriptie.ecmascript.unresolvedReference
 import io.github.alexzhirkevich.skriptie.invoke
 
 public class FunctionParam(
@@ -23,11 +27,33 @@ internal interface Callable {
     operator fun invoke(args: List<Expression>, context: ScriptRuntime) : Any?
 }
 
+
 internal class Function(
-    val name : String,
+    override val name : String,
     val parameters : List<FunctionParam>,
-    private val body : Expression
-) : Callable {
+    val body : Expression,
+    var thisRef : Any? = null,
+    val isClassMember : Boolean = false,
+    var isStatic : Boolean = false,
+    val extraVariables: Map<String, Pair<VariableType, Any?>> = emptyMap(),
+) : ESObject by ESObjectBase(name), Callable, Named {
+    override val type: String
+        get() = "function"
+
+    fun copy(
+        body: Expression = this.body,
+        extraVariables: Map<String, Pair<VariableType, Any?>> = emptyMap(),
+    ) : Function{
+        return Function(
+            name = name,
+            parameters = parameters,
+            body = body,
+            thisRef = thisRef,
+            isClassMember = isClassMember,
+            extraVariables = this.extraVariables + extraVariables
+        )
+    }
+
     init {
         val varargs = parameters.count { it.isVararg }
 
@@ -40,53 +66,56 @@ internal class Function(
         args: List<Expression>,
         context: ScriptRuntime,
     ): Any? {
-        try {
+        return try {
             val arguments = buildMap {
                 parameters.fastForEachIndexed { i, p ->
-                    val value = if (p.isVararg){
+                    val value = if (p.isVararg) {
                         args.drop(i).fastMap { it(context) }
                     } else {
-                        requireNotNull(args.argForNameOrIndex(i, p.name) ?: p.default) {
-                            "'${p.name}' argument of '$name' function is missing"
-                        }.invoke(context)
+                        (args.argForNameOrIndex(i, p.name) ?: p.default)
+                            ?.invoke(context)
+                            ?: Unit
                     }
-                    this[p.name] = Pair(
-                        VariableType.Local,
-                        value
-                    )
+                    this[p.name] = VariableType.Local to value
+                }
+                thisRef?.let {
+                    this["this"] = VariableType.Const to it
                 }
             }
-            return context.withScope(arguments, body::invoke)
+            context.withScope(arguments + extraVariables, body::invoke)
         } catch (ret: BlockReturn) {
-            return ret.value
+            ret.value
         }
     }
 }
 
-internal fun OpFunctionExec(
-    name : String,
-    receiver : Expression?,
-    parameters : List<Expression>,
-) = Expression { ctx ->
+internal class OpFunctionExec(
+    override val name : String,
+    val receiver : Expression?,
+    val parameters : List<Expression>,
+) : Expression, Named {
+    override fun invokeRaw(context: ScriptRuntime): Any? {
+        val res = receiver?.invoke(context)
+        val function = when {
+            res == null -> context[name]
+            res is Callable && name.isBlank() -> res
+            res is ESObject -> res[name]
+            res is ESAny -> {
+                return res.invoke(name, context, parameters)
+            }
 
-    val res = receiver?.invoke(ctx)
-    val function = when {
-        res == null -> ctx[name]
-        res is Callable && name.isBlank() -> res
-        res is ESObject -> res[name]
-        res is ESAny -> {
-            return@Expression res.invoke(name, ctx, parameters)
+            else -> null
         }
-        else -> null
+        if (function is Unit) {
+            unresolvedReference(name)
+        }
+        if (function !is Callable) {
+            throw TypeError("$name ($function) is not a function")
+        }
+        return function.invoke(
+            args = parameters,
+            context = context,
+        )
     }
-    if (function is Unit){
-        unresolvedReference(name)
-    }
-    if (function !is Callable){
-        throw TypeError("$name ($function) is not a function")
-    }
-    function.invoke(
-        args = parameters,
-        context = ctx,
-    )
 }
+

@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.skriptie.common
 
 import io.github.alexzhirkevich.skriptie.Expression
+import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.invoke
 import io.github.alexzhirkevich.skriptie.javascript.JsWrapper
 
@@ -9,22 +10,27 @@ internal fun  OpEquals(
     b : Expression,
     isTyped : Boolean
 ) = Expression {
-    OpEqualsImpl(a(it), b(it), isTyped)
+    OpEqualsImpl(a(it), b(it), isTyped, it)
 }
 
-internal tailrec fun OpEqualsImpl(a : Any?, b : Any?, typed : Boolean) : Boolean {
+internal fun OpEqualsImpl(a : Any?, b : Any?, typed : Boolean, runtime: ScriptRuntime) : Boolean {
+
+    if (!typed) {
+        if (a is JsWrapper<*>) {
+            return OpEqualsImpl(a.value, b, typed, runtime)
+        }
+
+        if (b is JsWrapper<*>) {
+            return OpEqualsImpl(a, b.value, typed, runtime)
+        }
+    }
+
     return when {
         a == null || b == null -> a == b
-        a is Number && b is Number -> a.toDouble() == b.toDouble()
-        typed || a::class == b::class -> {
-            if (a is JsWrapper<*> && b is JsWrapper<*>) {
-                OpEqualsImpl(a.value, b.value, typed)
-            } else {
-                a == b
-            }
-        }
-        a is String && b is Number -> a.toDoubleOrNull() == b.toDouble()
-        b is String && a is Number -> b.toDoubleOrNull() == a.toDouble()
+        typed -> a::class == b::class && OpEqualsImpl(a, b, false, runtime)
+        a::class == b::class -> a == b
+        b is Number -> runtime.toNumber(a).toDouble() == b.toDouble()
+        a is Number -> runtime.toNumber(b).toDouble() == a.toDouble()
         else -> a.toString() == b.toString()
     }
 }

@@ -213,7 +213,9 @@ private fun jspos(v : Any?) : Any {
 
 
 private tailrec fun Any?.numberOrNull(withNaNs : Boolean = true) : Number? = when(this) {
-    null -> 0
+    null -> 0L
+    true -> 1L
+    false -> 0L
     is JsString -> if (withNaNs) value.numberOrNull(withNaNs) else null
     is JsArray -> if (withNaNs) value.numberOrNull(withNaNs) else null
     is JsWrapper<*> -> value.numberOrNull()

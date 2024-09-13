@@ -3,19 +3,49 @@ package io.github.alexzhirkevich.skriptie.javascript
 import io.github.alexzhirkevich.skriptie.Expression
 import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.argAtOrNull
-import io.github.alexzhirkevich.skriptie.common.unresolvedReference
+import io.github.alexzhirkevich.skriptie.common.Function
 import io.github.alexzhirkevich.skriptie.ecmascript.ESAny
+import io.github.alexzhirkevich.skriptie.ecmascript.ESClass
+import io.github.alexzhirkevich.skriptie.ecmascript.ESObjectBase
 import io.github.alexzhirkevich.skriptie.ecmascript.checkArgsNotNull
+import io.github.alexzhirkevich.skriptie.ecmascript.unresolvedReference
 import io.github.alexzhirkevich.skriptie.invoke
 import kotlin.jvm.JvmInline
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
+internal class JsNumberClass(
+    val number: JsNumber
+) : ESObjectBase("Number"), ESClass, JsWrapper<Number> by number, Comparable<JsWrapper<Number>> by number {
+
+    override fun invoke(args: List<Expression>, context: ScriptRuntime): Any? = Unit
+
+    override fun toString(): String {
+        return number.toString()
+    }
+
+    override val name: String
+        get() = "Number"
+
+    override fun get(variable: Any?): Any? {
+        return number[variable] ?: super.get(variable)
+    }
+
+    override val functions: List<Function> get() = emptyList()
+    override val construct: Function? get() = null
+
+    override val extends: Expression = Expression {
+        it["Number"]
+    }
+
+    override val constructorClass: Expression? get() = extends
+}
+
 @JvmInline
 public value class JsNumber(
     override val value : Number
-) : ESAny, JsWrapper<Number>, Comparable<JsNumber> {
+) : ESAny, JsWrapper<Number>, Comparable<JsWrapper<Number>> {
 
     override val type: String get() = "number"
 
@@ -48,7 +78,7 @@ public value class JsNumber(
         }
     }
 
-    override fun compareTo(other: JsNumber): Int {
+    override fun compareTo(other: JsWrapper<Number>): Int {
         return value.toDouble().compareTo(other.value.toDouble())
     }
 }

@@ -2,14 +2,17 @@ package io.github.alexzhirkevich.skriptie.ecmascript
 
 import io.github.alexzhirkevich.skriptie.Expression
 import io.github.alexzhirkevich.skriptie.ScriptRuntime
+import io.github.alexzhirkevich.skriptie.common.Function
 import io.github.alexzhirkevich.skriptie.common.FunctionParam
 import io.github.alexzhirkevich.skriptie.common.OpConstant
 import io.github.alexzhirkevich.skriptie.common.defaults
 import io.github.alexzhirkevich.skriptie.invoke
+import io.github.alexzhirkevich.skriptie.javascript.JsNumber
+import io.github.alexzhirkevich.skriptie.javascript.JsNumberClass
 
 internal class ESNumber : ESFunctionBase("Number") {
 
-    val isFinite by func("number"){
+    val isFinite by func("number") {
         val arg = it.getOrNull(0) ?: return@func false
         val num = toNumber(arg).toDouble()
         if (num.isNaN())
@@ -35,11 +38,6 @@ internal class ESNumber : ESFunctionBase("Number") {
         arg.toString().trim().trimParseInt(radix)
     }
 
-    val isNan by func("number") {
-        val arg = it.getOrNull(0) ?: return@func false
-        toNumber(arg).toDouble().isNaN()
-    }
-
     val isSafeInteger by func("number") {
         val arg = it.getOrNull(0) ?: return@func false
         val num = toNumber(arg)
@@ -58,6 +56,15 @@ internal class ESNumber : ESFunctionBase("Number") {
         num.toDoubleOrNull() ?: 0L
     }
 
+    val isNan by func("number") {
+        val arg = it.getOrNull(0) ?: return@func false
+        toNumber(arg).toDouble().isNaN()
+    }
+
+    override val functions: List<Function> = listOf(
+        isFinite, isInteger, parseInt, isNan, isSafeInteger, parseFloat
+    )
+
     override fun get(variable: Any?): Any? {
         return when (variable) {
             "EPSILON" -> Double.MIN_VALUE
@@ -72,8 +79,12 @@ internal class ESNumber : ESFunctionBase("Number") {
         }
     }
 
-    override fun invoke(args: List<Expression>, context: ScriptRuntime): Any? {
+    override fun invoke(args: List<Expression>, context: ScriptRuntime): Number {
         return context.toNumber(args.single().invoke(context))
+    }
+
+    override fun newInstance(args: List<Expression>, context: ScriptRuntime): JsNumberClass {
+        return JsNumberClass(JsNumber(invoke(args, context)))
     }
 }
 

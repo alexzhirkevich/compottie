@@ -5,7 +5,7 @@ import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.argAt
 import io.github.alexzhirkevich.skriptie.common.Callable
 import io.github.alexzhirkevich.skriptie.common.OpConstant
-import io.github.alexzhirkevich.skriptie.common.TypeError
+import io.github.alexzhirkevich.skriptie.ecmascript.TypeError
 import io.github.alexzhirkevich.skriptie.common.checkNotEmpty
 import io.github.alexzhirkevich.skriptie.common.fastFilter
 import io.github.alexzhirkevich.skriptie.common.fastMap

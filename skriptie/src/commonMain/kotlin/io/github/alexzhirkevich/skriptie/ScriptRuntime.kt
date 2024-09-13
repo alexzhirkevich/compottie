@@ -1,7 +1,7 @@
 package io.github.alexzhirkevich.skriptie
 
-import io.github.alexzhirkevich.skriptie.common.SyntaxError
-import io.github.alexzhirkevich.skriptie.common.TypeError
+import io.github.alexzhirkevich.skriptie.ecmascript.SyntaxError
+import io.github.alexzhirkevich.skriptie.ecmascript.TypeError
 
 
 public enum class VariableType {

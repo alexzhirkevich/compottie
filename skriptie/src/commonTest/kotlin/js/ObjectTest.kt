@@ -1,6 +1,7 @@
 package js
 
 import io.github.alexzhirkevich.skriptie.ecmascript.ESObject
+import io.github.alexzhirkevich.skriptie.javascript.JSRuntime
 import kotlin.test.Test
 
 class ObjectTest {
@@ -28,6 +29,9 @@ class ObjectTest {
 
     @Test
     fun syntax(){
+
+        val runtime = JSRuntime()
+
         """
             let obj = {
                 string : "string",
@@ -35,9 +39,13 @@ class ObjectTest {
                 f : function() { },
                 af : () => {}
             } 
-            
-            typeof(obj.string) + ' ' + typeof(obj.number) + ' ' + typeof(obj.f) + ' ' + typeof(obj.af) + ' ' + typeof obj.nothing
-        """.trimIndent().eval().assertEqualsTo("string number function function undefined")
+        """.trimIndent().eval(runtime)
+
+        "typeof(obj.string)".eval(runtime).assertEqualsTo("string")
+        "typeof(obj.number)".eval(runtime).assertEqualsTo("number")
+        "typeof(obj.f)".eval(runtime).assertEqualsTo("function")
+        "typeof(obj.af)".eval(runtime).assertEqualsTo("function")
+        "typeof(obj.nothing)".eval(runtime).assertEqualsTo("undefined")
     }
 
     @Test

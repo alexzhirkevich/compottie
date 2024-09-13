@@ -4,6 +4,7 @@ import io.github.alexzhirkevich.skriptie.Expression
 import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.VariableType
 import io.github.alexzhirkevich.skriptie.ecmascript.ESAny
+import io.github.alexzhirkevich.skriptie.ecmascript.unresolvedReference
 import io.github.alexzhirkevich.skriptie.invoke
 import kotlin.jvm.JvmInline
 

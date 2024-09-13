@@ -5,12 +5,14 @@ import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.VariableType
 import io.github.alexzhirkevich.skriptie.ecmascript.ESAny
 import io.github.alexzhirkevich.skriptie.ecmascript.ESObject
+import io.github.alexzhirkevich.skriptie.ecmascript.TypeError
 import io.github.alexzhirkevich.skriptie.invoke
 
 internal class OpAssign(
     val type : VariableType? = null,
     val variableName : String,
     val receiver : Expression?=null,
+    var isStatic : Boolean = false,
     val assignableValue : Expression,
     private val merge : ((Any?, Any?) -> Any?)?
 ) : Expression {

@@ -6,7 +6,6 @@ import io.github.alexzhirkevich.skriptie.Expression
 import io.github.alexzhirkevich.skriptie.ScriptIO
 import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.VariableType
-import io.github.alexzhirkevich.skriptie.common.TypeError
 import kotlin.jvm.JvmInline
 
 public abstract class ESRuntime(
@@ -33,12 +32,21 @@ public abstract class ESRuntime(
         set("Object", ESObjectAccessor(), VariableType.Const)
         set("Number", ESNumber(), VariableType.Const)
         set("globalThis", this, VariableType.Const)
+        set("this", this, VariableType.Const)
         set("Infinity", Double.POSITIVE_INFINITY, VariableType.Const)
         set("NaN", Double.NaN, VariableType.Const)
         set("undefined", Unit, VariableType.Const)
     }
 
     final override fun get(variable: Any?): Any? {
+        val v = getInternal(variable)
+        if (variable == "this" && v is ESClass && !v.isInitialized) {
+            throw ReferenceError("Must call super constructor in derived class before accessing 'this' or returning from derived constructor")
+        }
+        return v
+    }
+
+    private fun getInternal(variable: Any?) : Any? {
         if (variable in this){
             return super.get(variable)
         }
