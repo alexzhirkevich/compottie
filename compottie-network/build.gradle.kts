@@ -1,6 +1,5 @@
 plugins {
     id("kotlinx-atomicfu")
-    id("ktorwasm.workaround")
 }
 
 kotlin {

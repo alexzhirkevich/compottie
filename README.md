@@ -18,12 +18,13 @@ Compose Multiplatform Adobe After Effects Bodymovin (Lottie) animations renderin
 > <br>Please [report](https://github.com/alexzhirkevich/compottie/issues) if you find any, preferably with a reproducible animation.
 > <br>List of supported AE Lottie features can be found [here](/supported_features.md)
 
-| Module | Description  | 
-| :----: | ------------- | 
-| `compottie`  | Main module with rendering engine and `JsonString` animation spec. Currently has two branches - 1.x (with platform renderers - Skottie and lottie-android) and 2.x (with own renderer). 1.x is maintained until the new renderer becomes stable  |
-| `compottie⁠-⁠dot` | Contains [dotLottie](https://dotlottie.io/) and ZIP animation spec. For Compottie 2.x only |
-| `compottie⁠-⁠network` | Contains `Url` animation spec and asset/font managers (with [Ktor](https://ktor.io/) and local cache with [Okio](https://square.github.io/okio/)). Allows loading animations and assets from web. For Compottie 2.x only |
-| `compottie⁠-⁠resources` | Contains asset and font managers powered by official Compose resources. For Compottie 2.x only | 
+|           Module           | Description                                                                                                                                                                                                                                     | 
+|:--------------------------:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
+|        `compottie`         | Main module with rendering engine and `JsonString` animation spec. Currently has two branches - 1.x (with platform renderers - Skottie and lottie-android) and 2.x (with own renderer). 1.x is maintained until the new renderer becomes stable |
+|     `compottie⁠-⁠dot`      | Contains [dotLottie](https://dotlottie.io/) and ZIP animation spec. For Compottie 2.x only                                                                                                                                                      |
+|   `compottie⁠-⁠network`    | Contains `Url` animation spec and asset/font managers (with [Ktor3](https://ktor.io/) and local cache with [Okio](https://square.github.io/okio/)). Allows loading animations and assets from web. For Compottie 2.x only                       |
+| `compottie⁠-⁠network-core` | Contains base HttpClient-free implementations for `network` module. Allows to specify custom HTTP client (Ktor3 or any other).                                                                                                                  |
+|  `compottie⁠-⁠resources`   | Contains asset and font managers powered by official Compose resources. For Compottie 2.x only                                                                                                                                                  | 
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.alexzhirkevich/compottie/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.alexzhirkevich/compottie)
 
@@ -234,7 +235,7 @@ Images should be avoided whenever possible. They are much larger, less performan
 val painter = rememberLottiePainter(
     composition = composition,
     assetsManager = rememberResourcesAssetsManager(
-        directory = "files" // by default,
+        directory = "files", // by default
         readBytes = Res::readBytes
     )
 )
@@ -285,22 +286,6 @@ The network module also brings the `NetworkAssetsManager` that have similar para
 If you are using Url composition spec then specifying `NetworkAssetsManager` is redundant.
 Url composition spec automatically prepares url assets
 
-There is no stable Ktor client for wasm so to use network module on this target you need to add
-the following to the bottom of your build script:
-
-```kotlin
-configurations
-    .filter { it.name.contains("wasmJs") }
-    .onEach {
-        it.resolutionStrategy.eachDependency {
-            if (requested.group.startsWith("io.ktor") &&
-                requested.name.startsWith("ktor-client-")
-            ) {
-                useVersion("3.0.0-wasm2")
-            }
-        }
-    }
-```
 ## Dynamic Properties
 
 Lottie allows you to update animation properties at runtime. Some reasons you may want to do this are:
@@ -346,9 +331,6 @@ val painter = rememberLottiePainter(
         
         // for each layer named 'Shape Layer 4' on any level deep
         shapeLayer("**", "Shape Layer 4") {
-            transform {
-                rotation { current -> current * progress }
-            }
             // for each fill named 'Fill 4' on the 2nd level deep
             fill("*", "Fill 4") {
                 color { Color.Red }

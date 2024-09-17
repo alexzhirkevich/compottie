@@ -5,7 +5,7 @@ configurations
             if (requested.group.startsWith("io.ktor") &&
                 requested.name.startsWith("ktor-client-")
             ) {
-                useVersion("3.0.0-wasm2")
+                useVersion("3.0.0-rc-1")
             }
         }
     }

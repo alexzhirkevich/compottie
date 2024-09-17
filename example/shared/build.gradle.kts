@@ -4,7 +4,6 @@
 plugins {
     id("module.android")
     id("module.multiplatform")
-    id("ktorwasm.workaround")
     alias(libs.plugins.serialization)
 }
 
