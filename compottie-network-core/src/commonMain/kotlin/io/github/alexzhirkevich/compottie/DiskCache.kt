@@ -119,7 +119,7 @@ public fun DiskCache(
     directory: Path = FileSystem.SYSTEM_TEMPORARY_DIRECTORY.resolve("compottie_disc_cache".toPath()),
     fileSystem : FileSystem = defaultFileSystem(),
     maxSizeBytes : Long = MB_250,
-    cleanupDispatcher : CoroutineDispatcher = ioDispatcher()
+    cleanupDispatcher : CoroutineDispatcher = Compottie.ioDispatcher()
 ) : DiskCache = RealDiskCache(
     maxSize = maxSizeBytes,
     directory = directory,

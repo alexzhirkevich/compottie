@@ -2,17 +2,16 @@
 androidx-activity-compose="1.9.0"
 androidx-core-ktx="1.13.1"
 androidx-startup="1.1.1"
-kotlin="2.0.0"
-dokka="1.9.0"
+kotlin="2.0.20"
 compose="1.6.11"
 agp = "8.1.1"
 okio = "3.9.0"
-serialization="1.6.3"
-ktor="2.3.12"
+serialization="1.7.2"
+ktor="3.0.0-rc-1"
 atomicfu="0.23.2"
-coroutines="1.8.0"
+coroutines="1.8.1"
 nexus-publish="2.0.0"
-coil="3.0.0-alpha08"
+coil="3.0.0-alpha10"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
@@ -31,13 +30,12 @@ nexus-publish = { module = "io.github.gradle-nexus.publish-plugin:io.github.grad
 kotlin-gp = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 android-gp = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
-coil-network = { module = "io.coil-kt.coil3:coil-network-ktor", version.ref = "coil" }
+coil-network = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 
 [plugins]
 compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 kotlin-multiplatform = { id ="org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
-dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

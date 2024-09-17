@@ -1,10 +1,5 @@
 package io.github.alexzhirkevich.compottie
 
-import io.ktor.client.HttpClient
-import io.ktor.client.statement.bodyAsChannel
-import io.ktor.http.URLParserException
-import io.ktor.http.Url
-import io.ktor.util.toByteArray
 import kotlinx.coroutines.withContext
 import okio.Path
 
@@ -13,12 +8,11 @@ private val NetworkLock = MapMutex()
 
 @OptIn(InternalCompottieApi::class)
 internal suspend fun networkLoad(
-    client: HttpClient,
+    request : suspend (url: String) -> ByteArray,
     cacheStrategy: LottieCacheStrategy,
-    request : NetworkRequest,
     url: String
 ): Pair<Path?, ByteArray?> {
-    return withContext(ioDispatcher()) {
+    return withContext(Compottie.ioDispatcher()) {
         NetworkLock.withLock(url) {
             try {
                 try {
@@ -28,13 +22,7 @@ internal suspend fun networkLoad(
                 } catch (_: Throwable) {
                 }
 
-                val ktorUrl = try {
-                    Url(url)
-                } catch (t: URLParserException) {
-                    return@withLock null to null
-                }
-
-                val bytes = request(client, ktorUrl).execute().bodyAsChannel().toByteArray()
+                val bytes = request(url)
 
                 try {
                     cacheStrategy.save(url, bytes)?.let {

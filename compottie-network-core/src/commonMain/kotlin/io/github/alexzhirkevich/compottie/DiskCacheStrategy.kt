@@ -60,8 +60,10 @@ public class DiskCacheStrategy(
 
     private fun key(url: String) = url.encodeUtf8().sha256().hex()
 
-    internal companion object {
-        val Instance by lazy {
+    public companion object {
+
+        @InternalCompottieApi
+        public val Instance: DiskCacheStrategy by lazy {
             DiskCacheStrategy()
         }
     }

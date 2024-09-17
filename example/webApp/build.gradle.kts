@@ -55,7 +55,6 @@ kotlin {
     }
 }
 
-plugins.apply("ktorwasm.workaround")
 
 /**
 ./gradlew clean compatBrowserProductionDistribution

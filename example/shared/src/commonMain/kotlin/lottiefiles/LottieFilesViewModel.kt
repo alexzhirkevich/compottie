@@ -2,6 +2,7 @@ package lottiefiles
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.InternalCompottieApi
 import io.github.alexzhirkevich.compottie.ioDispatcher
 import io.ktor.client.HttpClient
@@ -64,7 +65,7 @@ internal class LottieFilesViewModel() : ViewModel() {
 
     init {
         @OptIn(InternalCompottieApi::class)
-        viewModelScope.launch(ioDispatcher()) {
+        viewModelScope.launch(Compottie.ioDispatcher()) {
             combine(search.debounce(1000), sortOrder, page) { q, s, p ->
                 Triple(q, s, p)
             }.collectLatest { (q, s, p) ->
@@ -99,7 +100,7 @@ internal class LottieFilesViewModel() : ViewModel() {
         }
 
         @OptIn(InternalCompottieApi::class)
-        viewModelScope.launch(ioDispatcher()) {
+        viewModelScope.launch(Compottie.ioDispatcher()) {
             search.debounce(1000)
                 .collectLatest { s ->
                     if (s.isBlank()){

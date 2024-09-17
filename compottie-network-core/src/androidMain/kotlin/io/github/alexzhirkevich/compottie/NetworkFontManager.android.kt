@@ -3,8 +3,6 @@ package io.github.alexzhirkevich.compottie
 import androidx.compose.ui.text.font.Font
 import io.github.alexzhirkevich.compottie.assets.LottieFontSpec
 import okio.Path
-import java.io.FileOutputStream
-import java.io.FilterOutputStream
 
 private const val CACHE_FONT_DIR = "compottie_font_cache"
 

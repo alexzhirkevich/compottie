@@ -2,10 +2,11 @@ package io.github.alexzhirkevich.compottie
 
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpRequestRetry
-import io.ktor.client.request.prepareGet
-import io.ktor.client.request.prepareRequest
-import io.ktor.client.statement.HttpStatement
-import io.ktor.http.Url
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsBytes
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.utils.io.InternalAPI
+import io.ktor.utils.io.toByteArray
 
 internal val DefaultHttpClient by lazy {
     HttpClient {
@@ -13,16 +14,12 @@ internal val DefaultHttpClient by lazy {
         expectSuccess = true
         install(HttpRequestRetry) {
             maxRetries = 2
-            constantDelay(250, 250)
+            constantDelay(1000, 500)
         }
     }
 }
 
-/**
- * Http request builder.
- *
- * See [HttpClient.prepareRequest], [HttpClient.prepareGet],
- * */
-public typealias NetworkRequest = suspend (HttpClient, Url) -> HttpStatement
-
-internal val GetRequest : NetworkRequest = { c, u -> c.prepareGet(u) }
+@OptIn(InternalAPI::class)
+internal val DefaultHttpRequest : suspend  (String) -> ByteArray = {
+    DefaultHttpClient.get(it).bodyAsBytes()
+}
