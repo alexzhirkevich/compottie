@@ -26,7 +26,7 @@ Compose Multiplatform Adobe After Effects Bodymovin (Lottie) animations renderin
 | `compottie⁠-⁠network-core` | Contains base HttpClient-free implementations for `network` module. Allows to specify custom HTTP client (Ktor3 or any other).                                                                                                                  |
 |  `compottie⁠-⁠resources`   | Contains asset and font managers powered by official Compose resources. For Compottie 2.x only                                                                                                                                                  | 
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.alexzhirkevich/compottie/badge.svg)](https://img.shields.io/maven-central/v/io.github.alexzhirkevich/compottie)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.alexzhirkevich/compottie)](https://central.sonatype.com/artifact/io.github.alexzhirkevich/compottie)
 
 Add as a Gradle dependency
 ```kotlin
