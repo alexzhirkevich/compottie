@@ -102,7 +102,7 @@ internal class PolystarShape(
 
     override fun getPath(state: AnimationState): Path {
 
-        path.rewind()
+        path.reset()
 
         if (dynamicShape?.hidden.derive(hidden, state)){
             return path
@@ -321,7 +321,7 @@ internal class PolystarShape(
                     // We want the final bezier curve to end *slightly* before the start.
                     // The close() call at the end will complete the polystar.
                     // https://github.com/airbnb/lottie-android/issues/2329
-                    lastSegmentPath.rewind()
+                    lastSegmentPath.reset()
                     lastSegmentPath.moveTo(previousX, previousY)
                     lastSegmentPath.cubicTo(vX, vY, cpX, cpY, x, y)
                     lastSegmentPathMeasure.setPath(lastSegmentPath, false)

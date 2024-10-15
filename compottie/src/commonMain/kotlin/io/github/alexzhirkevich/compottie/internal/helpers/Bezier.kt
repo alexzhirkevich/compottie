@@ -113,7 +113,7 @@ internal class Bezier(
     }
 
     fun mapPath(outPath : Path) {
-        outPath.rewind()
+        outPath.reset()
         outPath.moveTo(initialPoint.x, initialPoint.y)
 
         var pathFromDataCurrentPoint = initialPoint
@@ -125,7 +125,7 @@ internal class Bezier(
                 //
                 // This does its best to add a tiny value to the vertex without affecting the final
                 // animation as much as possible.
-//            outPath.relativeMoveTo(0.01f, 0.01f);
+    //            outPath.relativeMoveTo(0.01f, 0.01f);
                 outPath.lineTo(curve.vertex.x, curve.vertex.y)
             } else {
                 outPath.cubicTo(

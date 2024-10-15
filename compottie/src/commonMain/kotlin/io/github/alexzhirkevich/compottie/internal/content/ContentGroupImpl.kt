@@ -25,8 +25,7 @@ internal class ContentGroupImpl(
 
     private val rect = MutableRect(0f, 0f, 0f, 0f)
     private val offscreenRect = MutableRect(0f, 0f, 0f, 0f)
-    private val offscreenPaint = Paint().apply {
-    }
+    private val offscreenPaint = Paint()
     private val matrix = Matrix()
     private val path = Path()
 
@@ -100,12 +99,10 @@ internal class ContentGroupImpl(
 
     override fun getPath(state: AnimationState): Path {
 
-        path.rewind()
+        path.reset()
         if (hidden(state)) {
             return path
         }
-        matrix.fastReset()
-
         matrix.fastSetFrom(transform.matrix(state))
         pathContents.fastForEachReversed {
             path.addPath(it.getPath(state), matrix)

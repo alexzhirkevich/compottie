@@ -66,11 +66,11 @@ internal class RectShape(
     override fun getPath(state: AnimationState): Path {
 
         if (dynamicShape?.hidden.derive(hidden, state)) {
-            path.rewind()
+            path.reset()
             return path
         }
 
-        path.rewind()
+        path.reset()
 
         val position = position.interpolated(state)
         val size = size.interpolated(state)

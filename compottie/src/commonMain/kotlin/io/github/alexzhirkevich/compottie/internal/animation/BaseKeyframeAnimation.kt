@@ -27,8 +27,8 @@ internal class BaseKeyframeAnimation<T : Any, K, out KF : Keyframe<K>>(
 
     private val lastFrame: Float by lazy { sortedKeyframes.last().time }
 
-    private val initialValue by lazy {
-        keyframes.first().run {
+    private val initialValue : T get() {
+        return sortedKeyframes.first().run {
             map(
                 requireNotNull(
                     start,
@@ -43,11 +43,11 @@ internal class BaseKeyframeAnimation<T : Any, K, out KF : Keyframe<K>>(
         }
     }
 
-    private val targetValue by lazy {
+    private val targetValue : T get()  {
 
         val preLast = sortedKeyframes.getOrNull(sortedKeyframes.lastIndex - 1)
 
-        keyframes.last().run {
+        return sortedKeyframes.last().run {
             map(
                 requireNotNull(
                     preLast?.start ?: start,
@@ -63,9 +63,6 @@ internal class BaseKeyframeAnimation<T : Any, K, out KF : Keyframe<K>>(
     }
 
     override fun raw(state: AnimationState): T {
-
-        if (sortedKeyframes.isEmpty())
-            return emptyValue
 
         return when {
             sortedKeyframes.isEmpty() -> emptyValue

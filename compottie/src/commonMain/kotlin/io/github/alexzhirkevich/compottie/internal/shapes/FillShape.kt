@@ -123,16 +123,14 @@ internal class FillShape(
 
         state.layer.effectsApplier.applyTo(paint, state, effectsState)
 
-        path.rewind()
+        path.reset()
         path.fillType = fillType
 
         paths.fastForEach {
             path.addPath(it.getPath(state), parentMatrix)
         }
 
-        drawScope.drawIntoCanvas { canvas ->
-            canvas.drawPath(path, paint)
-        }
+        drawScope.drawContext.canvas.drawPath(path, paint)
     }
     override fun getBounds(
         drawScope: DrawScope,
@@ -142,7 +140,7 @@ internal class FillShape(
         outBounds: MutableRect
     ) {
 
-        path.rewind()
+        path.reset()
         paths.fastForEach {
             path.addPath(it.getPath(state), parentMatrix)
         }

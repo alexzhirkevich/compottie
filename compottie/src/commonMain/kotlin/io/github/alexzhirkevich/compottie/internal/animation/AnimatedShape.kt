@@ -18,8 +18,6 @@ import kotlinx.serialization.json.jsonPrimitive
 @Serializable(with = AnimatedShapeSerializer::class)
 internal sealed interface AnimatedShape : AnimatedProperty<Path> {
 
-    fun interpolatedMutable(state: AnimationState): Path
-
     fun rawBezier(state: AnimationState) : Bezier
 
     fun copy(): AnimatedShape
@@ -55,10 +53,6 @@ internal sealed interface AnimatedShape : AnimatedProperty<Path> {
             return tmpPath
         }
 
-        override fun interpolatedMutable(state: AnimationState): Path {
-            return Path().apply { bezier.mapPath(this) }
-        }
-
         override fun copy(): AnimatedShape {
             return Default(
                 expression = expression,
@@ -90,11 +84,11 @@ internal sealed interface AnimatedShape : AnimatedProperty<Path> {
         private var bezierDelegate = BaseKeyframeAnimation(
             index = index,
             keyframes = keyframes,
-            emptyValue = Bezier(),
+            emptyValue = tmpBezier,
             map = { s, e, p ->
                 tmpBezier.interpolateBetween(s, e, easingX.transform(p))
                 tmpBezier
-            }
+            },
         )
 
         @Transient
@@ -109,29 +103,11 @@ internal sealed interface AnimatedShape : AnimatedProperty<Path> {
             }
         )
 
-        @Transient
-        private var mutableDelegate = BaseKeyframeAnimation(
-            index = index,
-            keyframes = keyframes,
-            emptyValue = tmpPath,
-            map = { s, e, p ->
-                tmpBezier.interpolateBetween(s, e, easingX.transform(p))
-
-                Path().apply {
-                    tmpBezier.mapPath(this)
-                }
-            }
-        )
-
         override fun setClosed(closed: Boolean) {
             keyframes.fastForEach {
                 it.start?.setIsClosed(closed)
                 it.end?.setIsClosed(closed)
             }
-        }
-
-        override fun interpolatedMutable(state: AnimationState): Path {
-            return mutableDelegate.raw(state)
         }
 
         override fun rawBezier(state: AnimationState): Bezier {

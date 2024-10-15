@@ -102,7 +102,7 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
             emptyValue = Offset.Zero,
             map = { s, e, p ->
                 if (inTangent != null && outTangent != null && s != e) {
-                    path.rewind()
+                    path.reset()
                     path.createPath(s, e, outTangent, inTangent)
                     pathMeasure.setPath(path, false)
 

@@ -1,13 +1,11 @@
 package io.github.alexzhirkevich.compottie.internal.platform
 
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.asSkiaPath
 import androidx.compose.ui.graphics.asSkiaPathMeasure
-
 
 internal actual fun ExtendedPathMeasure() : ExtendedPathMeasure = SkikoExtendedPathMeasure()
 

@@ -36,8 +36,8 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.microseconds
+import kotlin.time.measureTime
 
-internal object UnspecifiedCompositionKey
 
 /**
  * Load and prepare [LottieComposition] for displaying.
@@ -64,7 +64,7 @@ public fun rememberLottieComposition(
     LaunchedEffect(result) {
         try {
             val composition = withContext(Compottie.ioDispatcher()) {
-            val specInstance = updatedSpec()
+                val specInstance = updatedSpec()
                 val k = when (key) {
                     UnspecifiedCompositionKey -> specInstance.key
                     null -> null
@@ -343,3 +343,4 @@ public class LottieComposition internal constructor(
     }
 }
 
+private object UnspecifiedCompositionKey
