@@ -5,6 +5,7 @@ import io.github.alexzhirkevich.skriptie.ScriptRuntime
 import io.github.alexzhirkevich.skriptie.common.Callable
 import io.github.alexzhirkevich.skriptie.common.Function
 import io.github.alexzhirkevich.skriptie.common.FunctionParam
+import io.github.alexzhirkevich.skriptie.javascript.JsWrapper
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 
@@ -14,7 +15,6 @@ public interface ESObject : ESAny {
     public val entries: List<List<Any?>>
 
     public operator fun set(variable: Any?, value: Any?)
-    public operator fun contains(variable: Any?): Boolean
 
     override fun invoke(
         function: String,
@@ -32,10 +32,32 @@ public interface ESObject : ESAny {
     }
 }
 
+private class ObjectMap(
+    val backedMap : MutableMap<Any?, Any?> = mutableMapOf(),
+) : MutableMap<Any?, Any?> by backedMap{
+    override fun get(key: Any?): Any? {
+        return backedMap[mapKey(key)]
+    }
+
+    override fun put(key: Any?, value: Any?): Any? {
+        return backedMap.put(mapKey(key), value)
+    }
+
+    override fun containsKey(key: Any?): Boolean {
+        return backedMap.containsKey(mapKey(key))
+    }
+
+    private fun mapKey(key: Any?) : Any? {
+        return when (key) {
+            is JsWrapper<*> -> key.value
+            else -> key
+        }
+    }
+}
 
 internal open class ESObjectBase(
     open val name : String,
-    private val map : MutableMap<Any?, Any?> = mutableMapOf()
+    private val map : MutableMap<Any?, Any?> = ObjectMap()
 ) : ESObject {
 
     override val keys: Set<String>
@@ -45,9 +67,7 @@ internal open class ESObjectBase(
         get() = map.entries.map { listOf(it.key, it.value) }
 
     override fun get(variable: Any?): Any? {
-        return if (variable in map)
-            map[variable]
-        else Unit
+        return if (contains(variable)) map[variable] else Unit
     }
     override fun set(variable: Any?, value: Any?) {
         map[variable] = value

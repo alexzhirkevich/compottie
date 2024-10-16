@@ -9,6 +9,10 @@ public open class ESError(message : String?, cause : Throwable?) : Exception(mes
             else -> Unit
         }
     }
+
+    override fun contains(variable: Any?): Boolean {
+        return variable == "message" || variable == "stack" || variable == "name"
+    }
 }
 
 public class SyntaxError(message : String? = null, cause : Throwable? = null) : ESError(message, cause)

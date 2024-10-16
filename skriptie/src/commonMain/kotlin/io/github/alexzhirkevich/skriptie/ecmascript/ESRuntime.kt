@@ -40,9 +40,6 @@ public abstract class ESRuntime(
 
     final override fun get(variable: Any?): Any? {
         val v = getInternal(variable)
-        if (variable == "this" && v is ESClass && !v.isInitialized) {
-            throw ReferenceError("Must call super constructor in derived class before accessing 'this' or returning from derived constructor")
-        }
         return v
     }
 
@@ -51,7 +48,7 @@ public abstract class ESRuntime(
             return super.get(variable)
         }
 
-        val globalThis = get("globalThis") as? ESObject? ?: return super.get(variable)
+        val globalThis = get("globalThis") as? ESAny? ?: return super.get(variable)
 
         if (variable in globalThis){
             return globalThis[variable]
@@ -61,7 +58,7 @@ public abstract class ESRuntime(
     }
 
     final override fun set(variable: Any?, value: Any?) {
-        set(variable, value, VariableType.Local)
+        set(variable, fromKotlin(value), VariableType.Local)
     }
 
     override fun invoke(

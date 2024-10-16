@@ -164,7 +164,7 @@ class SyntaxTest {
     }
 
     @Test
-    fun tryCatch(){
+    fun tryCatch() {
         """
             let error = undefined
             try {
@@ -210,4 +210,15 @@ class SyntaxTest {
             a
         """.trimIndent().eval().assertEqualsTo(2L)
     }
+
+    @Test
+    fun operator_precedence_and_associativity() {
+        "1 + 2 ** 3 * 4 / 5 >> 6".eval().assertEqualsTo(0L)
+
+        "2 ** 3 / 3 ** 2".eval().assertEqualsTo(0.8888888888888888)
+     // (2 ** 3) / (3 ** 2)
+
+        "4 / 3 / 2".eval().assertEqualsTo(0.6666)
+    }
+
 }

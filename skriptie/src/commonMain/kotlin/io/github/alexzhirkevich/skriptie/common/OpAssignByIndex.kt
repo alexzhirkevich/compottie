@@ -55,15 +55,11 @@ internal class OpAssignByIndex(
                     current.value[index]
                 }
                 is ESObject -> {
-                    val idxNorm = when (idx){
-                        is CharSequence -> idx.toString()
-                        else -> idx
-                    }
-
-                    if (idxNorm in current && merge != null){
-                        current[idxNorm] = merge.invoke(current[idxNorm], v)
+                    
+                    if (idx in current && merge != null){
+                        current[idx] = merge.invoke(current[idx], v)
                     } else {
-                        current[idxNorm] = v
+                        current[idx] = v
                     }
                 }
                 else -> error("Can't assign '$current' by index ($index)")

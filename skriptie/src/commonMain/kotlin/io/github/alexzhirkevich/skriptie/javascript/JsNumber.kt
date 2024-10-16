@@ -43,7 +43,7 @@ internal class JsNumberClass(
 }
 
 @JvmInline
-public value class JsNumber(
+internal value class JsNumber(
     override val value : Number
 ) : ESAny, JsWrapper<Number>, Comparable<JsWrapper<Number>> {
 
@@ -76,6 +76,10 @@ public value class JsNumber(
 
             else -> super.invoke(function, context, arguments)
         }
+    }
+
+    override fun contains(variable: Any?): Boolean {
+        return variable == "toFixed" || variable == "toPrecision"
     }
 
     override fun compareTo(other: JsWrapper<Number>): Int {

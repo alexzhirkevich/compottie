@@ -3,6 +3,8 @@ package js
 import io.github.alexzhirkevich.skriptie.ecmascript.ESObject
 import io.github.alexzhirkevich.skriptie.javascript.JSRuntime
 import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class ObjectTest {
 
@@ -74,5 +76,13 @@ class ObjectTest {
             .assertEqualsTo(listOf(listOf("name", "test"), listOf("x", 1L)))
         ("Object.entries(1)".eval() as List<*>).size.assertEqualsTo(0)
 
+    }
+
+    @Test
+    fun contains(){
+        val runtime = JSRuntime()
+        "let obj = { name : 'test'}".eval(runtime)
+        assertTrue { "'name' in obj".eval(runtime) as Boolean }
+        assertFalse { "'something' in obj".eval(runtime) as Boolean }
     }
 }

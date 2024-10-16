@@ -65,7 +65,12 @@ public object JSLangContext : LangContext {
             is UByte -> JsNumber(a.toLong())
             is UShort -> JsNumber(a.toLong())
             is UInt -> JsNumber(a.toLong())
-            is ULong -> JsNumber(a.toLong())
+            is ULong -> {
+                check(a < Long.MAX_VALUE.toULong()){
+                    "Unsigned numbers grater than Long.MAX_VALUE can't be imported to JavaScript"
+                }
+                JsNumber(a.toLong())
+            }
             is Collection<*> -> JsArray(a.map(::fromKotlin).toMutableList())
             is CharSequence -> JsString(a.toString())
             else -> a

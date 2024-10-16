@@ -9,8 +9,12 @@ public interface ScriptEngine : ScriptInterpreter {
     }
 }
 
-public fun ScriptEngine.invoke(script: String) : Any? {
-    return interpret(script).invoke(runtime)
+public fun ScriptEngine.evaluate(script: String) : Any? {
+    return invoke(interpret(script)) 
+}
+
+public fun ScriptEngine.invoke(script: Script) : Any? {
+    return script.invoke(runtime)
 }
 
 public fun ScriptEngine(

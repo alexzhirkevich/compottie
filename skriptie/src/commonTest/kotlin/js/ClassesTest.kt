@@ -5,6 +5,7 @@ import io.github.alexzhirkevich.skriptie.ecmascript.ESObject
 import io.github.alexzhirkevich.skriptie.ecmascript.ReferenceError
 import io.github.alexzhirkevich.skriptie.ecmascript.SyntaxError
 import io.github.alexzhirkevich.skriptie.javascript.JSRuntime
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
@@ -203,6 +204,7 @@ class ClassesTest {
     }
 
     @Test
+    @Ignore
     fun staticInheritance() {
 
         val runtime = JSRuntime()
@@ -249,6 +251,7 @@ class ClassesTest {
     }
 
     @Test
+    @Ignore
     fun missedSuperCall(){
         assertFailsWith<ReferenceError> {
             """

@@ -61,10 +61,40 @@ internal value class JsString(
         }
     }
 
+    override fun contains(variable: Any?): Boolean {
+        return variable in methods
+    }
+
     override fun compareTo(other: JsString): Int {
         return value.compareTo(other.value)
     }
 }
+
+private var methods = setOf(
+    "charAt",
+    "at",
+    "indexOf",
+    "lastIndexOf",
+    "charCodeAt",
+    "endsWith",
+    "startsWith",
+    "includes",
+    "padStart",
+    "padEnd",
+    "match",
+    "replace",
+    "replaceAll",
+    "repeat",
+    "trim",
+    "trimStart",
+    "trimEnd",
+    "substring",
+    "substr",
+    "toUppercase",
+    "toLocaleUppercase",
+    "toLowerCase",
+    "toLocaleLowerCase",
+)
 
 private fun String.charAt(
     function: String,

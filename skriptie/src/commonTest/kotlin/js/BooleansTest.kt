@@ -56,4 +56,14 @@ class BooleansTest {
 
         "1 == 2 && 2 == 1 || 2 * 2 == 4".eval().assertEqualsTo(true)
     }
+
+    @Test
+    fun assignment() {
+
+        "let x = 50; x ||= 10; x".eval().assertEqualsTo(50L)
+        "let x = ''; x ||= 'empty'; x".eval().assertEqualsTo("empty")
+
+        "let x = 1; x &&= 2; x".eval().assertEqualsTo(2L)
+        "let x = 0; x &&= 2; x".eval().assertEqualsTo(0L)
+    }
 }

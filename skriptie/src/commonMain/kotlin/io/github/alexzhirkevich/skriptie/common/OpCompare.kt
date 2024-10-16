@@ -16,6 +16,13 @@ internal fun  OpCompare(
     )
 }
 
+internal fun  OpNot(
+    condition : Expression,
+    isFalse : (Any?) -> Boolean,
+) = Expression {
+    isFalse(condition(it))
+}
+
 
 
 internal val OpGreaterComparator : (Comparable<*>, Comparable<*>, ScriptRuntime) -> Boolean = { a, b, _ ->

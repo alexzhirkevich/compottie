@@ -9,6 +9,8 @@ public interface ESAny {
 
     public operator fun get(variable: Any?): Any?
 
+    public operator fun contains(variable: Any?): Boolean
+
     public operator fun invoke(
         function: String,
         context: ScriptRuntime,

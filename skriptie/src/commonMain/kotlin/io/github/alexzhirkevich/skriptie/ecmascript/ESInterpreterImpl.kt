@@ -13,7 +13,6 @@ import io.github.alexzhirkevich.skriptie.common.Named
 import io.github.alexzhirkevich.skriptie.common.OpAssign
 import io.github.alexzhirkevich.skriptie.common.OpAssignByIndex
 import io.github.alexzhirkevich.skriptie.common.OpBlock
-import io.github.alexzhirkevich.skriptie.common.OpBoolean
 import io.github.alexzhirkevich.skriptie.common.OpBreak
 import io.github.alexzhirkevich.skriptie.common.OpCompare
 import io.github.alexzhirkevich.skriptie.common.OpConstant
@@ -29,6 +28,8 @@ import io.github.alexzhirkevich.skriptie.common.OpIfCondition
 import io.github.alexzhirkevich.skriptie.common.OpIncDecAssign
 import io.github.alexzhirkevich.skriptie.common.OpIndex
 import io.github.alexzhirkevich.skriptie.common.OpLessComparator
+import io.github.alexzhirkevich.skriptie.common.OpLongInt
+import io.github.alexzhirkevich.skriptie.common.OpLongLong
 import io.github.alexzhirkevich.skriptie.common.OpMakeArray
 import io.github.alexzhirkevich.skriptie.common.OpNot
 import io.github.alexzhirkevich.skriptie.common.OpReturn
@@ -39,6 +40,7 @@ import io.github.alexzhirkevich.skriptie.invoke
 import io.github.alexzhirkevich.skriptie.isAssignable
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
+import kotlin.math.pow
 
 internal val EXPR_DEBUG_PRINT_ENABLED = true
 internal enum class LogicalContext {
@@ -100,6 +102,21 @@ internal class ESInterpreterImpl(
         return false
     }
 
+    private fun eatAndExpectNot(charToEat: Char, nextCharIs : (Char) -> Boolean): Boolean {
+        while (ch.skip() && pos < expr.length)
+            nextChar()
+
+        if (ch == charToEat) {
+            nextChar()
+            if (nextCharIs(ch)){
+                prevChar()
+                return false
+            }
+            return true
+        }
+        return false
+    }
+
     private fun nextCharIs(condition: (Char) -> Boolean): Boolean {
         var i = pos
 
@@ -129,6 +146,35 @@ internal class ESInterpreterImpl(
             pos += seq.length - 1
             ch = expr[pos.coerceIn(expr.indices)]
             true
+        } else {
+            pos = p
+            ch = c
+            false
+        }
+    }
+
+    private fun eatSequenceAndExpectNot(seq: String, nextChar : (Char) -> Boolean): Boolean {
+
+        val p = pos
+        val c = ch
+
+        if (seq.isEmpty())
+            return true
+
+        if (!eat(seq[0])) {
+            return false
+        }
+
+        return if (expr.indexOf(seq, startIndex = pos - 1) == pos - 1) {
+            pos += seq.length - 1
+            ch = expr[pos.coerceIn(expr.indices)]
+            if (!nextChar(ch)) {
+                true
+            } else {
+                pos = p
+                ch = c
+                false
+            }
         } else {
             pos = p
             ch = c
@@ -168,7 +214,7 @@ internal class ESInterpreterImpl(
     ): Expression {
         var x = if (variableName == null) {
             parseExpressionOp(
-                context,
+                context = context,
                 blockContext = blockContext,
                 isExpressionStart = isExpressionStart
             )
@@ -213,7 +259,64 @@ internal class ESInterpreterImpl(
                     parseAssignmentValue(x, langContext::mod)
                 }
 
+                eatSequence("&=") -> {
+                    checkAssignment()
+                    parseAssignmentValue(x) { a,b ->
+                        langContext.toNumber(a).toLong() and langContext.toNumber(b).toLong()
+                    }
+                }
+
+                eatSequence("&&=") -> {
+                    checkAssignment()
+                    parseAssignmentValue(x) { a,b ->
+                        if (langContext.isFalse(a)) a else b
+                    }
+                }
+
+                eatSequence("|=") -> {
+                    checkAssignment()
+                    parseAssignmentValue(x) { a,b ->
+                        langContext.toNumber(a).toLong() or langContext.toNumber(b).toLong()
+                    }
+                }
+
+                eatSequence("||=") -> {
+                    checkAssignment()
+                    parseAssignmentValue(x) { a,b ->
+                        if (langContext.isFalse(a)) b else a
+                    }
+                }
+
+                eatSequence("^=") -> {
+                    checkAssignment()
+                    parseAssignmentValue(x) { a,b ->
+                        langContext.toNumber(a).toLong() xor langContext.toNumber(b).toLong()
+                    }
+                }
+
+                eatSequence(">>>=") -> {
+                    checkAssignment()
+                    parseAssignmentValue(x) { a, b ->
+                        langContext.toNumber(a).toLong() ushr langContext.toNumber(b).toInt()
+                    }
+                }
+
+                eatSequence(">>=") -> {
+                    checkAssignment()
+                    parseAssignmentValue(x) { a, b ->
+                        langContext.toNumber(a).toLong() shr langContext.toNumber(b).toInt()
+                    }
+                }
+
+                eatSequence("<<=") -> {
+                    checkAssignment()
+                    parseAssignmentValue(x) { a, b ->
+                        langContext.toNumber(a).toLong() shl langContext.toNumber(b).toInt()
+                    }
+                }
+
                 eatSequence("=>") -> OpConstant(parseArrowFunction(listOf(x), blockContext))
+
                 eat('=') -> {
                     checkAssignment()
                     parseAssignmentValue(x, null)
@@ -305,59 +408,140 @@ internal class ESInterpreterImpl(
         blockContext: List<BlockContext>,
         isExpressionStart: Boolean = false
     ): Expression {
-        var x = parseTermOp(context, blockContext, isExpressionStart)
+        var x = parseOperator3(context, logicalContext, blockContext, isExpressionStart)
+
+        while (true){
+            prepareNextChar()
+            x = when {
+                eatSequence("in ") -> {
+                    val obj = parseExpressionOp(context, null, blockContext, isExpressionStart)
+                    val tx = x
+                    Expression {
+                        val o = obj(it)
+                        syntaxCheck(o is ESAny){
+                            "Illegal usage of 'in' operator"
+                        }
+                        o.contains(tx(it))
+                    }
+                }
+                else -> return x
+            }
+        }
+    }
+
+    private fun parseOperator3(
+        context: Expression,
+        logicalContext: LogicalContext? = null,
+        blockContext: List<BlockContext>,
+        isExpressionStart: Boolean = false
+    ): Expression {
+        var x = parseOperator2(context, logicalContext, blockContext, isExpressionStart)
         while (true) {
             prepareNextChar()
             x = when {
-                logicalContext != LogicalContext.Compare && eatSequence("&&") ->
-                    OpBoolean(
-                        parseExpressionOp(globalContext, LogicalContext.And, blockContext),
-                        x,
-                        langContext::isFalse, Boolean::and
-                    )
+                eatSequenceAndExpectNot("<<", '='::equals) -> OpLongInt(
+                    x,
+                    parseOperator3(globalContext, LogicalContext.Compare, blockContext),
+                    Long::shl
+                )
 
-                logicalContext == null && eatSequence("||") ->
-                    OpBoolean(
-                        parseExpressionOp(globalContext, LogicalContext.Or, blockContext),
-                        x,
-                        langContext::isFalse, Boolean::or
-                    )
+                eatSequenceAndExpectNot(">>>", '='::equals) -> OpLongInt(
+                    x,
+                    parseOperator3(globalContext, LogicalContext.Compare, blockContext),
+                    Long::ushr
+                )
+
+                eatSequenceAndExpectNot(">>") { it == '>' || it == '=' } -> OpLongInt(
+                    x,
+                    parseOperator3(globalContext, LogicalContext.Compare, blockContext),
+                    Long::shr
+                )
+
+                else -> return x
+            }
+        }
+    }
+
+    private fun parseOperator2(
+        context: Expression,
+        logicalContext: LogicalContext? = null,
+        blockContext: List<BlockContext>,
+        isExpressionStart: Boolean = false
+    ): Expression {
+        var x = parseOperator1(context, blockContext, isExpressionStart)
+
+        while (true) {
+            prepareNextChar()
+            x = when {
+                logicalContext != LogicalContext.Compare && eatSequenceAndExpectNot("&&", '='::equals) -> {
+                    val a = x
+                    val b = parseOperator2(globalContext, LogicalContext.And, blockContext)
+                    Expression {
+                        !langContext.isFalse(a(it)) && !langContext.isFalse(b(it))
+                    }
+                }
+
+                logicalContext == null && eatSequenceAndExpectNot("||", '='::equals) -> {
+                    val a = x
+                    val b = parseOperator2(globalContext, LogicalContext.And, blockContext)
+                    Expression {
+                        !langContext.isFalse(a(it)) || !langContext.isFalse(b(it))
+                    }
+                }
+
+                eatAndExpectNot('&') { it == '&' || it == '=' } -> OpLongLong(
+                    x,
+                    parseOperator2(globalContext, LogicalContext.Compare, blockContext),
+                    Long::and
+                )
+
+                eatAndExpectNot('|') { it == '|'  || it == '=' } -> OpLongLong(
+                    x,
+                    parseOperator2(globalContext, LogicalContext.Compare, blockContext),
+                    Long::or
+                )
+
+                eatAndExpectNot('^', '='::equals) -> OpLongLong(
+                    x,
+                    parseOperator2(globalContext, LogicalContext.Compare, blockContext),
+                    Long::xor
+                )
 
                 eatSequence("<=") -> OpCompare(
                     x,
-                    parseExpressionOp(globalContext, LogicalContext.Compare, blockContext)
+                    parseOperator2(globalContext, LogicalContext.Compare, blockContext)
                 ) { a, b,r ->
                     OpLessComparator(a, b,r) || OpEqualsComparator(a, b,r)
                 }
 
-                eatSequence("<") -> OpCompare(
+                eatAndExpectNot('<', '<'::equals) -> OpCompare(
                     x,
-                    parseExpressionOp(globalContext, LogicalContext.Compare, blockContext),
+                    parseOperator2(globalContext, LogicalContext.Compare, blockContext),
                     OpLessComparator
                 )
 
                 eatSequence(">=") -> OpCompare(
                     x,
-                    parseExpressionOp(globalContext, LogicalContext.Compare, blockContext)
+                    parseOperator2(globalContext, LogicalContext.Compare, blockContext)
                 ) { a, b,r  ->
                     OpGreaterComparator(a, b, r) || OpEqualsComparator(a, b,r)
                 }
 
-                eatSequence(">") -> OpCompare(
+                eatAndExpectNot('>', '>'::equals) -> OpCompare(
                     x,
-                    parseExpressionOp(globalContext, LogicalContext.Compare, blockContext),
+                    parseOperator2(globalContext, LogicalContext.Compare, blockContext),
                     OpGreaterComparator
                 )
 
                 eatSequence("===") -> OpEquals(
                     x,
-                    parseExpressionOp(globalContext, LogicalContext.Compare, blockContext),
+                    parseOperator2(globalContext, LogicalContext.Compare, blockContext),
                     true
                 )
 
                 eatSequence("==") -> OpEquals(
                     x,
-                    parseExpressionOp(globalContext, LogicalContext.Compare, blockContext),
+                    parseOperator2(globalContext, LogicalContext.Compare, blockContext),
                     false
                 )
 
@@ -373,17 +557,49 @@ internal class ESInterpreterImpl(
                 eatSequence("!=") -> OpNot(
                     OpEquals(
                         x,
-                        parseExpressionOp(globalContext, LogicalContext.Compare, blockContext),
+                        parseOperator2(globalContext, LogicalContext.Compare, blockContext),
                         true
                     ),
                     langContext::isFalse
                 )
 
-                !nextSequenceIs("++") && !nextSequenceIs("+=") && eat('+') ->
-                    Delegate(x, parseTermOp(globalContext, blockContext), langContext::sum)
+                eatAndExpectNot('+') { it == '+' || it == '=' } ->
+                    Delegate(x, parseOperator2(globalContext, null,blockContext), langContext::sum)
 
-                !nextSequenceIs("--") && !nextSequenceIs("-=") && eat('-') ->
-                    Delegate(x, parseTermOp(globalContext, blockContext), langContext::sub)
+                eatAndExpectNot('-') { it == '-' || it == '=' } ->
+                    Delegate(x, parseOperator2(globalContext, null,blockContext), langContext::sub)
+
+                else -> return x
+            }
+        }
+    }
+
+    private fun parseOperator1(
+        context: Expression,
+        blockContext: List<BlockContext>,
+        isExpressionStart: Boolean = false
+    ): Expression {
+        var x = parseTermOp(context, blockContext, isExpressionStart)
+        while (true) {
+            prepareNextChar()
+            x = when {
+                eatAndExpectNot('*') { it == '*' || it == '='} -> Delegate(
+                    x,
+                    parseTermOp(globalContext, blockContext),
+                    langContext::mul
+                )
+
+                eatAndExpectNot('/', '='::equals) -> Delegate(
+                    x,
+                    parseTermOp(globalContext, blockContext),
+                    langContext::div
+                )
+
+                eatAndExpectNot('%', '='::equals) -> Delegate(
+                    x,
+                    parseTermOp(globalContext, blockContext),
+                    langContext::mod
+                )
 
                 else -> return x
             }
@@ -396,31 +612,26 @@ internal class ESInterpreterImpl(
         isExpressionStart: Boolean = false
     ): Expression {
         var x = parseFactorOp(context, blockContext, isExpressionStart)
+
         while (true) {
             prepareNextChar()
             x = when {
-                !nextSequenceIs("*=") && eat('*') -> Delegate(
-                    x,
-                    parseFactorOp(globalContext, blockContext),
-                    langContext::mul
-                )
-
-                !nextSequenceIs("/=") && eat('/') -> Delegate(
-                    x,
-                    parseFactorOp(globalContext, blockContext),
-                    langContext::div
-                )
-
-                !nextSequenceIs("%=") && eat('%') -> Delegate(
-                    x,
-                    parseFactorOp(globalContext, blockContext),
-                    langContext::mod
-                )
+                // unique operator with right associativity
+                eatSequence("**") -> {
+                    val tx = x
+                    val degree = parseTermOp(globalContext, blockContext)
+                    Expression {
+                        val xn = langContext.toNumber(tx(it)).toDouble()
+                        val degreeN = langContext.toNumber(degree(it)).toDouble()
+                        xn.pow(degreeN)
+                    }
+                }
 
                 else -> return x
             }
         }
     }
+
 
     private fun parseFactorOp(
         context: Expression,
@@ -473,8 +684,16 @@ internal class ESInterpreterImpl(
             eat('-') ->
                 Delegate(parseFactorOp(context, blockContext), langContext::neg)
 
-            !nextSequenceIs("!=") && eat('!') ->
+            eatAndExpectNot('!', '='::equals) ->
                 OpNot(parseExpressionOp(context, blockContext = blockContext), langContext::isFalse)
+
+            eat('~') -> {
+                // reverse bits
+                val expr = parseExpressionOp(context, blockContext = blockContext)
+                Expression {
+                    langContext.toNumber(expr(it)).toLong().inv()
+                }
+            }
 
             eat('(') -> {
                 val exprs = buildList {
@@ -576,7 +795,10 @@ internal class ESInterpreterImpl(
                 val startPos = pos
                 do {
                     nextChar()
-                } while (!eat(c))
+                } while (!nextCharIs(c::equals) && pos < expr.length)
+                syntaxCheck(eat(c)){
+                    "Invalid string at pos $startPos"
+                }
                 val str = expr.substring(startPos, pos).drop(1).dropLast(1)
                 if (EXPR_DEBUG_PRINT_ENABLED) {
                     println(str)
@@ -1097,7 +1319,7 @@ internal class ESInterpreterImpl(
             }
         }
 
-        val body = parseBlock(scoped = false, blockContext = parentBlockContext + BlockContext.Loop)
+        val body = parseBlock(blockContext = parentBlockContext + BlockContext.Loop)
 
         return OpForLoop(
             assignment = assign,
