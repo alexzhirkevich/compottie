@@ -221,9 +221,16 @@ private tailrec fun Any?.numberOrNull(withNaNs : Boolean = true) : Number? = whe
     null -> 0L
     true -> 1L
     false -> 0L
-    is JsString -> if (withNaNs) value.numberOrNull(withNaNs) else null
-    is JsArray -> if (withNaNs) value.numberOrNull(withNaNs) else null
-    is JsWrapper<*> -> value.numberOrNull()
+
+
+    is CharSequence -> when {
+        isEmpty() -> 0L
+        withNaNs -> {
+            val s = trim().toString()
+            s.toLongOrNull() ?: s.toDoubleOrNull()
+        }
+        else -> null
+    }
     is Byte -> toLong()
     is UByte -> toLong()
     is Short -> toLong()
@@ -234,10 +241,6 @@ private tailrec fun Any?.numberOrNull(withNaNs : Boolean = true) : Number? = whe
     is Float -> toDouble()
     is Long -> this
     is Double -> this
-    is String -> if (withNaNs) {
-        val t = trim()
-        t.toLongOrNull() ?: t.toDoubleOrNull()
-    } else null
     is List<*> -> {
         if (withNaNs) {
             singleOrNull()?.numberOrNull(withNaNs)
@@ -245,6 +248,7 @@ private tailrec fun Any?.numberOrNull(withNaNs : Boolean = true) : Number? = whe
             null
         }
     }
+    is JsWrapper<*> -> value.numberOrNull()
     else -> null
 }
 

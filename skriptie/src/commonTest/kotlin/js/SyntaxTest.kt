@@ -152,8 +152,10 @@ class SyntaxTest {
         "typeof null".eval().assertEqualsTo("object")
         "typeof undefined".eval().assertEqualsTo("undefined")
 
-        "typeof 1===1".eval().assertEqualsTo("boolean")
+        "typeof 1===1".eval().assertEqualsTo(false)
+        "typeof 1>2".eval().assertEqualsTo(false)
 
+        "let x = 1; typeof ++x".eval().assertEqualsTo("number")
         "let x = 1; typeof x++".eval().assertEqualsTo("number")
         assertFailsWith<SyntaxError> {
             "let x = 1; typeof x = 2".eval()

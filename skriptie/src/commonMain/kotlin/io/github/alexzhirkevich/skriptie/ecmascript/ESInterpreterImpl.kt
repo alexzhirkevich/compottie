@@ -216,7 +216,8 @@ internal class ESInterpreterImpl(
             parseExpressionOp(
                 context = context,
                 blockContext = blockContext,
-                isExpressionStart = isExpressionStart
+                isExpressionStart = isExpressionStart,
+                factorOnly = unaryOnly
             )
         } else {
             OpGetVariable(variableName, receiver = null)
@@ -317,7 +318,7 @@ internal class ESInterpreterImpl(
 
                 eatSequence("=>") -> OpConstant(parseArrowFunction(listOf(x), blockContext))
 
-                eat('=') -> {
+                eatAndExpectNot('=', '='::equals) -> {
                     checkAssignment()
                     parseAssignmentValue(x, null)
                 }
@@ -406,10 +407,14 @@ internal class ESInterpreterImpl(
         context: Expression,
         logicalContext: LogicalContext? = null,
         blockContext: List<BlockContext>,
-        isExpressionStart: Boolean = false
+        isExpressionStart: Boolean = false,
+        factorOnly : Boolean = false
     ): Expression {
-        var x = parseOperator3(context, logicalContext, blockContext, isExpressionStart)
-
+        var x = if (factorOnly) {
+            parseFactorOp(context, blockContext, isExpressionStart)
+        } else {
+            parseOperator3(context, logicalContext, blockContext, isExpressionStart)
+        }
         while (true){
             prepareNextChar()
             x = when {

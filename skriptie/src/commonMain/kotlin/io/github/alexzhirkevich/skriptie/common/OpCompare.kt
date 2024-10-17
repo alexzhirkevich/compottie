@@ -25,18 +25,24 @@ internal fun  OpNot(
 
 
 
-internal val OpGreaterComparator : (Comparable<*>, Comparable<*>, ScriptRuntime) -> Boolean = { a, b, _ ->
+internal val OpGreaterComparator : (Comparable<*>, Comparable<*>, ScriptRuntime) -> Boolean = { a, b, r ->
 
-    if (a is Number && b is Number) {
-        a.toDouble() > b.toDouble()
+    val ka = r.toKotlin(a)
+    val kb = r.toKotlin(b)
+
+    if (ka is Number || kb is Number) {
+        r.toNumber(a).toDouble() > r.toNumber(b).toDouble()
     } else {
         a.toString() > b.toString()
     }
 }
 
-internal val OpLessComparator : (Comparable<*>, Comparable<*>, ScriptRuntime) -> Boolean = { a, b, _ ->
-    if (a is Number && b is Number) {
-        a.toDouble() < b.toDouble()
+internal val OpLessComparator : (Comparable<*>, Comparable<*>, ScriptRuntime) -> Boolean = { a, b, r ->
+    val ka = r.toKotlin(a)
+    val kb = r.toKotlin(b)
+
+    if (ka is Number || kb is Number) {
+        r.toNumber(a).toDouble() < r.toNumber(b).toDouble()
     } else {
         a.toString() < b.toString()
     }
