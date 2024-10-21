@@ -47,8 +47,9 @@ internal class LottieFontAsset(
     val origin : FontOrigin? = null,
 
     @SerialName("ascent")
-    val ascent : Float = 0f
+    val ascent : Float
 ) {
+
 
     @Transient
     private val lStyle = style.lowercase()
@@ -78,7 +79,7 @@ internal class LottieFontAsset(
             weight = weight,
             path = path,
             origin = origin?.toSpecOrigin() ?: LottieFontSpec.FontOrigin.Unknown,
-            accent = ascent
+            ascent = ascent
         )
     }
 
@@ -88,7 +89,8 @@ internal class LottieFontAsset(
             name = name,
             style = style,
             path = path,
-            origin = origin
+            origin = origin,
+            ascent = ascent
         )
     }
 }

@@ -4,6 +4,7 @@ import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.dynamic.PropertyProvider
 import io.github.alexzhirkevich.compottie.dynamic.invoke
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.isNotNull
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -22,16 +23,15 @@ import kotlinx.serialization.json.jsonPrimitive
 @Serializable(with = AnimatedNumberSerializer::class)
 internal sealed class AnimatedNumber : DynamicProperty<Float>() {
 
+    abstract fun copy(): AnimatedNumber
 
     override fun mapEvaluated(e: Any): Float {
-        return when (e){
+        return when (e) {
             is Number -> e.toFloat()
             is List<*> -> (e[0] as Number).toFloat()
             else -> error("Failed to cast $e to number")
         }
     }
-
-    abstract fun copy() : AnimatedNumber
 
     @Serializable
     class Default(
@@ -43,7 +43,7 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
         override val expression: String? = null,
 
         @SerialName("ix")
-        override val index: Int? = null
+        override val index: Int? = null,
     ) : AnimatedNumber() {
 
         init {
@@ -70,7 +70,7 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
         override val expression: String? = null,
 
         @SerialName("ix")
-        override val index: Int? = null
+        override val index: Int? = null,
     ) : AnimatedNumber(), AnimatedKeyframeProperty<Float, ValueKeyframe> {
 
         init {
@@ -97,6 +97,30 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
 
         override fun raw(state: AnimationState): Float {
             return delegate.raw(state)
+        }
+    }
+
+    @Serializable
+    class Slottable(
+        val sid: String,
+
+        @SerialName("x")
+        override val expression: String? = null,
+
+        @SerialName("ix")
+        override val index: Int? = null,
+    ) : AnimatedNumber() {
+
+        override fun copy(): AnimatedNumber {
+            return Slottable(
+                sid = sid,
+                expression = expression,
+                index = index
+            )
+        }
+
+        override fun raw(state: AnimationState): Float {
+            return state.composition.animation.slots.number(sid)?.interpolated(state) ?: 0f
         }
     }
 }
@@ -131,27 +155,31 @@ internal fun AnimatedNumber.interpolatedNorm(state: AnimationState) = interpolat
 internal object ValueSerializer : JsonTransformingSerializer<Float>(Float.serializer()){
     override fun transformDeserialize(element: JsonElement): JsonElement {
         return when(element){
-            is JsonPrimitive -> element
             is JsonArray -> element[0]
-            else -> error("Invalid animated number. Must be json primitive, but got $element")
+            else -> element
         }
     }
 }
 
-internal object AnimatedNumberSerializer : JsonContentPolymorphicSerializer<AnimatedNumber>(AnimatedNumber::class){
+internal object AnimatedNumberSerializer : JsonContentPolymorphicSerializer<AnimatedNumber>(AnimatedNumber::class) {
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedNumber> {
 
-        if (element is JsonPrimitive){
+        if (element is JsonPrimitive) {
             return AnimatedNumberAsPrimitiveSerializer
         }
-        val value = requireNotNull(element.jsonObject["k"]){
+
+        if (element is JsonObject && element["sid"].isNotNull()) {
+            return AnimatedNumber.Slottable.serializer()
+        }
+
+        val value = requireNotNull(element.jsonObject["k"]) {
             "Illegal animated number encoding: $element"
         }
 
-        val animated = element.jsonObject["a"]?.jsonPrimitive?.intOrNull == 1
-                || value is JsonObject
+        val animated = element.jsonObject["a"]?.jsonPrimitive?.intOrNull == 1 ||
+                value is JsonObject || value is JsonArray && value.firstOrNull() is JsonObject
 
-        return if (animated){
+        return if (animated) {
             AnimatedNumber.Animated.serializer()
         } else {
             AnimatedNumber.Default.serializer()

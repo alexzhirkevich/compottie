@@ -13,6 +13,7 @@ import io.github.alexzhirkevich.compottie.dynamic.toScaleFactor
 import io.github.alexzhirkevich.compottie.dynamic.toSize
 import io.github.alexzhirkevich.compottie.dynamic.toVec2
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.isNotNull
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -23,7 +24,6 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.intOrNull
-import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.math.hypot
 
@@ -166,6 +166,29 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
             )
         }
     }
+
+    @Serializable
+    class Slottable(
+        val sid : String,
+
+        @SerialName("x")
+        override val expression: String? = null,
+
+        @SerialName("ix")
+        override val index: Int? = null
+    ) : AnimatedVector2() {
+        override fun copy(): AnimatedVector2 {
+            return Slottable(
+                sid = sid,
+                expression = expression,
+                index = index
+            )
+        }
+
+        override fun raw(state: AnimationState): Vec2 {
+            return state.composition.animation.slots.vector(sid)?.interpolated(state) ?: Vec2.Zero
+        }
+    }
 }
 
 internal fun AnimatedVector2.Companion.defaultPosition() : AnimatedVector2 =
@@ -206,13 +229,19 @@ internal object AnimatedVector2Serializer : JsonContentPolymorphicSerializer<Ani
 
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedVector2> {
 
-        val k = element.jsonObject["k"]
+        check(element is JsonObject){
+            "Invalid vector: $element"
+        }
+        val k = element["k"]
 
         return when {
-            element.jsonObject["s"]?.jsonPrimitive?.booleanOrNull == true ->
+
+            element["sid"].isNotNull()-> AnimatedVector2.Slottable.serializer()
+
+            element["s"]?.jsonPrimitive?.booleanOrNull == true ->
                 AnimatedVector2.Split.serializer()
 
-            element.jsonObject["a"]?.jsonPrimitive?.intOrNull == 1 ||
+            element["a"]?.jsonPrimitive?.intOrNull == 1 ||
                     k is JsonArray && k[0] is JsonObject ->
                 AnimatedVector2.Animated.serializer()
 

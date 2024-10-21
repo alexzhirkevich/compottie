@@ -4,6 +4,7 @@ package io.github.alexzhirkevich.compottie.internal.animation
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.isNotNull
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -19,10 +20,10 @@ import kotlinx.serialization.json.jsonPrimitive
 @Serializable(with = AnimatedColorSerializer::class)
 internal sealed class AnimatedColor : ExpressionProperty<Color>() {
 
-    abstract fun copy() : AnimatedColor
+    abstract fun copy(): AnimatedColor
 
     override fun mapEvaluated(e: Any): Color {
-        return when (e){
+        return when (e) {
             is Color -> e
             is List<*> -> (e as List<Number>).toColor2()
 
@@ -62,7 +63,6 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
 
     @Serializable
     class Animated(
-
         @SerialName("k")
         val value: List<VectorKeyframe>,
 
@@ -90,6 +90,30 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
                 expression = expression,
                 index = index
             )
+        }
+    }
+
+    @Serializable
+    class Slottable(
+        val sid: String,
+
+        @SerialName("x")
+        override val expression: String? = null,
+
+        @SerialName("ix")
+        override val index: Int? = null
+    ) : AnimatedColor() {
+        override fun copy(): AnimatedColor {
+            return Slottable(
+                sid = sid,
+                expression = expression,
+                index = index
+            )
+        }
+
+        override fun raw(state: AnimationState): Color {
+            return state.composition.animation.slots.color(sid)?.interpolated(state)
+                ?: Color.Transparent
         }
     }
 }
@@ -124,6 +148,15 @@ internal object AnimatedColorSerializer : JsonContentPolymorphicSerializer<Anima
     baseClass = AnimatedColor::class
 ) {
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedColor> {
+
+        check(element is JsonObject){
+            "Invalid color: $element"
+        }
+
+        if (element["sid"].isNotNull()){
+            return AnimatedColor.Slottable.serializer()
+        }
+
         val k = requireNotNull(element.jsonObject["k"]) {
             "Animated shape must have 'k' parameter"
         }

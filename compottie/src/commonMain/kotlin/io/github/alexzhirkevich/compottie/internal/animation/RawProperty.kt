@@ -1,7 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import kotlinx.serialization.Serializable
 
 internal interface RawProperty<out T : Any> {
 

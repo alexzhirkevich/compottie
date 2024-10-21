@@ -2,11 +2,14 @@ package io.github.alexzhirkevich.compottie.internal
 
 import io.github.alexzhirkevich.compottie.internal.assets.CharacterData
 import io.github.alexzhirkevich.compottie.internal.assets.FontList
-import io.github.alexzhirkevich.compottie.internal.helpers.Marker
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.helpers.Marker
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.jsonObject
 
 
 @Serializable
@@ -40,8 +43,18 @@ internal class Animation(
 
     val chars : List<CharacterData> = emptyList(),
 
-    val markers : List<Marker> = emptyList()
+    val markers : List<Marker> = emptyList(),
+
+    @SerialName("slots")
+    private val slotsMap : Map<String, JsonElement> ?= null,
 ) {
+
+    @Transient
+    val slots = Slots(slotsMap?.mapValues {
+        checkNotNull(it.value.jsonObject["p"]) {
+            "Invalid slottable property: ${it.value}"
+        }
+    }.orEmpty())
 
     fun deepCopy() : Animation {
         return Animation(
@@ -56,7 +69,8 @@ internal class Animation(
             assets = assets.map(LottieAsset::copy),
             fonts = fonts?.deepCopy(),
             chars = chars.map(CharacterData::deepCopy),
-            markers = markers
+            markers = markers,
+            slotsMap = slotsMap
         )
     }
 }

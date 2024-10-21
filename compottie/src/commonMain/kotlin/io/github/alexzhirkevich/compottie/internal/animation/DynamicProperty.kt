@@ -10,7 +10,7 @@ internal abstract class DynamicProperty<T : Any> : ExpressionProperty<T>() {
     @Transient
     var dynamic: PropertyProvider<T>? = null
 
-    override fun interpolated(state: AnimationState): T {
+    final override fun interpolated(state: AnimationState): T {
         return dynamic.derive(super.interpolated(state), state)
     }
 }

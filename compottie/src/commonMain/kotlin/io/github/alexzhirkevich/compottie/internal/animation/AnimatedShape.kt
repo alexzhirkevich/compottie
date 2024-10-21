@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.helpers.Bezier
+import io.github.alexzhirkevich.compottie.internal.isNotNull
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -18,7 +19,7 @@ import kotlinx.serialization.json.jsonPrimitive
 @Serializable(with = AnimatedShapeSerializer::class)
 internal sealed interface AnimatedShape : AnimatedProperty<Path> {
 
-    fun rawBezier(state: AnimationState) : Bezier
+    fun rawBezier(state: AnimationState): Bezier
 
     fun copy(): AnimatedShape
 
@@ -126,12 +127,44 @@ internal sealed interface AnimatedShape : AnimatedProperty<Path> {
             return delegate.raw(state)
         }
     }
+
+    @Serializable
+    class Slottable(
+        private val sid: String,
+        @SerialName("ix")
+        override val index: Int? = null,
+    ) : AnimatedShape {
+
+        @Transient
+        private val emptyBezier = Bezier()
+
+        private val emptyPath by lazy { Path() }
+
+        override fun rawBezier(state: AnimationState): Bezier {
+            return state.composition.animation.slots.shape(sid)?.rawBezier(state) ?: emptyBezier
+        }
+
+        override fun copy(): AnimatedShape {
+            return Slottable(sid, index)
+        }
+
+        override fun setClosed(closed: Boolean) {}
+
+        override fun raw(state: AnimationState): Path {
+            return state.composition.animation.slots.shape(sid)?.interpolated(state)
+                ?: emptyPath.apply { reset() }
+        }
+    }
 }
 
 internal object AnimatedShapeSerializer : JsonContentPolymorphicSerializer<AnimatedShape>(
     baseClass = AnimatedShape::class
 ){
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedShape> {
+
+        if (element.jsonObject["sid"].isNotNull())
+            return AnimatedShape.Slottable.serializer()
+
         val k = requireNotNull(element.jsonObject["k"]){
             "Animated shape must have 'k' parameter"
         }

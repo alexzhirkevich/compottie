@@ -2,8 +2,8 @@ package io.github.alexzhirkevich.compottie.internal
 
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedGradient
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVectorN
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
@@ -15,11 +15,11 @@ import io.github.alexzhirkevich.compottie.internal.effects.EffectValue
 import io.github.alexzhirkevich.compottie.internal.effects.FillEffect
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.effects.TintEffect
+import io.github.alexzhirkevich.compottie.internal.layers.ImageLayer
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.layers.NullLayer
-import io.github.alexzhirkevich.compottie.internal.layers.ShapeLayer
-import io.github.alexzhirkevich.compottie.internal.layers.ImageLayer
 import io.github.alexzhirkevich.compottie.internal.layers.PrecompositionLayer
+import io.github.alexzhirkevich.compottie.internal.layers.ShapeLayer
 import io.github.alexzhirkevich.compottie.internal.layers.SolidColorLayer
 import io.github.alexzhirkevich.compottie.internal.layers.TextLayer
 import io.github.alexzhirkevich.compottie.internal.shapes.EllipseShape
@@ -39,9 +39,13 @@ import io.github.alexzhirkevich.compottie.internal.shapes.TransformShape
 import io.github.alexzhirkevich.compottie.internal.shapes.TrimPathShape
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 @OptIn(ExperimentalSerializationApi::class)
 internal val LottieJson by lazy{
@@ -119,27 +123,32 @@ internal val LottieJson by lazy{
             polymorphic(AnimatedColor::class) {
                 subclass(AnimatedColor.Default::class)
                 subclass(AnimatedColor.Animated::class)
+                subclass(AnimatedColor.Slottable::class)
             }
 
             polymorphic(AnimatedGradient::class) {
                 subclass(AnimatedGradient.Default::class)
                 subclass(AnimatedGradient.Animated::class)
+                subclass(AnimatedGradient.Slottable::class)
             }
 
             polymorphic(AnimatedShape::class) {
                 subclass(AnimatedShape.Default::class)
                 subclass(AnimatedShape.Animated::class)
+                subclass(AnimatedShape.Slottable::class)
             }
 
             polymorphic(AnimatedNumber::class) {
                 subclass(AnimatedNumber.Default::class)
                 subclass(AnimatedNumber.Animated::class)
+                subclass(AnimatedNumber.Slottable::class)
             }
 
             polymorphic(AnimatedVector2::class) {
                 subclass(AnimatedVector2.Default::class)
                 subclass(AnimatedVector2.Animated::class)
                 subclass(AnimatedVector2.Split::class)
+                subclass(AnimatedVector2.Slottable::class)
             }
 
             polymorphic(AnimatedVectorN::class) {
@@ -148,4 +157,14 @@ internal val LottieJson by lazy{
             }
         }
     }
+}
+
+internal fun JsonElement?.isNull() : Boolean = this == null || this is JsonNull
+
+@OptIn(ExperimentalContracts::class)
+internal fun JsonElement?.isNotNull() : Boolean {
+    contract {
+        returns(true) implies (this@isNotNull != null)
+    }
+    return !isNull()
 }

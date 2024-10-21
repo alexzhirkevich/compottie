@@ -216,7 +216,8 @@ internal class TextLayer(
 
             val ascent = document.fontFamily?.let {
                 state.composition.animation.fonts?.find(it)
-            }?.accent ?: 0f
+            }?.ascent ?: 0f
+
 
             if (hasFontFamily || state.enableTextGrouping) {
                 drawTextWithFonts(

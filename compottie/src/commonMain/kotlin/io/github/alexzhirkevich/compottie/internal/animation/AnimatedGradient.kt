@@ -3,18 +3,18 @@ package io.github.alexzhirkevich.compottie.internal.animation
 import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.helpers.ColorsWithStops
-import kotlinx.serialization.ExperimentalSerializationApi
+import io.github.alexzhirkevich.compottie.internal.isNotNull
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlinx.serialization.json.JsonClassDiscriminator
-import kotlin.jvm.JvmInline
+import kotlinx.serialization.json.JsonContentPolymorphicSerializer
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonPrimitive
 
-
-
-@OptIn(ExperimentalSerializationApi::class)
-@Serializable
-@JsonClassDiscriminator("a")
+@Serializable(with = AnimatedGradientSerializer::class)
 internal abstract class AnimatedGradient : ExpressionProperty<ColorsWithStops>() {
 
     @Transient
@@ -42,7 +42,6 @@ internal abstract class AnimatedGradient : ExpressionProperty<ColorsWithStops>()
         }
     }
 
-    @SerialName("0")
     @Serializable
     class Default(
         @SerialName("k")
@@ -74,7 +73,6 @@ internal abstract class AnimatedGradient : ExpressionProperty<ColorsWithStops>()
         }
     }
 
-    @SerialName("1")
     @Serializable
     class Animated(
         @SerialName("k")
@@ -125,4 +123,45 @@ internal abstract class AnimatedGradient : ExpressionProperty<ColorsWithStops>()
             return delegate.raw(state)
         }
     }
+
+    @Serializable
+    class Slottable(
+        val sid : String,
+
+        @SerialName("ix")
+        override val index: Int? = null,
+        @SerialName("x")
+        override val expression: String? = null
+    ) : AnimatedGradient() {
+
+        @Transient
+        private val emptyColorStops = ColorsWithStops(0)
+
+        override fun copy(): AnimatedGradient {
+            return Slottable(
+                sid = sid,
+                index = index,
+                expression = expression
+            )
+        }
+
+        override fun raw(state: AnimationState): ColorsWithStops {
+            return state.composition.animation.slots.gradient(sid)?.interpolated(state) ?: emptyColorStops
+        }
+    }
+}
+
+internal object AnimatedGradientSerializer : JsonContentPolymorphicSerializer<AnimatedGradient>(AnimatedGradient::class){
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedGradient> {
+        check(element is JsonObject){
+            "Invalid gradient: $element"
+        }
+
+        return when {
+            element["sid"].isNotNull() -> AnimatedGradient.Slottable.serializer()
+            element["a"]?.jsonPrimitive?.int == 1 -> AnimatedGradient.Animated.serializer()
+            else -> AnimatedGradient.Default.serializer()
+        }
+    }
+
 }
