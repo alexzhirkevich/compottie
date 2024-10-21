@@ -24,7 +24,6 @@ internal class Slots(
         sid : String,
         deserializer : DeserializationStrategy<T>,
     ) : T? {
-        println("Slot requested: $sid")
         val json = slots[sid] ?: return null
         val cached = cache[sid]
         if (cached != null){
