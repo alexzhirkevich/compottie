@@ -23,6 +23,7 @@ internal class RoundShape(
     @SerialName("nm")
     override val name : String? = null,
 
+    @SerialName("hd")
     override val hidden : Boolean = false,
 
     @SerialName("r")
