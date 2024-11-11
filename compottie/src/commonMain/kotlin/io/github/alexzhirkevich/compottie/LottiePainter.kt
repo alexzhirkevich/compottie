@@ -75,7 +75,7 @@ public fun rememberLottiePainter(
     clipTextToBoundingBoxes: Boolean = false,
     enableTextGrouping : Boolean = false,
     enableMergePaths: Boolean = false,
-    enableExpressions: Boolean = true,
+    enableExpressions: Boolean = false,
 ) : Painter {
 
     val fontFamilyResolver = LocalFontFamilyResolver.current
@@ -169,7 +169,7 @@ public fun rememberLottiePainter(
     clipToCompositionBounds: Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
     enableMergePaths: Boolean = false,
-    enableExpressions: Boolean = true,
+    enableExpressions: Boolean = false,
 ) : Painter {
 
     val progress = animateLottieCompositionAsState(
@@ -341,25 +341,30 @@ private class LottiePainter(
     }
 
     override fun DrawScope.onDraw() {
-        matrix.fastReset()
+        try {
+            matrix.fastReset()
 
-        val scale = ContentScale.FillBounds.computeScaleFactor(intrinsicSize, size)
+            val scale = ContentScale.FillBounds.computeScaleFactor(intrinsicSize, size)
 
-        val offset = Alignment.Center.align(
-            size = intIntrinsicSize,
-            space = IntSize(
-                size.width.roundToInt(),
-                size.height.roundToInt()
-            ),
-            layoutDirection = layoutDirection
-        )
+            val offset = Alignment.Center.align(
+                size = intIntrinsicSize,
+                space = IntSize(
+                    size.width.roundToInt(),
+                    size.height.roundToInt()
+                ),
+                layoutDirection = layoutDirection
+            )
 
-        scale(scale.scaleX, scale.scaleY) {
-            translate(offset.x.toFloat(), offset.y.toFloat()) {
-                animationState.onFrame(frame) {
-                    compositionLayer.draw(this, matrix, alpha, it)
+            scale(scale.scaleX, scale.scaleY) {
+                translate(offset.x.toFloat(), offset.y.toFloat()) {
+                    animationState.onFrame(frame) {
+                        compositionLayer.draw(this, matrix, alpha, it)
+                    }
                 }
             }
+        } catch (t : Throwable){
+            println("Lottie crashed in draw :C")
+            t.printStackTrace()
         }
     }
 }
