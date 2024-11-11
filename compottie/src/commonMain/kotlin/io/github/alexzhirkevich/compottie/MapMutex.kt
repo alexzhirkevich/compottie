@@ -1,18 +1,37 @@
 package io.github.alexzhirkevich.compottie
 
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
+private class MutexCount(
+    val mutex: Mutex = Mutex(),
+    var waiters : Int = 0
+)
+
 @InternalCompottieApi
 public class MapMutex {
-    private val lock = Mutex()
-    private val mapLock = mutableMapOf<Any, Mutex>()
+
+    private val lock = SynchronizedObject()
+    private val mutex = mutableMapOf<Any, MutexCount>()
 
     public suspend fun <T> withLock(key: Any, action: suspend () -> T): T {
+
+        val keyLock = synchronized(lock) {
+            mutex.getOrPut(key) { MutexCount() }.also { it.waiters++ }
+        }
+        Mutex().lock()
+
         return try {
-            lock.withLock { mapLock.getOrPut(key, ::Mutex) }.withLock { action() }
+            keyLock.mutex.withLock(key) { action() }
         } finally {
-            lock.withLock { mapLock.remove(key) }
+            synchronized(lock) {
+                if (--keyLock.waiters <= 0) {
+                    mutex.remove(key)
+                }
+            }
         }
     }
 }
