@@ -147,46 +147,45 @@ internal abstract class BaseLayer : Layer {
         parentAlpha: Float,
         state: AnimationState,
     ) {
-        try {
-            state.onLayer(this) {
+        state.onLayer(this) {
 
-                if (!isActive(state))
-                    return@onLayer
+            if (!isActive(state))
+                return@onLayer
 
-                buildParentLayerListIfNeeded()
+            buildParentLayerListIfNeeded()
 
-                matrix.fastSetFrom(parentMatrix)
-                parentLayers?.fastForEachReversed {
-                    matrix.preConcat(it.transform.matrix(state))
-                }
+            matrix.fastSetFrom(parentMatrix)
+            parentLayers?.fastForEachReversed {
+                matrix.preConcat(it.transform.matrix(state))
+            }
 
-                var alpha = 1f
+            var alpha = 1f
 
-                transform.opacity.interpolatedNorm(state).let {
-                    alpha = (alpha * it).coerceIn(0f, 1f)
-                }
+            transform.opacity.interpolatedNorm(state).let {
+                alpha = (alpha * it).coerceIn(0f, 1f)
+            }
 
-                alpha = (alpha * parentAlpha.coerceIn(0f, 1f))
+            alpha = (alpha * parentAlpha.coerceIn(0f, 1f))
 
-                if (matteLayer == null && !hasMasks() && blendMode == LottieBlendMode.Normal) {
-                    matrix.preConcat(transform.matrix(state))
-                    drawLayer(drawScope, matrix, alpha, state)
-                    return@onLayer
-                }
-
-                rect.set(0f,0f,0f,0f)
-                getBounds(drawScope, matrix, false, state, rect)
-
-                intersectBoundsWithMatte(drawScope, rect, parentMatrix, state)
-
+            if (matteLayer == null && !hasMasks() && blendMode == LottieBlendMode.Normal) {
                 matrix.preConcat(transform.matrix(state))
-                intersectBoundsWithMask(rect, matrix, state)
+                drawLayer(drawScope, matrix, alpha, state)
+                return@onLayer
+            }
 
-                // Intersect the mask and matte rect with the canvas bounds.
-                // If the canvas has a transform, then we need to transform its bounds by its matrix
-                // so that we know the coordinate space that the canvas is showing.
+            rect.set(0f, 0f, 0f, 0f)
+            getBounds(drawScope, matrix, false, state, rect)
+
+            intersectBoundsWithMatte(drawScope, rect, parentMatrix, state)
+
+            matrix.preConcat(transform.matrix(state))
+            intersectBoundsWithMask(rect, matrix, state)
+
+            // Intersect the mask and matte rect with the canvas bounds.
+            // If the canvas has a transform, then we need to transform its bounds by its matrix
+            // so that we know the coordinate space that the canvas is showing.
 //                canvasBounds.set(0f, 0f, drawScope.size.width, drawScope.size.height)
-                drawScope.drawIntoCanvas { canvas ->
+            drawScope.drawIntoCanvas { canvas ->
 
 //                    canvas.getMatrix(canvasMatrix)
 //                    if (!canvasMatrix.isIdentity()) {
@@ -196,29 +195,29 @@ internal abstract class BaseLayer : Layer {
 
 //                    rect.intersectOrReset(canvasBounds)
 //
-                    // Ensure that what we are drawing is >=1px of width and height.
-                    // On older devices, drawing to an offscreen buffer of <1px would draw back as a black bar.
-                    // https://github.com/airbnb/lottie-android/issues/1625
-                    if (rect.width >= 1f && rect.height >= 1f) {
-                        contentPaint.alpha = 1f
-                        canvas.saveLayer(rect, contentPaint)
+                // Ensure that what we are drawing is >=1px of width and height.
+                // On older devices, drawing to an offscreen buffer of <1px would draw back as a black bar.
+                // https://github.com/airbnb/lottie-android/issues/1625
+                if (rect.width >= 1f && rect.height >= 1f) {
+                    contentPaint.alpha = 1f
+                    canvas.saveLayer(rect, contentPaint)
 
+                    clearCanvas(canvas)
+                    drawLayer(drawScope, matrix, alpha, state)
+
+                    if (hasMasks()) {
+                        applyMasks(canvas, matrix, state)
+                    }
+
+                    matteLayer?.let {
+                        canvas.saveLayer(rect, mattePaint, SAVE_FLAGS)
                         clearCanvas(canvas)
-                        drawLayer(drawScope, matrix, alpha, state)
-
-                        if (hasMasks()) {
-                            applyMasks(canvas, matrix, state)
-                        }
-
-                        matteLayer?.let {
-                            canvas.saveLayer(rect, mattePaint, SAVE_FLAGS)
-                            clearCanvas(canvas)
-                            it.draw(drawScope, parentMatrix, alpha, state)
-                            canvas.restore()
-                        }
-
+                        it.draw(drawScope, parentMatrix, alpha, state)
                         canvas.restore()
                     }
+
+                    canvas.restore()
+                }
 
 //                        val outlineMasksAndMattesPaint = Paint().apply {
 //                            style = PaintingStyle.Stroke
@@ -229,10 +228,7 @@ internal abstract class BaseLayer : Layer {
 //                        outlineMasksAndMattesPaint.style = PaintingStyle.Fill
 //                        outlineMasksAndMattesPaint.color = Color(0x50EBEBEB)
 //                        canvas.drawRect(rect, outlineMasksAndMattesPaint)
-                }
             }
-        } catch (t: Throwable) {
-            Compottie.logger?.error("Lottie crashed in draw :(", t)
         }
     }
 
