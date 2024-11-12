@@ -1,5 +1,5 @@
 plugins {
-    id("kotlinx-atomicfu")
+    alias(libs.plugins.atomicfu)
 }
 
 kotlin {
