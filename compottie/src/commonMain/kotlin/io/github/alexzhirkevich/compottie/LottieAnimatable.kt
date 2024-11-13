@@ -18,6 +18,7 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
+import kotlin.js.JsName
 import kotlin.time.Duration.Companion.nanoseconds
 
 /**
@@ -28,6 +29,14 @@ import kotlin.time.Duration.Companion.nanoseconds
 @Composable
 public fun rememberLottieAnimatable(): LottieAnimatable = remember { LottieAnimatableImpl() }
 
+/**
+ * Use this to create a [LottieAnimatable] outside of a composable such as a hoisted state class.
+ *
+ * @see rememberLottieAnimatable
+ * @see LottieAnimatable
+ */
+@JsName("createLottieAnimatable")
+public fun LottieAnimatable(): LottieAnimatable = LottieAnimatableImpl()
 
 /**
  * Reset the animation back to the minimum progress and first iteration.
