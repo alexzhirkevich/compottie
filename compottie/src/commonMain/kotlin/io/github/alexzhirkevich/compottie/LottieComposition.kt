@@ -36,7 +36,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.microseconds
-import kotlin.time.measureTime
 
 
 /**
@@ -104,10 +103,9 @@ public fun rememberLottieComposition(
     }
 
     LaunchedEffect(result) {
+
         try {
-            val composition = withContext(Compottie.ioDispatcher()) {
-                spec.load()
-            }
+            val composition = withContext(Compottie.ioDispatcher()) { spec.load() }
             result.complete(composition)
         } catch (c: CancellationException) {
             result.completeExceptionally(c)

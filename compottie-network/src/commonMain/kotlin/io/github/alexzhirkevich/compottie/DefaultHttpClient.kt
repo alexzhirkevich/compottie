@@ -2,16 +2,19 @@ package io.github.alexzhirkevich.compottie
 
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsBytes
-import io.ktor.client.statement.bodyAsChannel
 import io.ktor.utils.io.InternalAPI
-import io.ktor.utils.io.toByteArray
 
 internal val DefaultHttpClient by lazy {
     HttpClient {
         followRedirects = true
         expectSuccess = true
+        install(HttpTimeout){
+            requestTimeoutMillis = 15_000
+            connectTimeoutMillis = 15_000
+        }
         install(HttpRequestRetry) {
             maxRetries = 2
             constantDelay(1000, 500)

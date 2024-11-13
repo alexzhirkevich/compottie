@@ -7,7 +7,6 @@ import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -124,9 +123,7 @@ internal class DiskLruCache(
     private val journalFileTmp = directory / JOURNAL_FILE_TMP
     private val journalFileBackup = directory / JOURNAL_FILE_BACKUP
     private val lruEntries = LinkedHashMap<String, Entry>()
-    private val cleanupScope =
-        @OptIn(ExperimentalCoroutinesApi::class)
-        CoroutineScope(SupervisorJob() + cleanupDispatcher.limitedParallelism(1))
+    private val cleanupScope = CoroutineScope(SupervisorJob() + cleanupDispatcher.limitedParallelism(1))
     private val lock = SynchronizedObject()
     private var size = 0L
     private var operationsSinceRewrite = 0

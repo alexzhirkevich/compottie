@@ -13,3 +13,4 @@ xcuserdata
 *.psd
 kotlins-js-store
 .kotlin
+**.log

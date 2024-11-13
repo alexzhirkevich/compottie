@@ -6,10 +6,12 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.scale
@@ -87,22 +89,22 @@ public fun rememberLottiePainter(
         null -> null
     }
 
-    val painter by produceState<Painter>(
-        EmptyPainter,
-        composition,
-        dp != null
+    val copy = dp != null
+
+    val painter by produceState<LottiePainter?>(
+        null, composition, copy
     ) {
         if (composition != null) {
             val assets = async(Compottie.ioDispatcher()) {
-                composition.loadAssets(assetsManager ?: EmptyAssetsManager, true)
+                composition.loadAssets(assetsManager ?: EmptyAssetsManager, copy)
             }
             val fonts = async(Compottie.ioDispatcher()) {
                 composition.loadFonts(fontManager ?: EmptyFontManager)
             }
 
             value = LottiePainter(
-                composition = composition.deepCopy(),
-                progress = { updatedProgress() },
+                composition = if (copy) composition.deepCopy() else composition,
+                progress = updatedProgress::invoke,
                 dynamicProperties = dp,
                 clipTextToBoundingBoxes = clipTextToBoundingBoxes,
                 fontFamilyResolver = fontFamilyResolver,
@@ -126,7 +128,7 @@ public fun rememberLottiePainter(
         enableMergePaths,
         enableExpressions
     ) {
-        (painter as? LottiePainter)?.let {
+        painter?.let {
             it.enableMergePaths = enableMergePaths
             it.enableExpressions = enableExpressions
             it.applyOpacityToLayers = applyOpacityToLayers
@@ -136,14 +138,13 @@ public fun rememberLottiePainter(
         }
     }
 
-    LaunchedEffect(
-        painter,
-        dp
-    ) {
-        (painter as? LottiePainter)?.setDynamicProperties(dp)
+    LaunchedEffect(painter, dp) {
+        painter?.setDynamicProperties(dp)
     }
 
-    return painter
+    return remember {
+        LateInitPainter { painter }
+    }
 }
 
 /**
@@ -186,7 +187,7 @@ public fun rememberLottiePainter(
 
     return rememberLottiePainter(
         composition = composition,
-        progress = { progress.value },
+        progress = progress::value,
         assetsManager = assetsManager,
         fontManager = fontManager,
         dynamicProperties = dynamicProperties,
@@ -222,9 +223,17 @@ public suspend fun LottiePainter(
     enableMergePaths: Boolean = false,
     enableExpressions: Boolean = true,
 ) : Painter = coroutineScope {
+
+    val dp = when (dynamicProperties) {
+        is DynamicCompositionProvider -> dynamicProperties
+        null -> null
+    }
+
+    val copy = dp != null
+
     val assets = async(Compottie.ioDispatcher()) {
         assetsManager?.let {
-            composition.loadAssets(it, true)
+            composition.loadAssets(it, copy)
         }
     }
     val fonts = async(Compottie.ioDispatcher()) {
@@ -234,12 +243,9 @@ public suspend fun LottiePainter(
     }
 
     LottiePainter(
-        composition = composition.deepCopy(),
+        composition = if (copy) composition.deepCopy() else composition,
         progress = progress,
-        dynamicProperties = when (dynamicProperties) {
-            is DynamicCompositionProvider -> dynamicProperties
-            null -> null
-        },
+        dynamicProperties = dp,
         clipTextToBoundingBoxes = clipTextToBoundingBoxes,
         enableTextGrouping = enableTextGrouping,
         fontFamilyResolver = makeFontFamilyResolver(),
@@ -255,12 +261,31 @@ public suspend fun LottiePainter(
 internal expect fun makeFontFamilyResolver() : FontFamily.Resolver
 internal expect fun mockFontFamilyResolver() : FontFamily.Resolver
 
-private object EmptyPainter : Painter() {
+private class LateInitPainter(
+    val painter : () -> LottiePainter?
+) : Painter() {
 
+    private var alpha by mutableStateOf(1f)
+    private var colorFilter by mutableStateOf<ColorFilter?>(null)
 
-    override val intrinsicSize: Size = Size(1f,1f)
+    override val intrinsicSize: Size by derivedStateOf {
+        painter()?.intrinsicSize ?: Size(1f,1f)
+    }
+
+    override fun applyAlpha(alpha: Float): Boolean {
+        this.alpha = alpha
+        return true
+    }
+
+    override fun applyColorFilter(colorFilter: ColorFilter?): Boolean {
+        this.colorFilter = colorFilter
+        return true
+    }
 
     override fun DrawScope.onDraw() {
+        painter()?.run {
+            draw(size, alpha, colorFilter)
+        }
     }
 }
 
@@ -332,7 +357,7 @@ private class LottiePainter(
     var enableMergePaths: Boolean by animationState::enableMergePaths
     var enableExpressions: Boolean by animationState::enableExpressions
 
-    override fun applyAlpha(alpha: Float): Boolean {
+    public override fun applyAlpha(alpha: Float): Boolean {
         if (alpha !in 0f..1f)
             return false
 

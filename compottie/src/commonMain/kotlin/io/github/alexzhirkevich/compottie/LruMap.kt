@@ -2,39 +2,36 @@ package io.github.alexzhirkevich.compottie
 
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 
 internal class LruMap<T : Any>(
     private val delegate : LinkedHashMap<Any,T> = LinkedHashMap(),
     private val limit : () -> Int,
-) : MutableMap<Any, T> by delegate {
+) : SynchronizedObject(), MutableMap<Any, T> by delegate {
 
     @OptIn(InternalCompottieApi::class)
-    private val suspendGetOrPutMutex = MapMutex()
-    private val lock = SynchronizedObject()
+    private val suspendGetOrPutMutex = MultiOwnerMutex()
 
-    override fun put(key: Any, value: T): T?  = synchronized(lock) {
+    override fun put(key: Any, value: T): T? = synchronized(this) {
         putRaw(key, value)
     }
 
-    override fun clear() = synchronized(lock) {
+    override fun clear() = synchronized(this) {
         clearRaw()
     }
 
-    override fun putAll(from: Map<out Any, T>)  = synchronized(lock) {
+    override fun putAll(from: Map<out Any, T>) = synchronized(this) {
         putAllRaw(from)
     }
 
-    override fun remove(key: Any): T? = synchronized(lock) {
+    override fun remove(key: Any): T? = synchronized(this) {
         removeRaw(key)
     }
 
-    override fun get(key: Any): T? = synchronized(lock) {
+    override fun get(key: Any): T? = synchronized(this) {
         getRaw(key)
     }
 
-    fun getOrPut(key: Any?, put: () -> T): T = synchronized(lock) {
+    fun getOrPut(key: Any?, put: () -> T): T = synchronized(this) {
         if (key == null)
             return put()
 
@@ -55,7 +52,7 @@ internal class LruMap<T : Any>(
     private fun putRaw(key: Any, value: T): T? {
         val cacheLimit = limit()
 
-        if (cacheLimit < 1){
+        if (cacheLimit < 1) {
             clearRaw()
         } else {
             while (cacheLimit < size) {
@@ -79,5 +76,6 @@ internal class LruMap<T : Any>(
     }
 
     private fun removeRaw(key: Any): T? = delegate.remove(key)
+
     private fun clearRaw() = delegate.clear()
 }

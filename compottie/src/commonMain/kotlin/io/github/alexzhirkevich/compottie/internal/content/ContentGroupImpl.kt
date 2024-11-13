@@ -1,7 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.content
 
 import androidx.compose.ui.geometry.MutableRect
-import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
@@ -11,7 +10,7 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
-import io.github.alexzhirkevich.compottie.internal.utils.fastReset
+import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
 import io.github.alexzhirkevich.compottie.internal.utils.fastSetFrom
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.union
@@ -83,7 +82,7 @@ internal class ContentGroupImpl(
             offscreenRect.set(0f,0f,0f,0f)
             getBounds(drawScope, matrix, true, state, offscreenRect)
             offscreenPaint.alpha = layerAlpha
-            canvas.saveLayer(offscreenRect.toRect(), offscreenPaint)
+            canvas.saveLayer(offscreenRect, offscreenPaint)
         }
 
         val childAlpha = if (isRenderingWithOffScreen) 1f else layerAlpha
