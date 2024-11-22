@@ -9,7 +9,9 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":compottie"))
-            implementation(compose.ui)
+            implementation(compose.ui) {
+                exclude("org.jetbrains.kotlinx", "atomicfu")
+            }
             implementation(libs.serialization)
             implementation(libs.okio)
             implementation(libs.okio.fakefilesystem)
