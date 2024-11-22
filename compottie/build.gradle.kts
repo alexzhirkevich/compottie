@@ -11,16 +11,22 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation(compose.foundation)
+            implementation(compose.foundation) {
+                exclude("org.jetbrains.kotlinx", "atomicfu")
+            }
             implementation(libs.serialization)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
             @OptIn(ExperimentalComposeLibrary::class)
-            implementation(compose.uiTest)
+            implementation(compose.uiTest) {
+                exclude("org.jetbrains.kotlinx", "atomicfu")
+            }
         }
         desktopTest.dependencies {
-            implementation(compose.desktop.currentOs)
+            implementation(compose.desktop.currentOs) {
+                exclude("org.jetbrains.kotlinx", "atomicfu")
+            }
         }
 
         androidMain.dependencies {

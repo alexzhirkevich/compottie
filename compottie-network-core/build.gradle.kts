@@ -7,7 +7,9 @@ kotlin {
         commonMain.dependencies {
             api(project(":compottie"))
             implementation(project(":compottie-dot"))
-            implementation(compose.ui)
+            implementation(compose.ui) {
+                exclude("org.jetbrains.kotlinx", "atomicfu")
+            }
             implementation(libs.serialization)
             api(libs.okio)
             implementation(libs.coroutines.core)
