@@ -212,7 +212,7 @@ internal abstract class BaseLayer : Layer {
                     matteLayer?.let {
                         canvas.saveLayer(rect, mattePaint, SAVE_FLAGS)
                         clearCanvas(canvas)
-                        it.draw(drawScope, parentMatrix, alpha, state)
+                        it.draw(drawScope, parentMatrix, parentAlpha, state)
                         canvas.restore()
                     }
 
