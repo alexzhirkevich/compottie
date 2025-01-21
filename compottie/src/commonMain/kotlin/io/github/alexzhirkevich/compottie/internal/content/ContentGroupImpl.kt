@@ -19,7 +19,7 @@ internal class ContentGroupImpl(
     contents: List<Content>,
     override val name: String?,
     private val hidden : ((AnimationState) -> Boolean)?,
-    override val transform: AnimatedTransform,
+    override val transform: AnimatedTransform?,
 ) : ContentGroup {
 
     private val rect = MutableRect(0f, 0f, 0f, 0f)
@@ -65,13 +65,13 @@ internal class ContentGroupImpl(
         }
 
         var layerAlpha = parentAlpha
-
         matrix.fastSetFrom(parentMatrix)
 
-        matrix.preConcat(transform.matrix(state))
-        transform.opacity.interpolatedNorm(state).let {
-
-            layerAlpha = (layerAlpha * it).coerceIn(0f, 1f)
+        if (transform != null) {
+            matrix.preConcat(transform.matrix(state))
+            transform.opacity.interpolatedNorm(state).let {
+                layerAlpha = (layerAlpha * it).coerceIn(0f, 1f)
+            }
         }
 
         val isRenderingWithOffScreen = state.applyOpacityToLayers &&
@@ -102,7 +102,9 @@ internal class ContentGroupImpl(
         if (hidden(state)) {
             return path
         }
-        matrix.fastSetFrom(transform.matrix(state))
+        if (transform != null) {
+            matrix.fastSetFrom(transform.matrix(state))
+        }
         pathContents.fastForEachReversed {
             path.addPath(it.getPath(state), matrix)
         }
@@ -130,7 +132,9 @@ internal class ContentGroupImpl(
         outBounds: MutableRect,
     ) {
         matrix.fastSetFrom(parentMatrix)
-        matrix.preConcat(transform.matrix(state))
+        if (transform != null) {
+            matrix.preConcat(transform.matrix(state))
+        }
         rect.set(0f, 0f, 0f, 0f)
 
         drawingContents.fastForEachReversed {
