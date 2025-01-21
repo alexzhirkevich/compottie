@@ -73,28 +73,25 @@ internal fun DynamicDrawProvider?.applyToPaint(
     size: () -> Rect,
     gradientCache: GradientCache
 ) {
-    this?.color?.let {
-        paint.color = it.derive(paint.color, state)
-    }
-    this?.gradient?.let {
+    val g = this?.gradient
+
+    if (g != null) {
         paint.shader = GradientShader(
-            gradient = it.invoke(state, size()),
+            gradient = g.invoke(state, size()),
             matrix = parentMatrix,
             cache = gradientCache
         )
+    } else {
+        paint.color = this?.color.derive(paint.color, state)
     }
 
-    var alpha = 1f
+    paint.alpha = parentAlpha
 
     opacity?.interpolatedNorm(state)?.let {
-        alpha = (alpha * it).coerceIn(0f,1f)
+        paint.alpha = (paint.alpha * it).coerceIn(0f,1f)
     }
 
-    this?.opacity?.let {
-        alpha = it.derive(alpha, state).coerceIn(0f,1f)
-    }
-
-    paint.alpha = (alpha * parentAlpha).coerceIn(0f,1f)
+    paint.alpha = this?.opacity.derive(paint.alpha, state).coerceIn(0f,1f)
     paint.colorFilter = this?.colorFilter.derive(paint.colorFilter, state)
     paint.blendMode = this?.blendMode.derive(paint.blendMode, state)
 }

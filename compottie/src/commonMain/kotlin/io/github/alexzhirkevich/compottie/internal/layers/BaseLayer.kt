@@ -13,7 +13,6 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
-import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
@@ -159,15 +158,14 @@ internal abstract class BaseLayer : Layer {
                 matrix.preConcat(it.transform.matrix(state))
             }
 
-            var alpha = 1f
+            val alpha = (transform.opacity.interpolatedNorm(state) * parentAlpha).coerceIn(0f, 1f)
 
-            transform.opacity.interpolatedNorm(state).let {
-                alpha = (alpha * it).coerceIn(0f, 1f)
-            }
-
-            alpha = (alpha * parentAlpha.coerceIn(0f, 1f))
-
-            if (matteLayer == null && !hasMasks() && blendMode == LottieBlendMode.Normal) {
+            if (
+                matteLayer == null
+                    && !hasMasks()
+                    && blendMode == LottieBlendMode.Normal
+                    && this !is CompositionLayer
+            ) {
                 matrix.preConcat(transform.matrix(state))
                 drawLayer(drawScope, matrix, alpha, state)
                 return@onLayer
@@ -181,20 +179,8 @@ internal abstract class BaseLayer : Layer {
             matrix.preConcat(transform.matrix(state))
             intersectBoundsWithMask(rect, matrix, state)
 
-            // Intersect the mask and matte rect with the canvas bounds.
-            // If the canvas has a transform, then we need to transform its bounds by its matrix
-            // so that we know the coordinate space that the canvas is showing.
-//                canvasBounds.set(0f, 0f, drawScope.size.width, drawScope.size.height)
             drawScope.drawIntoCanvas { canvas ->
 
-//                    canvas.getMatrix(canvasMatrix)
-//                    if (!canvasMatrix.isIdentity()) {
-//                        canvasMatrix.invert()
-//                        canvasMatrix.map(canvasBounds)
-//                    }
-
-//                    rect.intersectOrReset(canvasBounds)
-//
                 // Ensure that what we are drawing is >=1px of width and height.
                 // On older devices, drawing to an offscreen buffer of <1px would draw back as a black bar.
                 // https://github.com/airbnb/lottie-android/issues/1625

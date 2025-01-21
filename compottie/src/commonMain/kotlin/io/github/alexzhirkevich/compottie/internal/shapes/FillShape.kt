@@ -6,7 +6,6 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.dynamic.DynamicFillProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider

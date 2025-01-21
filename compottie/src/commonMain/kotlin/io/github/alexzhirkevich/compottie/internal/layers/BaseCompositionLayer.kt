@@ -16,8 +16,6 @@ import io.github.alexzhirkevich.compottie.internal.helpers.isSupported
 import io.github.alexzhirkevich.compottie.internal.platform.clipRect
 import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
 import io.github.alexzhirkevich.compottie.internal.utils.union
-import kotlinx.atomicfu.locks.SynchronizedObject
-import kotlinx.atomicfu.locks.synchronized
 import kotlinx.serialization.Transient
 import kotlin.math.absoluteValue
 
@@ -38,8 +36,6 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
     private val layerPaint = Paint().apply {
         isAntiAlias = true
     }
-
-    private val getLayerLock = SynchronizedObject()
 
     protected var loadedLayers: List<BaseLayer>? = null
 
@@ -113,8 +109,8 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         return dynamic
     }
 
-    private fun getLayers(state: AnimationState): List<Layer> = synchronized(getLayerLock) {
-        loadedLayers?.let { return@synchronized it }
+    private fun getLayers(state: AnimationState): List<Layer> {
+        loadedLayers?.let { return it }
 
         val layers = compose(state).filterIsInstance<BaseLayer>()
 

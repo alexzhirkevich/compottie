@@ -93,7 +93,7 @@ internal class ShapeLayer(
         name = CONTAINER_NAME,
         hidden = null, // will be managed by BaseLayer
         contents = shapes,
-        transform = shapes.firstInstanceOf<TransformShape>() ?: Transform()
+        transform = shapes.firstInstanceOf<TransformShape>()
     ).apply {
         setContents(emptyList(), emptyList())
     }

@@ -19,7 +19,6 @@ import io.github.alexzhirkevich.compottie.internal.content.ContentGroupImpl
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.GreedyContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
-import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.utils.fastSetFrom
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
@@ -141,7 +140,7 @@ internal class RepeaterShape(
             name = name,
             hidden = { dynamicShape?.hidden.derive(hidden, it) },
             contents = contentsList,
-            transform = Transform(),
+            transform = null,
         )
     }
 

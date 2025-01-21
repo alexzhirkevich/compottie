@@ -24,30 +24,30 @@ internal value class LottieBlendMode(val type : Byte){
         val Saturation = LottieBlendMode(13)
         val Color = LottieBlendMode(14)
         val Luminosity = LottieBlendMode(15)
+
         val Add = LottieBlendMode(16)
         val Mix = LottieBlendMode(17)
     }
 }
 
 internal fun LottieBlendMode.asComposeBlendMode() : BlendMode {
-    return BlendModeMapping[this] ?: BlendMode.SrcOver
+    return when (this) {
+        LottieBlendMode.Normal -> BlendMode.SrcOver
+        LottieBlendMode.Multiply -> BlendMode.Multiply
+        LottieBlendMode.Screen -> BlendMode.Screen
+        LottieBlendMode.Overlay -> BlendMode.Overlay
+        LottieBlendMode.Darken -> BlendMode.Darken
+        LottieBlendMode.Lighten -> BlendMode.Lighten
+        LottieBlendMode.ColorDodge -> BlendMode.ColorDodge
+        LottieBlendMode.ColorBurn -> BlendMode.ColorBurn
+        LottieBlendMode.HardLight -> BlendMode.Hardlight
+        LottieBlendMode.SoftLight -> BlendMode.Softlight
+        LottieBlendMode.Difference -> BlendMode.Difference
+        LottieBlendMode.Exclusion -> BlendMode.Exclusion
+        LottieBlendMode.Hue -> BlendMode.Hue
+        LottieBlendMode.Saturation -> BlendMode.Saturation
+        LottieBlendMode.Color -> BlendMode.Color
+        LottieBlendMode.Luminosity -> BlendMode.Luminosity
+        else -> BlendMode.SrcOver
+    }
 }
-
-private val BlendModeMapping = mapOf(
-    LottieBlendMode.Normal to BlendMode.SrcOver,
-    LottieBlendMode.Multiply to BlendMode.Multiply,
-    LottieBlendMode.Screen to BlendMode.Screen,
-    LottieBlendMode.Overlay to BlendMode.Overlay,
-    LottieBlendMode.Darken to BlendMode.Darken,
-    LottieBlendMode.Lighten to BlendMode.Lighten,
-    LottieBlendMode.ColorDodge to BlendMode.ColorDodge,
-    LottieBlendMode.ColorBurn to BlendMode.ColorBurn,
-    LottieBlendMode.HardLight to BlendMode.Hardlight,
-    LottieBlendMode.SoftLight to BlendMode.Softlight,
-    LottieBlendMode.Difference to BlendMode.Difference,
-    LottieBlendMode.Exclusion to BlendMode.Exclusion,
-    LottieBlendMode.Hue to BlendMode.Hue,
-    LottieBlendMode.Saturation to BlendMode.Saturation,
-    LottieBlendMode.Color to BlendMode.Color,
-    LottieBlendMode.Luminosity to BlendMode.Luminosity
-)

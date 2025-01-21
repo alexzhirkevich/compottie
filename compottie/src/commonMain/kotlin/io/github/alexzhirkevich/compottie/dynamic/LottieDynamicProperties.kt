@@ -15,9 +15,9 @@ import kotlin.contracts.contract
  * */
 @Composable
 @ExperimentalCompottieApi
-public inline fun rememberLottieDynamicProperties(
+public fun rememberLottieDynamicProperties(
     vararg keys : Any?,
-    crossinline builder: LottieDynamicProperties.() -> Unit
+    builder: LottieDynamicProperties.() -> Unit
 ) : LottieDynamicProperties = remember(*keys) {
     createLottieDynamicProperties(builder)
 }
@@ -32,7 +32,7 @@ public inline fun rememberLottieDynamicProperties(
  * Use [rememberLottieDynamicProperties] to create it from the composition
  * */
 @OptIn(ExperimentalContracts::class)
-public inline fun createLottieDynamicProperties(
+public fun createLottieDynamicProperties(
     builder: LottieDynamicProperties.() -> Unit
 ) : LottieDynamicProperties {
     contract {
