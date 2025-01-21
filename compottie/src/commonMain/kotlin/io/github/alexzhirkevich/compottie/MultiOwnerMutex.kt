@@ -1,7 +1,5 @@
 package io.github.alexzhirkevich.compottie
 
-import kotlinx.atomicfu.locks.reentrantLock
-import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -13,7 +11,7 @@ private class RefCountMutex(
 @InternalCompottieApi
 public class MultiOwnerMutex {
 
-    private val lock = reentrantLock()
+    private val lock = Mutex()
     private val mutex = mutableMapOf<Any, RefCountMutex>()
 
     public suspend fun <T> withLock(key: Any, action: suspend () -> T): T {

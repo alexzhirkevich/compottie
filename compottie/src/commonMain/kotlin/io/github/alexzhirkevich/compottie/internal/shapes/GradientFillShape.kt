@@ -148,9 +148,7 @@ internal class GradientFillShape(
 
         roundShape?.applyTo(paint, state)
 
-        drawScope.drawIntoCanvas {
-            it.drawPath(path, paint)
-        }
+        drawScope.drawContext.canvas.drawPath(path, paint)
     }
 
     override fun getBounds(
