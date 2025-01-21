@@ -33,7 +33,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.animation.toColor
 import io.github.alexzhirkevich.compottie.internal.assets.CharacterData
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
-import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.helpers.BooleanIntSerializer
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
@@ -61,9 +61,6 @@ internal class TextLayer(
 
     @SerialName("ks")
     override val transform: Transform = Transform(),
-
-    @SerialName("ddd")
-    override val is3d: BooleanInt = BooleanInt.No,
 
     @SerialName("ind")
     override val index: Int? = null,
@@ -102,7 +99,8 @@ internal class TextLayer(
     private val textData: TextData,
 
     @SerialName("ao")
-    override val autoOrient: BooleanInt = BooleanInt.No,
+    @Serializable(with = BooleanIntSerializer::class)
+    override val autoOrient: Boolean = false,
 
     @SerialName("tt")
     override val matteMode: MatteMode? = null,
@@ -110,22 +108,12 @@ internal class TextLayer(
     @SerialName("tp")
     override val matteParent: Int? = null,
 
-    @SerialName("td")
-    override val matteTarget: BooleanInt? = null,
+    @SerialName("td") @Serializable(with=BooleanIntSerializer::class)
+    override val matteTarget: Boolean? = null,
 
     @SerialName("bm")
     override val blendMode: LottieBlendMode = LottieBlendMode.Normal,
-
-    @SerialName("cl")
-    override val clazz: String? = null,
-
-    @SerialName("ln")
-    override val htmlId: String? = null,
-
-    @SerialName("ct")
-    override val collapseTransform: BooleanInt = BooleanInt.No
-
-    ) : BaseLayer() {
+) : BaseLayer() {
 
     @Transient
     private val fillProperties = DrawProperties(Fill)
@@ -174,7 +162,6 @@ internal class TextLayer(
     override fun deepCopy(): Layer {
         return TextLayer(
             transform = transform.deepCopy(),
-            is3d = is3d,
             index = index,
             inPoint = inPoint,
             outPoint = outPoint,
@@ -192,9 +179,6 @@ internal class TextLayer(
             matteParent = matteParent,
             matteTarget = matteTarget,
             blendMode = blendMode,
-            clazz = clazz,
-            htmlId = htmlId,
-            collapseTransform = collapseTransform
         )
     }
 

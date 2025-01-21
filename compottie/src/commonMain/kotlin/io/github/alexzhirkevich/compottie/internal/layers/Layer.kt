@@ -7,7 +7,6 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsApplier
-import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
@@ -20,8 +19,6 @@ import kotlin.jvm.JvmInline
 @OptIn(ExperimentalSerializationApi::class)
 @JsonClassDiscriminator("ty")
 internal sealed interface Layer : DrawingContent {
-
-    val is3d: BooleanInt
 
     val hidden: Boolean
 
@@ -41,19 +38,13 @@ internal sealed interface Layer : DrawingContent {
 
     val transform : Transform
 
-    val autoOrient : BooleanInt
+    val autoOrient: Boolean
 
     val matteMode : MatteMode?
 
     val matteParent : Int?
 
-    val matteTarget : BooleanInt?
-
-    val clazz : String?
-
-    val htmlId : String?
-
-    val collapseTransform : BooleanInt
+    val matteTarget: Boolean?
 
     val hasMask : Boolean?
 

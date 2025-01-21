@@ -3,7 +3,6 @@ package io.github.alexzhirkevich.compottie
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +30,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -42,15 +42,14 @@ import kotlin.time.Duration.Companion.microseconds
  * Load and prepare [LottieComposition] for displaying.
  *
  * Instance produces by [spec] will be remembered until [key] is changed. Those instances
- * are cached across the whole application. Cache size can be configured with [Compottie.compositionCacheLimit].
- * If key is not provided then [LottieCompositionSpec.key] will be used.
- * To disable caching null [key] must be passed explicitly.
- * [currentCompositeKeyHash] in appropriate place can be used as a key (inappropriate places are loops without key for example)
+ * are in-memory cached by the [key] in the [cache] instance.
+ * If the key is not provided then [LottieCompositionSpec.key] will be used instead.
  * */
 @OptIn(InternalCompottieApi::class)
 @Composable
 public fun rememberLottieComposition(
     key : Any? = UnspecifiedCompositionKey,
+    cache: LottieCompositionCache? = LocalLottieCache.current,
     spec : suspend () -> LottieCompositionSpec,
 ) : LottieCompositionResult {
 
@@ -60,16 +59,15 @@ public fun rememberLottieComposition(
         LottieCompositionResultImpl()
     }
 
-    LaunchedEffect(result) {
+    LaunchedEffect(result, cache) {
         try {
             val composition = withContext(Compottie.ioDispatcher()) {
                 val specInstance = updatedSpec()
                 val k = when (key) {
                     UnspecifiedCompositionKey -> specInstance.key
-                    null -> null
                     else -> key
                 }
-                LottieComposition.getOrCreate(k, specInstance::load)
+                cache?.getOrPut(k, specInstance::load) ?: specInstance.load()
             }
             result.complete(composition)
         } catch (c: CancellationException) {
@@ -124,6 +122,12 @@ public fun rememberLottieComposition(
 public class LottieComposition internal constructor(
     internal val animation: Animation,
 ) {
+
+    public companion object {
+        public fun parse(json: String): LottieComposition {
+            return LottieComposition(LottieJson.decodeFromString(json))
+        }
+    }
 
     /**
      * Frame when animation becomes visible
@@ -260,8 +264,14 @@ public class LottieComposition internal constructor(
                     is ImageAsset -> {
                         if (asset.bitmap == null) {
                             launch(Dispatchers.Default) {
-                                assetsManager.image(asset.spec)?.let {
-                                    asset.setBitmap(it.toBitmap(asset.width, asset.height))
+                                try {
+                                    assetsManager.image(asset.spec)?.let {
+                                        asset.setBitmap(it.toBitmap(asset.width, asset.height))
+                                    }
+                                } catch (t: CancellationException) {
+                                    throw t
+                                } catch (t: Throwable) {
+                                    Compottie.logger?.error("Image asset failed to load: ${asset.name}", t)
                                 }
                             }
                         } else null
@@ -285,13 +295,20 @@ public class LottieComposition internal constructor(
             storedFonts + animation.fonts?.list
                 ?.fastMap {
                     async {
-                        val f = it.font ?: fontManager.font(it.spec)
+                        try {
+                            val f = it.font ?: fontManager.font(it.spec)
 
-                        it.font = f
+                            it.font = f
 
-                        if (f == null)
+                            if (f == null)
+                                null
+                            else listOf(it.family to f, it.name to f)
+                        } catch (t : CancellationException){
+                            throw t
+                        } catch (t : Throwable){
+                            Compottie.logger?.error("Font asset failed to load: ${it.family} - ${it.name}", t)
                             null
-                        else listOf(it.family to f, it.name to f)
+                        }
                     }
                 }
                 ?.awaitAll()
@@ -309,36 +326,6 @@ public class LottieComposition internal constructor(
     }
 
     internal fun marker(name: String?) = markersMap[name]
-
-    public companion object {
-
-        public fun parse(json: String): LottieComposition {
-            return LottieComposition(
-                animation = LottieJson.decodeFromString(json),
-            )
-        }
-
-        /**
-         * Get cached composition for [key] or create new one and cache it by [key]
-         * */
-        public suspend fun getOrCreate(key : Any?, create : suspend () -> LottieComposition) : LottieComposition {
-            if (key == null)
-                return create()
-
-            return cache.getOrPutSuspend(key, create)
-        }
-
-        /**
-         * Clear all in-memory cached compositions.
-         * This will not clear the file system cache
-         * */
-        public fun clearCache() {
-            cache.clear()
-        }
-
-        @OptIn(ExperimentalCompottieApi::class)
-        private val cache = LruMap<LottieComposition>(limit = Compottie::compositionCacheLimit)
-    }
 }
 
 private object UnspecifiedCompositionKey

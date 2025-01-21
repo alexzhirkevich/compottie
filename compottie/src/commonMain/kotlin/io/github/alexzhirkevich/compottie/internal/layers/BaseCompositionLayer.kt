@@ -11,7 +11,6 @@ import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
-import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.isSupported
 import io.github.alexzhirkevich.compottie.internal.platform.clipRect
 import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
@@ -154,7 +153,7 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
             }
         }
 
-        this.loadedLayers = (layers - matteLayers).fastFilter { it.matteTarget != BooleanInt.Yes }
+        this.loadedLayers = (layers - matteLayers).fastFilter { it.matteTarget != true }
         return this.loadedLayers!!
     }
 

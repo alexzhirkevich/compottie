@@ -15,10 +15,16 @@ public interface ImageRepresentable {
 
     public fun toBitmap(width: Int, height: Int): ImageBitmap
 
-    @JvmInline
-    public value class Bytes(private val bytes: ByteArray) : ImageRepresentable {
+    public class Bytes(bytes: ByteArray) : ImageRepresentable {
+
+        private val bmp = ImageBitmap.fromBytes(bytes)
+
         override fun toBitmap(width: Int, height: Int): ImageBitmap {
-            return ImageBitmap.fromBytes(bytes).resize(width, height)
+            return if (bmp.width == width && bmp.height == height){
+                bmp
+            } else {
+                bmp.resize(width,height)
+            }
         }
     }
 

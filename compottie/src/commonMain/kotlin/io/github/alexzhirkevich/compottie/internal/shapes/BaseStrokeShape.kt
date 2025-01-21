@@ -116,14 +116,12 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
     private val dashPattern by lazy {
         strokeDash
             ?.fastFilter { it.dashType != DashType.Offset }
-            ?.fastMap { it.value }?.let {
-
-            // If there is only 1 value then it is assumed to be equal parts on and off.
-
-            if (it.size == 1)
-                it + it[0]
-            else it
-        }
+            ?.fastMap { it.value }
+            ?.let {
+                if (it.size % 2 == 1)
+                    it + it
+                else it
+            }
     }
 
     private val dashOffset by lazy {
@@ -355,7 +353,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
 
         val dp = dashPattern
 
-        if (dp.isNullOrEmpty()) {
+        if (dp.isNullOrEmpty() ) {
             return
         }
 

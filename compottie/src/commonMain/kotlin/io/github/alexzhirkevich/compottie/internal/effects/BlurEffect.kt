@@ -1,13 +1,11 @@
 package io.github.alexzhirkevich.compottie.internal.effects
 
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
-import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanIntSerializer
 import io.github.alexzhirkevich.compottie.internal.utils.getAs
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 
 @Serializable
 @SerialName("29")

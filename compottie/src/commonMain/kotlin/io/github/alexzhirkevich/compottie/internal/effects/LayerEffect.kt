@@ -1,11 +1,8 @@
 package io.github.alexzhirkevich.compottie.internal.effects
 
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
-import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
-import io.github.alexzhirkevich.compottie.internal.helpers.BooleanIntSerializer
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
 

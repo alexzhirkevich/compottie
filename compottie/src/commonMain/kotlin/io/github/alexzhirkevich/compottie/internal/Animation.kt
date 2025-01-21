@@ -23,9 +23,6 @@ internal class Animation(
     @SerialName("h")
     val height : Float,
 
-    @SerialName("v")
-    val version : String,
-
     @SerialName("ip")
     val inPoint : Float,
 
@@ -61,7 +58,6 @@ internal class Animation(
             frameRate = frameRate,
             width = width,
             height = height,
-            version = version,
             inPoint = inPoint,
             outPoint = outPoint,
             name = name,

@@ -1,8 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.effects
 
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
-import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanIntSerializer
 import io.github.alexzhirkevich.compottie.internal.utils.getAs
 import kotlinx.serialization.Contextual

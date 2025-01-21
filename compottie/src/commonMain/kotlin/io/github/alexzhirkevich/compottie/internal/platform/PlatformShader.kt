@@ -19,17 +19,16 @@ import io.github.alexzhirkevich.compottie.internal.helpers.GradientColors
 import io.github.alexzhirkevich.compottie.internal.helpers.GradientType
 import kotlin.math.hypot
 
-@OptIn(ExperimentalCompottieApi::class)
 internal class GradientCache {
 
-    private val linear = LruMap<Shader>(limit = Compottie::shaderCacheLimit)
-    private val radial = LruMap<Shader>(limit = Compottie::shaderCacheLimit)
+    private val linear = LruMap<Shader>(limit = 10)
+    private val radial = LruMap<Shader>(limit = 10)
 
     fun getOrPut(
-        hash : Int,
-        linear : Boolean,
-        factory : () -> Shader
-    ) : Shader {
+        hash: Int,
+        linear: Boolean,
+        factory: () -> Shader
+    ): Shader {
         val map = if (linear) this.linear else this.radial
 
         return map.getOrPut(hash, factory)

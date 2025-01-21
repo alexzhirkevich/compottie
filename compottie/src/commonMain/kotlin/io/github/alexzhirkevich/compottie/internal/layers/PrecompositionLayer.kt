@@ -8,7 +8,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionComposition
 import io.github.alexzhirkevich.compottie.internal.assets.PrecompositionAsset
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
-import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.helpers.BooleanIntSerializer
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
@@ -29,9 +29,6 @@ internal data class PrecompositionLayer(
 
     @SerialName("tm")
     override val timeRemapping : AnimatedNumber? = null,
-
-    @SerialName("ddd")
-    override val is3d: BooleanInt = BooleanInt.No,
 
     @SerialName("ind")
     override val index: Int? = null,
@@ -70,7 +67,8 @@ internal data class PrecompositionLayer(
     override val transform: Transform = Transform(),
 
     @SerialName("ao")
-    override val autoOrient: BooleanInt = BooleanInt.No,
+    @Serializable(with = BooleanIntSerializer::class)
+    override val autoOrient: Boolean = false,
 
     @SerialName("tt")
     override val matteMode: MatteMode? = null,
@@ -78,20 +76,11 @@ internal data class PrecompositionLayer(
     @SerialName("tp")
     override val matteParent: Int? = null,
 
-    @SerialName("td")
-    override val matteTarget: BooleanInt? = null,
+    @SerialName("td") @Serializable(with=BooleanIntSerializer::class)
+    override val matteTarget: Boolean? = null,
 
     @SerialName("bm")
     override val blendMode: LottieBlendMode = LottieBlendMode.Normal,
-
-    @SerialName("cl")
-    override val clazz: String? = null,
-
-    @SerialName("ln")
-    override val htmlId: String? = null,
-
-    @SerialName("ct")
-    override val collapseTransform: BooleanInt = BooleanInt.No
 ) : BaseCompositionLayer() {
 
     internal val composition = object : ExpressionComposition {
@@ -151,7 +140,6 @@ internal data class PrecompositionLayer(
             width = width,
             height = height,
             timeRemapping = timeRemapping,
-            is3d = is3d,
             index = index,
             inPoint = inPoint,
             outPoint = outPoint,
@@ -169,9 +157,6 @@ internal data class PrecompositionLayer(
             matteParent = matteParent,
             matteTarget = matteTarget,
             blendMode = blendMode,
-            clazz = clazz,
-            htmlId = htmlId,
-            collapseTransform = collapseTransform
         )
     }
 }

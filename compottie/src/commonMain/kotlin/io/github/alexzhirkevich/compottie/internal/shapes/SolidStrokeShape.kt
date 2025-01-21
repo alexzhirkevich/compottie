@@ -4,15 +4,11 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
-import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.defaultOpacity
 import io.github.alexzhirkevich.compottie.internal.helpers.StrokeDash
-import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 
 @Serializable
 @SerialName("st")
@@ -26,9 +22,6 @@ internal class SolidStrokeShape(
 
     @SerialName("hd")
     override val hidden : Boolean = false,
-
-    @SerialName("a")
-    val withAlpha : BooleanInt = BooleanInt.No,
 
     @SerialName("lc")
     override val lineCap : LineCap = LineCap.Round,
@@ -65,7 +58,6 @@ internal class SolidStrokeShape(
             matchName = matchName,
             name = name,
             hidden = hidden,
-            withAlpha = withAlpha,
             lineCap = lineCap,
             lineJoin = lineJoin,
             strokeMiter = strokeMiter,

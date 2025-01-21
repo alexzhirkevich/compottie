@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.unit.IntSize
 import io.github.alexzhirkevich.compottie.assets.LottieImageSpec
-import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.helpers.BooleanIntSerializer
 import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -29,7 +29,8 @@ internal class ImageAsset(
     val name: String? = null,
 
     @SerialName("e")
-    override val embedded: BooleanInt = BooleanInt.No,
+    @Serializable(with = BooleanIntSerializer::class)
+    override val embedded: Boolean = false,
 
     @SerialName("w")
     private val w: Int? = null,
@@ -54,7 +55,7 @@ internal class ImageAsset(
     @OptIn(ExperimentalEncodingApi::class)
     @Transient
     var bitmap: ImageBitmap? = fileName
-        .takeIf { embedded.toBoolean() || it.isBase64Data }
+        .takeIf { embedded || it.isBase64Data }
         ?.substringAfter("base64,")
         ?.trim()
         ?.let {

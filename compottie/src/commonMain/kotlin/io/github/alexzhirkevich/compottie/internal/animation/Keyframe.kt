@@ -2,7 +2,6 @@ package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.LinearEasing
-import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
@@ -10,11 +9,11 @@ internal interface Keyframe<out T> {
     val start: T?
     val end: T?
     val time: Float
-    val hold : BooleanInt
+    val hold: Boolean
     val inValue: BezierInterpolation?
     val outValue: BezierInterpolation?
 
-    val endHold get() = if (hold == BooleanInt.Yes) start else end
+    val endHold get() = if (hold) start else end
 
     val easingX: Easing
     val easingY: Easing
@@ -24,7 +23,7 @@ internal class BaseKeyframe<out T>(
     override val start: T?,
     override val end: T?,
     override val time: Float,
-    override val hold : BooleanInt,
+    override val hold: Boolean,
     override val inValue: BezierInterpolation?,
     override val outValue: BezierInterpolation?,
 ) : Keyframe<T> {
@@ -33,7 +32,7 @@ internal class BaseKeyframe<out T>(
         val i = inValue
         val o = outValue
 
-        if (hold == BooleanInt.Yes || i == null || o == null) {
+        if (hold || i == null || o == null) {
             LinearEasing
         } else {
             if (i.x.isNotEmpty() &&
@@ -56,7 +55,7 @@ internal class BaseKeyframe<out T>(
         val i = inValue
         val o = outValue
 
-        if (hold == BooleanInt.Yes || i == null || o == null) {
+        if (hold || i == null || o == null) {
             return@run LinearEasing
         }
 

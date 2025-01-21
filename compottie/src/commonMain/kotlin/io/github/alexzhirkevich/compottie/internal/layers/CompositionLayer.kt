@@ -4,7 +4,6 @@ import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
-import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
 import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
@@ -27,15 +26,11 @@ internal class CompositionLayer(
     override var effects: List<LayerEffect> = emptyList()
 
     override val transform: Transform = Transform()
-    override val autoOrient: BooleanInt get() = BooleanInt.No
+    override val autoOrient: Boolean get() = false
     override val matteMode: MatteMode? get() = null
     override val matteParent: Int? get() = null
-    override val matteTarget: BooleanInt? get() = null
-    override val clazz: String? get() = null
-    override val htmlId: String? get() = null
-    override val collapseTransform: BooleanInt get() = BooleanInt.No
+    override val matteTarget: Boolean? get() = null
 
-    override val is3d: BooleanInt get() = BooleanInt.No
     override val hidden: Boolean get() = false
     override val index: Int? get() = null
     override val parent: Int? get() = null

@@ -1,6 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
-import io.github.alexzhirkevich.compottie.internal.helpers.BooleanInt
+import io.github.alexzhirkevich.compottie.internal.helpers.BooleanIntSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -17,7 +17,8 @@ internal class VectorKeyframe(
     override val time : Float,
 
     @SerialName("h")
-    override val hold: BooleanInt = BooleanInt.No,
+    @Serializable(with = BooleanIntSerializer::class)
+    override val hold: Boolean = false,
 
     @SerialName("i")
     override val inValue : BezierInterpolation? = null,

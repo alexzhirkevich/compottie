@@ -1,37 +1,27 @@
 package io.github.alexzhirkevich.compottie
 
-import kotlinx.atomicfu.locks.SynchronizedObject
-import kotlinx.atomicfu.locks.synchronized
 
 internal class LruMap<T : Any>(
     private val delegate : LinkedHashMap<Any,T> = LinkedHashMap(),
-    private val limit : () -> Int,
-) : SynchronizedObject(), MutableMap<Any, T> by delegate {
+    private val limit : Int,
+) : MutableMap<Any, T> by delegate {
 
     @OptIn(InternalCompottieApi::class)
     private val suspendGetOrPutMutex = MultiOwnerMutex()
 
-    override fun put(key: Any, value: T): T? = synchronized(this) {
-        putRaw(key, value)
-    }
+    override fun put(key: Any, value: T): T? = putRaw(key, value)
 
-    override fun clear() = synchronized(this) {
-        clearRaw()
-    }
+    override fun clear() = clearRaw()
 
-    override fun putAll(from: Map<out Any, T>) = synchronized(this) {
-        putAllRaw(from)
-    }
+    override fun putAll(from: Map<out Any, T>) = putAllRaw(from)
 
-    override fun remove(key: Any): T? = synchronized(this) {
-        removeRaw(key)
-    }
 
-    override fun get(key: Any): T? = synchronized(this) {
-        getRaw(key)
-    }
+    override fun remove(key: Any): T? = removeRaw(key)
 
-    fun getOrPut(key: Any?, put: () -> T): T = synchronized(this) {
+
+    override fun get(key: Any): T? = getRaw(key)
+
+    fun getOrPut(key: Any?, put: () -> T): T {
         if (key == null)
             return put()
 
@@ -50,14 +40,13 @@ internal class LruMap<T : Any>(
     }
 
     private fun putRaw(key: Any, value: T): T? {
-        val cacheLimit = limit()
 
-        if (cacheLimit < 1) {
-            clearRaw()
-        } else {
-            while (cacheLimit < size) {
-                remove(keys.firstOrNull())
-            }
+        if (limit < 1) {
+            return value
+        }
+
+        while (limit < size) {
+            remove(keys.firstOrNull())
         }
 
         return delegate.put(key, value)
