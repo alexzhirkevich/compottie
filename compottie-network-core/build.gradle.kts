@@ -1,6 +1,3 @@
-plugins {
-    alias(libs.plugins.atomicfu)
-}
 
 kotlin {
     sourceSets {
@@ -9,6 +6,7 @@ kotlin {
             implementation(project(":compottie-dot"))
             implementation(compose.ui)
             implementation(libs.serialization)
+            compileOnly(libs.atomicfu)
             api(libs.okio)
             implementation(libs.coroutines.core)
         }

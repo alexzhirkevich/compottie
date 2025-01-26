@@ -1,6 +1,3 @@
-plugins {
-    alias(libs.plugins.atomicfu)
-}
 
 kotlin {
     sourceSets {

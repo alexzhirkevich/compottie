@@ -30,9 +30,9 @@ kotlin-gp = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref 
 android-gp = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
+atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
 
 [plugins]
-atomicfu = { id = "org.jetbrains.kotlinx.atomicfu", version.ref = "atomicfu" }
 compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 kotlin-multiplatform = { id ="org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 android-application = { id = "com.android.application", version.ref = "agp" }
