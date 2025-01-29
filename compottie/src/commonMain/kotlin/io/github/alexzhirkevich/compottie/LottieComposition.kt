@@ -41,33 +41,27 @@ import kotlin.time.Duration.Companion.microseconds
 /**
  * Load and prepare [LottieComposition] for displaying.
  *
- * Instance produces by [spec] will be remembered until [key] is changed. Those instances
- * are in-memory cached by the [key] in the [cache] instance.
- * If the key is not provided then [LottieCompositionSpec.key] will be used instead.
+ * Remembers the composition produced by [spec] if all values of [keys] are equal (`==`) to the
+ * values they had in the previous composition, otherwise produce and remember a new [LottieCompositionResult] by
+ * calling [spec] again.
  * */
 @OptIn(InternalCompottieApi::class)
 @Composable
 public fun rememberLottieComposition(
-    key : Any? = UnspecifiedCompositionKey,
+    vararg keys: Any?,
     cache: LottieCompositionCache? = LocalLottieCache.current,
     spec : suspend () -> LottieCompositionSpec,
 ) : LottieCompositionResult {
 
-    val updatedSpec by rememberUpdatedState(spec)
-
-    val result = remember(key) {
+    val result = remember(*keys, cache) {
         LottieCompositionResultImpl()
     }
 
     LaunchedEffect(result, cache) {
         try {
             val composition = withContext(Compottie.ioDispatcher()) {
-                val specInstance = updatedSpec()
-                val k = when (key) {
-                    UnspecifiedCompositionKey -> specInstance.key
-                    else -> key
-                }
-                cache?.getOrPut(k, specInstance::load) ?: specInstance.load()
+                val specInstance = spec()
+                cache?.getOrPut(specInstance.key, specInstance::load) ?: specInstance.load()
             }
             result.complete(composition)
         } catch (c: CancellationException) {
