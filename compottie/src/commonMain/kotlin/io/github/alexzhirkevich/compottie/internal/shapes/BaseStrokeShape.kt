@@ -40,6 +40,7 @@ import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import io.github.alexzhirkevich.compottie.internal.utils.IdentityMatrix
 import io.github.alexzhirkevich.compottie.internal.utils.appendPathEffect
+import io.github.alexzhirkevich.compottie.internal.utils.extendBy
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
@@ -97,7 +98,6 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
 
     private val trimPathPath = Path()
     private val path = Path()
-    private val rect = MutableRect(0f, 0f, 0f, 0f)
     private val rawBoundsRect = MutableRect(0f, 0f, 0f, 0f)
 
     protected val paint by lazy {
@@ -247,25 +247,9 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
                 path.addPath(it.getPath(state), parentMatrix)
             }
         }
-        rect.set(path.getBounds())
 
-        val width = strokeWidth.interpolated(state)
-
-        rect.set(
-            rect.left - width / 2f,
-            rect.top - width / 2f,
-            rect.right + width / 2f,
-            rect.bottom + width / 2f
-        )
-        outBounds.set(rect)
-
-        // Add padding to account for rounding errors.
-        outBounds.set(
-            outBounds.left - 1,
-            outBounds.top - 1,
-            outBounds.right + 1,
-            outBounds.bottom + 1
-        )
+        outBounds.set(path.getBounds())
+        outBounds.extendBy(strokeWidth.interpolated(state) + 1)
     }
 
     private fun applyTrimPath(

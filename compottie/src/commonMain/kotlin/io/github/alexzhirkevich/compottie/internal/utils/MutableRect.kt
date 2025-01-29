@@ -69,3 +69,12 @@ internal fun MutableRect.set(other : Rect){
     set(left = other.left, top = other.top, right = other.right, bottom = other.bottom)
 }
 
+internal fun MutableRect.extendBy(value : Float) {
+    set(
+        left = left - value,
+        top = top - value,
+        right = right + value,
+        bottom = bottom + value
+    )
+}
+

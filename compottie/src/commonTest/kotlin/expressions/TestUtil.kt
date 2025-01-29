@@ -92,7 +92,6 @@ internal fun MockAnimationState(
             frameRate = 24f,
             width = 1024f,
             height = 1024f,
-            version = "5.0.0",
             inPoint = 0f,
             outPoint = durationFrames,
             name = "Animation"
@@ -108,5 +107,6 @@ internal fun MockAnimationState(
     clipTextToBoundingBoxes = true,
     enableMergePaths = true,
     enableTextGrouping = false,
+    enableOffscreenBlending = false,
     layer = NullLayer()
 )

@@ -1,15 +1,18 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
 import androidx.compose.ui.geometry.MutableRect
+import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.withSaveLayer
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
@@ -164,7 +167,7 @@ internal abstract class BaseLayer : Layer {
                 matteLayer == null
                     && !hasMasks()
                     && blendMode == LottieBlendMode.Normal
-                    && this !is CompositionLayer
+                    && (this is CompositionLayer && state.enableOffscreenBlending).not()
             ) {
                 matrix.preConcat(transform.matrix(state))
                 drawLayer(drawScope, matrix, alpha, state)
@@ -207,7 +210,7 @@ internal abstract class BaseLayer : Layer {
 
 //                        val outlineMasksAndMattesPaint = Paint().apply {
 //                            style = PaintingStyle.Stroke
-//                            strokeWidth = 4f
+//                            strokeWidth = drawScope.density
 //                            color = Color.Red
 //                        }
 //                        canvas.drawRect(rect, outlineMasksAndMattesPaint)

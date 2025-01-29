@@ -25,6 +25,7 @@ import io.github.alexzhirkevich.compottie.internal.helpers.FillRule
 import io.github.alexzhirkevich.compottie.internal.helpers.asPathFillType
 import io.github.alexzhirkevich.compottie.internal.platform.GradientCache
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
+import io.github.alexzhirkevich.compottie.internal.utils.extendBy
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -145,13 +146,7 @@ internal class FillShape(
         }
 
         outBounds.set(path.getBounds())
-        // Add padding to account for rounding errors.
-        outBounds.set(
-            outBounds.left - 1,
-            outBounds.top - 1,
-            outBounds.right + 1,
-            outBounds.bottom + 1
-        )
+        outBounds.extendBy(1f)
     }
 
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
