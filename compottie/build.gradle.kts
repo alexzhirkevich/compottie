@@ -21,9 +21,5 @@ kotlin {
         desktopTest.dependencies {
             implementation(compose.desktop.currentOs)
         }
-
-        androidMain.dependencies {
-            implementation(libs.androidx.startup)
-        }
     }
 }

@@ -29,7 +29,6 @@ private class ExpressionEvaluatorImpl(
         ExpressionInterpreterImpl(expr, context).interpret()
     }.getOrNull()
 
-    private val errors = mutableSetOf<String?>()
 
     override fun RawProperty<*>.evaluate(state: AnimationState): Any {
         if (!state.enableExpressions || expression == null)
@@ -39,19 +38,6 @@ private class ExpressionEvaluatorImpl(
             expression.invoke(this, context, state)
             context.result?.toListOrThis()
         } catch (t: Throwable) {
-            if (catchErrors){
-                if (t.message !in errors) {
-                    errors += t.message
-                    Compottie.logger?.warn(
-                        "Error occurred in a Lottie expression. Try to disable expressions for Painter using enableExpressions=false: ${t.message}"
-                    )
-                    if (EXPR_DEBUG_PRINT_ENABLED){
-                        t.printStackTrace()
-                    }
-                }
-            } else {
-                throw t
-            }
             null
         } finally {
             context.reset()

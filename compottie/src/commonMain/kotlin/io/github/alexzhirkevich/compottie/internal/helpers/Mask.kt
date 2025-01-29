@@ -34,10 +34,6 @@ internal class Mask(
         if (isClosedLegacy != null) {
             shape?.setClosed(isClosedLegacy)
         }
-
-        if (!mode.isSupported()){
-            Compottie.logger?.warn("Animation contains unsupported mask type: $mode. It will be treated as an 'Add' mask")
-        }
     }
 
     fun deepCopy() = Mask(

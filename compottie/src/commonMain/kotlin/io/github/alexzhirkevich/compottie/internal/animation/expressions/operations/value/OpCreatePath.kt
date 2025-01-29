@@ -25,10 +25,6 @@ internal class OpCreatePath(
     private val isClosed : Expression?,
 ) : OpPropertyContext(), Expression {
 
-    init {
-        Compottie.logger?.warn("Animation contains 'createPath' expression. It is supported but can cause significant performance drops. If you notice performance issues set enableExpressions=false for Painter")
-    }
-
     override fun invoke(
         property: RawProperty<Any>,
         context: EvaluationContext,

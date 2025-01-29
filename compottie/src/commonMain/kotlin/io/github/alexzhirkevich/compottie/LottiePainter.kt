@@ -208,67 +208,6 @@ public fun rememberLottiePainter(
 }
 
 
-/**
- * Factory method to create Lottie painter from non-composable context.
- * This painter will not work with Android Studio preview.
- * Use [rememberLottiePainter] to create it from the composition.
- *
- * [progress] lambda has to be derivable so that [derivedStateOf] can derive progress from it.
- *
- * Use [LottieCompositionSpec.load] to get [LottieComposition] instance from [LottieCompositionSpec].
- * */
-@OptIn(InternalCompottieApi::class)
-public suspend fun LottiePainter(
-    composition : LottieComposition,
-    progress : () -> Float,
-    assetsManager: LottieAssetsManager? = null,
-    fontManager: LottieFontManager? = null,
-    dynamicProperties : LottieDynamicProperties? = null,
-    applyOpacityToLayers : Boolean = false,
-    clipToCompositionBounds : Boolean = true,
-    clipTextToBoundingBoxes: Boolean = false,
-    enableTextGrouping: Boolean = false,
-    enableMergePaths: Boolean = false,
-    enableExpressions: Boolean = true,
-    enableOffscreenBlending : Boolean = false
-) : Painter = coroutineScope {
-
-    val dp = when (dynamicProperties) {
-        is DynamicCompositionProvider -> dynamicProperties
-        null -> null
-    }
-
-    val copy = dp != null
-
-    val assets = async(Compottie.ioDispatcher()) {
-        assetsManager?.let {
-            composition.loadAssets(it, copy)
-        }
-    }
-    val fonts = async(Compottie.ioDispatcher()) {
-        fontManager?.let {
-            composition.loadFonts(it)
-        }
-    }
-
-    LottiePainter(
-        composition = if (copy) composition.deepCopy() else composition,
-        progress = progress,
-        dynamicProperties = dp,
-        clipTextToBoundingBoxes = clipTextToBoundingBoxes,
-        enableTextGrouping = enableTextGrouping,
-        fontFamilyResolver = makeFontFamilyResolver(),
-        clipToCompositionBounds = clipToCompositionBounds,
-        enableMergePaths = enableMergePaths,
-        enableExpressions = enableExpressions,
-        applyOpacityToLayers = applyOpacityToLayers,
-        enableOffscreenBlending = enableOffscreenBlending,
-        assets = assets.await().orEmpty(),
-        fonts = fonts.await().orEmpty()
-    )
-}
-
-internal expect fun makeFontFamilyResolver() : FontFamily.Resolver
 internal expect fun mockFontFamilyResolver() : FontFamily.Resolver
 
 private class LateInitPainter(

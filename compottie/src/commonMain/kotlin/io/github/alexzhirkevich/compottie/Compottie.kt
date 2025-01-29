@@ -11,8 +11,4 @@ public object Compottie {
      * You can set it to null for production
      * */
     public var logger : LottieLogger? = LottieLogger.Default
-
-    @InternalCompottieApi
-    public var context : LottieContext? = null
-        internal set
 }

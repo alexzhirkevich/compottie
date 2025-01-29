@@ -108,7 +108,6 @@ internal class SolidColorLayer(
             color = Color(red = r, green = g, blue = b, alpha = a)
         } catch (t: Throwable) {
             // TODO: sometimes colors are exported as #d9.0147ae147aedf.fdf3b645a1c8e6.028f5c28f5c8
-            Compottie.logger?.warn("Solid color layer (${name}) with unrecognized color: $colorHex")
             color = Color.Transparent
         }
     }
