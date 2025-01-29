@@ -6,7 +6,7 @@ kotlin {
             implementation(project(":compottie-dot"))
             implementation(compose.ui)
             implementation(libs.serialization)
-            compileOnly(libs.atomicfu)
+            implementation(libs.atomicfu)
             api(libs.okio)
             implementation(libs.coroutines.core)
         }
