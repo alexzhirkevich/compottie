@@ -24,7 +24,7 @@ Compose Multiplatform Adobe After Effects Bodymovin (Lottie) animations renderin
 |     `compottie⁠-⁠dot`      | Contains [dotLottie](https://dotlottie.io/) and ZIP animation spec. For Compottie 2.x only                                                                                                                                                      |
 |   `compottie⁠-⁠network`    | Contains `Url` animation spec and asset/font managers (with [Ktor3](https://ktor.io/) and local cache with [Okio](https://square.github.io/okio/)). Allows loading animations and assets from web. For Compottie 2.x only                       |
 | `compottie⁠-⁠network-core` | Contains base HttpClient-free implementations for `network` module. Allows to specify custom HTTP client (Ktor3 or any other).                                                                                                                  |
-|  `compottie⁠-⁠resources`   | Contains asset and font managers powered by official Compose resources. For Compottie 2.x only                                                                                                                                                  | 
+|  `compottie⁠-⁠resources`   | Contains asset and font managers powered by official Compose resources. For Compottie 2.x only. <br>WARNING: this module DOES NOT help you to load animations from resources. It is only usefull for loading FONTS and IMAGES. Adding this can cause binary incompatibilies between Compose versions                                                                                                                                               | 
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.alexzhirkevich/compottie)](https://central.sonatype.com/artifact/io.github.alexzhirkevich/compottie)
 
@@ -34,6 +34,8 @@ dependencies {
     implementation("io.github.alexzhirkevich:compottie:<version>")
     implementation("io.github.alexzhirkevich:compottie-dot:<version>")
     implementation("io.github.alexzhirkevich:compottie-network:<version>")
+
+    // This module can cause binary incompatibilities. Please reead its description first
     implementation("io.github.alexzhirkevich:compottie-resources:<version>")
 }
 ```
