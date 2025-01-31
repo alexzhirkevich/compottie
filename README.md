@@ -35,7 +35,7 @@ dependencies {
     implementation("io.github.alexzhirkevich:compottie-dot:<version>")
     implementation("io.github.alexzhirkevich:compottie-network:<version>")
 
-    // This module can cause binary incompatibilities. Please reead its description first
+    // This module can cause binary incompatibilities. Please read its description first
     implementation("io.github.alexzhirkevich:compottie-resources:<version>")
 }
 ```
