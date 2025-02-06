@@ -107,6 +107,6 @@ internal fun MockAnimationState(
     clipTextToBoundingBoxes = true,
     enableMergePaths = true,
     enableTextGrouping = false,
-    enableOffscreenBlending = false,
+    forceOffscreenRendering = false,
     layer = NullLayer()
 )
