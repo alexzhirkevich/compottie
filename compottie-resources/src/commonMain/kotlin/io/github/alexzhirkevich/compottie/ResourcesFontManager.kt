@@ -39,25 +39,6 @@ public fun rememberResourcesFontManager(
     }
 }
 
-@OptIn(InternalCompottieApi::class, ExperimentalResourceApi::class)
-@ExperimentalCompottieApi
-/**
- * Factory method to create Compose resources [LottieFontManager] from non-composable context.
- *
- * Use [rememberResourcesFontManager] to create it from composition.
- *
- * LottiePainter created with this font manager won't work with Android Studio preview.
- *
- * Warning: this manager uses internal Compose API on Android and should be considered unstable
- * */
-public fun ResourcesFontManager(
-    environment: ResourceEnvironment = getSystemResourceEnvironment(),
-    resource : (LottieFontSpec) -> FontResource?
-) : LottieFontManager = ResourcesFontManagerImpl(
-    context = Compottie.context,
-    environment = environment,
-    resource = resource
-)
 
 @OptIn(ExperimentalResourceApi::class)
 private class ResourcesFontManagerImpl(
