@@ -167,7 +167,7 @@ internal abstract class BaseLayer : Layer {
                 matteLayer == null
                     && !hasMasks()
                     && blendMode == LottieBlendMode.Normal
-                    && (this is CompositionLayer && state.enableOffscreenBlending).not()
+                    && (this is CompositionLayer && state.forceOffscreenRendering).not()
             ) {
                 matrix.preConcat(transform.matrix(state))
                 drawLayer(drawScope, matrix, alpha, state)

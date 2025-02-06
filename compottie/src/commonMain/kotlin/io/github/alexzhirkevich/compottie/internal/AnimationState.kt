@@ -27,7 +27,7 @@ public class AnimationState @PublishedApi internal constructor(
     enableTextGrouping : Boolean,
     enableMergePaths: Boolean,
     enableExpressions: Boolean,
-    enableOffscreenBlending: Boolean,
+    forceOffscreenRendering: Boolean,
     layer: Layer
 ) {
 
@@ -80,7 +80,7 @@ public class AnimationState @PublishedApi internal constructor(
     internal var enableMergePaths by mutableStateOf(enableMergePaths)
     internal var enableExpressions by mutableStateOf(enableExpressions)
     internal var enableTextGrouping by mutableStateOf(enableTextGrouping)
-    internal var enableOffscreenBlending by mutableStateOf(enableOffscreenBlending)
+    internal var forceOffscreenRendering by mutableStateOf(forceOffscreenRendering)
 
     internal var layer: Layer = layer
         private set
