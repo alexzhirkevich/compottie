@@ -63,8 +63,8 @@ import kotlin.math.roundToInt
  * it even if it contains merge paths. This feature should only be enabled for tested animations
  * @param enableExpressions enable experimental expressions feature. Unsupported expressions will
  * be skipped with warning.
- * @param enableOffscreenBlending render animation to offscreen canvas first. It can help to fix
- * blending issues caused by the background animation is rendered on but can introduce other artifacts
+ * @param forceOffscreenRendering render animation to the offscreen canvas first. It can help to fix
+ * blending issues caused by the background animation is rendered on but can cause other visual artifacts
  * */
 @OptIn(InternalCompottieApi::class)
 @Composable
@@ -80,7 +80,7 @@ public fun rememberLottiePainter(
     enableTextGrouping : Boolean = false,
     enableMergePaths: Boolean = false,
     enableExpressions: Boolean = false,
-    enableOffscreenBlending : Boolean = false
+    forceOffscreenRendering : Boolean = false
 ) : Painter {
 
     val fontFamilyResolver = LocalFontFamilyResolver.current
@@ -116,7 +116,7 @@ public fun rememberLottiePainter(
                 enableMergePaths = enableMergePaths,
                 enableExpressions = enableExpressions,
                 applyOpacityToLayers = applyOpacityToLayers,
-                enableOffscreenBlending = enableOffscreenBlending,
+                forceOffscreenRendering = forceOffscreenRendering,
                 assets = assets.await(),
                 fonts = fonts.await()
             )
@@ -131,7 +131,7 @@ public fun rememberLottiePainter(
         applyOpacityToLayers,
         enableMergePaths,
         enableExpressions,
-        enableOffscreenBlending
+        forceOffscreenRendering
     ) {
         painter?.let {
             it.enableMergePaths = enableMergePaths
@@ -140,7 +140,7 @@ public fun rememberLottiePainter(
             it.clipToCompositionBounds = clipToCompositionBounds
             it.clipTextToBoundingBoxes = clipTextToBoundingBoxes
             it.fontFamilyResolver = fontFamilyResolver
-            it.enableOffscreenBlending = enableOffscreenBlending
+            it.forceOffscreenRendering = forceOffscreenRendering
         }
     }
 
@@ -177,7 +177,7 @@ public fun rememberLottiePainter(
     clipTextToBoundingBoxes: Boolean = false,
     enableMergePaths: Boolean = false,
     enableExpressions: Boolean = false,
-    enableOffscreenBlending : Boolean = false
+    forceOffscreenRendering : Boolean = false
 ) : Painter {
 
     val progress = animateLottieCompositionAsState(
@@ -203,7 +203,7 @@ public fun rememberLottiePainter(
         clipTextToBoundingBoxes = clipTextToBoundingBoxes,
         enableMergePaths = enableMergePaths,
         enableExpressions = enableExpressions,
-        enableOffscreenBlending = enableOffscreenBlending
+        forceOffscreenRendering = forceOffscreenRendering
     )
 }
 
@@ -251,7 +251,7 @@ private class LottiePainter(
     clipToCompositionBounds : Boolean,
     enableMergePaths : Boolean,
     enableExpressions : Boolean,
-    enableOffscreenBlending : Boolean
+    forceOffscreenRendering : Boolean
 ) : Painter() {
 
 
@@ -290,7 +290,7 @@ private class LottiePainter(
         layer = compositionLayer,
         enableExpressions = enableExpressions,
         enableTextGrouping = enableTextGrouping,
-        enableOffscreenBlending = enableOffscreenBlending
+        forceOffscreenRendering = forceOffscreenRendering
     )
 
     fun setDynamicProperties(provider: DynamicCompositionProvider?) {
@@ -307,7 +307,7 @@ private class LottiePainter(
     var fontFamilyResolver: FontFamily.Resolver by animationState::fontFamilyResolver
     var enableMergePaths: Boolean by animationState::enableMergePaths
     var enableExpressions: Boolean by animationState::enableExpressions
-    var enableOffscreenBlending: Boolean by animationState::enableOffscreenBlending
+    var forceOffscreenRendering: Boolean by animationState::forceOffscreenRendering
 
     public override fun applyAlpha(alpha: Float): Boolean {
         if (alpha !in 0f..1f)
