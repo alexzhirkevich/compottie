@@ -1,5 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.effects
 
+import androidx.compose.ui.graphics.Paint
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanIntSerializer
 import io.github.alexzhirkevich.compottie.internal.utils.getAs
@@ -29,6 +31,13 @@ internal class DropShadowEffect(
     val angle  get() = values.getAs<EffectValue.Angle>(2)?.value
     val distance  get() = values.getAs<EffectValue.Slider>(3)?.value
     val blur  get() = values.getAs<EffectValue.Slider>(4)?.value
+    override fun apply(
+        paint: Paint,
+        animationState: AnimationState,
+        effectState: LayerEffectsState
+    ) {
+        // TODO drop shadow effect
+    }
 
     override fun copy(): LayerEffect {
         return DropShadowEffect(values.map(EffectValue<RawProperty<Any>>::copy))

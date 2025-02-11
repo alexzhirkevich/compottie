@@ -1,5 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.effects
 
+import androidx.compose.ui.graphics.Paint
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -24,31 +26,33 @@ internal sealed class LayerEffect {
         values.associateBy { it.index ?: Int.MIN_VALUE }
     }
 
+    abstract fun apply(
+        paint : Paint,
+        animationState: AnimationState,
+        effectState: LayerEffectsState
+    )
+
     abstract fun copy(): LayerEffect
 
     @Serializable
-    class UnsupportedEffect() : LayerEffect() {
+    class UnsupportedEffect : LayerEffect() {
 
-//        @SerialName("ef")
         override val values: List<EffectValue<@Contextual RawProperty<@Contextual Any>>> = emptyList()
+        override fun apply(
+            paint: Paint,
+            animationState: AnimationState,
+            effectState: LayerEffectsState
+        ) {
+        }
 
-//        @SerialName("nm")
         override val name: String? = null
 
-//        @SerialName("ix")
         override val index: Int? = null
 
-//        @SerialName("en")
-//        @Serializable(with = BooleanIntSerializer::class)
         override val enabled: Boolean = true
 
         override fun copy(): LayerEffect {
-            return UnsupportedEffect(
-//                values = values.map(EffectValue<RawProperty<*>>::copy),
-//                name = name,
-//                index = index,
-//                enabled = enabled
-            )
+            return UnsupportedEffect()
         }
     }
 }

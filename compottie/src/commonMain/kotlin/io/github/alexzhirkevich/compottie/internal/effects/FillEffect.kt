@@ -1,5 +1,8 @@
 package io.github.alexzhirkevich.compottie.internal.effects
 
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Paint
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanIntSerializer
 import io.github.alexzhirkevich.compottie.internal.utils.getAs
@@ -27,6 +30,27 @@ internal class FillEffect(
     val color get() = values.getAs<EffectValue.Color>(2)?.value
 
     val opacity get() = values.getAs<EffectValue.Slider>(6)?.value
+    override fun apply(
+        paint: Paint,
+        animationState: AnimationState,
+        effectState: LayerEffectsState
+    ) {
+        val color = color?.interpolated(animationState)?.let {
+            it.copy(                              // don't divide by 100
+                alpha = it.alpha * (opacity?.interpolated(animationState)?.coerceIn(0f, 1f) ?: 1f)
+            )
+        }
+        if (paint !== effectState.lastPaint || effectState.lastFillColor != color) {
+
+            paint.colorFilter = color?.let {
+                ColorFilter.tint(color)
+            }
+            effectState.lastFillFilter = paint.colorFilter
+            effectState.lastFillColor = color
+        } else {
+            paint.colorFilter = effectState.lastFillFilter
+        }
+    }
 
     override fun copy(): LayerEffect {
         return FillEffect(values.map(EffectValue<RawProperty<Any>>::copy))

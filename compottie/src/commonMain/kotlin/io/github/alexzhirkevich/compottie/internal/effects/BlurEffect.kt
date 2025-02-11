@@ -1,7 +1,10 @@
 package io.github.alexzhirkevich.compottie.internal.effects
 
+import androidx.compose.ui.graphics.Paint
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanIntSerializer
+import io.github.alexzhirkevich.compottie.internal.platform.setBlurMaskFilter
 import io.github.alexzhirkevich.compottie.internal.utils.getAs
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
@@ -25,6 +28,18 @@ internal class BlurEffect(
 ) : LayerEffect() {
 
     val radius get() = values.getAs<EffectValue.Slider>(0)?.value
+    override fun apply(
+        paint: Paint,
+        animationState: AnimationState,
+        effectState: LayerEffectsState
+    ) {
+        val radius = radius?.interpolated(animationState)?.takeIf { it > 0f } ?: return
+
+        if (paint !== effectState.lastPaint || radius != effectState.blurRadius) {
+            paint.setBlurMaskFilter(radius)
+            effectState.blurRadius = radius
+        }
+    }
 
     override fun copy(): LayerEffect {
         return BlurEffect(values.map(EffectValue<RawProperty<Any>>::copy))
