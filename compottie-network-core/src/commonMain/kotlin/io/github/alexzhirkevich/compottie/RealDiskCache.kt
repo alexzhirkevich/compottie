@@ -1,23 +1,23 @@
 package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Stable
-import kotlinx.coroutines.CoroutineDispatcher
 import okio.ByteString.Companion.encodeUtf8
 import okio.FileSystem
 import okio.Path
+import kotlin.coroutines.CoroutineContext
 
 @Stable
 internal class RealDiskCache(
     override val maxSize: Long,
     override val directory: Path,
     override val fileSystem: FileSystem,
-    cleanupDispatcher: CoroutineDispatcher,
+    cleanupContext: CoroutineContext,
 ) : DiskCache {
 
     private val cache = DiskLruCache(
         fileSystem = fileSystem,
         directory = directory,
-        cleanupDispatcher = cleanupDispatcher,
+        cleanupContext = cleanupContext,
         maxSize = maxSize,
         appVersion = 2,
         valueCount = 2,

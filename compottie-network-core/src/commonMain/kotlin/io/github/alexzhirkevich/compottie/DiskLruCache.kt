@@ -20,6 +20,7 @@ import okio.Path
 import okio.Sink
 import okio.blackholeSink
 import okio.buffer
+import kotlin.coroutines.CoroutineContext
 
 /**
  * A cache that uses a bounded amount of space on a filesystem. Each cache entry has a string key
@@ -61,14 +62,14 @@ import okio.buffer
  * @constructor Create a cache which will reside in [directory]. This cache is lazily initialized on
  *  first access and will be created if it does not exist.
  * @param directory a writable directory.
- * @param cleanupDispatcher the dispatcher to run cache size trim operations on.
+ * @param cleanupContext the coroutine context to run cache size trim operations on.
  * @param valueCount the number of values per cache entry. Must be positive.
  * @param maxSize the maximum number of bytes this cache should use to store.
  */
 internal class DiskLruCache(
     fileSystem: FileSystem,
     private val directory: Path,
-    cleanupDispatcher: CoroutineDispatcher,
+    cleanupContext: CoroutineContext,
     private val maxSize: Long,
     private val appVersion: Int,
     private val valueCount: Int,
@@ -123,7 +124,14 @@ internal class DiskLruCache(
     private val journalFileTmp = directory / JOURNAL_FILE_TMP
     private val journalFileBackup = directory / JOURNAL_FILE_BACKUP
     private val lruEntries = LinkedHashMap<String, Entry>()
-    private val cleanupScope = CoroutineScope(SupervisorJob() + cleanupDispatcher.limitedParallelism(1))
+
+    @OptIn(ExperimentalStdlibApi::class, InternalCompottieApi::class)
+    private val cleanupScope = CoroutineScope(
+        cleanupContext +
+                SupervisorJob() +
+                (cleanupContext[CoroutineDispatcher] ?: Compottie.ioDispatcher())
+                    .limitedParallelism(1)
+    )
     private val lock = SynchronizedObject()
     private var size = 0L
     private var operationsSinceRewrite = 0
@@ -354,6 +362,7 @@ internal class DiskLruCache(
             writeByte(' '.code)
             writeUtf8(key)
             writeByte('\n'.code)
+            flush()
         }
 
         if (journalRewriteRequired()) {
@@ -504,7 +513,9 @@ internal class DiskLruCache(
 
         val entry = lruEntries[key] ?: return false
         val removed = removeEntry(entry)
-        if (removed && size <= maxSize) mostRecentTrimFailed = false
+        if (removed && size <= maxSize) {
+            mostRecentTrimFailed = false
+        }
         return removed
     }
 
@@ -538,6 +549,7 @@ internal class DiskLruCache(
             writeByte(' '.code)
             writeUtf8(entry.key)
             writeByte('\n'.code)
+            flush()
         }
         lruEntries.remove(entry.key)
 

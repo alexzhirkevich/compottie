@@ -1,11 +1,11 @@
 package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Stable
-import kotlinx.coroutines.CoroutineDispatcher
 import okio.Closeable
 import okio.FileSystem
 import okio.Path
 import okio.Path.Companion.toPath
+import kotlin.coroutines.CoroutineContext
 import kotlin.js.JsName
 
 /**
@@ -119,12 +119,12 @@ public fun DiskCache(
     directory: Path = FileSystem.SYSTEM_TEMPORARY_DIRECTORY.resolve("compottie_disc_cache".toPath()),
     fileSystem : FileSystem = defaultFileSystem(),
     maxSizeBytes : Long = MB_250,
-    cleanupDispatcher : CoroutineDispatcher = Compottie.ioDispatcher()
+    cleanupContext : CoroutineContext = Compottie.ioDispatcher()
 ) : DiskCache = RealDiskCache(
     maxSize = maxSizeBytes,
     directory = directory,
     fileSystem = fileSystem,
-    cleanupDispatcher = cleanupDispatcher
+    cleanupContext = cleanupContext
 )
 
 private const val MB_250 = 250L * 1024 * 1024
