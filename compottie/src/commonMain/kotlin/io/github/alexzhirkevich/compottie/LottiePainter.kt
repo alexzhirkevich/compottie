@@ -9,18 +9,13 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.scale
-import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.assets.EmptyAssetsManager
 import io.github.alexzhirkevich.compottie.assets.EmptyFontManager
@@ -34,9 +29,8 @@ import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.layers.CompositionLayer
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.utils.fastReset
+import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
-import kotlin.math.roundToInt
 
 /**
  * Create and remember Lottie painter
@@ -79,8 +73,7 @@ public fun rememberLottiePainter(
     clipTextToBoundingBoxes: Boolean = false,
     enableTextGrouping : Boolean = false,
     enableMergePaths: Boolean = false,
-    enableExpressions: Boolean = false,
-    forceOffscreenRendering : Boolean = false
+    enableExpressions: Boolean = false
 ) : Painter {
 
     val fontFamilyResolver = LocalFontFamilyResolver.current
@@ -116,7 +109,6 @@ public fun rememberLottiePainter(
                 enableMergePaths = enableMergePaths,
                 enableExpressions = enableExpressions,
                 applyOpacityToLayers = applyOpacityToLayers,
-                forceOffscreenRendering = forceOffscreenRendering,
                 assets = assets.await(),
                 fonts = fonts.await()
             )
@@ -130,8 +122,7 @@ public fun rememberLottiePainter(
         clipToCompositionBounds,
         applyOpacityToLayers,
         enableMergePaths,
-        enableExpressions,
-        forceOffscreenRendering
+        enableExpressions
     ) {
         painter?.let {
             it.enableMergePaths = enableMergePaths
@@ -140,7 +131,6 @@ public fun rememberLottiePainter(
             it.clipToCompositionBounds = clipToCompositionBounds
             it.clipTextToBoundingBoxes = clipTextToBoundingBoxes
             it.fontFamilyResolver = fontFamilyResolver
-            it.forceOffscreenRendering = forceOffscreenRendering
         }
     }
 
@@ -202,8 +192,7 @@ public fun rememberLottiePainter(
         clipToCompositionBounds = clipToCompositionBounds,
         clipTextToBoundingBoxes = clipTextToBoundingBoxes,
         enableMergePaths = enableMergePaths,
-        enableExpressions = enableExpressions,
-        forceOffscreenRendering = forceOffscreenRendering
+        enableExpressions = enableExpressions
     )
 }
 
@@ -250,19 +239,13 @@ private class LottiePainter(
     enableTextGrouping : Boolean,
     clipToCompositionBounds : Boolean,
     enableMergePaths : Boolean,
-    enableExpressions : Boolean,
-    forceOffscreenRendering : Boolean
+    enableExpressions : Boolean
 ) : Painter() {
 
 
     override val intrinsicSize: Size = Size(
         composition.animation.width,
         composition.animation.height
-    )
-
-    private val intIntrinsicSize = IntSize(
-        intrinsicSize.width.roundToInt(),
-        intrinsicSize.height.roundToInt()
     )
 
     private val progress: Float by derivedStateOf(progress::invoke)
@@ -289,8 +272,7 @@ private class LottiePainter(
         enableMergePaths = enableMergePaths,
         layer = compositionLayer,
         enableExpressions = enableExpressions,
-        enableTextGrouping = enableTextGrouping,
-        forceOffscreenRendering = forceOffscreenRendering
+        enableTextGrouping = enableTextGrouping
     )
 
     fun setDynamicProperties(provider: DynamicCompositionProvider?) {
@@ -307,7 +289,6 @@ private class LottiePainter(
     var fontFamilyResolver: FontFamily.Resolver by animationState::fontFamilyResolver
     var enableMergePaths: Boolean by animationState::enableMergePaths
     var enableExpressions: Boolean by animationState::enableExpressions
-    var forceOffscreenRendering: Boolean by animationState::forceOffscreenRendering
 
     public override fun applyAlpha(alpha: Float): Boolean {
         if (alpha !in 0f..1f)
@@ -319,29 +300,18 @@ private class LottiePainter(
 
     override fun DrawScope.onDraw() {
         try {
+
             matrix.fastReset()
-
-            val scale = ContentScale.FillBounds.computeScaleFactor(intrinsicSize, size)
-
-            val offset = Alignment.Center.align(
-                size = intIntrinsicSize,
-                space = IntSize(
-                    size.width.roundToInt(),
-                    size.height.roundToInt()
-                ),
-                layoutDirection = layoutDirection
+            matrix.preScale(
+                size.width / intrinsicSize.width,
+                size.height / intrinsicSize.height
             )
 
-            scale(scale.scaleX, scale.scaleY) {
-                translate(offset.x.toFloat(), offset.y.toFloat()) {
-                    animationState.onFrame(frame) {
-                        compositionLayer.draw(this, matrix, alpha, it)
-                    }
-                }
+            animationState.onFrame(frame) {
+                compositionLayer.draw(this, matrix, alpha, it)
             }
-        } catch (t : Throwable){
-            println("Lottie crashed in draw :C")
-            t.printStackTrace()
+        } catch (t: Throwable) {
+            Compottie.logger?.error("Lottie crashed in draw :C", t)
         }
     }
 }
