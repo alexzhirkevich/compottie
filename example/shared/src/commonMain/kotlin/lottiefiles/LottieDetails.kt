@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconButton
@@ -63,6 +64,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
@@ -107,6 +110,14 @@ internal fun LottieDetails(
 
     var speedIndex by rememberSaveable {
         mutableStateOf(0)
+    }
+
+    var applyOpacityToLayers by remember {
+        mutableStateOf(false)
+    }
+
+    var offscreenComposing by remember {
+        mutableStateOf(false)
     }
 
     LaunchedEffect(
@@ -286,10 +297,16 @@ internal fun LottieDetails(
                         ) {
 
                             Image(
-                                modifier = Modifier.fillMaxSize(),
+                                modifier = Modifier.fillMaxSize()
+                                    .graphicsLayer {
+                                        if (offscreenComposing) {
+                                            this.compositingStrategy = CompositingStrategy.Offscreen
+                                        }
+                                    },
                                 painter = rememberLottiePainter(
                                     composition = composition,
-                                    progress = animatable::value
+                                    progress = animatable::value,
+                                    applyOpacityToLayers = applyOpacityToLayers
                                 ),
                                 contentDescription = file.name
                             )
@@ -409,6 +426,25 @@ internal fun LottieDetails(
                     }
 
 
+
+                    BooleanPreference(
+                        checked = applyOpacityToLayers,
+                        onCheckedChange = {
+                            applyOpacityToLayers = it
+                        },
+                        label = "Apply opacity to layers"
+                    )
+
+                    BooleanPreference(
+                        checked = offscreenComposing,
+                        onCheckedChange = {
+                            offscreenComposing = it
+                        },
+                        label = "Ofscreen composing"
+                    )
+
+
+
                     Text(
                         text = "Tags",
                         fontWeight = FontWeight.SemiBold,
@@ -474,6 +510,30 @@ private val Speed = listOf(
     .75f to ".75x",
 )
 
+
+@Composable
+private fun BooleanPreference(
+    modifier: Modifier = Modifier,
+    checked: Boolean,
+    onCheckedChange: ((Boolean) -> Unit)?,
+    label : String
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Checkbox(
+            checked = checked,
+            onCheckedChange = onCheckedChange
+        )
+        Text(
+            text = label,
+            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.titleMedium
+        )
+    }
+}
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 private fun DownloadButton(

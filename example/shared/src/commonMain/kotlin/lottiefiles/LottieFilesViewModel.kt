@@ -69,6 +69,14 @@ internal class LottieFilesViewModel() : ViewModel() {
             combine(search.debounce(1000), sortOrder, page) { q, s, p ->
                 Triple(q, s, p)
             }.collectLatest { (q, s, p) ->
+
+                if (q.isBlank()){
+                    _files.value = emptyList()
+                    _pageCount.value = 0
+                    _page.value = 1
+                    return@collectLatest
+                }
+
                 try {
                     val resp = httpClient.get(
                         "https://lottiefiles.com/api/search/get-animations"

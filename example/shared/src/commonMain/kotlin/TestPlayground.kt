@@ -36,7 +36,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import interactivecontrols.InteractiveControlsScreen
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.CompottieException
 import io.github.alexzhirkevich.compottie.ExperimentalCompottieApi
@@ -148,7 +147,7 @@ public fun TestPlayground() {
 //        LottieCompositionSpec.ResourceString("expr/move_horizontal.json")
 //        LottieCompositionSpec.ResourceString("expr/wiggle.json")
 //        LottieCompositionSpec.ResourceString("expr/noise.json")
-        LottieCompositionSpec.ResourceString(SKEWED_STROKE)
+        LottieCompositionSpec.ResourceString(IMAGE_ASSET)
 //
 //        LottieCompositionSpec.Url(
 //            "https://assets-v2.lottiefiles.com/a/9286b092-117a-11ee-b857-2712bc869389/WSepKUr5be.lottie"
