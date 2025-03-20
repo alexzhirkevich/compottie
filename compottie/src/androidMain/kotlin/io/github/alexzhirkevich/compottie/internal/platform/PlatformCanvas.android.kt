@@ -6,8 +6,6 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.nativeCanvas
-import io.github.alexzhirkevich.compottie.internal.utils.fastSetFrom
-import androidx.compose.ui.graphics.setFrom
 
 // the same as  androidx.compose.ui.graphics.setFrom but without arbitraty check
 internal fun android.graphics.Matrix.setFromInternal(matrix: Matrix) {
@@ -55,9 +53,6 @@ internal fun android.graphics.Matrix.setFromInternal(matrix: Matrix) {
     v[Matrix.Perspective1] = persp1 // 7
     v[8] = v8 // 8
 }
-
-internal actual fun Canvas.getMatrix(matrix: Matrix) =
-    matrix.setFrom(nativeCanvas.matrix)
 
 internal actual fun Canvas.saveLayer(rect : MutableRect, paint : Paint, flag : Int)  {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {

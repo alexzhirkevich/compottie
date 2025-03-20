@@ -57,8 +57,6 @@ import kotlinx.coroutines.async
  * it even if it contains merge paths. This feature should only be enabled for tested animations
  * @param enableExpressions enable experimental expressions feature. Unsupported expressions will
  * be skipped with warning.
- * @param forceOffscreenRendering render animation to the offscreen canvas first. It can help to fix
- * blending issues caused by the background animation is rendered on but can cause other visual artifacts
  * */
 @OptIn(InternalCompottieApi::class)
 @Composable
@@ -166,8 +164,7 @@ public fun rememberLottiePainter(
     clipToCompositionBounds: Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
     enableMergePaths: Boolean = false,
-    enableExpressions: Boolean = false,
-    forceOffscreenRendering : Boolean = false
+    enableExpressions: Boolean = false
 ) : Painter {
 
     val progress = animateLottieCompositionAsState(

@@ -28,7 +28,6 @@ import io.github.alexzhirkevich.compottie.internal.helpers.isInvert
 import io.github.alexzhirkevich.compottie.internal.helpers.isLuma
 import io.github.alexzhirkevich.compottie.internal.platform.Luma
 import io.github.alexzhirkevich.compottie.internal.platform.drawRect
-import io.github.alexzhirkevich.compottie.internal.platform.isAndroidAtMost
 import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import io.github.alexzhirkevich.compottie.internal.utils.fastSetFrom
@@ -338,9 +337,7 @@ internal abstract class BaseLayer : Layer {
     private fun applyMasks(canvas: Canvas, matrix: Matrix, state: AnimationState) {
         canvas.saveLayer(rect, dstInPaint, SAVE_FLAGS)
 
-        if (isAndroidAtMost(27)) {
-            clearCanvas(canvas)
-        }
+        clearCanvas(canvas)
 
         masks?.fastForEachIndexed { i, mask ->
 

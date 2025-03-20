@@ -14,19 +14,6 @@ private val tempMatrixTransform = Matrix()
 
 internal val IdentityMatrix = Matrix()
 
-private val InvSqrt2Offset = Offset(
-    1/sqrt(2f),
-    1/sqrt(2f),
-)
-internal val Matrix.scale: Float get() {
-    val p1 = map(Offset.Zero)
-    val p2 = map(InvSqrt2Offset)
-
-    // hypot can result in float errors like 1.00000010
-    // that cause some problems like invalid stroke dash offset
-    return (hypot(p2.x - p1.x, p2.y - p1.y) * 1000).roundToInt() / 1000f
-}
-
 internal fun Matrix.preTranslate(x : Float, y : Float) {
     if (x.absoluteValue < Float.MIN_VALUE && y.absoluteValue< Float.MIN_VALUE) {
         return

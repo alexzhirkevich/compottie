@@ -1,16 +1,11 @@
 package io.github.alexzhirkevich.compottie.dynamic
 
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
-import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.platform.GradientCache
-import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
-import io.github.alexzhirkevich.compottie.internal.utils.scale
-import kotlin.js.JsName
 
 internal class DynamicStrokeProvider: BaseDynamicDrawProvider(), DynamicStroke {
 
