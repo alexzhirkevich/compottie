@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
+import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
@@ -55,6 +56,10 @@ internal class GroupShape(
                 it.setDynamicProperties(path, properties)
             }
         }
+    }
+
+    override fun prepareExpressions() {
+        items.fastForEach { it.prepareExpressions() }
     }
 
     override fun deepCopy(): Shape {

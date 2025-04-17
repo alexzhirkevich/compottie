@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.helpers
 
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
+import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
@@ -18,13 +19,17 @@ internal class StrokeDash(
 
     @SerialName("v")
     val value : AnimatedNumber
-) {
+) : ExpressionHolder {
     fun copy() = StrokeDash(
         name = name,
         matchName = matchName,
         dashType = dashType,
         value = value.copy()
     )
+
+    override fun prepareExpressions() {
+        value.prepareExpressions()
+    }
 }
 
 @JvmInline

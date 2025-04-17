@@ -31,6 +31,7 @@ import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.utils.fastReset
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
 
 /**
  * Create and remember Lottie painter
@@ -55,8 +56,8 @@ import kotlinx.coroutines.async
  * for any locales as this feature greatly improves texts performance
  * @param enableMergePaths enable experimental merge paths feature. Most of the time animation doesn't need
  * it even if it contains merge paths. This feature should only be enabled for tested animations
- * @param enableExpressions enable experimental expressions feature. Unsupported expressions will
- * be skipped with warning.
+ * @param enableExpressions enable experimental expressions feature. Changing this parameter after
+ * composition (with recomposition) may cause performance spike
  * */
 @OptIn(InternalCompottieApi::class)
 @Composable
@@ -89,15 +90,32 @@ public fun rememberLottiePainter(
         null, composition, copy
     ) {
         if (composition != null) {
-            val assets = async(Compottie.ioDispatcher()) {
-                composition.loadAssets(assetsManager ?: EmptyAssetsManager, copy)
+            val assets = if (composition.hasAssets) {
+                async(Compottie.ioDispatcher()) {
+                    composition.loadAssets(assetsManager ?: EmptyAssetsManager, copy)
+                }
+            } else {
+                null
             }
-            val fonts = async(Compottie.ioDispatcher()) {
-                composition.loadFonts(fontManager ?: EmptyFontManager)
+
+            val fonts = if (composition.hasFonts) {
+                async(Compottie.ioDispatcher()) {
+                    composition.loadFonts(fontManager ?: EmptyFontManager)
+                }
+            } else {
+                null
+            }
+
+            val comp = if (copy) composition.deepCopy() else composition
+
+            if (enableExpressions) {
+                withContext(Compottie.ioDispatcher()) {
+                    composition.animation.prepareExpressions()
+                }
             }
 
             value = LottiePainter(
-                composition = if (copy) composition.deepCopy() else composition,
+                composition = comp,
                 progress = updatedProgress::invoke,
                 dynamicProperties = dp,
                 clipTextToBoundingBoxes = clipTextToBoundingBoxes,
@@ -107,9 +125,10 @@ public fun rememberLottiePainter(
                 enableMergePaths = enableMergePaths,
                 enableExpressions = enableExpressions,
                 applyOpacityToLayers = applyOpacityToLayers,
-                assets = assets.await(),
-                fonts = fonts.await()
+                assets = assets?.await().orEmpty(),
+                fonts = fonts?.await().orEmpty()
             )
+
         }
     }
 

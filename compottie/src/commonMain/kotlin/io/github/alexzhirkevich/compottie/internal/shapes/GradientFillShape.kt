@@ -181,6 +181,13 @@ internal class GradientFillShape(
         roundShape = contentsBefore.firstInstanceOf()
     }
 
+    override fun prepareExpressions() {
+        opacity.prepareExpressions()
+        startPoint.prepareExpressions()
+        endPoint.prepareExpressions()
+        colors.prepareExpressions()
+    }
+
     override fun deepCopy(): Shape {
         return GradientFillShape(
             matchName = matchName,

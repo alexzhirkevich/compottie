@@ -7,12 +7,12 @@ import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
-import io.github.alexzhirkevich.compottie.internal.platform.set
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
-import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundSimultaneousTrimPath
+import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
+import io.github.alexzhirkevich.compottie.internal.platform.set
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -65,6 +65,10 @@ internal class PathShape(
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
         trimPaths = CompoundSimultaneousTrimPath(contentsBefore)
+    }
+
+    override fun prepareExpressions() {
+        shape.prepareExpressions()
     }
 
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {

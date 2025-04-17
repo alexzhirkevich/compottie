@@ -49,10 +49,6 @@ internal sealed class AnimatedVectorN : DynamicProperty<List<Float>>() {
         override val index: Int? = null
     ) : AnimatedVectorN() {
 
-        init {
-            prepare()
-        }
-
         override fun raw(state: AnimationState): List<Float> = value
 
         override fun copy(): AnimatedVectorN {
@@ -75,10 +71,6 @@ internal sealed class AnimatedVectorN : DynamicProperty<List<Float>>() {
         @SerialName("ix")
         override val index: Int? = null
     ) : AnimatedVectorN(), AnimatedKeyframeProperty<List<Float>, VectorKeyframe> {
-
-        init {
-            prepare()
-        }
 
         @Transient
         private val delegate = BaseKeyframeAnimation(

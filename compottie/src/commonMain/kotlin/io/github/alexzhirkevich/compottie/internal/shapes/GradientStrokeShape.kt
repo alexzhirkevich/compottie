@@ -70,8 +70,6 @@ internal class GradientStrokeShape(
     val type : GradientType = GradientType.Linear
 )  : BaseStrokeShape(), Shape {
 
-
-
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
 
         if (dynamicStroke?.gradient == null) {
@@ -87,6 +85,15 @@ internal class GradientStrokeShape(
         }
 
         super.draw(drawScope, parentMatrix, parentAlpha, state)
+    }
+
+    override fun prepareExpressions() {
+        super.prepareExpressions()
+        startPoint.prepareExpressions()
+        endPoint.prepareExpressions()
+        highlightLength?.prepareExpressions()
+        highlightAngle?.prepareExpressions()
+        colors.prepareExpressions()
     }
 
     override fun deepCopy(): Shape {

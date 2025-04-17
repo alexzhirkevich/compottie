@@ -7,7 +7,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.util.fastMap
@@ -30,7 +29,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -218,6 +216,14 @@ public class LottieComposition internal constructor(
     private var storedFonts : MutableMap<String, FontFamily> = mutableMapOf()
 
     private val markersMap = animation.markers.associateBy(Marker::name)
+
+
+    internal val hasAssets : Boolean
+        get() = animation.assets.isNotEmpty()
+
+    internal val hasFonts : Boolean
+        get() = animation.fonts?.list?.isNotEmpty() == true
+
 
     internal fun findGlyphs(family : String?) : Map<String, CharacterData>? {
         return charGlyphs[family] ?: run {

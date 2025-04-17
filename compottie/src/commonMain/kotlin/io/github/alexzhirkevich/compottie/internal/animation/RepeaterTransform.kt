@@ -67,6 +67,12 @@ internal class RepeaterTransform(
         return matrix
     }
 
+    override fun prepareExpressions() {
+        super.prepareExpressions()
+        startOpacity?.prepareExpressions()
+        endOpacity?.prepareExpressions()
+    }
+
     fun deepCopy() = RepeaterTransform(
         anchorPoint = anchorPoint.copy(),
         position = position.copy(),

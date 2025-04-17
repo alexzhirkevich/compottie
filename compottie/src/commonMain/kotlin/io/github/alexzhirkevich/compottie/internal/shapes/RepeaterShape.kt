@@ -110,6 +110,12 @@ internal class RepeaterShape(
         contentGroup?.setContents(contentsBefore, contentsAfter)
     }
 
+    override fun prepareExpressions() {
+        copies.prepareExpressions()
+        offset.prepareExpressions()
+
+    }
+
     override fun absorbContent(contents: MutableList<Content>) {
 
         // This check prevents a repeater from getting added twice.

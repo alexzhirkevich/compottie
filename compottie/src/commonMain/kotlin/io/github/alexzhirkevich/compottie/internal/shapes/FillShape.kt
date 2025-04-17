@@ -55,8 +55,7 @@ internal class FillShape(
 
     @SerialName("r")
     val fillRule : FillRule? = null,
-
-    ) : Shape, DrawingContent {
+) : Shape, DrawingContent {
 
     @Transient
     private val path = Path()
@@ -161,5 +160,10 @@ internal class FillShape(
         paths = contentsAfter.filterIsInstance<PathContent>()
 
         roundShape = contentsBefore.find { it is RoundShape } as? RoundShape
+    }
+
+    override fun prepareExpressions() {
+        opacity.prepareExpressions()
+        color.prepareExpressions()
     }
 }

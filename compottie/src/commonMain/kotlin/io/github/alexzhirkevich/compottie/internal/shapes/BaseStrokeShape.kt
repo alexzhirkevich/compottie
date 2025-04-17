@@ -252,6 +252,12 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         outBounds.extendBy(strokeWidth.interpolated(state) + 1)
     }
 
+    override fun prepareExpressions() {
+        opacity.prepareExpressions()
+        strokeWidth.prepareExpressions()
+        strokeDash?.fastForEach { it.prepareExpressions() }
+    }
+
     private fun applyTrimPath(
         canvas: Canvas,
         state: AnimationState,

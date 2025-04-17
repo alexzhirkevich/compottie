@@ -5,7 +5,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Express
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.RawExpressionEvaluator
 import kotlinx.serialization.Transient
 
-internal abstract class ExpressionProperty<T : Any> : AnimatedProperty<T> {
+internal abstract class ExpressionProperty<T : Any> : AnimatedProperty<T>, ExpressionHolder {
 
     abstract val expression: String?
 
@@ -14,13 +14,17 @@ internal abstract class ExpressionProperty<T : Any> : AnimatedProperty<T> {
         expression?.let(::ExpressionEvaluator) ?: RawExpressionEvaluator
     }
 
-    fun prepare() {
+    override fun prepareExpressions() {
         expressionEvaluator
     }
 
     abstract fun mapEvaluated(e: Any): T
 
     override fun interpolated(state: AnimationState): T {
+
+        if (!state.enableExpressions){
+            return raw(state)
+        }
         val evaluator = expressionEvaluator
         val evaluated = evaluator.run { evaluate(state) }
 

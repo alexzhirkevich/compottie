@@ -19,7 +19,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.tan
 
-internal abstract class AnimatedTransform {
+internal abstract class AnimatedTransform : ExpressionHolder {
 
     abstract val anchorPoint: AnimatedVector2
     abstract val position: AnimatedVector2
@@ -32,6 +32,19 @@ internal abstract class AnimatedTransform {
     abstract val skew: AnimatedNumber
     abstract val skewAxis: AnimatedNumber
 
+
+    override fun prepareExpressions() {
+        anchorPoint.prepareExpressions()
+        position.prepareExpressions()
+        scale.prepareExpressions()
+        rotation.prepareExpressions()
+        rotationX?.prepareExpressions()
+        rotationY?.prepareExpressions()
+        rotationZ?.prepareExpressions()
+        opacity.prepareExpressions()
+        skew.prepareExpressions()
+        skewAxis.prepareExpressions()
+    }
 
     var dynamic : DynamicTransformProvider? = null
         set(value) {

@@ -1,8 +1,8 @@
 package io.github.alexzhirkevich.compottie.internal.helpers
 
-import io.github.alexzhirkevich.compottie.Compottie
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
+import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
@@ -27,7 +27,7 @@ internal class Mask(
 
     @SerialName("x")
     val expand: AnimatedNumber? = null
-) {
+) : ExpressionHolder {
 
     init {
         // Until v 4.4.18 mask objects had a boolean cl property and c was not present in the bezier data
@@ -43,6 +43,12 @@ internal class Mask(
         mode = mode,
         expand = expand?.copy()
     )
+
+    override fun prepareExpressions() {
+        opacity?.prepareExpressions()
+        expand?.prepareExpressions()
+        shape?.prepareExpressions()
+    }
 }
 
 @Serializable

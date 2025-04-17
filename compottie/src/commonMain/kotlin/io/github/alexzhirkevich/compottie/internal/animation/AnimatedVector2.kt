@@ -57,9 +57,6 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
         override val index: Int? = null
     ) : AnimatedVector2() {
 
-        init {
-            prepare()
-        }
 
         @Transient
         private val vec = Vec2(value[0], value[1])
@@ -86,10 +83,6 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
         @SerialName("ix")
         override val index: Int? = null
     ) : AnimatedVector2(), AnimatedKeyframeProperty<Vec2, VectorKeyframe> {
-
-        init {
-            prepare()
-        }
 
         private val path = Path()
 
@@ -146,9 +139,6 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
         val y: AnimatedNumber,
     ) : AnimatedVector2() {
 
-        init {
-            prepare()
-        }
 
         override val expression: String?
             get() = null

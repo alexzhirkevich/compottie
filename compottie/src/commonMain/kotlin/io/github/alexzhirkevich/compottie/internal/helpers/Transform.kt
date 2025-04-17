@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie.internal.helpers
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
 import io.github.alexzhirkevich.compottie.internal.animation.defaultAnchorPoint
 import io.github.alexzhirkevich.compottie.internal.animation.defaultOpacity
 import io.github.alexzhirkevich.compottie.internal.animation.defaultPosition
@@ -45,7 +46,7 @@ internal class Transform(
 
     @SerialName("sa")
     override val skewAxis: AnimatedNumber = AnimatedNumber.defaultSkewAxis(),
-) : AnimatedTransform() {
+) : AnimatedTransform(), ExpressionHolder {
 
     fun deepCopy(): Transform {
         return Transform(

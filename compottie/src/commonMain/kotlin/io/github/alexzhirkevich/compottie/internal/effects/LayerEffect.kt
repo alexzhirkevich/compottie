@@ -1,7 +1,9 @@
 package io.github.alexzhirkevich.compottie.internal.effects
 
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -11,7 +13,7 @@ import kotlinx.serialization.json.JsonClassDiscriminator
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonClassDiscriminator("ty")
-internal sealed class LayerEffect {
+internal sealed class LayerEffect : ExpressionHolder {
 
     abstract val enabled: Boolean
     abstract val name: String?
@@ -24,6 +26,10 @@ internal sealed class LayerEffect {
 
     val valueByIndex by lazy {
         values.associateBy { it.index ?: Int.MIN_VALUE }
+    }
+
+    override fun prepareExpressions() {
+        values.fastForEach { it.prepareExpressions() }
     }
 
     abstract fun apply(
@@ -53,6 +59,10 @@ internal sealed class LayerEffect {
 
         override fun copy(): LayerEffect {
             return UnsupportedEffect()
+        }
+
+        override fun prepareExpressions() {
+
         }
     }
 }

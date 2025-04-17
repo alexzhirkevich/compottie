@@ -5,9 +5,9 @@ import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.helpers.TrimPathType
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -40,8 +40,6 @@ internal class TrimPathShape(
     val type : TrimPathType = TrimPathType.Simultaneously
 ) : Shape {
 
-
-
     @Transient
     private var dynamicShape : DynamicShapeProvider? = null
     fun isHidden(state : AnimationState) : Boolean {
@@ -50,6 +48,12 @@ internal class TrimPathShape(
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
 
+    }
+
+    override fun prepareExpressions() {
+        start.prepareExpressions()
+        end.prepareExpressions()
+        offset.prepareExpressions()
     }
 
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {

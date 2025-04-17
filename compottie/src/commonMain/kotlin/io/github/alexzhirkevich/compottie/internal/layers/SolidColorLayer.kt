@@ -8,7 +8,6 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.util.fastMap
-import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
@@ -75,6 +74,9 @@ internal class SolidColorLayer(
     @SerialName("hasMask")
     override val hasMask: Boolean? = null,
 
+    @SerialName("ef")
+    override var effects: List<LayerEffect> = emptyList(),
+
     @SerialName("sw")
     val width : Float,
 
@@ -83,9 +85,6 @@ internal class SolidColorLayer(
 
     @SerialName("sc")
     val colorHex : String,
-
-    @SerialName("ef")
-    override var effects: List<LayerEffect> = emptyList()
 ) : BaseLayer() {
 
     @Transient

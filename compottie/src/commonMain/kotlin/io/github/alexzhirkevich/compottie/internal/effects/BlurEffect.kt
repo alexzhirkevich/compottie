@@ -44,4 +44,8 @@ internal class BlurEffect(
     override fun copy(): LayerEffect {
         return BlurEffect(values.map(EffectValue<RawProperty<Any>>::copy))
     }
+
+    override fun prepareExpressions() {
+        TODO("Not yet implemented")
+    }
 }

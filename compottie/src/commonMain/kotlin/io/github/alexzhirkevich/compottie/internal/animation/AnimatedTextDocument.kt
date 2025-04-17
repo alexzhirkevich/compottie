@@ -28,11 +28,17 @@ internal class AnimatedTextDocument(
 
     @SerialName("sid")
     val slotID : String? = null
-) : AnimatedKeyframeProperty<TextDocument, TextDocumentKeyframe> {
+) : AnimatedKeyframeProperty<TextDocument, TextDocumentKeyframe>, ExpressionHolder {
 
     private val document = TextDocument()
 
-    private val evaluator = expression?.let(::ExpressionEvaluator)
+    private val evaluator by lazy {
+        expression?.let(::ExpressionEvaluator)
+    }
+
+    override fun prepareExpressions() {
+        evaluator
+    }
 
     @Transient
     var dynamic : DynamicTextLayerProvider? = null
@@ -72,7 +78,11 @@ internal class AnimatedTextDocument(
     override fun interpolated(state: AnimationState): TextDocument {
         val raw = raw(state)
 
-        val evaluatedText = evaluator?.run { evaluate(state) } as? String ?: raw.text
+        val evaluatedText = if (state.enableExpressions) {
+            evaluator?.run { evaluate(state) } as? String ?: raw.text
+        } else {
+            raw.text
+        }
 
         return document.apply {
             fontFamily = raw.fontFamily

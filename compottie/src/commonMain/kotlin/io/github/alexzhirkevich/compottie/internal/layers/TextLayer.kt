@@ -95,9 +95,6 @@ internal class TextLayer(
     @SerialName("ef")
     override var effects: List<LayerEffect> = emptyList(),
 
-    @SerialName("t")
-    private val textData: TextData,
-
     @SerialName("ao")
     @Serializable(with = BooleanIntSerializer::class)
     override val autoOrient: Boolean = false,
@@ -113,6 +110,9 @@ internal class TextLayer(
 
     @SerialName("bm")
     override val blendMode: LottieBlendMode = LottieBlendMode.Normal,
+
+    @SerialName("t")
+    private val textData: TextData,
 ) : BaseLayer() {
 
     @Transient

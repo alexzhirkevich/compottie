@@ -43,10 +43,6 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
         override val index: Int? = null
     ) : AnimatedColor() {
 
-        init {
-            prepare()
-        }
-
         @Transient
         private val color: Color = value.toColor()
 
@@ -79,10 +75,6 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
             lerp(s.toColor(), e.toColor(), easingX.transform(p))
         }
     ) {
-
-        init {
-            prepare()
-        }
 
         override fun copy(): AnimatedColor {
             return Animated(

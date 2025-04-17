@@ -1,5 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal
 
+import androidx.compose.ui.util.fastForEach
+import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
 import io.github.alexzhirkevich.compottie.internal.assets.CharacterData
 import io.github.alexzhirkevich.compottie.internal.assets.FontList
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
@@ -44,7 +46,7 @@ internal class Animation(
 
     @SerialName("slots")
     private val slotsMap : Map<String, JsonElement> ?= null,
-) {
+) : ExpressionHolder {
 
     @Transient
     val slots = Slots(slotsMap?.mapValues {
@@ -52,6 +54,10 @@ internal class Animation(
             "Invalid slottable property: ${it.value}"
         }
     }.orEmpty())
+
+    override fun prepareExpressions() {
+        layers.fastForEach(Layer::prepareExpressions)
+    }
 
     fun deepCopy() : Animation {
         return Animation(

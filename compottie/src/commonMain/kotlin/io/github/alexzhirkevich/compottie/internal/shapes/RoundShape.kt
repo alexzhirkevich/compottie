@@ -30,8 +30,6 @@ internal class RoundShape(
     val radius : AnimatedNumber,
 ) : Shape {
 
-
-
     @Transient
     private var dynamicShape : DynamicShapeProvider? = null
 
@@ -41,6 +39,10 @@ internal class RoundShape(
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
 
+    }
+
+    override fun prepareExpressions() {
+        radius.prepareExpressions()
     }
 
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {

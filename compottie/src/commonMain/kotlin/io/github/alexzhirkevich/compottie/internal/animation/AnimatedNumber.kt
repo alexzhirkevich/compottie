@@ -46,10 +46,6 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
         override val index: Int? = null,
     ) : AnimatedNumber() {
 
-        init {
-            prepare()
-        }
-
         override fun copy(): AnimatedNumber {
             return Default(
                 value = value,
@@ -72,10 +68,6 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
         @SerialName("ix")
         override val index: Int? = null,
     ) : AnimatedNumber(), AnimatedKeyframeProperty<Float, ValueKeyframe> {
-
-        init {
-            prepare()
-        }
 
         @Transient
         private val delegate = BaseKeyframeAnimation(

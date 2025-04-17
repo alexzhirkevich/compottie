@@ -108,6 +108,11 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         return dynamic
     }
 
+    override fun prepareExpressions() {
+        super.prepareExpressions()
+        timeRemapping?.prepareExpressions()
+    }
+
     private fun getLayers(state: AnimationState): List<Layer> {
         loadedLayers?.let { return it }
 

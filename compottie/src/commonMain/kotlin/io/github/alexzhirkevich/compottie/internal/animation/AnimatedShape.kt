@@ -17,7 +17,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = AnimatedShapeSerializer::class)
-internal sealed interface AnimatedShape : AnimatedProperty<Path> {
+internal sealed interface AnimatedShape : AnimatedProperty<Path>, ExpressionHolder {
 
     fun rawBezier(state: AnimationState): Bezier
 
@@ -25,6 +25,10 @@ internal sealed interface AnimatedShape : AnimatedProperty<Path> {
 
     fun setClosed(closed: Boolean)
 
+
+    override fun prepareExpressions() {
+
+    }
 
     @Serializable
     class Default(

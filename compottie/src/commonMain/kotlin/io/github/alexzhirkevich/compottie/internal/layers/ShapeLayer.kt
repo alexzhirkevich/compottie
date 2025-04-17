@@ -40,7 +40,6 @@ internal class ShapeLayer(
     @SerialName("bm")
     override val blendMode: LottieBlendMode = LottieBlendMode.Normal,
 
-   
     @SerialName("ip")
     override val inPoint: Float? = null,
 
@@ -150,5 +149,10 @@ internal class ShapeLayer(
             hasMask = hasMask,
             shapes = shapes.map(Shape::deepCopy)
         )
+    }
+
+    override fun prepareExpressions() {
+        super.prepareExpressions()
+        shapes.fastForEach { it.prepareExpressions() }
     }
 }

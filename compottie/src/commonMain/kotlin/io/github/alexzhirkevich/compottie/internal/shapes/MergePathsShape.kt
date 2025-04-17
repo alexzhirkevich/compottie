@@ -107,6 +107,10 @@ internal class MergePathsShape(
         }
     }
 
+    override fun prepareExpressions() {
+
+    }
+
     override fun absorbContent(contents: MutableList<Content>) {
 
         val thisIndex = contents.indexOf(this).takeIf { it > 0 } ?: return

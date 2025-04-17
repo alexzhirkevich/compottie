@@ -12,6 +12,7 @@ kotlin {
         commonMain.dependencies {
             implementation(compose.foundation)
             implementation(libs.serialization)
+            implementation(libs.okio)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

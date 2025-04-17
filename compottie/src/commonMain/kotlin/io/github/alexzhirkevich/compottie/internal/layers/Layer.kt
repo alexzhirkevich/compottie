@@ -1,9 +1,11 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
 import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsApplier
@@ -18,7 +20,7 @@ import kotlin.jvm.JvmInline
 
 @OptIn(ExperimentalSerializationApi::class)
 @JsonClassDiscriminator("ty")
-internal sealed interface Layer : DrawingContent {
+internal sealed interface Layer : DrawingContent, ExpressionHolder {
 
     val hidden: Boolean
 
@@ -65,6 +67,12 @@ internal sealed interface Layer : DrawingContent {
     fun isHidden(state: AnimationState) : Boolean
 
     fun isActive(state: AnimationState) : Boolean
+
+    override fun prepareExpressions() {
+        transform.prepareExpressions()
+        effects.fastForEach { it.prepareExpressions() }
+        masks?.fastForEach { it.prepareExpressions() }
+    }
 
 }
 

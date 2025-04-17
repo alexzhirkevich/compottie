@@ -8,15 +8,15 @@ import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.content.Content
-import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.defaultPosition
 import io.github.alexzhirkevich.compottie.internal.animation.dynamicOffset
 import io.github.alexzhirkevich.compottie.internal.animation.dynamicSize
-import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
+import io.github.alexzhirkevich.compottie.internal.content.Content
+import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundSimultaneousTrimPath
+import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -48,8 +48,6 @@ internal class RectShape(
     val roundedCorners : AnimatedNumber? = null,
 ) : Shape, PathContent {
 
-
-
     @Transient
     private val path = Path()
 
@@ -61,6 +59,12 @@ internal class RectShape(
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
         trimPaths = CompoundSimultaneousTrimPath(contentsBefore)
+    }
+
+    override fun prepareExpressions() {
+        position.prepareExpressions()
+        size.prepareExpressions()
+        roundedCorners?.prepareExpressions()
     }
 
     override fun getPath(state: AnimationState): Path {
