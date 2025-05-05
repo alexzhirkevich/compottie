@@ -6,7 +6,7 @@ import androidx.compose.runtime.compositionLocalOf
 /**
  * In-memory cache instance for parsed [LottieComposition]s.
  *
- * By default, saves the 10 most recently used animations across the entire application.
+ * By default saves the 10 most recently used animations across the entire application.
  *
  * @see LottieCompositionCache
  * */
@@ -16,6 +16,7 @@ public val LocalLottieCache: ProvidableCompositionLocal<LottieCompositionCache> 
 
 /**
  * In-memory cache for parsed [LottieComposition]s.
+ *
  * Reduces number of costly operations (such as resource reading and JSON parsing)
  * for frequently used animations
  * */
@@ -44,6 +45,16 @@ public interface LottieCompositionCache {
 
         override suspend fun clear() {}
     }
+}
+
+/**
+ * Parse and prepare composition [spec] for instant displaying.
+ *
+ * NOTE: displaying can still take some time if the composition
+ * requires external resources or custom fonts.
+ * */
+public suspend fun LottieCompositionCache.prepare(spec: LottieCompositionSpec) : LottieComposition {
+    return getOrPut(spec.key, spec::load)
 }
 
 /**
