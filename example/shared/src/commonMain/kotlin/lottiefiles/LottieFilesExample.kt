@@ -1,6 +1,11 @@
 package lottiefiles
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -28,6 +33,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -56,9 +62,9 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -85,14 +91,16 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastSumBy
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.DotLottie
+import io.github.alexzhirkevich.compottie.LocalLottieCache
 import io.github.alexzhirkevich.compottie.LottieComposition
+import io.github.alexzhirkevich.compottie.LottieCompositionCache
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.Url
+import io.github.alexzhirkevich.compottie.rememberLottieAnimatable
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import io.github.alexzhirkevich.shared.generated.resources.Res
@@ -106,191 +114,251 @@ import lottiefiles.theme.LottieFilesTheme
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import kotlin.math.abs
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 internal fun LottieFilesExample(
     viewModel: LottieFilesViewModel = viewModel { LottieFilesViewModel() }
 ) {
     LottieFilesTheme {
-        DisposableEffect(0) {
-            val l = Compottie.logger
-            Compottie.logger = null
-            onDispose {
-                Compottie.logger = l
+        CompositionLocalProvider(
+            LocalLottieCache provides remember { LottieCompositionCache(20) }
+        ) {
+
+            val selectedFile = viewModel.selectedFile.collectAsState().value
+            val gridState = rememberLazyGridState()
+            val files by viewModel.files.collectAsState()
+
+            LaunchedEffect(files) {
+                gridState.animateScrollToItem(0)
             }
-        }
 
-        val selectedFile = viewModel.selectedFile.collectAsState().value
-
-        if (selectedFile != null) {
-            Dialog(
-                onDismissRequest = {
-                    viewModel.onFileSelected(null)
-                }
-            ) {
-                LottieDetails(
-                    modifier = Modifier
-                        .padding(vertical = 12.dp),
-                    file = selectedFile,
-                    onTagClicked = {
-                        viewModel.onFileSelected(null)
-                        viewModel.onSearch(it)
-                    },
-                    onDismiss = {
-                        viewModel.onFileSelected(null)
-                    }
-                )
-            }
-        }
-
-        val files by viewModel.files.collectAsState()
-        val pageCount by viewModel.pageCount.collectAsState()
-        val gridState = rememberLazyGridState()
-
-        val keyboard = LocalSoftwareKeyboardController.current
-        LaunchedEffect(gridState.isScrollInProgress){
-            if (gridState.isScrollInProgress){
-                keyboard?.hide()
-            }
-        }
-
-        LaunchedEffect(files) {
-            gridState.animateScrollToItem(0)
-        }
-
-        Surface() {
-            BoxWithConstraints {
-
-                val isWideScreen = constraints.maxWidth > LocalDensity.current.run {
-                    400.dp.toPx()
-                }
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp)
-                    ) {
-                        SearchBar(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(bottom = 8.dp),
-                            viewModel = viewModel
-                        )
-
-                        var sortExpanded by rememberSaveable {
-                            mutableStateOf(false)
-                        }
-
-                        val sort by viewModel.sortOrder.collectAsState()
-
-                        Box() {
-                            AssistChip(
-                                onClick = {
-                                    sortExpanded = true
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.Sort,
-                                        contentDescription = null
+            Surface {
+                BoxWithConstraints {
+                    with(LocalDensity.current) {
+                        if (constraints.maxWidth > 1000.dp.toPx()) {
+                            SharedTransitionLayout {
+                                Row {
+                                    LottieGrid(
+                                        gridState = gridState,
+                                        viewModel = viewModel,
+                                        animatedVisibilityScope = null,
+                                        modifier = if (selectedFile != null)
+                                            Modifier.width(500.dp)
+                                        else Modifier
                                     )
-                                },
-                                label = {
-                                    Text(
-                                        text = if (isWideScreen) sort.name else sort.name.take(1),
-                                        maxLines = 1,
-                                        lineHeight = LocalTextStyle.current.fontSize,
-                                    )
-                                }
-                            )
-                            DropdownMenu(
-                                expanded = sortExpanded,
-                                onDismissRequest = {
-                                    sortExpanded = false
-                                }
-                            ) {
-                                SortOrder.entries.forEach {
-                                    DropdownMenuItem(
-                                        leadingIcon = if (it == sort) {
-                                            {
-                                                Icon(
-                                                    imageVector = Icons.Default.Done,
-                                                    contentDescription = "Selected"
-                                                )
+
+                                    if (selectedFile != null) {
+                                        VerticalDivider()
+
+                                        LottieDetails(
+                                            file = selectedFile,
+                                            initialProgress = selectedFile.initialProgress,
+                                            animatedVisibilityScope = null,
+                                            onTagClicked = {
+                                                viewModel.onFileSelected(null)
+                                                viewModel.onSearch(it)
+                                            },
+                                            onDismiss = {
+                                                selectedFile.initialProgress = it
+                                                viewModel.onFileSelected(null)
                                             }
-                                        } else null,
-                                        text = {
-                                            Text(
-                                                text = it.name,
-                                                maxLines = 1,
-                                                lineHeight = LocalTextStyle.current.fontSize,
-                                            )
-                                        },
-                                        onClick = {
-                                            sortExpanded = false
-                                            viewModel.onSortOrderChanged(it)
-                                        }
-                                    )
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            SharedTransitionLayout {
+                                AnimatedContent(
+                                    targetState = selectedFile,
+                                ) { file ->
+                                    if (file == null) {
+                                        LottieGrid(
+                                            gridState = gridState,
+                                            viewModel = viewModel,
+                                            animatedVisibilityScope = this
+                                        )
+                                    } else {
+                                        LottieDetails(
+                                            file = file,
+                                            initialProgress = file.initialProgress,
+                                            onTagClicked = {
+                                                viewModel.onFileSelected(null)
+                                                viewModel.onSearch(it)
+                                            },
+                                            animatedVisibilityScope = this,
+                                            onDismiss = {
+                                                file.initialProgress = it
+                                                viewModel.onFileSelected(null)
+                                            }
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+}
 
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+internal fun SharedTransitionScope.LottieGrid(
+    gridState : LazyGridState,
+    viewModel: LottieFilesViewModel,
+    animatedVisibilityScope: AnimatedVisibilityScope?,
+    modifier: Modifier = Modifier
+) {
 
-                    when {
-                        files.isEmpty() -> {
-                            Landing(Modifier.fillMaxSize())
-                        }
+    val files by viewModel.files.collectAsState()
+    val pageCount by viewModel.pageCount.collectAsState()
+    val selectedFile by viewModel.selectedFile.collectAsState()
 
-                        else -> {
-                            HorizontalDivider()
+    val keyboard = LocalSoftwareKeyboardController.current
 
-                            LazyVerticalGrid(
-                                state = gridState,
-                                modifier = Modifier.weight(1f),
-                                contentPadding = PaddingValues(24.dp),
-                                columns = GridCells.Adaptive(200.dp),
-                                horizontalArrangement = Arrangement.spacedBy(24.dp),
-                                verticalArrangement = Arrangement.spacedBy(24.dp)
-                            ) {
-                                items(
-                                    items = files,
-                                    key = LottieFile::id
-                                ) {
-                                    LottieCard(
-                                        file = it,
-                                        visible = selectedFile != it,
-                                        onClick = { viewModel.onFileSelected(it) },
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                    )
-                                }
-                            }
+    LaunchedEffect(gridState.isScrollInProgress) {
+        if (gridState.isScrollInProgress) {
+            keyboard?.hide()
+        }
+    }
 
+    Surface(modifier = modifier) {
+        BoxWithConstraints {
 
-                            AnimatedVisibility(
-                                visible = pageCount > 1,
-                                enter = slideInVertically { it } + expandVertically(),
-                                exit = slideOutVertically { it } + shrinkVertically()
-                            ) {
-                                HorizontalDivider()
-                                PageSelector(
-                                    page = viewModel.page.collectAsState().value,
-                                    pageCount = pageCount,
-                                    onPageSelected = {
-                                        viewModel.onPageSelected(it)
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .navigationBarsPadding()
-                                        .padding(
-                                            horizontal = 24.dp,
-                                            vertical = 12.dp
-                                        ),
+            val isWideScreen = constraints.maxWidth > LocalDensity.current.run {
+                400.dp.toPx()
+            }
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp)
+                ) {
+                    SearchBar(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(bottom = 8.dp),
+                        viewModel = viewModel
+                    )
+
+                    var sortExpanded by rememberSaveable {
+                        mutableStateOf(false)
+                    }
+
+                    val sort by viewModel.sortOrder.collectAsState()
+
+                    Box() {
+                        AssistChip(
+                            onClick = {
+                                sortExpanded = true
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.Sort,
+                                    contentDescription = null
+                                )
+                            },
+                            label = {
+                                Text(
+                                    text = if (isWideScreen) sort.name else sort.name.take(1),
+                                    maxLines = 1,
+                                    lineHeight = LocalTextStyle.current.fontSize,
                                 )
                             }
+                        )
+                        DropdownMenu(
+                            expanded = sortExpanded,
+                            onDismissRequest = {
+                                sortExpanded = false
+                            }
+                        ) {
+                            SortOrder.entries.forEach {
+                                DropdownMenuItem(
+                                    leadingIcon = if (it == sort) {
+                                        {
+                                            Icon(
+                                                imageVector = Icons.Default.Done,
+                                                contentDescription = "Selected"
+                                            )
+                                        }
+                                    } else null,
+                                    text = {
+                                        Text(
+                                            text = it.name,
+                                            maxLines = 1,
+                                            lineHeight = LocalTextStyle.current.fontSize,
+                                        )
+                                    },
+                                    onClick = {
+                                        sortExpanded = false
+                                        viewModel.onSortOrderChanged(it)
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+
+                when {
+                    files.isEmpty() -> {
+                        Landing(Modifier.fillMaxSize())
+                    }
+
+                    else -> {
+                        HorizontalDivider()
+
+                        LazyVerticalGrid(
+                            state = gridState,
+                            modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(24.dp),
+                            columns = GridCells.Adaptive(200.dp),
+                            horizontalArrangement = Arrangement.spacedBy(24.dp),
+                            verticalArrangement = Arrangement.spacedBy(24.dp)
+                        ) {
+                            items(
+                                items = files,
+                                key = LottieFile::id
+                            ) {
+                                LottieCard(
+                                    file = it,
+                                    onClick = { progress ->
+                                        it.initialProgress = progress
+                                        viewModel.onFileSelected(it)
+                                    },
+                                    enabled = it !== selectedFile,
+                                    animatedVisibilityScope = animatedVisibilityScope,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                )
+                            }
+                        }
+
+                        AnimatedVisibility(
+                            visible = pageCount > 1,
+                            enter = slideInVertically { it } + expandVertically(),
+                            exit = slideOutVertically { it } + shrinkVertically()
+                        ) {
+                            HorizontalDivider()
+                            PageSelector(
+                                page = viewModel.page.collectAsState().value,
+                                pageCount = pageCount,
+                                onPageSelected = {
+                                    viewModel.onPageSelected(it)
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .navigationBarsPadding()
+                                    .padding(
+                                        horizontal = 24.dp,
+                                        vertical = 12.dp
+                                    ),
+                            )
                         }
                     }
                 }
@@ -627,12 +695,12 @@ private fun PageSelector(
             val start = if (page == 1){
                 0
             } else {
-                (items[indexOfFirst()] as SelectorButton.Page).i
+                (items[indexOfFirst()] as? SelectorButton.Page)?.i ?: 0
             }
             val end = if (page == pageCount){
                 0
             } else {
-                (items[indexOfLast()] as SelectorButton.Page).i
+                (items[indexOfLast()] as? SelectorButton.Page)?.i ?: 0
             }
 
             if (abs(start-page) > abs(end - page)){
@@ -749,15 +817,31 @@ private fun PageButton(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-private fun LottieCard(
+private fun SharedTransitionScope.LottieCard(
     file : LottieFile,
-    visible : Boolean,
-    onClick : () -> Unit,
+    enabled : Boolean,
+    onClick : (Float) -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope?,
     modifier: Modifier = Modifier
 ) {
-    val composition by rememberLottieComposition {
+    val composition by rememberLottieComposition(file) {
         LottieCompositionSpec.Url(file.lottieSource ?: file.jsonSource ?: "")
+    }
+
+    val animatable = rememberLottieAnimatable()
+
+    LaunchedEffect(animatable, composition){
+        val initial = file.initialProgress
+        if (composition != null) {
+            file.initialProgress = 0f
+        }
+        animatable.animate(
+            composition = composition,
+            initialProgress = initial,
+            iterations = Compottie.IterateForever
+        )
     }
 
     Card(
@@ -770,27 +854,43 @@ private fun LottieCard(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.padding(8.dp)
         ) {
+
+            val bgColor = file.bgColor?.let(::parseColorValue) ?: Color.White
+
             ElevatedCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(1f),
-                onClick = onClick,
+                    .aspectRatio(1f)
+                    .then(
+                        if (animatedVisibilityScope != null && composition != null){
+                            Modifier.sharedElement(
+                                sharedContentState = rememberSharedContentState(key = file),
+                                animatedVisibilityScope = animatedVisibilityScope
+                            )
+                        } else {
+                            Modifier
+                        }
+                    ),
+                enabled = enabled,
+                onClick = { onClick(animatable.progress) },
                 colors = CardDefaults.elevatedCardColors(
-                    containerColor = file.bgColor?.let(::parseColorValue)
-//                        ?.takeUnless { it == Color.White }
-                        ?: MaterialTheme.colorScheme.surface
+                    containerColor = bgColor,
+                    disabledContainerColor = bgColor
                 )
             ) {
+
                 AnimatedVisibility(
-                    visible = composition != null && visible,
+                    visible = composition != null,
                     enter = fadeIn(),
-                    exit = fadeOut()
+                    exit = fadeOut(),
+                    modifier = Modifier.fillMaxSize(),
                 ) {
                     Image(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize(),
                         painter = rememberLottiePainter(
                             composition = composition,
-                            iterations = Compottie.IterateForever
+                            progress = { animatable.progress }
                         ),
                         contentDescription = file.name
                     )

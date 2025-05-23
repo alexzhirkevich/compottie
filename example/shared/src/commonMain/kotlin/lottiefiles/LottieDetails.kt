@@ -1,9 +1,15 @@
 package lottiefiles
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -26,21 +32,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalAbsoluteTonalElevation
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -50,7 +54,6 @@ import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -66,7 +69,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
@@ -91,15 +93,19 @@ import lottiefiles.icons.RepeatOne
 import opacityGrid
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class,
+    ExperimentalSharedTransitionApi::class
+)
 @Composable
-internal fun LottieDetails(
+internal fun SharedTransitionScope.LottieDetails(
     modifier: Modifier = Modifier,
-    onDismiss : () -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope? = null,
+    initialProgress : Float = 0f,
+    onDismiss : (Float) -> Unit,
     onTagClicked : (String) -> Unit,
     file: LottieFile,
 ) {
-    val composition by rememberLottieComposition {
+    val composition by rememberLottieComposition(file) {
         LottieCompositionSpec.Url(file.lottieSource ?: file.jsonSource ?: "")
     }
 
@@ -131,7 +137,7 @@ internal fun LottieDetails(
         animatable.animate(
             composition = composition,
             iterations = if (isLooping) Compottie.IterateForever else 1,
-            initialProgress = if (animatable.progress == 1f) 0f else animatable.progress,
+            initialProgress = if (animatable.progress == 1f) 0f else initialProgress,
             speed = Speed[speedIndex].first,
             continueFromPreviousAnimate = false,
         )
@@ -144,41 +150,49 @@ internal fun LottieDetails(
     var liked by rememberSaveable { mutableStateOf(false) }
     val url = "https://lottiefiles.com/free-animation/${file.slug}-${file.hash}"
 
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.background
-        )
-    ) {
-        BoxWithConstraints {
 
-            val isWideScreen = constraints.maxWidth > LocalDensity.current.run { 500.dp.toPx() }
+    BoxWithConstraints(modifier) {
 
-            Scaffold(
-                modifier = Modifier.layout { measurable, constraints ->
-                    val w = (constraints.maxWidth * .9).toInt()
-                    val shrinkedConstraints = constraints
-                        .copy(maxWidth = w, minWidth = w)
-                    val placeable = measurable.measure(shrinkedConstraints)
-                    layout(constraints.maxWidth, placeable.height) {
-                        placeable.place((constraints.maxWidth - w) / 2, 0)
-                    }
-                },
-                topBar = {
-                    Surface {
-                        Row(
-                            modifier = Modifier.padding(vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
+        val constraints = constraints
+        val isWideScreen = constraints.maxWidth > LocalDensity.current.run { 500.dp.toPx() }
+
+        Scaffold(
+            topBar = {
+                Surface {
+                    Row(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Spacer(Modifier.width(8.dp))
+
+                        IconButton(
+                            onClick = {
+                                onDismiss(animatable.progress)
+                            }
                         ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                                contentDescription = null
+                            )
+                        }
+
+                        Spacer(Modifier.width(8.dp))
+
+                        Crossfade(file) {
                             UserAvatar(
-                                user = file.user,
+                                user = it.user,
                                 size = 36.dp
                             )
+                        }
 
-                            Spacer(Modifier.width(12.dp))
+                        Spacer(Modifier.width(12.dp))
 
+                        Crossfade(
+                            targetState = file,
+                            modifier = Modifier.weight(1f)
+                        ) { file ->
                             Column(
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.fillMaxWidth()
                             ) {
                                 if (file.name != null) {
                                     Text(
@@ -199,180 +213,239 @@ internal fun LottieDetails(
                                     )
                                 }
                             }
-
-                            Spacer(Modifier.width(12.dp))
-
-                            if (isWideScreen) {
-                                DownloadButton(
-                                    file = file,
-                                    compact = false
-                                )
-                            }
-
-                            if (isWideScreen) {
-                                Spacer(Modifier.width(12.dp))
-                            }
-
-                            if (isWideScreen) {
-                                LikeButton(
-                                    liked = liked,
-                                    onClick = {
-                                        liked = !liked
-                                    }
-                                )
-                            }
-
-                            if (isWideScreen) {
-                                Spacer(Modifier.width(12.dp))
-                            }
-
-                            if (isWideScreen) {
-                                OpenInBrowserButton(url = url)
-                            }
-
-                            if (isWideScreen) {
-                                Spacer(Modifier.width(12.dp))
-                            }
-
-                            FilledTonalIconButton(
-                                onClick = onDismiss,
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "close"
-                                )
-                            }
                         }
-                    }
-                }
-            ) {
-                Column(
-                    modifier = Modifier
-                        .verticalScroll(rememberScrollState())
-                        .padding(it)
-                        .padding(vertical = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    if (!isWideScreen) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
+
+                        Spacer(Modifier.width(12.dp))
+
+                        if (isWideScreen) {
                             DownloadButton(
                                 file = file,
-                                compact = true
+                                compact = false
                             )
+                        }
 
+                        if (isWideScreen) {
+                            Spacer(Modifier.width(12.dp))
+                        }
+
+                        if (isWideScreen) {
                             LikeButton(
                                 liked = liked,
                                 onClick = {
                                     liked = !liked
                                 }
                             )
+                        }
 
+                        if (isWideScreen) {
+                            Spacer(Modifier.width(12.dp))
+                        }
+
+                        if (isWideScreen) {
                             OpenInBrowserButton(url = url)
                         }
-                    }
 
-                    var useOpacityGrid by remember {
-                        mutableStateOf(false)
-                    }
-
-                    ElevatedCard(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f),
-                    ) {
-                        val bgColor = file.bgColor?.let(::parseColorValue)
-//                            ?.takeUnless { it == Color.White }
-                            ?: MaterialTheme.colorScheme.surfaceColorAtElevation(
-                                LocalAbsoluteTonalElevation.current
-                            )
-
-                        Box(
-                            modifier = if (useOpacityGrid)
-                                Modifier.opacityGrid(42.dp)
-                            else Modifier.background(bgColor)
-                        ) {
-
-                            Image(
-                                modifier = Modifier.fillMaxSize()
-                                    .graphicsLayer {
-                                        if (offscreenComposing) {
-                                            this.compositingStrategy = CompositingStrategy.Offscreen
-                                        }
-                                    },
-                                painter = rememberLottiePainter(
-                                    composition = composition,
-                                    progress = animatable::value,
-                                    applyOpacityToLayers = applyOpacityToLayers
-                                ),
-                                contentDescription = file.name
-                            )
-
-                            IconButton(
-                                modifier = Modifier
-                                    .padding(4.dp)
-                                    .align(Alignment.BottomStart),
-                                onClick = {
-                                    useOpacityGrid = !useOpacityGrid
-                                }
-                            ) {
-                                AnimatedContent(
-                                    targetState = useOpacityGrid
-                                ) { grid ->
-                                    Spacer(
-                                        modifier = Modifier
-                                            .size(28.dp)
-                                            .clip(CircleShape)
-                                            .alpha(.75f)
-                                            .border(1.dp, Color.Black, CircleShape)
-                                            .let {
-                                                if (grid) {
-                                                    it.background(bgColor)
-                                                } else {
-                                                    it.opacityGrid(14.dp)
-                                                }
-                                            }
-                                    )
-                                }
-                            }
-
+                        if (isWideScreen) {
+                            Spacer(Modifier.width(12.dp))
                         }
                     }
+                }
+            }
+        ) {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(it)
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                if (!isWideScreen) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        DownloadButton(
+                            file = file,
+                            compact = true
+                        )
 
-                    if (isWideScreen) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            PlayButton(
-                                isPlaying = isPlaying,
-                                onPlaying = { isPlaying = it }
-                            )
-                            Slider(
-                                modifier = Modifier.weight(1f),
-                                value = animatable.value,
-                                onValueChange = {
-                                    coroutineScope.launch {
-                                        animatable.snapTo(progress = it)
-                                    }
-                                },
-                            )
-
-                            composition?.let {
-                                Text(
-                                    "${(it.durationFrames * animatable.value).toInt()} / ${it.durationFrames.toInt()}"
-                                )
+                        LikeButton(
+                            liked = liked,
+                            onClick = {
+                                liked = !liked
                             }
+                        )
 
+                        OpenInBrowserButton(url = url)
+                    }
+                }
+
+                var useOpacityGrid by remember {
+                    mutableStateOf(false)
+                }
+
+                val maxWith = with(LocalDensity.current){
+                    constraints.maxHeight.toDp() * .75f
+                }
+
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Crossfade(file) { file ->
+
+                        ElevatedCard(
+                            modifier = Modifier
+                                .widthIn(max = maxWith)
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
+                                .then(
+                                    if (animatedVisibilityScope != null && composition != null) {
+                                        Modifier.sharedElement(
+                                            sharedContentState = rememberSharedContentState(key = file),
+                                            animatedVisibilityScope = animatedVisibilityScope
+                                        )
+                                    } else {
+                                        Modifier
+                                    }
+                                ),
+                        ) {
+                            val bgColor = file.bgColor?.let(::parseColorValue) ?: Color.White
+
+                            Box(
+                                modifier = if (useOpacityGrid)
+                                    Modifier.opacityGrid(42.dp)
+                                else Modifier.background(bgColor)
+                            ) {
+                                androidx.compose.animation.AnimatedVisibility(
+                                    visible = composition != null,
+                                    enter = fadeIn(),
+                                    exit = fadeOut(),
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    Image(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .graphicsLayer {
+                                                if (offscreenComposing) {
+                                                    this.compositingStrategy =
+                                                        CompositingStrategy.Offscreen
+                                                }
+                                            },
+                                        painter = rememberLottiePainter(
+                                            composition = composition,
+                                            progress = animatable::value,
+                                            applyOpacityToLayers = applyOpacityToLayers
+                                        ),
+                                        contentDescription = file.name
+                                    )
+                                }
+
+                                with(this@Box) {
+                                    IconButton(
+                                        modifier = Modifier
+                                            .padding(4.dp)
+                                            .align(Alignment.BottomStart),
+                                        onClick = {
+                                            useOpacityGrid = !useOpacityGrid
+                                        }
+                                    ) {
+                                        AnimatedContent(
+                                            targetState = useOpacityGrid
+                                        ) { grid ->
+                                            Spacer(
+                                                modifier = Modifier
+                                                    .size(28.dp)
+                                                    .clip(CircleShape)
+                                                    .alpha(.75f)
+                                                    .border(1.dp, Color.Black, CircleShape)
+                                                    .let {
+                                                        if (grid) {
+                                                            it.background(bgColor)
+                                                        } else {
+                                                            it.opacityGrid(14.dp)
+                                                        }
+                                                    }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (isWideScreen) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        PlayButton(
+                            isPlaying = isPlaying,
+                            onPlaying = { isPlaying = it }
+                        )
+                        Slider(
+                            modifier = Modifier.weight(1f),
+                            value = animatable.value,
+                            onValueChange = {
+                                coroutineScope.launch {
+                                    animatable.snapTo(progress = it)
+                                }
+                            },
+                        )
+
+                        composition?.let {
+                            Text(
+                                "${(it.durationFrames * animatable.value).toInt()} / ${it.durationFrames.toInt()}"
+                            )
+                        }
+
+                        RepeatButton(
+                            isLooping = isLooping,
+                            onClick = {
+                                isLooping = !isLooping
+                                isPlaying = true
+                            }
+                        )
+
+                        SpeedButton(
+                            speedIndex = speedIndex,
+                            onSpeedIndexChange = {
+                                speedIndex = it
+                            }
+                        )
+                    }
+                } else {
+                    Column(
+                        modifier = Modifier.padding(top = 32.dp, bottom = 12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(32.dp)
+                    ) {
+                        Slider(
+                            modifier = Modifier.weight(1f),
+                            value = animatable.value,
+                            onValueChange = {
+                                coroutineScope.launch {
+                                    animatable.snapTo(progress = it)
+                                }
+                            }
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
                             RepeatButton(
                                 isLooping = isLooping,
                                 onClick = {
                                     isLooping = !isLooping
                                     isPlaying = true
                                 }
+                            )
+
+                            PlayButton(
+                                isPlaying = isPlaying,
+                                onPlaying = { isPlaying = it }
                             )
 
                             SpeedButton(
@@ -382,117 +455,64 @@ internal fun LottieDetails(
                                 }
                             )
                         }
-                    } else {
-                        Column(
-                            modifier = Modifier.padding(top = 32.dp, bottom = 12.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(32.dp)
-                        ) {
-                            Slider(
-                                modifier = Modifier.weight(1f),
-                                value = animatable.value,
-                                onValueChange = {
-                                    coroutineScope.launch {
-                                        animatable.snapTo(progress = it)
-                                    }
+                    }
+                }
+
+
+
+                BooleanPreference(
+                    checked = applyOpacityToLayers,
+                    onCheckedChange = {
+                        applyOpacityToLayers = it
+                    },
+                    label = "Apply opacity to layers"
+                )
+
+                BooleanPreference(
+                    checked = offscreenComposing,
+                    onCheckedChange = {
+                        offscreenComposing = it
+                    },
+                    label = "Ofscreen composing"
+                )
+
+                Text(
+                    text = "Tags",
+                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                ProvideTextStyle(
+                    MaterialTheme.typography.labelMedium.let {
+                        it.copy(
+                            lineHeight = it.fontSize,
+                            lineHeightStyle = LineHeightStyle(
+                                alignment = LineHeightStyle.Alignment.Center,
+                                trim = LineHeightStyle.Trim.Both
+                            )
+                        )
+                    }
+                ) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        file.tags.fastForEach {
+                            SuggestionChip(
+                                onClick = {
+                                    onTagClicked(it)
+                                },
+                                colors = SuggestionChipDefaults.suggestionChipColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                ),
+                                border = null,
+                                label = {
+                                    Text(
+                                        text = it,
+                                        maxLines = 1,
+                                        lineHeight = LocalTextStyle.current.fontSize,
+                                    )
                                 }
                             )
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceEvenly
-                            ) {
-                                RepeatButton(
-                                    isLooping = isLooping,
-                                    onClick = {
-                                        isLooping = !isLooping
-                                        isPlaying = true
-                                    }
-                                )
-
-                                PlayButton(
-                                    isPlaying = isPlaying,
-                                    onPlaying = { isPlaying = it }
-                                )
-
-                                SpeedButton(
-                                    speedIndex = speedIndex,
-                                    onSpeedIndexChange = {
-                                        speedIndex = it
-                                    }
-                                )
-                            }
-                        }
-                    }
-
-
-
-                    BooleanPreference(
-                        checked = applyOpacityToLayers,
-                        onCheckedChange = {
-                            applyOpacityToLayers = it
-                        },
-                        label = "Apply opacity to layers"
-                    )
-
-                    BooleanPreference(
-                        checked = offscreenComposing,
-                        onCheckedChange = {
-                            offscreenComposing = it
-                        },
-                        label = "Ofscreen composing"
-                    )
-
-
-
-                    Text(
-                        text = "Tags",
-                        fontWeight = FontWeight.SemiBold,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-
-                    ProvideTextStyle(
-                        MaterialTheme.typography.labelMedium.let {
-                            it.copy(
-                                lineHeight = it.fontSize,
-                                lineHeightStyle = LineHeightStyle(
-                                    alignment = LineHeightStyle.Alignment.Center,
-                                    trim = LineHeightStyle.Trim.Both
-                                )
-                            )
-                        }
-                    ) {
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            file.tags.fastForEach {
-                                SuggestionChip(
-                                    onClick = {
-                                        onTagClicked(it)
-                                    },
-                                    colors = SuggestionChipDefaults.suggestionChipColors(
-                                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                    ),
-                                    border = null,
-                                    label = {
-                                        Text(
-                                            text = it,
-                                            maxLines = 1,
-                                            lineHeight = LocalTextStyle.current.fontSize,
-                                        )
-                                    }
-                                )
-//                            Text(
-//                                text = it,
-//                                modifier = Modifier
-//                                    .clip(CircleShape)
-//                                    .background(MaterialTheme.colorScheme.secondaryContainer)
-//                                    .padding(
-//                                        vertical = 8.dp,
-//                                        horizontal = 16.dp
-//                                    )
-//                            )
-                            }
                         }
                     }
                 }

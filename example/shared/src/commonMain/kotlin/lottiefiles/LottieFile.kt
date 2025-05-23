@@ -1,9 +1,12 @@
 package lottiefiles
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal class LottieFile(
+internal data class LottieFile(
     val id : String,
     val name : String? = null,
     val tags : List<String> = emptyList(),
@@ -14,10 +17,12 @@ internal class LottieFile(
     val slug : String = "",
     val hash : String = "",
     val user : User = User()
-)
+) {
+    var initialProgress by mutableStateOf(0f)
+}
 
 @Serializable
-internal class User(
+internal data class User(
     val name : String? = null,
     val avatarUrl : String? = null,
     val username : String? = null

@@ -138,6 +138,7 @@ internal class LottieFilesViewModel() : ViewModel() {
         _search.value = query
         if (query.isBlank()){
             _files.value = emptyList()
+            _selectedFile.value = null
             _pageCount.value = 1
         }
     }
