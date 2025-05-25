@@ -1,41 +1,45 @@
 package io.github.alexzhirkevich.compottie
 
+import kotlinx.atomicfu.locks.reentrantLock
+import kotlinx.atomicfu.locks.withLock
 
 internal class LruMap<T : Any>(
-    private val delegate : LinkedHashMap<Any,T> = LinkedHashMap(),
+    private val delegate : MutableMap<Any,T> = LinkedHashMap(),
     private val limit : Int,
 ) : MutableMap<Any, T> by delegate {
 
     @OptIn(InternalCompottieApi::class)
     private val suspendGetOrPutMutex = MultiOwnerMutex()
 
-    override fun put(key: Any, value: T): T? = putRaw(key, value)
+    private val lock = reentrantLock()
 
-    override fun clear() = clearRaw()
+    override fun put(key: Any, value: T): T? = lock.withLock { putRaw(key, value) }
 
-    override fun putAll(from: Map<out Any, T>) = putAllRaw(from)
+    override fun clear() = lock.withLock { clearRaw() }
 
+    override fun putAll(from: Map<out Any, T>) = lock.withLock { putAllRaw(from) }
 
-    override fun remove(key: Any): T? = removeRaw(key)
+    override fun remove(key: Any): T? = lock.withLock { removeRaw(key) }
 
-
-    override fun get(key: Any): T? = getRaw(key)
+    override fun get(key: Any): T? = lock.withLock { getRaw(key) }
 
     fun getOrPut(key: Any?, put: () -> T): T {
         if (key == null)
             return put()
 
-        return getRaw(key) ?: run {
-            val v = put()
-            putRaw(key, v)
-            v
+        return lock.withLock {
+            getRaw(key) ?: run {
+                val v = put()
+                putRaw(key, v)
+                v
+            }
         }
     }
 
     @OptIn(InternalCompottieApi::class)
     suspend fun getOrPutSuspend(key: Any, put: suspend () -> T): T {
         return suspendGetOrPutMutex.withLock(key) {
-            getRaw(key) ?: put().also { putRaw(key, it) }
+            get(key) ?: put().also { put(key, it) }
         }
     }
 
@@ -45,8 +49,8 @@ internal class LruMap<T : Any>(
             return value
         }
 
-        while (limit < size) {
-            remove(keys.firstOrNull())
+        while (size > limit && remove(keys.firstOrNull()) != null) {
+            // nothing
         }
 
         return delegate.put(key, value)
