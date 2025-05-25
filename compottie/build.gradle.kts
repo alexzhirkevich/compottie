@@ -13,6 +13,8 @@ kotlin {
             implementation(compose.foundation)
             implementation(libs.serialization)
             implementation(libs.okio)
+            implementation(libs.atomicfu)
+
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
