@@ -29,8 +29,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -160,7 +162,9 @@ internal fun SharedTransitionScope.LottieDetails(
             topBar = {
                 Surface {
                     Row(
-                        modifier = Modifier.padding(vertical = 8.dp),
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .statusBarsPadding(),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Spacer(Modifier.width(8.dp))

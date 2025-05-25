@@ -1,6 +1,12 @@
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeUIViewController
 import platform.UIKit.UIViewController
 
-public fun MainViewController() : UIViewController  = ComposeUIViewController {
+@OptIn(ExperimentalComposeUiApi::class)
+public fun MainViewController() : UIViewController  = ComposeUIViewController(
+    configure = {
+        parallelRendering = true
+    }
+) {
     App()
 }
