@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.helpers.text
 
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTextDocument
 import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
 import kotlinx.serialization.SerialName
@@ -20,9 +21,9 @@ internal class TextData(
 //    val followPath : TextFollowPath,
 ) : ExpressionHolder {
 
-    override fun prepareExpressions() {
-        document.prepareExpressions()
-        alignment.prepareExpressions()
+    override fun prepareExpressions(state: AnimationState) {
+        document.prepareExpressions(state)
+        alignment.prepareExpressions(state)
     }
 
     fun deepCopy() : TextData{

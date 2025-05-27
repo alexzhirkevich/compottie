@@ -2,39 +2,41 @@ package io.github.alexzhirkevich.compottie.internal.animation.expressions.operat
 
 import io.github.alexzhirkevich.compottie.internal.animation.RawKeyframeProperty
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.minus
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.plus
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.math.times
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.state
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.toJs
+import io.github.alexzhirkevich.keight.Callable
+import io.github.alexzhirkevich.keight.js.js
 import kotlin.math.abs
 import kotlin.math.max
 
-internal fun OpLoopIn(
-    property: Expression,
-    name : Expression?,
-    numKf : Expression?,
+internal fun JSLoopIn(
     isDuration : Boolean
-) = Expression { thisProperty, context, state ->
-    val prop = property(thisProperty, context, state) as RawProperty<Any>
+) = Callable {
+
+    val prop = get("thisProp".js()) as RawProperty<*>
 
     if (prop !is RawKeyframeProperty<*, *>) {
-        return@Expression prop.raw(state)
+        return@Callable prop.raw(state).toJs()
     }
 
-    val type = (name?.invoke(thisProperty, context, state) ?: "cycle") as String
-    var duration = ((numKf?.invoke(thisProperty, context, state) ?: 0) as Number).toInt()
+    val type = it[0]?.toKotlin(this)?.toString() ?: "cycle"
+    var duration = (it[1]?.toKotlin(this )as? Number)?.toInt() ?: 0
 
     val firstKeyframe = prop.keyframes.first().time
 
     if (state.frame >= firstKeyframe) {
-        return@Expression prop.raw(state)
+        return@Callable prop.raw(state).toJs()
     }
+
     val cycleDuration: Float
     val lastKeyFrame: Float
 
     if (isDuration) {
         cycleDuration = if (duration == 0) {
-            max(0f, (state.layer.outPoint ?: 0f) - firstKeyframe)
+            max(0f, (state.thisLayer.outPoint ?: 0f) - firstKeyframe)
         } else {
             abs(state.composition.frameRate * duration)
         }
@@ -51,10 +53,10 @@ internal fun OpLoopIn(
         "pingpong" -> {
             val iterations = ((firstKeyframe - state.frame) / cycleDuration).toInt()
             if (iterations % 2 == 0) {
-                return@Expression state.onFrame(
+                return@Callable state.onFrame(
                     (firstKeyframe - state.frame) % cycleDuration + firstKeyframe,
                     prop::raw
-                )
+                ).toJs()
             }
         }
 
@@ -68,17 +70,17 @@ internal fun OpLoopIn(
 
             val repeats = ((firstKeyframe - state.frame) / cycleDuration).toInt() + 1
 
-            return@Expression current - (endV - initV) * repeats;
+            return@Callable (current - (endV - initV) * repeats).toJs()
         }
 
         "continue" -> {
             val firstValue = state.onFrame(firstKeyframe, prop::raw)
             val nextFirstValue = state.onFrame(firstKeyframe + 0.001f, prop::raw)
-            return@Expression firstValue + ((firstValue - nextFirstValue) * (firstValue - state.frame)) * 1000
+            return@Callable (firstValue + ((firstValue - nextFirstValue) * (firstValue - state.frame)) * 1000).toJs()
         }
     }
     state.onFrame(
         cycleDuration - (firstKeyframe - state.frame) % cycleDuration + firstKeyframe,
         prop::raw
-    )
+    ).toJs()
 }

@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.helpers.text
 
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
 import kotlinx.serialization.Serializable
@@ -14,7 +15,7 @@ internal class TextAlignment(
         grouping = grouping
     )
 
-    override fun prepareExpressions() {
-        alignment?.prepareExpressions()
+    override fun prepareExpressions(state: AnimationState) {
+        alignment?.prepareExpressions(state)
     }
 }

@@ -7,12 +7,16 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.font.FontFamily
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionComposition
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionsEngine
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionsRuntime
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
+import io.github.alexzhirkevich.keight.ScriptEngine
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 
 public class AnimationState @PublishedApi internal constructor(
@@ -27,7 +31,8 @@ public class AnimationState @PublishedApi internal constructor(
     enableTextGrouping : Boolean,
     enableMergePaths: Boolean,
     enableExpressions: Boolean,
-    layer: Layer
+    layer: Layer,
+    coroutineContext: CoroutineContext
 ) {
 
     /**
@@ -72,6 +77,9 @@ public class AnimationState @PublishedApi internal constructor(
     internal val absoluteTime: Duration
         get() = composition.duration * absoluteProgress.toDouble()
 
+    internal val scriptEngine : ScriptEngine =
+        ExpressionsEngine(ExpressionsRuntime(coroutineContext, this))
+
     internal var clipToCompositionBounds by mutableStateOf(clipToCompositionBounds)
     internal var clipTextToBoundingBoxes by mutableStateOf(clipTextToBoundingBoxes)
     internal var fontFamilyResolver by mutableStateOf(fontFamilyResolver)
@@ -80,10 +88,10 @@ public class AnimationState @PublishedApi internal constructor(
     internal var enableExpressions by mutableStateOf(enableExpressions)
     internal var enableTextGrouping by mutableStateOf(enableTextGrouping)
 
-    internal var layer: Layer = layer
+    internal var thisLayer: Layer = layer
         private set
 
-    internal var currentComposition: ExpressionComposition = composition.expressionComposition
+    internal var thisComp: ExpressionComposition = composition.expressionComposition
         private set
 
     /**
@@ -109,7 +117,7 @@ public class AnimationState @PublishedApi internal constructor(
         contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
 
         val start = kotlin.runCatching {
-            currentComposition.startTime
+            thisComp.startTime
         }.getOrElse { composition.startTime }
 
         return onFrame((time - start) * composition.frameRate, block)
@@ -119,12 +127,12 @@ public class AnimationState @PublishedApi internal constructor(
     internal inline fun <R> onLayer(layer: Layer, block: (AnimationState) -> R): R {
         contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
 
-        val prevLayer = this.layer
+        val prevLayer = this.thisLayer
         return try {
-            this.layer = layer
+            this.thisLayer = layer
             block(this)
         } finally {
-            this.layer = prevLayer
+            this.thisLayer = prevLayer
         }
     }
 
@@ -135,12 +143,12 @@ public class AnimationState @PublishedApi internal constructor(
     ): R {
         contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
 
-        val prevComp = this.currentComposition
+        val prevComp = this.thisComp
         return try {
-            this.currentComposition = comp
+            this.thisComp = comp
             block(this)
         } finally {
-            this.currentComposition = prevComp
+            this.thisComp = prevComp
         }
     }
 

@@ -41,8 +41,8 @@ internal class RoundShape(
 
     }
 
-    override fun prepareExpressions() {
-        radius.prepareExpressions()
+    override fun prepareExpressions(state: AnimationState) {
+        radius.prepareExpressions(state)
     }
 
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {

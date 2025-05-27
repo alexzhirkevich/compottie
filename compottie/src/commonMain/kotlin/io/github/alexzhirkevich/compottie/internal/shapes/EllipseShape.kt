@@ -109,9 +109,9 @@ internal class EllipseShape(
         trimPaths = CompoundSimultaneousTrimPath(contentsBefore)
     }
 
-    override fun prepareExpressions() {
-        position.prepareExpressions()
-        size.prepareExpressions()
+    override fun prepareExpressions(state: AnimationState) {
+        position.prepareExpressions(state)
+        size.prepareExpressions(state)
     }
 
     override fun deepCopy(): Shape {

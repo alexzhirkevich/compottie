@@ -87,13 +87,13 @@ internal class GradientStrokeShape(
         super.draw(drawScope, parentMatrix, parentAlpha, state)
     }
 
-    override fun prepareExpressions() {
-        super.prepareExpressions()
-        startPoint.prepareExpressions()
-        endPoint.prepareExpressions()
-        highlightLength?.prepareExpressions()
-        highlightAngle?.prepareExpressions()
-        colors.prepareExpressions()
+    override fun prepareExpressions(state: AnimationState) {
+        super.prepareExpressions(state)
+        startPoint.prepareExpressions(state)
+        endPoint.prepareExpressions(state)
+        highlightLength?.prepareExpressions(state)
+        highlightAngle?.prepareExpressions(state)
+        colors.prepareExpressions(state)
     }
 
     override fun deepCopy(): Shape {

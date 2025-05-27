@@ -14,6 +14,7 @@ dependencyResolutionManagement {
         mavenCentral()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
         maven("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental")
+        mavenLocal()
     }
 }
 
@@ -24,7 +25,7 @@ include(":compottie-network")
 include(":compottie-network-core")
 include(":compottie-resources")
 include(":example:desktopApp")
-include(":example:webApp")
-include(":example:androidapp")
+//include(":example:webApp")
+//include(":example:androidapp")
 include(":example:shared")
 

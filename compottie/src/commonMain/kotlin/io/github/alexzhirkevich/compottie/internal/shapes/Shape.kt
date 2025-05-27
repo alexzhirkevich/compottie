@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -19,17 +20,17 @@ internal sealed interface Shape : Content, ExpressionHolder {
     fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {}
 
     @Serializable
-    class UnsupportedShape : Shape {
+    class Unsupported : Shape {
         override val name: String? get() = null
 
         override val matchName: String? get() = null
         override val hidden: Boolean get() = true
         override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {}
-        override fun prepareExpressions() {
+        override fun prepareExpressions(state: AnimationState) {
 
         }
 
-        override fun deepCopy(): Shape = UnsupportedShape()
+        override fun deepCopy(): Shape = Unsupported()
     }
 
     fun deepCopy(): Shape

@@ -67,8 +67,8 @@ internal class PathShape(
         trimPaths = CompoundSimultaneousTrimPath(contentsBefore)
     }
 
-    override fun prepareExpressions() {
-        shape.prepareExpressions()
+    override fun prepareExpressions(state: AnimationState) {
+        shape.prepareExpressions(state)
     }
 
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {

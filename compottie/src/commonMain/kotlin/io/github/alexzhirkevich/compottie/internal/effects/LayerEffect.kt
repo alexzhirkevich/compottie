@@ -5,15 +5,21 @@ import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.state
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.toJs
+import io.github.alexzhirkevich.keight.Callable
+import io.github.alexzhirkevich.keight.ScriptRuntime
+import io.github.alexzhirkevich.keight.js.JsAny
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonClassDiscriminator("ty")
-internal sealed class LayerEffect : ExpressionHolder {
+internal sealed class LayerEffect : ExpressionHolder, JsAny {
 
     abstract val enabled: Boolean
     abstract val name: String?
@@ -28,8 +34,8 @@ internal sealed class LayerEffect : ExpressionHolder {
         values.associateBy { it.index ?: Int.MIN_VALUE }
     }
 
-    override fun prepareExpressions() {
-        values.fastForEach { it.prepareExpressions() }
+    override fun prepareExpressions(state: AnimationState) {
+        values.fastForEach { it.prepareExpressions(state) }
     }
 
     abstract fun apply(
@@ -40,10 +46,33 @@ internal sealed class LayerEffect : ExpressionHolder {
 
     abstract fun copy(): LayerEffect
 
-    @Serializable
-    class UnsupportedEffect : LayerEffect() {
 
+    override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
+        return when (property?.toString()){
+            "param" -> Callable {
+                val index = it[0]?.toKotlin(runtime) ?: return@Callable null
+                if (index is Number){
+                    valueByIndex[index.toInt()]
+                } else {
+                    valueByName[index.toString()]
+                }?.value?.raw(runtime.state)?.toJs()
+            }
+            else -> super.get(property, runtime)
+        }
+    }
+
+    @Serializable
+    class Unsupported(
+        @SerialName("nm")
+        override val name: String? = null,
+
+        @SerialName("ix")
+        override val index: Int? = null,
+
+        @SerialName("ef")
         override val values: List<EffectValue<@Contextual RawProperty<@Contextual Any>>> = emptyList()
+    ) : LayerEffect() {
+
         override fun apply(
             paint: Paint,
             animationState: AnimationState,
@@ -51,17 +80,14 @@ internal sealed class LayerEffect : ExpressionHolder {
         ) {
         }
 
-        override val name: String? = null
-
-        override val index: Int? = null
 
         override val enabled: Boolean = true
 
         override fun copy(): LayerEffect {
-            return UnsupportedEffect()
+            return Unsupported()
         }
 
-        override fun prepareExpressions() {
+        override fun prepareExpressions(state: AnimationState) {
 
         }
     }

@@ -2,46 +2,56 @@ package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
 import androidx.compose.ui.graphics.Color
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
+import io.github.alexzhirkevich.keight.Script
+import io.github.alexzhirkevich.keight.invokeSync
 
-internal interface ExpressionEvaluator {
-    fun RawProperty<*>.evaluate(state: AnimationState): Any
+internal interface ExpressionEvaluator : ExpressionHolder {
+    fun evaluate(state: AnimationState): Any
 }
 
-internal fun ExpressionEvaluator(expression: String, catchErrors : Boolean = true) : ExpressionEvaluator =
-    ExpressionEvaluatorImpl(expression)
-
-internal object RawExpressionEvaluator : ExpressionEvaluator {
-    override fun RawProperty<*>.evaluate(state: AnimationState): Any = raw(state)
-}
+internal fun ExpressionEvaluator(
+    expression: String,
+    property: RawProperty<*>
+) : ExpressionEvaluator = ExpressionEvaluatorImpl(expression, property)
 
 
 private class ExpressionEvaluatorImpl(
-    expr: String
+    private val expr: String,
+    private val property: RawProperty<*>
 ) : ExpressionEvaluator {
 
-    private val context = DefaultEvaluatorContext()
-
-    private val expression = kotlin.runCatching {
-        ExpressionInterpreterImpl(expr, context).interpret()
-    }.getOrNull()
+    private var script: Script? = null
 
 
-    override fun RawProperty<*>.evaluate(state: AnimationState): Any {
-        if (expression == null)
-            return raw(state)
+    override fun prepareExpressions(state: AnimationState) {
+        val script = state.scriptEngine.compile(expr)
+
+        this.script = Script { runtime ->
+            runtime.withScope(state.thisComp) { compScope ->
+                compScope.withScope(state.thisLayer) { layerScope ->
+                    layerScope.withScope(property) { propertyScope ->
+                        script.invoke(propertyScope)
+                    }
+                }
+            }
+        }
+    }
+
+    override fun evaluate(state: AnimationState): Any {
+        val script = script ?: return property.raw(state)
 
         return try {
-            expression.invoke(this, context, state)
-            context.result?.toListOrThis()
+            script.invokeSync(state.scriptEngine.runtime)
+                ?.toKotlin(state.scriptEngine.runtime)
         } catch (t: Throwable) {
             null
-        } finally {
-            context.reset()
-        } ?: raw(state)
+        } ?: property.raw(state)
     }
 }
+
 
 private fun Any.toListOrThis() : Any{
     return when (this){

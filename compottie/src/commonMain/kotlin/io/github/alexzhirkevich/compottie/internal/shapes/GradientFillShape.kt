@@ -6,7 +6,6 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.dynamic.DynamicFillProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
@@ -138,7 +137,7 @@ internal class GradientFillShape(
             gradientCache = gradientCache
         )
 
-        state.layer.effectsApplier.applyTo(paint, state, effectsState)
+        state.thisLayer.effectsApplier.applyTo(paint, state, effectsState)
 
         path.reset()
         path.fillType = fillType
@@ -181,11 +180,11 @@ internal class GradientFillShape(
         roundShape = contentsBefore.firstInstanceOf()
     }
 
-    override fun prepareExpressions() {
-        opacity.prepareExpressions()
-        startPoint.prepareExpressions()
-        endPoint.prepareExpressions()
-        colors.prepareExpressions()
+    override fun prepareExpressions(state: AnimationState) {
+        opacity.prepareExpressions(state)
+        startPoint.prepareExpressions(state)
+        endPoint.prepareExpressions(state)
+        colors.prepareExpressions(state)
     }
 
     override fun deepCopy(): Shape {

@@ -1,39 +1,36 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.color
 
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.get
 import io.github.alexzhirkevich.compottie.internal.utils.hslToBlue
 import io.github.alexzhirkevich.compottie.internal.utils.hslToGreen
 import io.github.alexzhirkevich.compottie.internal.utils.hslToRed
+import io.github.alexzhirkevich.keight.js.FunctionParam
+import io.github.alexzhirkevich.keight.js.JSFunction
+import io.github.alexzhirkevich.keight.js.js
 
-internal fun OpHslToRgb(
-    hsl : Expression
-) = Expression { property, context, state ->
+internal fun JSHslToRgb() = JSFunction(FunctionParam("hsl")) {
 
-    val hsl = hsl(property, context, state)
+    val hsl = it[0]?.toKotlin(this) as List<Number>
 
-    val h = (hsl[0] as Number).toFloat()
-    val s = (hsl[1] as Number).toFloat()
-    val l = (hsl[2] as Number).toFloat()
-    val a = (hsl[3] as Number).toFloat()
+    val h = hsl[0].toFloat()
+    val s = hsl[1].toFloat()
+    val l = hsl[2].toFloat()
+    val a = hsl[3].toFloat()
 
     mutableListOf(
-        hslToRed(h, s, l),
-        hslToGreen(h, s, l),
-        hslToBlue(h, s, l),
-        a
-    )
+        hslToRed(h, s, l).js(),
+        hslToGreen(h, s, l).js(),
+        hslToBlue(h, s, l).js(),
+        a.js()
+    ).js()
 }
 
-internal fun OpRgbToHsl(
-    rgb : Expression
-) = Expression { property, context, state ->
-    val color = rgb(property, context, state)
+internal fun JSRgbToHsl() = JSFunction(FunctionParam("rgb")) {
+    val color = it[0]?.toKotlin(this) as List<Number>
 
-    val r = (color[0] as Number).toFloat()
-    val g = (color[1] as Number).toFloat()
-    val b = (color[2] as Number).toFloat()
-    val a = (color[3] as Number).toFloat()
+    val r = color[0].toFloat()
+    val g = color[1].toFloat()
+    val b = color[2].toFloat()
+    val a = color[3].toFloat()
 
     val max = maxOf(r, g, b);
     val min = minOf(r, g, b);
@@ -56,5 +53,5 @@ internal fun OpRgbToHsl(
         h /= 6
     }
 
-    mutableListOf(h, s, l, a)
+    mutableListOf(h.js(), s.js(), l.js(), a.js()).js()
 }

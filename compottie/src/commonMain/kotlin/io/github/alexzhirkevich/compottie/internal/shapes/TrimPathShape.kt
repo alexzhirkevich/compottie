@@ -50,10 +50,10 @@ internal class TrimPathShape(
 
     }
 
-    override fun prepareExpressions() {
-        start.prepareExpressions()
-        end.prepareExpressions()
-        offset.prepareExpressions()
+    override fun prepareExpressions(state: AnimationState) {
+        start.prepareExpressions(state)
+        end.prepareExpressions(state)
+        offset.prepareExpressions(state)
     }
 
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {

@@ -34,7 +34,7 @@ internal fun OpLoopOut(
 
     if (isDuration) {
         cycleDuration = if (duration == 0) {
-            max(0f,  lastKeyFrame - (state.layer.inPoint ?: 0f))
+            max(0f,  lastKeyFrame - (state.thisLayer.inPoint ?: 0f))
         } else {
             abs(lastKeyFrame - state.composition.frameRate * duration)
         }

@@ -67,10 +67,10 @@ internal class RepeaterTransform(
         return matrix
     }
 
-    override fun prepareExpressions() {
-        super.prepareExpressions()
-        startOpacity?.prepareExpressions()
-        endOpacity?.prepareExpressions()
+    override fun prepareExpressions(state: AnimationState) {
+        super.prepareExpressions(state)
+        startOpacity?.prepareExpressions(state)
+        endOpacity?.prepareExpressions(state)
     }
 
     fun deepCopy() = RepeaterTransform(

@@ -120,7 +120,7 @@ internal class FillShape(
 
         roundShape?.applyTo(paint, state)
 
-        state.layer.effectsApplier.applyTo(paint, state, effectsState)
+        state.thisLayer.effectsApplier.applyTo(paint, state, effectsState)
 
         path.reset()
         path.fillType = fillType
@@ -162,8 +162,8 @@ internal class FillShape(
         roundShape = contentsBefore.find { it is RoundShape } as? RoundShape
     }
 
-    override fun prepareExpressions() {
-        opacity.prepareExpressions()
-        color.prepareExpressions()
+    override fun prepareExpressions(state: AnimationState) {
+        opacity.prepareExpressions(state)
+        color.prepareExpressions(state)
     }
 }

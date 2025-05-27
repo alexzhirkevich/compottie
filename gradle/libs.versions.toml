@@ -11,6 +11,7 @@ atomicfu="0.23.2"
 coroutines="1.9.0"
 nexus-publish="2.0.0"
 coil="3.1.0"
+keight="0.1.0"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
@@ -29,6 +30,7 @@ android-gp = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
+keight = { module = "io.github.alexzhirkevich:keight", version.ref = "keight" }
 
 [plugins]
 compose = { id = "org.jetbrains.compose", version.ref = "compose" }

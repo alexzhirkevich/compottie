@@ -61,10 +61,10 @@ internal class RectShape(
         trimPaths = CompoundSimultaneousTrimPath(contentsBefore)
     }
 
-    override fun prepareExpressions() {
-        position.prepareExpressions()
-        size.prepareExpressions()
-        roundedCorners?.prepareExpressions()
+    override fun prepareExpressions(state: AnimationState) {
+        position.prepareExpressions(state)
+        size.prepareExpressions(state)
+        roundedCorners?.prepareExpressions(state)
     }
 
     override fun getPath(state: AnimationState): Path {

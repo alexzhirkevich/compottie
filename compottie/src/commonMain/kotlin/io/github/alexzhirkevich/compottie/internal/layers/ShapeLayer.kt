@@ -151,8 +151,8 @@ internal class ShapeLayer(
         )
     }
 
-    override fun prepareExpressions() {
-        super.prepareExpressions()
-        shapes.fastForEach { it.prepareExpressions() }
+    override fun prepareExpressions(state: AnimationState) {
+        super.prepareExpressions(state)
+        shapes.fastForEach { it.prepareExpressions(state) }
     }
 }

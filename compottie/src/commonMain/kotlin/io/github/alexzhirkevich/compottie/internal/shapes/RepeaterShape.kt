@@ -110,9 +110,9 @@ internal class RepeaterShape(
         contentGroup?.setContents(contentsBefore, contentsAfter)
     }
 
-    override fun prepareExpressions() {
-        copies.prepareExpressions()
-        offset.prepareExpressions()
+    override fun prepareExpressions(state: AnimationState) {
+        copies.prepareExpressions(state)
+        offset.prepareExpressions(state)
 
     }
 

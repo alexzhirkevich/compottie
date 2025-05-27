@@ -18,7 +18,7 @@ internal class OpGetLayer(
         state: AnimationState
     ): Layer {
         return if (nameOrIndex == null) {
-            state.layer
+            state.thisLayer
         } else {
 
             val n = nameOrIndex.invoke(property, context, state)

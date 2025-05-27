@@ -107,7 +107,7 @@ internal class MergePathsShape(
         }
     }
 
-    override fun prepareExpressions() {
+    override fun prepareExpressions(state: AnimationState) {
 
     }
 

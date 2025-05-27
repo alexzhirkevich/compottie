@@ -52,7 +52,7 @@ internal class OpLayerToComp(
     ) : List<Number> {
 
         val layerMatrix = layer.totalTransformMatrix(state)
-        val compMatrix = state.currentComposition.transformMatrix(state)
+        val compMatrix = state.thisComp.transformMatrix(state)
 
         val offset = Offset(
             (point[0] as Number).toFloat(),

@@ -14,10 +14,10 @@ internal sealed interface LottieAsset {
     fun copy() : LottieAsset
 
     @Serializable
-    class UnsupportedAsset() : LottieAsset {
+    class Unsupported() : LottieAsset {
         override val id: String get() = ""
 
-        override fun copy() = UnsupportedAsset()
+        override fun copy() = Unsupported()
     }
 }
 
@@ -29,7 +29,7 @@ internal class AssetSerializer : JsonContentPolymorphicSerializer<LottieAsset>(L
         return when {
             "layers" in element.jsonObject.keys -> PrecompositionAsset.serializer()
             "p" in element.jsonObject.keys -> ImageAsset.serializer()
-            else -> LottieAsset.UnsupportedAsset.serializer()
+            else -> LottieAsset.Unsupported.serializer()
         }
     }
 }

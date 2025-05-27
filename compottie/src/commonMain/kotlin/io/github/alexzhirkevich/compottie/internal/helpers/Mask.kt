@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.helpers
 
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
 import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
@@ -44,10 +45,10 @@ internal class Mask(
         expand = expand?.copy()
     )
 
-    override fun prepareExpressions() {
-        opacity?.prepareExpressions()
-        expand?.prepareExpressions()
-        shape?.prepareExpressions()
+    override fun prepareExpressions(state: AnimationState) {
+        opacity?.prepareExpressions(state)
+        expand?.prepareExpressions(state)
+        shape?.prepareExpressions(state)
     }
 }
 

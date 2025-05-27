@@ -26,7 +26,7 @@ internal sealed interface AnimatedShape : AnimatedProperty<Path>, ExpressionHold
     fun setClosed(closed: Boolean)
 
 
-    override fun prepareExpressions() {
+    override fun prepareExpressions(state: AnimationState) {
 
     }
 

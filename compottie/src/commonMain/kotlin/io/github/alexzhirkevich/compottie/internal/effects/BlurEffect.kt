@@ -45,7 +45,7 @@ internal class BlurEffect(
         return BlurEffect(values.map(EffectValue<RawProperty<Any>>::copy))
     }
 
-    override fun prepareExpressions() {
+    override fun prepareExpressions(state: AnimationState) {
         TODO("Not yet implemented")
     }
 }

@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Size
@@ -25,6 +26,7 @@ import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.dynamic.LottieDynamicProperties
 import io.github.alexzhirkevich.compottie.dynamic.rememberLottieDynamicProperties
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionsEngine
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.layers.CompositionLayer
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
@@ -32,6 +34,7 @@ import io.github.alexzhirkevich.compottie.internal.utils.fastReset
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Create and remember Lottie painter
@@ -86,8 +89,10 @@ public fun rememberLottiePainter(
 
     val copy = dp != null
 
+    val coroutineScope = rememberCoroutineScope()
+
     val painter by produceState<LottiePainter?>(
-        null, composition, copy
+        null, composition, copy, coroutineScope
     ) {
         if (composition != null) {
             val assets = if (composition.hasAssets) {
@@ -108,13 +113,8 @@ public fun rememberLottiePainter(
 
             val comp = if (copy) composition.deepCopy() else composition
 
-            if (enableExpressions) {
-                withContext(Compottie.ioDispatcher()) {
-                    composition.animation.prepareExpressions()
-                }
-            }
 
-            value = LottiePainter(
+            val painter = LottiePainter(
                 composition = comp,
                 progress = updatedProgress::invoke,
                 dynamicProperties = dp,
@@ -126,9 +126,17 @@ public fun rememberLottiePainter(
                 enableExpressions = enableExpressions,
                 applyOpacityToLayers = applyOpacityToLayers,
                 assets = assets?.await().orEmpty(),
-                fonts = fonts?.await().orEmpty()
+                fonts = fonts?.await().orEmpty(),
+                coroutineContext = coroutineScope.coroutineContext
             )
 
+            if (enableExpressions) {
+                withContext(Compottie.ioDispatcher()) {
+                    composition.animation.prepareExpressions(painter.animationState)
+                }
+            }
+
+            value = painter
         }
     }
 
@@ -255,7 +263,8 @@ private class LottiePainter(
     enableTextGrouping : Boolean,
     clipToCompositionBounds : Boolean,
     enableMergePaths : Boolean,
-    enableExpressions : Boolean
+    enableExpressions : Boolean,
+    coroutineContext: CoroutineContext
 ) : Painter() {
 
 
@@ -276,7 +285,7 @@ private class LottiePainter(
         lerp(composition.startFrame, composition.endFrame, this.progress)
     }
 
-    private val animationState = AnimationState(
+    internal val animationState = AnimationState(
         composition = composition,
         assets = assets.associateBy(LottieAsset::id),
         fonts = fonts,
@@ -288,7 +297,8 @@ private class LottiePainter(
         enableMergePaths = enableMergePaths,
         layer = compositionLayer,
         enableExpressions = enableExpressions,
-        enableTextGrouping = enableTextGrouping
+        enableTextGrouping = enableTextGrouping,
+        coroutineContext = coroutineContext
     )
 
     fun setDynamicProperties(provider: DynamicCompositionProvider?) {

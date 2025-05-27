@@ -1,6 +1,6 @@
 package io.github.alexzhirkevich.compottie
 
-private const val TAG = "COMPOTTIE"
+private const val TAG = "Compottie"
 
 public interface LottieLogger {
 

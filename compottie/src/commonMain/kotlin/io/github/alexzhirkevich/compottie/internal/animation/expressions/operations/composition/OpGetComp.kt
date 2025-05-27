@@ -17,7 +17,7 @@ internal class OpGetComp(
     ): ExpressionComposition {
 
         return when (val n = name?.invoke(property, context, state)) {
-            null -> state.currentComposition
+            null -> state.thisComp
             state.composition.animation.name -> state.composition.expressionComposition
             else -> requireNotNull(state.composition.precomps[n]) {
                 "Composition with name '$n' wasn't found"

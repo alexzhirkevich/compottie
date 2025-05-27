@@ -58,8 +58,8 @@ internal class GroupShape(
         }
     }
 
-    override fun prepareExpressions() {
-        items.fastForEach { it.prepareExpressions() }
+    override fun prepareExpressions(state: AnimationState) {
+        items.fastForEach { it.prepareExpressions(state) }
     }
 
     override fun deepCopy(): Shape {
