@@ -1,4 +1,4 @@
-package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.color
+package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
 import io.github.alexzhirkevich.compottie.internal.utils.hslToBlue
 import io.github.alexzhirkevich.compottie.internal.utils.hslToGreen

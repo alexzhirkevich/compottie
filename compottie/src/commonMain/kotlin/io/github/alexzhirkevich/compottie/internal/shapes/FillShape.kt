@@ -27,6 +27,8 @@ import io.github.alexzhirkevich.compottie.internal.platform.GradientCache
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.utils.extendBy
 import io.github.alexzhirkevich.compottie.internal.utils.set
+import io.github.alexzhirkevich.keight.ScriptRuntime
+import io.github.alexzhirkevich.keight.js.JsAny
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -165,5 +167,12 @@ internal class FillShape(
     override fun prepareExpressions(state: AnimationState) {
         opacity.prepareExpressions(state)
         color.prepareExpressions(state)
+    }
+
+    override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
+        return when(property?.toString()){
+            "color" -> color
+            else -> super.get(property, runtime)
+        }
     }
 }

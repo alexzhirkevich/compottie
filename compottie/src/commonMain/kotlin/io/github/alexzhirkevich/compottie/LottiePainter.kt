@@ -32,6 +32,7 @@ import io.github.alexzhirkevich.compottie.internal.layers.CompositionLayer
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.utils.fastReset
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
@@ -132,6 +133,7 @@ public fun rememberLottiePainter(
 
             if (enableExpressions) {
                 withContext(Compottie.ioDispatcher()) {
+                    painter.animationState.scriptEngine.runtime.init()
                     composition.animation.prepareExpressions(painter.animationState)
                 }
             }
@@ -285,7 +287,7 @@ private class LottiePainter(
         lerp(composition.startFrame, composition.endFrame, this.progress)
     }
 
-    internal val animationState = AnimationState(
+    val animationState = AnimationState(
         composition = composition,
         assets = assets.associateBy(LottieAsset::id),
         fonts = fonts,

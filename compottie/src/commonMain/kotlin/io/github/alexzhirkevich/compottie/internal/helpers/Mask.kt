@@ -4,9 +4,12 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
 import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.state
+import io.github.alexzhirkevich.keight.ScriptRuntime
+import io.github.alexzhirkevich.keight.js.JsAny
+import io.github.alexzhirkevich.keight.js.js
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlin.jvm.JvmInline
 
 @Serializable
 internal class Mask(
@@ -27,8 +30,11 @@ internal class Mask(
     val isClosedLegacy : Boolean? = null,
 
     @SerialName("x")
-    val expand: AnimatedNumber? = null
-) : ExpressionHolder {
+    val expand: AnimatedNumber? = null,
+
+    @SerialName("nm")
+    val name: String? = null,
+) : ExpressionHolder, JsAny {
 
     init {
         // Until v 4.4.18 mask objects had a boolean cl property and c was not present in the bezier data
@@ -42,13 +48,24 @@ internal class Mask(
         shape = shape?.copy(),
         opacity = opacity?.copy(),
         mode = mode,
-        expand = expand?.copy()
+        expand = expand?.copy(),
+        name = name
     )
 
     override fun prepareExpressions(state: AnimationState) {
         opacity?.prepareExpressions(state)
         expand?.prepareExpressions(state)
         shape?.prepareExpressions(state)
+    }
+
+    override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
+        return when(property?.toString()){
+            "invert" -> isInverted.js()
+            "maskOpacity" -> opacity?.raw(runtime.state)?.js()
+            "maskExpansion" -> expand?.raw(runtime.state)?.js()
+            "maskPath" -> shape
+            else -> super.get(property, runtime)
+        }
     }
 }
 

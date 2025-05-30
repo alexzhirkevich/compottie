@@ -59,7 +59,7 @@ internal class GradientFillShape(
     val endPoint : AnimatedVector2,
 
     @SerialName("t")
-    val type : GradientType,
+    val gradientType : GradientType,
 
 //    @SerialName("h")
 //    val highlightLength : AnimatedNumber? = null,
@@ -116,7 +116,7 @@ internal class GradientFillShape(
 
         if (dynamicFill?.gradient == null) {
             paint.shader = GradientShader(
-                type = type,
+                type = gradientType,
                 startPoint = startPoint,
                 endPoint = endPoint,
                 colors = colors,
@@ -195,7 +195,7 @@ internal class GradientFillShape(
             opacity = opacity.copy(),
             startPoint = startPoint.copy(),
             endPoint = endPoint.copy(),
-            type = type,
+            gradientType = gradientType,
 //            highlightLength = highlightLength?.copy(),
 //            highlightAngle = highlightAngle?.copy(),
             colors = colors.copy(),

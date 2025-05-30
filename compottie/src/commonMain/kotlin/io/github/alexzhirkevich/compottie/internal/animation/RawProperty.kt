@@ -1,9 +1,15 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.JSLoopIn
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.JSLoopIn
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.JSTemporalWiggle
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.JSWiggle
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.JsLoopOut
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.JsSmooth
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.onTime
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.state
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.toJs
+import io.github.alexzhirkevich.keight.Callable
 import io.github.alexzhirkevich.keight.ScriptRuntime
 import io.github.alexzhirkevich.keight.js.JsAny
 import io.github.alexzhirkevich.keight.js.Undefined
@@ -14,12 +20,14 @@ internal interface RawProperty<out T : Any> : JsAny {
     /**
      * "ix" value from the JSON scheme
      * */
-    val index : Int?
+    val index: Int?
 
     /**
      * Raw property interpolation without dynamic properties and expressions
      * */
-    fun raw(state: AnimationState) : T
+    fun raw(state: AnimationState): T
+
+    val cache: MutableMap<String, Any?>
 
     override suspend fun keys(
         runtime: ScriptRuntime,
@@ -27,15 +35,30 @@ internal interface RawProperty<out T : Any> : JsAny {
         excludeNonEnumerables: Boolean
     ): List<JsAny?> = listOf(
         "value".js(),
-        "propertyIndex".js()
+        "propertyIndex".js(),
+        "loopIn".js(),
+        "loopInDuration".js(),
+        "loopOut".js(),
+        "loopOutDuration".js(),
+        "wiggle".js(),
+        "temporalWiggle".js(),
+        "smooth".js(),
     )
 
     override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
-        return when(property.toString()){
+        return when (property.toString()) {
             "value" -> raw(runtime.state).toJs()
+            "valueAtTime" -> cache.getOrPut("valueAtTime") {
+                Callable { onTime(it.getOrNull(0)) { raw(it).toJs() } }
+            } as JsAny?
             "propertyIndex" -> index?.js() ?: Undefined
-            "loopIn" -> JSLoopIn(false)
-            "loopInDuration" -> JSLoopIn(true)
+            "loopIn" -> cache.getOrPut("loopIn") { JSLoopIn(false) } as JsAny?
+            "loopInDuration" -> cache.getOrPut("loopInDuration") { JSLoopIn(true) } as JsAny?
+            "loopOut" -> cache.getOrPut("loopOut") { JsLoopOut(false) } as JsAny?
+            "loopOutDuration" -> cache.getOrPut("loopOutDuration") { JsLoopOut(true) } as JsAny?
+            "wiggle" -> cache.getOrPut("wiggle") { JSWiggle(this) } as JsAny?
+            "temporalWiggle" -> cache.getOrPut("temporalWiggle") { JSTemporalWiggle(this) } as JsAny?
+            "smooth" -> cache.getOrPut("smooth") { JsSmooth(this) } as JsAny?
             else -> super.get(property, runtime)
         }
     }

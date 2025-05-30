@@ -16,6 +16,8 @@ import io.github.alexzhirkevich.compottie.internal.animation.defaultScale
 import io.github.alexzhirkevich.compottie.internal.animation.defaultSkew
 import io.github.alexzhirkevich.compottie.internal.animation.defaultSkewAxis
 import io.github.alexzhirkevich.compottie.internal.content.Content
+import io.github.alexzhirkevich.keight.ScriptRuntime
+import io.github.alexzhirkevich.keight.js.JsAny
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -80,6 +82,21 @@ internal class TransformShape(
 
         if (name != null) {
             dynamicShape = properties?.get(layerPath(basePath, name))
+        }
+    }
+
+    override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
+        return when (property?.toString()) {
+            "position" -> position
+            "scale" -> scale
+            "rotation" -> rotation
+            "rotationX" -> rotationX
+            "rotationY" -> rotationY
+            "rotationZ" -> rotationZ
+            "skew" -> skew
+            "skewAxis" -> skewAxis
+            "opacity" -> opacity
+            else -> super.get(property, runtime)
         }
     }
 

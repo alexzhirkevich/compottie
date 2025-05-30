@@ -51,15 +51,9 @@ internal class GradientStrokeShape(
     @SerialName("e")
     val endPoint : AnimatedVector2,
 
-    /**
-     * Gradient Highlight Length. Only if type is Radial
-     * */
     @SerialName("h")
     val highlightLength : AnimatedNumber? = null,
 
-    /**
-     * Highlight Angle. Only if type is Radial
-     * */
     @SerialName("a")
     val highlightAngle : AnimatedNumber? = null,
 
@@ -67,14 +61,14 @@ internal class GradientStrokeShape(
     val colors : GradientColors,
 
     @SerialName("t")
-    val type : GradientType = GradientType.Linear
+    val gradientType : GradientType = GradientType.Linear
 )  : BaseStrokeShape(), Shape {
 
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
 
         if (dynamicStroke?.gradient == null) {
             paint.shader = GradientShader(
-                type = type,
+                type = gradientType,
                 startPoint = startPoint,
                 endPoint = endPoint,
                 colors = colors,
@@ -112,7 +106,7 @@ internal class GradientStrokeShape(
             highlightLength = highlightLength?.copy(),
             highlightAngle = highlightAngle?.copy(),
             colors = colors.copy(),
-            type = type
+            gradientType = gradientType
         )
     }
 }

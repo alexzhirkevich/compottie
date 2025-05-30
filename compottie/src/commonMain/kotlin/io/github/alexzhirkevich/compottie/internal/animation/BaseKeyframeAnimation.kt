@@ -10,6 +10,8 @@ internal class BaseKeyframeAnimation<T : Any, K, out KF : Keyframe<K>>(
     private val map : KF.(start : K, end : K, progress: Float) -> T
 ) : RawKeyframeProperty<T, KF> {
 
+    override val cache: MutableMap<String, Any?> = HashMap()
+
     private val sortedKeyframes = keyframes
         .sortedBy(Keyframe<*>::time)
         .takeIf { it != keyframes }

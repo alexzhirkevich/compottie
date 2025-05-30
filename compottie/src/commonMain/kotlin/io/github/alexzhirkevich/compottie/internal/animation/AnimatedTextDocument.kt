@@ -32,6 +32,9 @@ internal class AnimatedTextDocument(
 
     private val document = TextDocument()
 
+    @Transient
+    override val cache: MutableMap<String, Any?> = HashMap()
+
     private val evaluator by lazy {
         expression?.let { ExpressionEvaluator(it, this) }
     }

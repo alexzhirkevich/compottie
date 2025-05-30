@@ -8,6 +8,8 @@ internal abstract class ExpressionProperty<T : Any> : AnimatedProperty<T>, Expre
 
     abstract val expression: String?
 
+    override val cache: MutableMap<String, Any?> = HashMap()
+
     @Transient
     open val expressionEvaluator: ExpressionEvaluator? by lazy {
         expression?.let { ExpressionEvaluator(it, this) }
@@ -24,6 +26,7 @@ internal abstract class ExpressionProperty<T : Any> : AnimatedProperty<T>, Expre
         if (!state.enableExpressions){
             return raw(state)
         }
+
         val evaluated = expressionEvaluator?.evaluate(state) ?: return raw(state)
 
         return if (evaluated is AnimatedProperty<*>){

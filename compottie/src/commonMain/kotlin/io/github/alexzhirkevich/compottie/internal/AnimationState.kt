@@ -6,13 +6,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.font.FontFamily
 import io.github.alexzhirkevich.compottie.LottieComposition
+import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionComposition
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionsEngine
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionsRuntime
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
-import io.github.alexzhirkevich.keight.ScriptEngine
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -77,7 +77,7 @@ public class AnimationState @PublishedApi internal constructor(
     internal val absoluteTime: Duration
         get() = composition.duration * absoluteProgress.toDouble()
 
-    internal val scriptEngine : ScriptEngine =
+    internal val scriptEngine : ExpressionsEngine =
         ExpressionsEngine(ExpressionsRuntime(coroutineContext, this))
 
     internal var clipToCompositionBounds by mutableStateOf(clipToCompositionBounds)
@@ -92,6 +92,9 @@ public class AnimationState @PublishedApi internal constructor(
         private set
 
     internal var thisComp: ExpressionComposition = composition.expressionComposition
+        private set
+
+    internal var thisProperty: RawProperty<*>? = null
         private set
 
     /**
@@ -152,6 +155,20 @@ public class AnimationState @PublishedApi internal constructor(
         }
     }
 
+
+    @OptIn(ExperimentalContracts::class)
+    internal inline fun <R> onProperty(property: RawProperty<*>, block: (AnimationState) -> R): R {
+        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+
+        val prev = this.thisProperty
+        return try {
+            this.thisProperty = property
+            block(this)
+        } finally {
+            this.thisProperty = prev
+        }
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -182,3 +199,5 @@ public class AnimationState @PublishedApi internal constructor(
         return result
     }
 }
+
+internal val AnimationState.timeSeconds get() = time.inWholeMilliseconds / 1_000f

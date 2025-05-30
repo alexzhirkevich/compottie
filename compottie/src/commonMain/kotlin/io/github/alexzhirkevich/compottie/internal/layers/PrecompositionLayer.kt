@@ -13,6 +13,8 @@ import io.github.alexzhirkevich.compottie.internal.helpers.LottieBlendMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Mask
 import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
+import io.github.alexzhirkevich.keight.ScriptRuntime
+import io.github.alexzhirkevich.keight.js.JsAny
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -131,6 +133,14 @@ internal data class PrecompositionLayer(
     ) {
         state.onComposition(composition) {
             super.drawLayer(drawScope, parentMatrix, parentAlpha, it)
+        }
+    }
+
+    override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
+        return when (property?.toString()) {
+            "source" -> composition
+            "timeRemap" -> timeRemapping
+            else -> super.get(property, runtime)
         }
     }
 

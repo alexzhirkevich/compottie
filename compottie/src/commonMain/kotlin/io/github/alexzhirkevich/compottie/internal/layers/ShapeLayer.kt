@@ -19,6 +19,9 @@ import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.shapes.Shape
 import io.github.alexzhirkevich.compottie.internal.shapes.TransformShape
 import io.github.alexzhirkevich.compottie.internal.utils.firstInstanceOf
+import io.github.alexzhirkevich.keight.Callable
+import io.github.alexzhirkevich.keight.ScriptRuntime
+import io.github.alexzhirkevich.keight.js.JsAny
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -154,5 +157,16 @@ internal class ShapeLayer(
     override fun prepareExpressions(state: AnimationState) {
         super.prepareExpressions(state)
         shapes.fastForEach { it.prepareExpressions(state) }
+    }
+
+    override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
+        return when (property?.toString()) {
+            "content" -> Callable {
+                val name = it[0]?.toKotlin(this)?.toString() ?: return@Callable null
+                shapesByName[name]
+            }
+
+            else -> super.get(property, runtime)
+        }
     }
 }

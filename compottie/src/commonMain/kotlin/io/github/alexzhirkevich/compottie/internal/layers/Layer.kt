@@ -7,6 +7,7 @@ import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.JSLayerToCompOrWorld
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.state
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffect
@@ -102,6 +103,12 @@ internal sealed interface Layer : DrawingContent, ExpressionHolder, JsAny {
         "position".js(),
         "opacity".js(),
         "timeRemap".js(),
+        "effect".js(),
+        "effect".js(),
+        "toComp".js(),
+        "fromComp".js(),
+        "toWorld".js(),
+        "fromWorld".js(),
     )
 
     override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
@@ -111,7 +118,6 @@ internal sealed interface Layer : DrawingContent, ExpressionHolder, JsAny {
             "inPoint" -> inPoint?.div(runtime.state.composition.frameRate)?.js() ?: Undefined
             "outPoint" -> outPoint?.div(runtime.state.composition.frameRate)?.js() ?: Undefined
             "startTime" -> startTime?.div(runtime.state.composition.frameRate)?.js() ?: Undefined
-            "source" -> if (this is PrecompositionLayer) composition else Undefined
             "active" -> isActive(runtime.state).js()
             "enabled" -> isHidden(runtime.state).not().js()
             "hasParent" -> (parentLayer != null).js()
@@ -119,7 +125,6 @@ internal sealed interface Layer : DrawingContent, ExpressionHolder, JsAny {
             "rotation" -> transform.rotation
             "position" -> transform.position
             "opacity" -> transform.opacity
-            "timeRemap" -> (this as? PrecompositionLayer)?.timeRemapping ?: Undefined
             "effect" -> Callable {
                 val index = it[0]?.toKotlin(this) ?: return@Callable Undefined
 
@@ -131,19 +136,30 @@ internal sealed interface Layer : DrawingContent, ExpressionHolder, JsAny {
                     effects.fastFirstOrNull { e -> e.name == n }
                 }
             }
+            "mask" -> Callable {
+                val name = it[0]?.toKotlin(this)?.toString() ?: return@Callable Undefined
+                masks?.fastFirstOrNull { it.name == name }
+            }
+            "toComp" -> JSLayerToCompOrWorld(layer = this, reverse = false, toComp = true)
+            "fromComp" -> JSLayerToCompOrWorld(layer = this, reverse = true, toComp = true)
+            "toWorld" -> JSLayerToCompOrWorld(layer = this, reverse = false, toComp = false)
+            "fromWorld" -> JSLayerToCompOrWorld(layer = this, reverse = true, toComp = false)
 
             else -> super.get(property, runtime)
         }
     }
 }
 
-internal fun Layer.totalTransformMatrix(state : AnimationState) : Matrix {
+internal fun Layer.totalTransformMatrix(state : AnimationState, toComp : Boolean = false) : Matrix {
 
     val matrix = transform.matrix(state)
     var layer = parentLayer
 
     while (layer != null) {
         matrix.preConcat(layer.transform.matrix(state))
+        if (toComp && layer is PrecompositionLayer){
+            break
+        }
         layer = layer.parentLayer
     }
 

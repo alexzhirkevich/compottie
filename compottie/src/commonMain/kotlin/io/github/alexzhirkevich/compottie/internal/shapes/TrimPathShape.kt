@@ -37,7 +37,7 @@ internal class TrimPathShape(
     val offset : AnimatedNumber,
 
     @SerialName("m")
-    val type : TrimPathType = TrimPathType.Simultaneously
+    val trimPathType : TrimPathType = TrimPathType.Simultaneously
 ) : Shape {
 
     @Transient
@@ -71,7 +71,7 @@ internal class TrimPathShape(
             start = start.copy(),
             end = end.copy(),
             offset = offset.copy(),
-            type = type
+            trimPathType = trimPathType
         )
     }
 }
@@ -83,7 +83,7 @@ internal fun Content.isSimultaneousTrimPath() : Boolean {
         returns(true) implies (this@isSimultaneousTrimPath is TrimPathShape)
     }
 
-    return this is TrimPathShape && type == TrimPathType.Simultaneously
+    return this is TrimPathShape && trimPathType == TrimPathType.Simultaneously
 }
 
 @OptIn(ExperimentalContracts::class)
@@ -92,5 +92,5 @@ internal fun Content.isIndividualTrimPath() : Boolean {
         returns(true) implies (this@isIndividualTrimPath is TrimPathShape)
     }
 
-    return this is TrimPathShape && type == TrimPathType.Individually
+    return this is TrimPathShape && trimPathType == TrimPathType.Individually
 }
