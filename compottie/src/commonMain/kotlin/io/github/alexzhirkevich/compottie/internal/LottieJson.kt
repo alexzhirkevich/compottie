@@ -73,7 +73,7 @@ internal val LottieJson by lazy{
                 subclass(PrecompositionAsset::class)
 
                 defaultDeserializer {
-                    LottieAsset.UnsupportedAsset.serializer()
+                    LottieAsset.Unsupported.serializer()
                 }
             }
 
@@ -94,7 +94,7 @@ internal val LottieJson by lazy{
                 subclass(TrimPathShape::class)
 
                 defaultDeserializer {
-                    Shape.UnsupportedShape.serializer()
+                    Shape.Unsupported.serializer()
                 }
             }
 
@@ -105,15 +105,18 @@ internal val LottieJson by lazy{
                 subclass(DropShadowEffect::class)
 
                 defaultDeserializer {
-                    LayerEffect.UnsupportedEffect.serializer()
+                    LayerEffect.Unsupported.serializer()
                 }
             }
 
             polymorphic(EffectValue::class){
-                subclass(EffectValue.Slider::class)
+                subclass(EffectValue.Angle::class)
                 subclass(EffectValue.CheckBox::class)
                 subclass(EffectValue.Color::class)
-                subclass(EffectValue.Angle::class)
+                subclass(EffectValue.DropDown::class)
+                subclass(EffectValue.Layer::class)
+                subclass(EffectValue.Point::class)
+                subclass(EffectValue.Slider::class)
 
                 defaultDeserializer {
                     EffectValue.Unsupported.serializer()

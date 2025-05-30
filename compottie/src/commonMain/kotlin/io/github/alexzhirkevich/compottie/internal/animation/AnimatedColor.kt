@@ -5,6 +5,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.isNotNull
+import io.github.alexzhirkevich.keight.ScriptRuntime
+import io.github.alexzhirkevich.keight.js.JsAny
+import io.github.alexzhirkevich.keight.js.Undefined
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -24,9 +27,7 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
 
     override fun mapEvaluated(e: Any): Color {
         return when (e) {
-            is Color -> e
             is List<*> -> (e as List<Number>).toColor2()
-
             else -> error("Can't convert $e to color")
         }
     }
@@ -75,6 +76,14 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
             lerp(s.toColor(), e.toColor(), easingX.transform(p))
         }
     ) {
+
+        override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
+            return super<AnimatedColor>.get(property, runtime).let {
+                if (it is Undefined)
+                    super<RawKeyframeProperty>.get(property, runtime)
+                else it
+            }
+        }
 
         override fun copy(): AnimatedColor {
             return Animated(

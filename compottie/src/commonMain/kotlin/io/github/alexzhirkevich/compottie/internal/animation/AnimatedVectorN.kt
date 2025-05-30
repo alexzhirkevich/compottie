@@ -1,10 +1,11 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
+import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.lerp
-import io.github.alexzhirkevich.compottie.dynamic.PropertyProvider
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionEvaluator
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.RawExpressionEvaluator
+import io.github.alexzhirkevich.keight.ScriptRuntime
+import io.github.alexzhirkevich.keight.js.JsAny
+import io.github.alexzhirkevich.keight.js.Undefined
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -28,7 +29,7 @@ internal sealed class AnimatedVectorN : DynamicProperty<List<Float>>() {
 
     override fun mapEvaluated(e: Any): List<Float> {
         return when (e) {
-            is List<*> -> e as List<Float>
+            is List<*> -> (e as List<Number>).fastMap { it.toFloat() }
             else -> error("Failed to cast $e to Vec2")
         }
     }
@@ -88,6 +89,14 @@ internal sealed class AnimatedVectorN : DynamicProperty<List<Float>>() {
 
         override fun raw(state: AnimationState): List<Float> {
             return delegate.raw(state)
+        }
+
+        override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
+            return super<AnimatedVectorN>.get(property, runtime).let {
+                if (it is Undefined)
+                    super<AnimatedKeyframeProperty>.get(property, runtime)
+                else it
+            }
         }
 
         override fun copy(): AnimatedVectorN {

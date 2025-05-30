@@ -14,6 +14,9 @@ import io.github.alexzhirkevich.compottie.dynamic.toSize
 import io.github.alexzhirkevich.compottie.dynamic.toVec2
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.isNotNull
+import io.github.alexzhirkevich.keight.ScriptRuntime
+import io.github.alexzhirkevich.keight.js.JsAny
+import io.github.alexzhirkevich.keight.js.Undefined
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -36,7 +39,6 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
 
     override fun mapEvaluated(e: Any): Vec2 {
         return when (e) {
-            is Vec2 -> e
             is List<*> -> Vec2((e[0] as Number).toFloat(), (e[1] as Number).toFloat())
             else -> error("Failed to cast $e to Vec2")
         }

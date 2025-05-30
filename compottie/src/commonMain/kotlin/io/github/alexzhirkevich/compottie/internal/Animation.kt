@@ -55,8 +55,8 @@ internal class Animation(
         }
     }.orEmpty())
 
-    override fun prepareExpressions() {
-        layers.fastForEach(Layer::prepareExpressions)
+    override fun prepareExpressions(state: AnimationState) {
+        layers.fastForEach { it.prepareExpressions(state) }
     }
 
     fun deepCopy() : Animation {

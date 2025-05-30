@@ -9,18 +9,9 @@ plugins {
 
 kotlin {
 
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach {
-        it.binaries.framework {
-            baseName = "shared"
-        }
-    }
-
     sourceSets {
         commonMain.dependencies {
+            implementation("org.jetbrains.compose.material:material-icons-core:1.7.3")
             implementation(project(":compottie"))
             implementation(project(":compottie-dot"))
             implementation(project(":compottie-network"))
@@ -30,34 +21,44 @@ kotlin {
 //            implementation("io.github.alexzhirkevich:compottie-network:2.0.0-beta01")
 //            implementation("io.github.alexzhirkevich:compottie-resources:2.0.0-beta01")
 
-            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.7.0-alpha07")
-            implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
+            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.0-beta01")
+            implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0-beta01")
+            implementation("org.jetbrains.compose.material3.adaptive:adaptive:1.1.0")
+            implementation("org.jetbrains.compose.material3.adaptive:adaptive-layout:1.1.0")
+            implementation("org.jetbrains.compose.material3.adaptive:adaptive-navigation:1.1.0")
+
             implementation(compose.material3)
             implementation(compose.components.resources)
             implementation(libs.serialization)
             implementation(libs.coil.compose)
             implementation(libs.coil.network)
         }
-        androidMain.dependencies {
-            implementation(libs.ktor.client.okhttp)
+        commonTest.dependencies {
+            implementation(kotlin("test"))
         }
-
-        iosMain.dependencies {
-            implementation(libs.ktor.client.ios)
-        }
-
-        val desktopMain by getting {
-            dependencies {
-                implementation(libs.ktor.client.okhttp)
-            }
-        }
-
-        jsMain.dependencies {
-            implementation(libs.ktor.client.js)
-        }
-        wasmJsMain.dependencies {
-            implementation(libs.ktor.client.js)
-        }
+//        desktopTest.dependencies {
+//            implementation(compose.desktop.currentOs)
+//        }
+//        androidMain.dependencies {
+//            implementation(libs.ktor.client.okhttp)
+//        }
+//
+//        iosMain.dependencies {
+//            implementation(libs.ktor.client.ios)
+//        }
+//
+//        val desktopMain by getting {
+//            dependencies {
+//                implementation(libs.ktor.client.okhttp)
+//            }
+//        }
+//
+//        jsMain.dependencies {
+//            implementation(libs.ktor.client.js)
+//        }
+//        wasmJsMain.dependencies {
+//            implementation(libs.ktor.client.js)
+//        }
     }
 }
 

@@ -1,55 +1,43 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
-import androidx.compose.ui.graphics.Color
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
-import io.github.alexzhirkevich.compottie.internal.animation.Vec2
+import io.github.alexzhirkevich.keight.Script
+import io.github.alexzhirkevich.keight.invokeSync
 
-internal interface ExpressionEvaluator {
-    fun RawProperty<*>.evaluate(state: AnimationState): Any
+internal interface ExpressionEvaluator : ExpressionHolder {
+    fun evaluate(state: AnimationState): Any
 }
 
-internal fun ExpressionEvaluator(expression: String, catchErrors : Boolean = true) : ExpressionEvaluator =
-    ExpressionEvaluatorImpl(expression)
-
-internal object RawExpressionEvaluator : ExpressionEvaluator {
-    override fun RawProperty<*>.evaluate(state: AnimationState): Any = raw(state)
-}
+internal fun ExpressionEvaluator(
+    expression: String,
+    property: RawProperty<*>
+) : ExpressionEvaluator = ExpressionEvaluatorImpl(expression, property)
 
 
 private class ExpressionEvaluatorImpl(
-    expr: String
+    private val expr: String,
+    private val property: RawProperty<*>
 ) : ExpressionEvaluator {
 
-    private val context = DefaultEvaluatorContext()
+    private var script: Script? = null
 
-    private val expression = kotlin.runCatching {
-        ExpressionInterpreterImpl(expr, context).interpret()
-    }.getOrNull()
+    override fun prepareExpressions(state: AnimationState) {
+        script = state.scriptEngine.compile(expr)
+    }
 
+    override fun evaluate(state: AnimationState): Any {
+        val script = script ?: return property.raw(state)
 
-    override fun RawProperty<*>.evaluate(state: AnimationState): Any {
-        if (expression == null)
-            return raw(state)
-
-        return try {
-            expression.invoke(this, context, state)
-            context.result?.toListOrThis()
-        } catch (t: Throwable) {
-            null
-        } finally {
-            context.reset()
-        } ?: raw(state)
+        return state.onProperty(property) {
+            try {
+                script
+                    .invokeSync(it.scriptEngine.runtime)
+                    ?.toKotlin(it.scriptEngine.runtime)
+            } catch (t: Throwable) {
+                null
+            } ?: property.raw(it)
+        }
     }
 }
-
-private fun Any.toListOrThis() : Any{
-    return when (this){
-        is Map<*,*> -> values.toList()
-        is Vec2 -> listOf(x,y)
-        is Color -> listOf(red,green,blue,alpha)
-        is Array<*> -> toList()
-        else -> this
-    }
-}
-

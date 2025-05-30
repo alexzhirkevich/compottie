@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.helpers
 
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedGradient
 import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
 import kotlinx.serialization.SerialName
@@ -15,8 +16,8 @@ internal class GradientColors(
     val numberOfColors: Int = 0
 ) : ExpressionHolder {
 
-    override fun prepareExpressions() {
-        colors.prepareExpressions()
+    override fun prepareExpressions(state: AnimationState) {
+        colors.prepareExpressions(state)
     }
 
     fun copy()  = GradientColors(

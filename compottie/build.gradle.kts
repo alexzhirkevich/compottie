@@ -14,7 +14,7 @@ kotlin {
             implementation(libs.serialization)
             implementation(libs.okio)
             implementation(libs.atomicfu)
-
+            implementation(libs.keight)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

@@ -2,9 +2,17 @@ package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.util.fastForEach
+import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.js
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.onTime
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.state
 import io.github.alexzhirkevich.compottie.internal.helpers.Bezier
 import io.github.alexzhirkevich.compottie.internal.isNotNull
+import io.github.alexzhirkevich.keight.Callable
+import io.github.alexzhirkevich.keight.ScriptRuntime
+import io.github.alexzhirkevich.keight.js.JsAny
+import io.github.alexzhirkevich.keight.js.js
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -17,18 +25,123 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = AnimatedShapeSerializer::class)
-internal sealed interface AnimatedShape : AnimatedProperty<Path>, ExpressionHolder {
+internal abstract class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder {
 
-    fun rawBezier(state: AnimationState): Bezier
+    @Transient
+    override val cache: MutableMap<String, Any?> = HashMap()
 
-    fun copy(): AnimatedShape
+    abstract fun rawBezier(state: AnimationState): Bezier
 
-    fun setClosed(closed: Boolean)
+    abstract fun copy(): AnimatedShape
 
+    abstract fun setClosed(closed: Boolean)
 
-    override fun prepareExpressions() {
+    override fun prepareExpressions(state: AnimationState) {
 
     }
+
+    private fun points(state: AnimationState) = rawBezier(state).vertices.js()
+    private fun inTangents(state: AnimationState) = rawBezier(state).inTangents.js()
+    private fun outTangents(state: AnimationState) = rawBezier(state).outTangents.js()
+
+    private suspend fun createPath(args : List<JsAny?>, runtime: ScriptRuntime): AnimatedShape {
+        val points = (args[0]?.toKotlin(runtime) as? List<List<Number>>)
+            ?.fastMap { it.fastMap { it.toFloat() } }
+            ?: DefaultPoints
+
+        val inTangents = (args.getOrNull(1)?.toKotlin(runtime) as? List<List<Number>>)
+            ?.fastMap { it.fastMap { it.toFloat() } }
+            ?: emptyList()
+
+        val outTangents = (args.getOrNull(2)?.toKotlin(runtime) as? List<List<Number>>)
+            ?.fastMap { it.fastMap { it.toFloat() } }
+            ?: emptyList()
+
+        val isClosed = !runtime.isFalse(args.getOrNull(3) ?: true)
+
+        return Default(
+            bezier = Bezier(
+                vertices = points,
+                inTangents = inTangents,
+                outTangents = outTangents,
+                isClosed = isClosed
+            )
+        )
+    }
+//
+//    private fun pointOnPath(perc: Float, time: Float) : Vec2 {
+//
+//        var shapePath = this.v;
+//        if (time !== undefined) {
+//            shapePath = this.getValueAtTime(time, 0);
+//        }
+//        if (!this._segmentsLength) {
+//            this._segmentsLength = bez.getSegmentsLength(shapePath);
+//        }
+//
+//        var segmentsLength = this._segmentsLength;
+//        var lengths = segmentsLength.lengths;
+//        var lengthPos = segmentsLength.totalLength * perc;
+//        var i = 0;
+//        var len = lengths.length;
+//        var accumulatedLength = 0;
+//        var pt;
+//        while (i < len) {
+//            if (accumulatedLength + lengths[i].addedLength > lengthPos) {
+//                var initIndex = i;
+//                var endIndex = (shapePath.c && i === len - 1) ? 0 : i+1;
+//                var segmentPerc = (lengthPos - accumulatedLength) / lengths[i].addedLength;
+//                pt = bez.getPointInSegment(
+//                    shapePath.v[initIndex],
+//                    shapePath.v[endIndex],
+//                    shapePath.o[initIndex],
+//                    shapePath.i[endIndex],
+//                    segmentPerc,
+//                    lengths[i]
+//                );
+//                break;
+//            } else {
+//                accumulatedLength += lengths[i].addedLength;
+//            }
+//            i += 1;
+//        }
+//        if (!pt) {
+//            pt =
+//                shapePath.c ? [shapePath.v[0][0], shapePath.v[0][1]] : [shapePath.v[shapePath._length-1][0], shapePath.v[shapePath._length-1][1]];
+//        }
+//        return pt;
+//    }
+//    private fun vectorOnPath(perc : Float, time : Float, state: AnimationState) : List<Float>{
+//        // perc doesn't use triple equality because it can be a Number object as well as a primitive.
+//        val p  : Float = if (perc == 1f) { // eslint-disable-line eqeqeq
+//            this.v.c;
+//        } else if (perc == 0f) { // eslint-disable-line eqeqeq
+//            0.999f;
+//        } else perc
+//
+//        val pt1 = this.pointOnPath(perc, time);
+//        val pt2 = this.pointOnPath(perc + 0.001f, time);
+//        val xLength = pt2.x - pt1.x;
+//        val yLength = pt2.y - pt1.y;
+//        val magnitude = Math.sqrt(Math.pow(xLength, 2f) + Math.pow(yLength, 2.0));
+//        if (magnitude == 0f) {
+//            return listOf(0f, 0f);
+//        }
+//        var unitVector = vectorType === 'tangent' ? [xLength / magnitude, yLength / magnitude] : [-yLength / magnitude, xLength / magnitude];
+//        return unitVector;
+//    }
+
+    override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
+        return when (property?.toString()) {
+            "points" -> Callable { onTime(it.getOrNull(0), ::points) }
+            "inTangents" -> Callable { onTime(it.getOrNull(0), ::inTangents) }
+            "outTangents" -> Callable { onTime(it.getOrNull(0), ::outTangents) }
+            "isClosed" -> Callable { rawBezier(state).isClosed.js() }
+            "createPath" -> Callable { createPath(it, this) }
+            else -> super.get(property, runtime)
+        }
+    }
+
 
     @Serializable
     class Default(
@@ -40,7 +153,7 @@ internal sealed interface AnimatedShape : AnimatedProperty<Path>, ExpressionHold
 
         @SerialName("k")
         val bezier: Bezier,
-    ) : AnimatedShape {
+    ) : AnimatedShape() {
 
         @Transient
         private val tmpPath = Path()
@@ -77,7 +190,7 @@ internal sealed interface AnimatedShape : AnimatedProperty<Path>, ExpressionHold
 
         @SerialName("k")
         override val keyframes: List<BezierKeyframe>,
-    ) : AnimatedShape, AnimatedKeyframeProperty<Path, BezierKeyframe> {
+    ) : AnimatedShape(), AnimatedKeyframeProperty<Path, BezierKeyframe> {
 
         @Transient
         private val tmpPath = Path()
@@ -130,6 +243,10 @@ internal sealed interface AnimatedShape : AnimatedProperty<Path>, ExpressionHold
         override fun raw(state: AnimationState): Path {
             return delegate.raw(state)
         }
+
+        override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
+            return super<AnimatedKeyframeProperty>.get(property, runtime)
+        }
     }
 
     @Serializable
@@ -137,7 +254,7 @@ internal sealed interface AnimatedShape : AnimatedProperty<Path>, ExpressionHold
         private val sid: String,
         @SerialName("ix")
         override val index: Int? = null,
-    ) : AnimatedShape {
+    ) : AnimatedShape() {
 
         @Transient
         private val emptyBezier = Bezier()
@@ -180,4 +297,15 @@ internal object AnimatedShapeSerializer : JsonContentPolymorphicSerializer<Anima
         }
     }
 }
+
+
+private val DefaultPoints by lazy {
+    listOf(
+        listOf(0f, 0f),
+        listOf(100f, 0f),
+        listOf(100f, 100f),
+        listOf(0f, 100f)
+    )
+}
+
 

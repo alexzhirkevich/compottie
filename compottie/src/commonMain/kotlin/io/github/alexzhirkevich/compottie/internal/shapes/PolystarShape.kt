@@ -122,14 +122,14 @@ internal class PolystarShape(
         trimPaths = CompoundSimultaneousTrimPath(contentsBefore)
     }
 
-    override fun prepareExpressions() {
-        position.prepareExpressions()
-        innerRoundness.prepareExpressions()
-        outerRoundness.prepareExpressions()
-        innerRadius.prepareExpressions()
-        outerRadius.prepareExpressions()
-        rotation.prepareExpressions()
-        points.prepareExpressions()
+    override fun prepareExpressions(state: AnimationState) {
+        position.prepareExpressions(state)
+        innerRoundness.prepareExpressions(state)
+        outerRoundness.prepareExpressions(state)
+        innerRadius.prepareExpressions(state)
+        outerRadius.prepareExpressions(state)
+        rotation.prepareExpressions(state)
+        points.prepareExpressions(state)
     }
 
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {

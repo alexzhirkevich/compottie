@@ -19,7 +19,6 @@ import kotlinx.coroutines.withContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.js.JsName
-import kotlin.time.Duration.Companion.nanoseconds
 
 /**
  * Use this to create a [LottieAnimatable] in a composable.

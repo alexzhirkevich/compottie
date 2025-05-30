@@ -1,29 +1,20 @@
-package io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.random
+package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawKeyframeProperty
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.EvaluationContext
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.Expression
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.operations.time.OpGetTime
+import io.github.alexzhirkevich.compottie.internal.timeSeconds
+import io.github.alexzhirkevich.keight.Callable
 
-internal fun OpSmooth(
-    prop : Expression,
-    width : Expression? = null,
-    samples : Expression? = null,
-    time : Expression? = null
-) = Expression { property, context, state ->
-    val prop = prop(property, context, state) as RawProperty<Any>
-    val width = (width?.invoke(property, context, state) as Number?)?.toFloat() ?: .4f
-    val samples = (samples?.invoke(property, context, state) as Number?)?.toInt() ?: 5
-    val time = (time?.invoke(property, context, state) as Number?)?.toFloat()
+internal fun JsSmooth(
+    prop : RawProperty<*>,
+) = Callable {
+    val width = (it.getOrNull(0)?.toKotlin(this) as? Number)?.toFloat() ?: .4f
+    val samples = (it.getOrNull(1)?.toKotlin(this) as? Number)?.toInt() ?: 5
+    val time = it.getOrNull(2)
 
-    if (time == null) {
-        smooth(prop, state, width ?: .4f, samples ?: 5)
-    } else {
-        state.onTime(time) {
-            smooth(prop, it, width ?: .4f, samples ?: 5)
-        }
+    onTime(time){
+        smooth(prop, it, width, samples).toJs()
     }
 }
 
@@ -41,7 +32,7 @@ private fun smooth(
 
     val width = width/2f
 
-    val currentTime = OpGetTime.invoke(state)
+    val currentTime = state.timeSeconds
     val initTime = currentTime - width
     val endTime = currentTime + width
     val sampleFrequency = endTime-initTime

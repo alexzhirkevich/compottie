@@ -32,11 +32,14 @@ internal class AnimatedTextDocument(
 
     private val document = TextDocument()
 
+    @Transient
+    override val cache: MutableMap<String, Any?> = HashMap()
+
     private val evaluator by lazy {
-        expression?.let(::ExpressionEvaluator)
+        expression?.let { ExpressionEvaluator(it, this) }
     }
 
-    override fun prepareExpressions() {
+    override fun prepareExpressions(state: AnimationState) {
         evaluator
     }
 
@@ -79,7 +82,7 @@ internal class AnimatedTextDocument(
         val raw = raw(state)
 
         val evaluatedText = if (state.enableExpressions) {
-            evaluator?.run { evaluate(state) } as? String ?: raw.text
+            evaluator?.evaluate(state) as? String ?: raw.text
         } else {
             raw.text
         }

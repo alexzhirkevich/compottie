@@ -4,6 +4,9 @@ import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.helpers.ColorsWithStops
 import io.github.alexzhirkevich.compottie.internal.isNotNull
+import io.github.alexzhirkevich.keight.ScriptRuntime
+import io.github.alexzhirkevich.keight.js.JsAny
+import io.github.alexzhirkevich.keight.js.Undefined
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -29,7 +32,6 @@ internal abstract class AnimatedGradient : ExpressionProperty<ColorsWithStops>()
 
     override fun mapEvaluated(e: Any): ColorsWithStops {
         return when (e) {
-            is ColorsWithStops -> e
             is List<*> -> {
                 tempExpressionColors.fill(
                     (e as List<Number>).fastMap(Number::toFloat),
@@ -117,6 +119,14 @@ internal abstract class AnimatedGradient : ExpressionProperty<ColorsWithStops>()
                 index = index,
                 expression = expression
             )
+        }
+
+        override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
+            return super<AnimatedGradient>.get(property, runtime).let {
+                if (it is Undefined)
+                    super<AnimatedKeyframeProperty>.get(property, runtime)
+                else it
+            }
         }
 
         override fun raw(state: AnimationState): ColorsWithStops {

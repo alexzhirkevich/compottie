@@ -33,17 +33,17 @@ internal abstract class AnimatedTransform : ExpressionHolder {
     abstract val skewAxis: AnimatedNumber
 
 
-    override fun prepareExpressions() {
-        anchorPoint.prepareExpressions()
-        position.prepareExpressions()
-        scale.prepareExpressions()
-        rotation.prepareExpressions()
-        rotationX?.prepareExpressions()
-        rotationY?.prepareExpressions()
-        rotationZ?.prepareExpressions()
-        opacity.prepareExpressions()
-        skew.prepareExpressions()
-        skewAxis.prepareExpressions()
+    override fun prepareExpressions(state: AnimationState) {
+        anchorPoint.prepareExpressions(state)
+        position.prepareExpressions(state)
+        scale.prepareExpressions(state)
+        rotation.prepareExpressions(state)
+        rotationX?.prepareExpressions(state)
+        rotationY?.prepareExpressions(state)
+        rotationZ?.prepareExpressions(state)
+        opacity.prepareExpressions(state)
+        skew.prepareExpressions(state)
+        skewAxis.prepareExpressions(state)
     }
 
     var dynamic : DynamicTransformProvider? = null
@@ -83,7 +83,7 @@ internal abstract class AnimatedTransform : ExpressionHolder {
                 matrix.preTranslate(it.x, it.y)
             }
 
-        if (state.layer.autoOrient) {
+        if (state.thisLayer.autoOrient) {
             if (interpolatedPosition != Vec2.Zero) {
                 // Store the start X and Y values because the pointF will be overwritten by the next getValue call.
                 val startX = interpolatedPosition.x

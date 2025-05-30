@@ -176,7 +176,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
 
         applyDashPatternIfNeeded(state)
 
-        state.layer.effectsApplier.applyTo(paint, state, effectsState)
+        state.thisLayer.effectsApplier.applyTo(paint, state, effectsState)
 
         roundShape?.applyTo(paint, state)
 
@@ -252,10 +252,10 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         outBounds.extendBy(strokeWidth.interpolated(state) + 1)
     }
 
-    override fun prepareExpressions() {
-        opacity.prepareExpressions()
-        strokeWidth.prepareExpressions()
-        strokeDash?.fastForEach { it.prepareExpressions() }
+    override fun prepareExpressions(state: AnimationState) {
+        opacity.prepareExpressions(state)
+        strokeWidth.prepareExpressions(state)
+        strokeDash?.fastForEach { it.prepareExpressions(state) }
     }
 
     private fun applyTrimPath(

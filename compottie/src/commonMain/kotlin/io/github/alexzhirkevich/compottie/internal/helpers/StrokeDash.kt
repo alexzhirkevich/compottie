@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.helpers
 
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
 import kotlinx.serialization.SerialName
@@ -27,8 +28,8 @@ internal class StrokeDash(
         value = value.copy()
     )
 
-    override fun prepareExpressions() {
-        value.prepareExpressions()
+    override fun prepareExpressions(state: AnimationState) {
+        value.prepareExpressions(state)
     }
 }
 

@@ -4,11 +4,9 @@ import expressions.MockAnimationState
 import expressions.assertExprReturns
 import expressions.ret
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
-import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionEvaluator
 import kotlin.math.abs
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertTrue
 

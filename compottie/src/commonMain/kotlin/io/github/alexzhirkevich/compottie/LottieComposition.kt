@@ -121,6 +121,7 @@ public class LottieComposition internal constructor(
         }
     }
 
+
     /**
      * Frame when animation becomes visible
      * */

@@ -17,6 +17,8 @@ import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundSimultaneousTrimPath
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
+import io.github.alexzhirkevich.keight.ScriptRuntime
+import io.github.alexzhirkevich.keight.js.JsAny
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -61,10 +63,10 @@ internal class RectShape(
         trimPaths = CompoundSimultaneousTrimPath(contentsBefore)
     }
 
-    override fun prepareExpressions() {
-        position.prepareExpressions()
-        size.prepareExpressions()
-        roundedCorners?.prepareExpressions()
+    override fun prepareExpressions(state: AnimationState) {
+        position.prepareExpressions(state)
+        size.prepareExpressions(state)
+        roundedCorners?.prepareExpressions(state)
     }
 
     override fun getPath(state: AnimationState): Path {
@@ -160,6 +162,14 @@ internal class RectShape(
             position.dynamicOffset(dynamicRect?.position)
             size.dynamicSize(dynamicRect?.size)
             roundedCorners?.dynamic = dynamicRect?.roundCorners
+        }
+    }
+
+    override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
+        return when(property?.toString()){
+            "size" -> size
+            "position" -> position
+            else -> super.get(property, runtime)
         }
     }
 

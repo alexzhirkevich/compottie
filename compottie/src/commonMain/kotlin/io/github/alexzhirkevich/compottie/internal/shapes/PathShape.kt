@@ -13,6 +13,8 @@ import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundSimultaneousTrimPath
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
 import io.github.alexzhirkevich.compottie.internal.platform.set
+import io.github.alexzhirkevich.keight.ScriptRuntime
+import io.github.alexzhirkevich.keight.js.JsAny
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -67,8 +69,8 @@ internal class PathShape(
         trimPaths = CompoundSimultaneousTrimPath(contentsBefore)
     }
 
-    override fun prepareExpressions() {
-        shape.prepareExpressions()
+    override fun prepareExpressions(state: AnimationState) {
+        shape.prepareExpressions(state)
     }
 
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
@@ -76,6 +78,13 @@ internal class PathShape(
 
         if (name != null) {
             dynamicShape = properties?.get(layerPath(basePath, name))
+        }
+    }
+
+    override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
+        return when(property?.toString()){
+            "path" -> shape
+            else -> super.get(property, runtime)
         }
     }
 

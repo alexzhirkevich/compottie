@@ -6,7 +6,6 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.dynamic.DynamicFillProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
@@ -60,7 +59,7 @@ internal class GradientFillShape(
     val endPoint : AnimatedVector2,
 
     @SerialName("t")
-    val type : GradientType,
+    val gradientType : GradientType,
 
 //    @SerialName("h")
 //    val highlightLength : AnimatedNumber? = null,
@@ -117,7 +116,7 @@ internal class GradientFillShape(
 
         if (dynamicFill?.gradient == null) {
             paint.shader = GradientShader(
-                type = type,
+                type = gradientType,
                 startPoint = startPoint,
                 endPoint = endPoint,
                 colors = colors,
@@ -138,7 +137,7 @@ internal class GradientFillShape(
             gradientCache = gradientCache
         )
 
-        state.layer.effectsApplier.applyTo(paint, state, effectsState)
+        state.thisLayer.effectsApplier.applyTo(paint, state, effectsState)
 
         path.reset()
         path.fillType = fillType
@@ -181,11 +180,11 @@ internal class GradientFillShape(
         roundShape = contentsBefore.firstInstanceOf()
     }
 
-    override fun prepareExpressions() {
-        opacity.prepareExpressions()
-        startPoint.prepareExpressions()
-        endPoint.prepareExpressions()
-        colors.prepareExpressions()
+    override fun prepareExpressions(state: AnimationState) {
+        opacity.prepareExpressions(state)
+        startPoint.prepareExpressions(state)
+        endPoint.prepareExpressions(state)
+        colors.prepareExpressions(state)
     }
 
     override fun deepCopy(): Shape {
@@ -196,7 +195,7 @@ internal class GradientFillShape(
             opacity = opacity.copy(),
             startPoint = startPoint.copy(),
             endPoint = endPoint.copy(),
-            type = type,
+            gradientType = gradientType,
 //            highlightLength = highlightLength?.copy(),
 //            highlightAngle = highlightAngle?.copy(),
             colors = colors.copy(),
