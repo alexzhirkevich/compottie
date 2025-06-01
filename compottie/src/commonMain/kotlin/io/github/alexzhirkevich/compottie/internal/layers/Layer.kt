@@ -27,7 +27,7 @@ import kotlinx.serialization.json.JsonClassDiscriminator
 
 @OptIn(ExperimentalSerializationApi::class)
 @JsonClassDiscriminator("ty")
-internal sealed interface Layer : DrawingContent, ExpressionHolder, JsAny {
+internal sealed interface Layer : DrawingContent, ExpressionHolder, Callable {
 
     val hidden: Boolean
 
@@ -67,6 +67,8 @@ internal sealed interface Layer : DrawingContent, ExpressionHolder, JsAny {
 
     var parentLayer: Layer?
 
+    val cache : MutableMap<String, Any?>
+
     fun setDynamicProperties(
         composition: DynamicCompositionProvider?,
         state: AnimationState
@@ -82,6 +84,24 @@ internal sealed interface Layer : DrawingContent, ExpressionHolder, JsAny {
         transform.prepareExpressions(state)
         effects.fastForEach { it.prepareExpressions(state) }
         masks?.fastForEach { it.prepareExpressions(state) }
+    }
+
+    override suspend fun bind(
+        thisArg: JsAny?,
+        args: List<JsAny?>,
+        runtime: ScriptRuntime
+    ): Callable = this
+
+    override suspend fun invoke(args: List<JsAny?>, runtime: ScriptRuntime): JsAny? {
+        return when (args.getOrNull(0)?.toString()) {
+            "Effects" -> cache.getOrPut("Effects") {
+                Callable {
+                    val name = it.getOrNull(0)?.toString() ?: return@Callable null
+                    effects.fastFirstOrNull { it.name == name }
+                }
+            } as JsAny?
+            else -> Undefined
+        }
     }
 
     override suspend fun keys(
@@ -125,26 +145,37 @@ internal sealed interface Layer : DrawingContent, ExpressionHolder, JsAny {
             "rotation" -> transform.rotation
             "position" -> transform.position
             "opacity" -> transform.opacity
-            "effect" -> Callable {
-                val index = it[0]?.toKotlin(this) ?: return@Callable Undefined
+            "effect" -> cache.getOrPut("effect") {
+                Callable {
+                    val index = it[0]?.toKotlin(this) ?: return@Callable Undefined
 
-                if (index is Number) {
-                    val i = index.toInt()
-                    effects.fastFirstOrNull { e -> e.index == i }
-                } else {
-                    val n = index.toString()
-                    effects.fastFirstOrNull { e -> e.name == n }
+                    if (index is Number) {
+                        val i = index.toInt()
+                        effects.fastFirstOrNull { e -> e.index == i }
+                    } else {
+                        val n = index.toString()
+                        effects.fastFirstOrNull { e -> e.name == n }
+                    }
                 }
-            }
-            "mask" -> Callable {
-                val name = it[0]?.toKotlin(this)?.toString() ?: return@Callable Undefined
-                masks?.fastFirstOrNull { it.name == name }
-            }
-            "toComp" -> JSLayerToCompOrWorld(layer = this, reverse = false, toComp = true)
-            "fromComp" -> JSLayerToCompOrWorld(layer = this, reverse = true, toComp = true)
-            "toWorld" -> JSLayerToCompOrWorld(layer = this, reverse = false, toComp = false)
-            "fromWorld" -> JSLayerToCompOrWorld(layer = this, reverse = true, toComp = false)
-
+            } as JsAny?
+            "mask" -> cache.getOrPut("mask") {
+                Callable {
+                    val name = it[0]?.toKotlin(this)?.toString() ?: return@Callable Undefined
+                    masks?.fastFirstOrNull { it.name == name }
+                }
+            } as JsAny?
+            "toComp" -> cache.getOrPut("toComp") {
+                JSLayerToCompOrWorld(layer = this, reverse = false, toComp = true)
+            } as JsAny?
+            "fromComp" -> cache.getOrPut("fromComp") {
+                JSLayerToCompOrWorld(layer = this, reverse = true, toComp = true)
+            } as JsAny?
+            "toWorld" -> cache.getOrPut("toWorld") {
+                JSLayerToCompOrWorld(layer = this, reverse = false, toComp = false)
+            } as JsAny?
+            "fromWorld" -> cache.getOrPut("fromWorld") {
+                JSLayerToCompOrWorld(layer = this, reverse = true, toComp = false)
+            } as JsAny?
             else -> super.get(property, runtime)
         }
     }

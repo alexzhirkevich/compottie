@@ -47,7 +47,7 @@ internal fun JsLoopOut(
     }
 
     val type = it.getOrNull(0)?.toKotlin(this)?.toString()
-    var duration = (it.getOrNull(1)?.toKotlin(this) as? Number)?.toInt()
+    var duration = toNumber(it.getOrNull(1)).toInt()
 
     val lastKeyFrame = prop.keyframes.last().time
 
@@ -58,14 +58,14 @@ internal fun JsLoopOut(
     val firstKeyFrame: Float
 
     if (isDuration) {
-        cycleDuration = if (duration == null) {
+        cycleDuration = if (duration == 0) {
             max(0f,  lastKeyFrame - (state.thisLayer.inPoint ?: 0f))
         } else {
             abs(lastKeyFrame - state.composition.frameRate * duration)
         }
         firstKeyFrame = lastKeyFrame - cycleDuration
     } else {
-        if (duration == null || duration > prop.keyframes.lastIndex) {
+        if (duration == 0 || duration > prop.keyframes.lastIndex) {
             duration = prop.keyframes.lastIndex
         }
         firstKeyFrame = prop.keyframes[prop.keyframes.lastIndex - duration].time
@@ -138,7 +138,7 @@ internal fun JSLoopIn(
     }
 
     val type = it.getOrNull(0)?.toKotlin(this)?.toString()
-    var duration = (it.getOrNull(1)?.toKotlin(this )as? Number)?.toInt() ?: 0
+    var duration = toNumber(it.getOrNull(1)).toInt()
 
     val firstKeyframe = prop.keyframes.first().time
 
@@ -163,6 +163,7 @@ internal fun JSLoopIn(
         lastKeyFrame = prop.keyframes[duration].time
         cycleDuration = lastKeyFrame - firstKeyframe
     }
+
     when (type?.lowercase()) {
         "pingpong" -> {
             val iterations = ((firstKeyframe - state.frame) / cycleDuration).toInt()

@@ -39,6 +39,7 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
 
     override fun mapEvaluated(e: Any): Vec2 {
         return when (e) {
+            is Vec2 -> e
             is List<*> -> Vec2((e[0] as Number).toFloat(), (e[1] as Number).toFloat())
             else -> error("Failed to cast $e to Vec2")
         }

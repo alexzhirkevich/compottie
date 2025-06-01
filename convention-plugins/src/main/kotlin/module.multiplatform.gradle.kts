@@ -45,12 +45,12 @@ kotlin {
     }
 
 
-//    androidTarget {
-//        compilerOptions {
-//            jvmTarget.set(JvmTarget.fromTarget(_jvmTarget))
-//        }
-//        publishLibraryVariants("release")
-//    }
+    androidTarget {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.fromTarget(_jvmTarget))
+        }
+        publishLibraryVariants("release")
+    }
 //
 //    iosArm64()
 //    iosX64()

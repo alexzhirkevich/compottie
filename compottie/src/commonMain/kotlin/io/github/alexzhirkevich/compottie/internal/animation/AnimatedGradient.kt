@@ -32,6 +32,7 @@ internal abstract class AnimatedGradient : ExpressionProperty<ColorsWithStops>()
 
     override fun mapEvaluated(e: Any): ColorsWithStops {
         return when (e) {
+            is ColorsWithStops -> e
             is List<*> -> {
                 tempExpressionColors.fill(
                     (e as List<Number>).fastMap(Number::toFloat),

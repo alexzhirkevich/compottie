@@ -19,7 +19,7 @@ import kotlinx.serialization.json.JsonClassDiscriminator
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonClassDiscriminator("ty")
-internal sealed class LayerEffect : ExpressionHolder, JsAny {
+internal sealed class LayerEffect : ExpressionHolder, Callable {
 
     abstract val enabled: Boolean
     abstract val name: String?
@@ -46,6 +46,13 @@ internal sealed class LayerEffect : ExpressionHolder, JsAny {
 
     abstract fun copy(): LayerEffect
 
+    override suspend fun bind(
+        thisArg: JsAny?,
+        args: List<JsAny?>,
+        runtime: ScriptRuntime
+    ): Callable = this
+
+    override suspend fun invoke(args: List<JsAny?>, runtime: ScriptRuntime): JsAny? = this
 
     override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
         return when (property?.toString()){

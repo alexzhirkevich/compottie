@@ -112,6 +112,8 @@ internal abstract class BaseLayer : Layer {
     protected var dynamicLayer : DynamicLayerProvider? = null
         private set
 
+    override val cache: MutableMap<String, Any?> = HashMap()
+
     override fun setDynamicProperties(
         composition: DynamicCompositionProvider?,
         state: AnimationState

@@ -27,6 +27,7 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
 
     override fun mapEvaluated(e: Any): Color {
         return when (e) {
+            is Color -> e
             is List<*> -> (e as List<Number>).toColor2()
             else -> error("Can't convert $e to color")
         }
