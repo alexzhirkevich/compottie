@@ -11,35 +11,6 @@ import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.random.Random
 
-internal fun JSWiggle(
-    property: RawProperty<*>
-) : Callable {
-    val lastChange: MutableMap<Int, Long> = mutableMapOf()
-    val wiggle: MutableMap<Int, Any> = mutableMapOf()
-    val prevWiggle: MutableMap<Int, Any> = mutableMapOf()
-    return Callable {
-        val freq = it[0]?.toKotlin(this) as Number
-        val amp = it[1]?.toKotlin(this) as Number
-        val octaves = it.getOrNull(2)?.toKotlin(this) as? Number ?: 1
-        val ampMult = it.getOrNull(3)?.toKotlin(this) as? Number ?: 0.5f
-        val t = it.getOrNull(4)
-
-        val time = onTime(t){
-            wiggle(
-                value = it.timeSeconds,
-                freq = freq.toFloat(),
-                amp = amp.toFloat(),
-                octaves = octaves.toInt(),
-                ampMult = ampMult.toFloat(),
-                state = it,
-                lastChange = lastChange, wiggle = wiggle, prevWiggle = prevWiggle
-            )
-        }
-
-        onTime(time){ property.raw(it) }.toJs()
-    }
-}
-
 internal fun JSTemporalWiggle(
     property: RawProperty<*>
 ) : Callable {
@@ -47,20 +18,50 @@ internal fun JSTemporalWiggle(
     val wiggle: MutableMap<Int, Any> = mutableMapOf()
     val prevWiggle: MutableMap<Int, Any> = mutableMapOf()
     return Callable {
-        val freq = it[0]?.toKotlin(this) as Number
-        val amp = it[1]?.toKotlin(this) as Number
-        val octaves = it.getOrNull(2)?.toKotlin(this) as? Number ?: 1
-        val ampMult = it.getOrNull(3)?.toKotlin(this) as? Number ?: 0.5f
+        val freq = toNumber(it[0]).toFloat()
+        val amp = toNumber(it[1]).toFloat()
+        val octaves = it.getOrNull(2)?.let { toNumber(it) }?.toInt() ?: 1
+        val ampMult = it.getOrNull(3)?.let { toNumber(it) }?.toFloat() ?: 0.5f
         val t = it.getOrNull(4)
 
+        val time = onTime(t){
+            wiggle(
+                value = it.timeSeconds,
+                freq = freq,
+                amp = amp,
+                octaves = octaves,
+                ampMult = ampMult,
+                state = it,
+                lastChange = lastChange,
+                wiggle = wiggle,
+                prevWiggle = prevWiggle
+            )
+        }
+
+        onTime(time, property::raw).toJs()
+    }
+}
+
+internal fun JSWiggle(
+    property: RawProperty<*>
+) : Callable {
+    val lastChange: MutableMap<Int, Long> = mutableMapOf()
+    val wiggle: MutableMap<Int, Any> = mutableMapOf()
+    val prevWiggle: MutableMap<Int, Any> = mutableMapOf()
+    return Callable {
+        val freq = toNumber(it[0]).toFloat()
+        val amp = toNumber(it[1]).toFloat()
+        val octaves = it.getOrNull(2)?.let { toNumber(it) }?.toInt() ?: 1
+        val ampMult = it.getOrNull(3)?.let { toNumber(it) }?.toFloat() ?: 0.5f
+        val t = it.getOrNull(4)
 
         onTime(t){
             wiggle(
                 value = property.raw(it),
-                freq = freq.toFloat(),
-                amp = amp.toFloat(),
-                octaves = octaves.toInt(),
-                ampMult = ampMult.toFloat(),
+                freq = freq,
+                amp = amp,
+                octaves = octaves,
+                ampMult = ampMult,
                 state = it,
                 lastChange = lastChange,
                 wiggle = wiggle,
@@ -82,7 +83,7 @@ private fun wiggle(
     prevWiggle: MutableMap<Int, Any>
 ) : JsAny? {
 
-    var value = value
+    var mValue = value
 
     repeat(octaves) {
         val octAmp = amp / (if (it == 0) 1f else ampMult.pow(it))
@@ -96,7 +97,7 @@ private fun wiggle(
         val progress = if (octLast == null || elapsedTime > frameTime) {
             lastChange[it] = state.time.inWholeMilliseconds
 
-            when (value) {
+            when (mValue) {
                 is Float -> {
                     prevWiggle[it] = (wiggle[it] as? Float) ?: 0f
                     wiggle[it] = -octAmp + Random.nextFloat() * 2 * octAmp
@@ -110,7 +111,7 @@ private fun wiggle(
                     )
                 }
 
-                else -> error("${value::class} can't be wiggled")
+                else -> error("Can't wiggle ${mValue::class}")
             }
             0f
         } else {
@@ -121,18 +122,12 @@ private fun wiggle(
         val c = wiggle[it]
 
         when {
-            value is Float && p is Float && c is Float -> value += androidx.compose.ui.util.lerp(
-                p,
-                c,
-                progress
-            )
-            value is Vec2 && p is Vec2 && c is Vec2 -> value += androidx.compose.ui.geometry.lerp(
-                p,
-                c,
-                progress
-            )
-            else -> error("${value::class} can't be wiggled")
+            mValue is Float && p is Float && c is Float ->
+                mValue += androidx.compose.ui.util.lerp(p, c, progress)
+            mValue is Vec2 && p is Vec2 && c is Vec2 ->
+                mValue += androidx.compose.ui.geometry.lerp(p, c, progress)
+            else -> error("Can't wiggle ${mValue::class}")
         }
     }
-    return value.toJs()
+    return mValue.toJs()
 }

@@ -1,11 +1,26 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
+import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.internal.utils.hslToBlue
 import io.github.alexzhirkevich.compottie.internal.utils.hslToGreen
 import io.github.alexzhirkevich.compottie.internal.utils.hslToRed
 import io.github.alexzhirkevich.keight.js.FunctionParam
 import io.github.alexzhirkevich.keight.js.JSFunction
+import io.github.alexzhirkevich.keight.js.Undefined
 import io.github.alexzhirkevich.keight.js.js
+
+internal fun JSHexToRgb() = JSFunction(FunctionParam("hex")) {
+    val str = it[0]?.toString() ?: return@JSFunction Undefined
+
+    str.lowercase()
+        .removePrefix("#")
+        .removePrefix("0x")
+        .padEnd(8, padChar = 'f')
+        .take(8)
+        .chunked(2)
+        .fastMap { (it.toInt(16) / 255f).js() }
+        .js()
+}
 
 internal fun JSHslToRgb() = JSFunction(FunctionParam("hsl")) {
 

@@ -68,6 +68,7 @@ internal class ExpressionsRuntime(
         set("radiansToDegrees".js(), JSRadiansToDegrees(), VariableType.Const)
         set("rgbToHsl".js(), JSRgbToHsl(), VariableType.Const)
         set("hslToRgb".js(), JSHslToRgb(), VariableType.Const)
+        set("hexToRgb".js(), JSHexToRgb(), VariableType.Const)
         set("framesToTime".js(), JsFramesToTime(), VariableType.Const)
         set("timeToFrames".js(), JsTimeToFrames(), VariableType.Const)
 
