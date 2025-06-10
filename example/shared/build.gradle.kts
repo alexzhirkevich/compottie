@@ -29,14 +29,16 @@ kotlin {
 //            implementation("io.github.alexzhirkevich:compottie-dot:2.0.0-beta01")
 //            implementation("io.github.alexzhirkevich:compottie-network:2.0.0-beta01")
 //            implementation("io.github.alexzhirkevich:compottie-resources:2.0.0-beta01")
-
-            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.7.0-alpha07")
-            implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
+//
+//            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.7.0-alpha07")
+//            implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
+            implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0")
             implementation(compose.material3)
             implementation(compose.components.resources)
             implementation(libs.serialization)
             implementation(libs.coil.compose)
             implementation(libs.coil.network)
+            implementation(compose.materialIconsExtended)
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
