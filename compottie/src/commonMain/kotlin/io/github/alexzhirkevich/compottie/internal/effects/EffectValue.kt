@@ -42,7 +42,7 @@ internal sealed interface EffectValue<T : RawProperty<Any>> : Callable, Expressi
     fun copy(): EffectValue<T>
 
     override fun toKotlin(runtime: ScriptRuntime) : Any = this
-git add 
+
     override suspend fun bind(
         thisArg: JsAny?,
         args: List<JsAny?>,
