@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.keight.js.JsAny
 
 
 internal class BaseKeyframeAnimation<T : Any, K, out KF : Keyframe<K>>(
@@ -10,7 +11,9 @@ internal class BaseKeyframeAnimation<T : Any, K, out KF : Keyframe<K>>(
     private val map : KF.(start : K, end : K, progress: Float) -> T
 ) : RawKeyframeProperty<T, KF> {
 
-    override val cache: MutableMap<String, Any?> = HashMap()
+    override val jsCache: MutableMap<String, JsAny?> = HashMap()
+
+    override var group: PropertyGroup? = null
 
     private val sortedKeyframes = keyframes
         .sortedBy(Keyframe<*>::time)

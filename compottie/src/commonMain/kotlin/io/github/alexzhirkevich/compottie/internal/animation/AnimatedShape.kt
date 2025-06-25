@@ -28,8 +28,10 @@ import kotlinx.serialization.json.jsonPrimitive
 internal abstract class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder {
 
     @Transient
-    override val cache: MutableMap<String, Any?> = HashMap()
+    override val jsCache: MutableMap<String, JsAny?> = HashMap()
 
+    override var group: PropertyGroup? = null
+    
     abstract fun rawBezier(state: AnimationState): Bezier
 
     abstract fun copy(): AnimatedShape
@@ -40,9 +42,9 @@ internal abstract class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder
 
     }
 
-    private fun points(state: AnimationState) = rawBezier(state).vertices.js()
-    private fun inTangents(state: AnimationState) = rawBezier(state).inTangents.js()
-    private fun outTangents(state: AnimationState) = rawBezier(state).outTangents.js()
+    private fun points(state: AnimationState) = rawBezier(state).vertices.js
+    private fun inTangents(state: AnimationState) = rawBezier(state).inTangents.js
+    private fun outTangents(state: AnimationState) = rawBezier(state).outTangents.js
 
     private suspend fun createPath(args : List<JsAny?>, runtime: ScriptRuntime): AnimatedShape {
         val points = (args[0]?.toKotlin(runtime) as? List<List<Number>>)
@@ -136,7 +138,7 @@ internal abstract class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder
             "points" -> Callable { onTime(it.getOrNull(0), ::points) }
             "inTangents" -> Callable { onTime(it.getOrNull(0), ::inTangents) }
             "outTangents" -> Callable { onTime(it.getOrNull(0), ::outTangents) }
-            "isClosed" -> Callable { rawBezier(state).isClosed.js() }
+            "isClosed" -> Callable { rawBezier(state).isClosed.js }
             "createPath" -> Callable { createPath(it, this) }
             else -> super.get(property, runtime)
         }

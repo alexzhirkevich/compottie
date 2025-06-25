@@ -18,6 +18,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.defaultSkewAxis
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.keight.ScriptRuntime
 import io.github.alexzhirkevich.keight.js.JsAny
+import io.github.alexzhirkevich.keight.js.Undefined
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -96,7 +97,13 @@ internal class TransformShape(
             "skew" -> skew
             "skewAxis" -> skewAxis
             "opacity" -> opacity
-            else -> super.get(property, runtime)
+            else -> {
+                super<Shape>.get(property, runtime).let {
+                    if (it !is Undefined) return it
+                }
+
+                super<AnimatedTransform>.get(property, runtime)
+            }
         }
     }
 

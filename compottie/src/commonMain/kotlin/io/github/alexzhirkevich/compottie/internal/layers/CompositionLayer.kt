@@ -47,7 +47,9 @@ internal class CompositionLayer(
     override val name: String = CONTAINER_NAME
 
     override fun compose(state: AnimationState): List<Layer> {
-        return composition.animation.layers
+        return composition.animation.layers.onEach {
+            it.comp = composition.expressionComposition
+        }
     }
 
     override fun deepCopy(): Layer {

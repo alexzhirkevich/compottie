@@ -17,7 +17,7 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 
 internal fun RawProperty<*>.random(runtime: ScriptRuntime) : RandomSource =
-    cache.getOrPut(RandomSource::class.simpleName!!) { RandomSource(runtime) } as RandomSource
+    jsCache.getOrPut(RandomSource::class.simpleName!!) { RandomSource(runtime) } as RandomSource
 
 internal fun JSRandomNumber(
     isGauss : Boolean = false
@@ -27,7 +27,7 @@ internal fun JSRandomNumber(
 
     with(random) {
         when(it.size) {
-            0 -> if (isGauss) gaussRandom().js() else random().js()
+            0 -> if (isGauss) gaussRandom().js else random().js
             1 -> if (isGauss) gaussRandom(it[0]) else random(it[0])
             else -> if (isGauss) gaussRandom(it[0], it[1]) else random(it[0], it[1])
         }
@@ -50,12 +50,12 @@ internal fun JSNoise() = Callable {
 
 private suspend fun ScriptRuntime.noise(time : JsAny?, random: RandomSource) : JsAny? {
     return when (time) {
-        is List<*> -> time.fastMap { noise(it as JsAny?, random) }.js()
-        else -> random.noise(toNumber(time).toFloat()).js()
+        is List<*> -> time.fastMap { noise(it as JsAny?, random) }.js
+        else -> random.noise(toNumber(time).toFloat()).js
     }
 }
 
-internal class RandomSource(val runtime: ScriptRuntime) {
+internal class RandomSource(val runtime: ScriptRuntime) : JsAny by Undefined {
 
     private var randomInstance: Random = Random
     private val noiseMap = mutableMapOf<Int, Float>()
@@ -71,8 +71,8 @@ internal class RandomSource(val runtime: ScriptRuntime) {
 
     suspend fun random(max: JsAny?): JsAny? {
         return when (max) {
-            is List<*> -> max.fastMap { random(it as JsAny?) }.js()
-            else -> runtime.mul(randomInstance.nextFloat().js(), max)
+            is List<*> -> max.fastMap { random(it as JsAny?) }.js
+            else -> runtime.mul(randomInstance.nextFloat().js, max)
         }
     }
 
@@ -80,7 +80,7 @@ internal class RandomSource(val runtime: ScriptRuntime) {
         return when {
             min is List<*> && max is List<*> -> List(min(min.size, max.size)) {
                 random(min[it] as JsAny?, max[it] as JsAny?)
-            }.js()
+            }.js
 
             else -> runtime.sum(
                 random(runtime.sub(max, min)),
@@ -105,13 +105,13 @@ internal class RandomSource(val runtime: ScriptRuntime) {
 
                         add(
                             runtime.mul(
-                                (r * cos(alpha).toFloat() + 1).js(),
+                                (r * cos(alpha).toFloat() + 1).js,
                                 max[size] as JsAny?
                             )
                         )
                         add(
                             runtime.mul(
-                                (r * sin(alpha).toFloat() + 1).js(),
+                                (r * sin(alpha).toFloat() + 1).js,
                                 max[size] as JsAny?
                             )
                         )
@@ -119,10 +119,10 @@ internal class RandomSource(val runtime: ScriptRuntime) {
                     if (this.size > max.size) {
                         removeLast()
                     }
-                }.js()
+                }.js
             }
 
-            else -> runtime.mul(gaussRandom().js(), max)
+            else -> runtime.mul(gaussRandom().js, max)
         }
     }
 
@@ -144,7 +144,7 @@ internal class RandomSource(val runtime: ScriptRuntime) {
                         add(
                             runtime.sum(
                                 runtime.mul(
-                                    (r * cos(alpha).toFloat() + 1).js(),
+                                    (r * cos(alpha).toFloat() + 1).js,
                                     maxSubMin
                                 ),
                                 min[size]
@@ -153,7 +153,7 @@ internal class RandomSource(val runtime: ScriptRuntime) {
                         add(
                             runtime.sum(
                                 runtime.mul(
-                                    (r * sin(alpha).toFloat() + 1).js(),
+                                    (r * sin(alpha).toFloat() + 1).js,
                                     maxSubMin
                                 ),
                                 min[size]
@@ -163,7 +163,7 @@ internal class RandomSource(val runtime: ScriptRuntime) {
                     if (this.size > cap) {
                         removeLast()
                     }
-                }.js()
+                }.js
             }
 
             else -> runtime.sum(

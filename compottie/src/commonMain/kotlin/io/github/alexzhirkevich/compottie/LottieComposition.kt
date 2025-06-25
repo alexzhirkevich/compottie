@@ -15,11 +15,9 @@ import io.github.alexzhirkevich.compottie.assets.LottieFontManager
 import io.github.alexzhirkevich.compottie.internal.Animation
 import io.github.alexzhirkevich.compottie.internal.LottieJson
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionComposition
-import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionCompositionFromAsset
 import io.github.alexzhirkevich.compottie.internal.assets.CharacterData
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
-import io.github.alexzhirkevich.compottie.internal.assets.PrecompositionAsset
 import io.github.alexzhirkevich.compottie.internal.helpers.Marker
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.coroutines.CancellationException
@@ -188,16 +186,16 @@ public class LottieComposition internal constructor(
         override val startTime: Float
             get() = this@LottieComposition.startTime
 
+        override val durationFrames: Float
+            get() = this@LottieComposition.endFrame - this@LottieComposition.startTime
+
         override val layersByName: Map<String, Layer> by lazy {
             animation.layers.associateBy { it.name.orEmpty() }
         }
 
-        override val layersByIndex: Map<Int, Layer> by lazy {
-            animation.layers.associateBy { it.index ?: Int.MIN_VALUE }
-        }
+        override val layers: List<Layer>
+            get() = animation.layers
 
-        override val layersCount: Int
-            get() = animation.layers.size
     }
 
     private val charGlyphs: Map<String, Map<String, CharacterData>> =
@@ -205,11 +203,6 @@ public class LottieComposition internal constructor(
             .groupBy(CharacterData::fontFamily)
             .mapValues { it.value.associateBy(CharacterData::character) }
 
-    internal val precomps : Map<String, ExpressionComposition> by lazy {
-        animation.assets.filterIsInstance<PrecompositionAsset>()
-            .associateBy { it.name.orEmpty() }
-            .mapValues { ExpressionCompositionFromAsset(it.value) }
-    }
 
     private val assetsMutex = Mutex()
     private val fontsMutex = Mutex()

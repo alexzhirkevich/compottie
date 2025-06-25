@@ -29,6 +29,8 @@ import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicTextLayerProvider
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.JSProperty
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.state
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.animation.toColor
 import io.github.alexzhirkevich.compottie.internal.assets.CharacterData
@@ -50,6 +52,10 @@ import io.github.alexzhirkevich.compottie.internal.utils.fastReset
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
 import io.github.alexzhirkevich.compottie.internal.utils.toOffset
+import io.github.alexzhirkevich.keight.ScriptRuntime
+import io.github.alexzhirkevich.keight.js.JsAny
+import io.github.alexzhirkevich.keight.js.Object
+import io.github.alexzhirkevich.keight.js.js
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -247,6 +253,17 @@ internal class TextLayer(
         val composition = state.composition
 
         outBounds.set(0f, 0f, composition.animation.width, composition.animation.height)
+    }
+
+    override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
+        return when(property?.toString()){
+            "text" -> jsCache.getOrPut("text") {
+                Object {
+                    "sourceText".js eq JSProperty { textData.document.raw(state).text?.js }
+                }
+            }
+            else -> super.get(property, runtime)
+        }
     }
 
     override fun setDynamicProperties(

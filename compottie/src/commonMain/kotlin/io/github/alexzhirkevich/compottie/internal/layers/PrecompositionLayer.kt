@@ -85,19 +85,28 @@ internal data class PrecompositionLayer(
     override val blendMode: LottieBlendMode = LottieBlendMode.Normal,
 ) : BaseCompositionLayer() {
 
-    internal val composition = object : ExpressionComposition {
+    private val composition : ExpressionComposition = object : ExpressionComposition {
         override val name: String?
             get() = this@PrecompositionLayer.name
         override val width: Float
             get() = this@PrecompositionLayer.width
         override val height: Float
             get() = this@PrecompositionLayer.height
+
         override val startTime: Float
+            get() {
+                val dur = durationFrames
+                val t = this@PrecompositionLayer.startTime
+                if (dur == 0f || t == null) return 0f
+                return t / dur
+            }
+
+        override val durationFrames: Float
             get() {
                 val ip = inPoint ?: return 0f
                 val op = outPoint ?: return 0f
-                val dur = (op - ip).takeIf { it != 0f } ?: return 0f
-                return (this@PrecompositionLayer.startTime ?: 0f) / dur
+
+                return (op - ip).takeIf { it != 0f } ?: return 0f
             }
 
         override val layersByName: Map<String, Layer> by lazy {
@@ -106,14 +115,9 @@ internal data class PrecompositionLayer(
                 .associateBy { it.name.orEmpty() }
         }
 
-        override val layersByIndex: Map<Int, Layer> by lazy {
-            this@PrecompositionLayer.loadedLayers
-                .orEmpty()
-                .associateBy { it.index ?: Int.MIN_VALUE }
-        }
+        override val layers: List<Layer>
+            get() = loadedLayers.orEmpty()
 
-        override val layersCount: Int
-            get() = loadedLayers?.size ?: 0
 
         override fun transformMatrix(state: AnimationState): Matrix {
             return totalTransformMatrix(state)
@@ -122,7 +126,9 @@ internal data class PrecompositionLayer(
 
     override fun compose(state: AnimationState): List<Layer> {
         return (state.assets[refId] as? PrecompositionAsset?)?.layers
-            ?.fastMap(Layer::deepCopy).orEmpty()
+            ?.fastMap(Layer::deepCopy).orEmpty().onEach {
+                it.comp = composition
+            }
     }
 
     override fun drawLayer(
@@ -138,7 +144,6 @@ internal data class PrecompositionLayer(
 
     override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
         return when (property?.toString()) {
-            "source" -> composition
             "timeRemap" -> timeRemapping
             else -> super.get(property, runtime)
         }

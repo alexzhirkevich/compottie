@@ -22,6 +22,9 @@ internal class TintEffect(
     @SerialName("nm")
     override val name : String? = null,
 
+    @SerialName("mn")
+    override val matchName : String? = null,
+
     @SerialName("ix")
     override val index : Int? = null,
 
@@ -76,6 +79,12 @@ internal class TintEffect(
     }
 
     override fun copy(): LayerEffect {
-        return TintEffect(values.map(EffectValue<RawProperty<*>>::copy))
+        return TintEffect(
+            values = values.map(EffectValue<RawProperty<*>>::copy),
+            name = name,
+            matchName = matchName,
+            index = index,
+            enabled = enabled
+        )
     }
 }

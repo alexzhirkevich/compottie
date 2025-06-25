@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
+import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
@@ -24,7 +25,12 @@ private class ExpressionEvaluatorImpl(
     private var script: Script? = null
 
     override fun prepareExpressions(state: AnimationState) {
-        script = state.scriptEngine.compile(expr)
+        script = try {
+            state.scriptEngine.compile(expr)
+        } catch (t: Throwable) {
+            Compottie.logger?.error("Expression compilation fail: \n$expr\n", t)
+            null
+        }
     }
 
     override fun evaluate(state: AnimationState): Any {
@@ -36,6 +42,7 @@ private class ExpressionEvaluatorImpl(
                     .invokeSync(it.scriptEngine.runtime)
                     ?.toKotlin(it.scriptEngine.runtime)
             } catch (t: Throwable) {
+//                t.printStackTrace()
                 null
             } ?: property.raw(it)
         }

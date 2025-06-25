@@ -18,6 +18,9 @@ internal class DropShadowEffect(
     @SerialName("nm")
     override val name : String? = null,
 
+    @SerialName("mn")
+    override val matchName : String? = null,
+
     @SerialName("ix")
     override val index : Int? = null,
 
@@ -31,6 +34,7 @@ internal class DropShadowEffect(
     val angle  get() = values.getAs<EffectValue.Angle>(2)?.value
     val distance  get() = values.getAs<EffectValue.Slider>(3)?.value
     val blur  get() = values.getAs<EffectValue.Slider>(4)?.value
+
     override fun apply(
         paint: Paint,
         animationState: AnimationState,
@@ -40,6 +44,12 @@ internal class DropShadowEffect(
     }
 
     override fun copy(): LayerEffect {
-        return DropShadowEffect(values.map(EffectValue<RawProperty<Any>>::copy))
+        return DropShadowEffect(
+            values = values.map(EffectValue<RawProperty<Any>>::copy),
+            name = name,
+            matchName = matchName,
+            index = index,
+            enabled = enabled
+        )
     }
 }

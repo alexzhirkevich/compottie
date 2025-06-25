@@ -20,11 +20,11 @@ internal interface ExpressionComposition : JsAny {
 
     val startTime: Float
 
+    val durationFrames : Float
+
     val layersByName: Map<String, Layer>
 
-    val layersByIndex: Map<Int, Layer>
-
-    val layersCount : Int
+    val layers: List<Layer>
 
     fun transformMatrix(state: AnimationState) : Matrix = IdentityMatrix
 
@@ -33,56 +33,42 @@ internal interface ExpressionComposition : JsAny {
         excludeSymbols: Boolean,
         excludeNonEnumerables: Boolean
     ): List<JsAny?> = listOf(
-        "name".js(),
-        "width".js(),
-        "height".js(),
-        "startTime".js(),
-        "frameDuration".js(),
-        "numLayers".js(),
-        "layer".js(),
+        "name".js,
+        "width".js,
+        "height".js,
+        "displayStartTime".js,
+        "duration".js,
+        "frameDuration".js,
+        "numLayers".js,
+        "layer".js,
     )
 
     override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
         return when (property?.toString()){
-            "name" -> name?.js()
-            "width" -> width.js()
-            "height" -> height.js()
-            "displayStartTime" -> startTime.js()
-            "frameDuration" -> (runtime.state.composition.frameRate / 1000).js()
-            "numLayers" -> layersCount.js()
+            "name" -> name?.js
+            "width" -> width.js
+            "height" -> height.js
+            "displayStartTime" -> startTime.js
+            "duration" -> (durationFrames / runtime.state.composition.frameRate).js
+            "frameDuration" -> (runtime.state.composition.frameRate / 1000).js
+            "numLayers" -> layers.size.js
             "layer" -> Callable {
-                val index = it[0]?.toKotlin(this)
-                if (index is Number){
-                    state.thisComp.layersByIndex[index.toInt()]
-                } else {
-                    state.thisComp.layersByName[index.toString()]
+                when (val index = it[0]?.toKotlin(this)) {
+                    is Number -> layers[index.toInt()]
+                    is Layer -> {
+                        val idx = layers.indexOf(index)
+                        if (idx < 0) {
+                            null
+                        } else {
+                            val relIndex = toNumber(it.getOrNull(1)).toInt()
+                            layers[idx + relIndex]
+                        }
+                    }
+
+                    else -> state.thisComp.layersByName[index.toString()]
                 }
             }
             else -> super.get(property, runtime)
         }
     }
-}
-
-internal class ExpressionCompositionFromAsset(
-    private val asset: PrecompositionAsset
-) : ExpressionComposition {
-
-    override val width: Float
-        get() = error("'width' property is available only for the main composition and thisComp")
-    override val height: Float
-        get() = error("'height' property is available only for the main composition and thisComp")
-    override val startTime: Float
-        get() = error("'startTime' property is available only for the main composition and thisComp")
-
-    override val name: String?
-        get() = asset.name
-
-    override val layersByName: Map<String, Layer> =
-        asset.layers.associateBy { it.name.orEmpty() }
-
-    override val layersByIndex: Map<Int, Layer> =
-        asset.layers.associateBy { it.index ?: Int.MIN_VALUE }
-    override val layersCount: Int
-        get() = asset.layers.size
-
 }

@@ -19,6 +19,9 @@ internal class FillEffect(
     @SerialName("nm")
     override val name : String? = null,
 
+    @SerialName("mn")
+    override val matchName : String? = null,
+
     @SerialName("ix")
     override val index : Int? = null,
 
@@ -30,6 +33,7 @@ internal class FillEffect(
     val color get() = values.getAs<EffectValue.Color>(2)?.value
 
     val opacity get() = values.getAs<EffectValue.Slider>(6)?.value
+
     override fun apply(
         paint: Paint,
         animationState: AnimationState,
@@ -53,6 +57,12 @@ internal class FillEffect(
     }
 
     override fun copy(): LayerEffect {
-        return FillEffect(values.map(EffectValue<RawProperty<Any>>::copy))
+        return FillEffect(
+            values = values.map(EffectValue<RawProperty<Any>>::copy),
+            name = name,
+            matchName = matchName,
+            index = index,
+            enabled = enabled
+        )
     }
 }

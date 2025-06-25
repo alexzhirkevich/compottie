@@ -4,6 +4,7 @@ import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.effects.EffectValue
 import io.github.alexzhirkevich.compottie.internal.timeSeconds
 import io.github.alexzhirkevich.keight.Callable
 import io.github.alexzhirkevich.keight.JSRuntime
@@ -41,46 +42,46 @@ internal class ExpressionsRuntime(
 
         initialized = true
 
-        set("time".js(), JSProperty { state.timeSeconds.js() }, VariableType.Const)
+        set("time".js, JSProperty { state.timeSeconds.js }, VariableType.Const)
 
-//        set("value".js(), JSProperty { state.thisProperty?.raw(state)?.toJs() }, VariableType.Const)
+//        set("value".js, JSProperty { state.thisProperty?.raw(state)?.toJs() }, VariableType.Const)
 
-        set("thisComp".js(), JSProperty { state.thisComp }, VariableType.Const)
-        set("thisLayer".js(), JSProperty { state.thisLayer }, VariableType.Const)
-        set("thisProp".js(), JSProperty { state.thisProperty }, VariableType.Const)
+        set("thisComp".js, JSProperty { state.thisComp }, VariableType.Const)
+        set("thisLayer".js, JSProperty { state.thisLayer }, VariableType.Const)
+        set("thisProp".js, JSProperty { state.thisProperty }, VariableType.Const)
 
-        set("add".js(), Callable { sum(it[0], it[1]) }, VariableType.Const)
-        set("sum".js(), Callable { sum(it[0], it[1]) }, VariableType.Const)
-        set("\$bm_sum".js(), Callable { sum(it[0], it[1]) }, VariableType.Const)
-        set("sub".js(), Callable { sub(it[0], it[1]) }, VariableType.Const)
-        set("\$bm_sub".js(), Callable { sub(it[0], it[1]) }, VariableType.Const)
-        set("mul".js(), Callable { mul(it[0], it[1]) }, VariableType.Const)
-        set("\$bm_mul".js(), Callable { mul(it[0], it[1]) }, VariableType.Const)
-        set("div".js(), Callable { div(it[0], it[1]) }, VariableType.Const)
-        set("\$bm_div".js(), Callable { div(it[0], it[1]) }, VariableType.Const)
-        set("mod".js(), Callable { mod(it[0], it[1]) }, VariableType.Const)
-        set("clamp".js(), JsClamp(), VariableType.Const)
-        set("dot".js(), JsDot(), VariableType.Const)
-        set("length".js(), JsLength(), VariableType.Const)
-        set("normalize".js(), JsNormalize(), VariableType.Const)
+        set("add".js, Callable { sum(it[0], it[1]) }, VariableType.Const)
+        set("sum".js, Callable { sum(it[0], it[1]) }, VariableType.Const)
+        set("\$bm_sum".js, Callable { sum(it[0], it[1]) }, VariableType.Const)
+        set("sub".js, Callable { sub(it[0], it[1]) }, VariableType.Const)
+        set("\$bm_sub".js, Callable { sub(it[0], it[1]) }, VariableType.Const)
+        set("mul".js, Callable { mul(it[0], it[1]) }, VariableType.Const)
+        set("\$bm_mul".js, Callable { mul(it[0], it[1]) }, VariableType.Const)
+        set("div".js, Callable { div(it[0], it[1]) }, VariableType.Const)
+        set("\$bm_div".js, Callable { div(it[0], it[1]) }, VariableType.Const)
+        set("mod".js, Callable { mod(it[0], it[1]) }, VariableType.Const)
+        set("clamp".js, JsClamp(), VariableType.Const)
+        set("dot".js, JsDot(), VariableType.Const)
+        set("length".js, JsLength(), VariableType.Const)
+        set("normalize".js, JsNormalize(), VariableType.Const)
 
-        set("degreesToRadians".js(), JsDegreesToRadians(), VariableType.Const)
-        set("radiansToDegrees".js(), JSRadiansToDegrees(), VariableType.Const)
-        set("rgbToHsl".js(), JSRgbToHsl(), VariableType.Const)
-        set("hslToRgb".js(), JSHslToRgb(), VariableType.Const)
-        set("hexToRgb".js(), JSHexToRgb(), VariableType.Const)
-        set("framesToTime".js(), JsFramesToTime(), VariableType.Const)
-        set("timeToFrames".js(), JsTimeToFrames(), VariableType.Const)
+        set("degreesToRadians".js, JsDegreesToRadians(), VariableType.Const)
+        set("radiansToDegrees".js, JSRadiansToDegrees(), VariableType.Const)
+        set("rgbToHsl".js, JSRgbToHsl(), VariableType.Const)
+        set("hslToRgb".js, JSHslToRgb(), VariableType.Const)
+        set("hexToRgb".js, JSHexToRgb(), VariableType.Const)
+        set("framesToTime".js, JsFramesToTime(), VariableType.Const)
+        set("timeToFrames".js, JsTimeToFrames(), VariableType.Const)
 
-        set("random".js(), JSRandomNumber(false), VariableType.Const)
-        set("gaussRandom".js(), JSRandomNumber(true), VariableType.Const)
-        set("setRandom".js(), JSSeedRandom(), VariableType.Const)
-        set("noise".js(), JSNoise(), VariableType.Const)
+        set("random".js, JSRandomNumber(false), VariableType.Const)
+        set("gaussRandom".js, JSRandomNumber(true), VariableType.Const)
+        set("setRandom".js, JSSeedRandom(), VariableType.Const)
+        set("noise".js, JSNoise(), VariableType.Const)
 
-        set("linear".js(), JSInterpolate(LinearEasing), VariableType.Const)
-        set("ease".js(), JSInterpolate(easeInOut), VariableType.Const)
-        set("easeIn".js(), JSInterpolate(easeIn), VariableType.Const)
-        set("easeOut".js(), JSInterpolate(easeOut), VariableType.Const)
+        set("linear".js, JSInterpolate(LinearEasing), VariableType.Const)
+        set("ease".js, JSInterpolate(easeInOut), VariableType.Const)
+        set("easeIn".js, JSInterpolate(easeIn), VariableType.Const)
+        set("easeOut".js, JSInterpolate(easeOut), VariableType.Const)
     }
 
     override suspend fun contains(property: JsAny?): Boolean {
@@ -103,15 +104,17 @@ internal class ExpressionsRuntime(
 
     override suspend fun sum(a: JsAny?, b: JsAny?): JsAny? {
         return when {
+            a is EffectValue<*> -> sum(a.value?.raw(state)?.toJs(), b)
+            b is EffectValue<*> -> sum(a, b.value?.raw(state)?.toJs())
             a is List<*> && b is List<*> -> {
                 a as List<JsAny?>
                 b as List<JsAny?>
                 List(max(a.size, b.size)) {
                     sum(
-                        a.getOrElse(it) { 0.js() },
-                        b.getOrElse(it) { 0.js() },
+                        a.getOrElse(it) { 0.js },
+                        b.getOrElse(it) { 0.js },
                     )
-                }.js()
+                }.js
             }
             else -> super.sum(a, b)
         }
@@ -119,15 +122,17 @@ internal class ExpressionsRuntime(
 
     override suspend fun sub(a: JsAny?, b: JsAny?): JsAny? {
         return when {
+            a is EffectValue<*> -> sub(a.value?.raw(state)?.toJs(), b)
+            b is EffectValue<*> -> sub(a, b.value?.raw(state)?.toJs())
             a is List<*> && b is List<*> -> {
                 a as List<JsAny?>
                 b as List<JsAny?>
                 List(max(a.size, b.size)) {
                     sub(
-                        a.getOrElse(it) { 0.js() },
-                        b.getOrElse(it) { 0.js() },
+                        a.getOrElse(it) { 0.js },
+                        b.getOrElse(it) { 0.js },
                     )
-                }.js()
+                }.js
             }
             else -> super.sub(a, b)
         }
@@ -136,7 +141,9 @@ internal class ExpressionsRuntime(
 
     override suspend fun div(a: JsAny?, b: JsAny?): JsAny? {
         return when {
-            a is List<*> -> (a as List<JsAny?>).fastMap { div(it, b) }.js()
+            a is EffectValue<*> -> div(a.value?.raw(state)?.toJs(), b)
+            b is EffectValue<*> -> div(a, b.value?.raw(state)?.toJs())
+            a is List<*> -> (a as List<JsAny?>).fastMap { div(it, b) }.js
 
             else -> super.div(a, b)
         }
@@ -144,7 +151,9 @@ internal class ExpressionsRuntime(
 
     override suspend fun mul(a: JsAny?, b: JsAny?): JsAny? {
         return when {
-            a is List<*> -> (a as List<JsAny?>).fastMap { mul(it, b) }.js()
+            a is EffectValue<*> -> mul(a.value?.raw(state)?.toJs(), b)
+            b is EffectValue<*> -> mul(a, b.value?.raw(state)?.toJs())
+            a is List<*> -> (a as List<JsAny?>).fastMap { mul(it, b) }.js
             else -> super.mul(a, b)
         }
     }

@@ -23,14 +23,19 @@ internal sealed class LayerEffect : ExpressionHolder, Callable {
 
     abstract val enabled: Boolean
     abstract val name: String?
+    abstract val matchName: String?
     abstract val index: Int?
     abstract val values: List<EffectValue<*>>
 
-    val valueByName by lazy {
+    private val valueByName by lazy {
         values.associateBy { it.name.orEmpty() }
     }
 
-    val valueByIndex by lazy {
+    private val valueByMatchName by lazy {
+        values.associateBy { it.matchName.orEmpty() }
+    }
+
+    private val valueByIndex by lazy {
         values.associateBy { it.index ?: Int.MIN_VALUE }
     }
 
@@ -52,7 +57,14 @@ internal sealed class LayerEffect : ExpressionHolder, Callable {
         runtime: ScriptRuntime
     ): Callable = this
 
-    override suspend fun invoke(args: List<JsAny?>, runtime: ScriptRuntime): JsAny? = this
+    override suspend fun invoke(args: List<JsAny?>, runtime: ScriptRuntime): JsAny? {
+        val index = args.getOrNull(0)?.toKotlin(runtime) ?: return null
+        return if (index is Number){
+            valueByIndex[index.toInt()]
+        } else {
+            valueByName[index.toString()] ?: valueByMatchName[index.toString()]
+        }
+    }
 
     override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
         return when (property?.toString()){
@@ -61,7 +73,7 @@ internal sealed class LayerEffect : ExpressionHolder, Callable {
                 if (index is Number){
                     valueByIndex[index.toInt()]
                 } else {
-                    valueByName[index.toString()]
+                    valueByName[index.toString()] ?: valueByMatchName[index.toString()]
                 }?.value?.raw(runtime.state)?.toJs()
             }
             else -> super.get(property, runtime)
@@ -72,6 +84,9 @@ internal sealed class LayerEffect : ExpressionHolder, Callable {
     class Unsupported(
         @SerialName("nm")
         override val name: String? = null,
+
+        @SerialName("mn")
+        override val matchName : String? = null,
 
         @SerialName("ix")
         override val index: Int? = null,

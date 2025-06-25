@@ -30,8 +30,8 @@ private suspend fun ScriptRuntime.interpolate(value1: JsAny?, value2: JsAny?, fr
         value1 is List<*> && value2 is List<*> ->
             List(minOf(value1.size, value2.size)) {
                 interpolate(value1[it] as JsAny?, value2[it] as JsAny?, fraction)
-            }.js()
+            }.js
 
-        else -> lerp(toNumber(value1).toFloat(), toNumber(value2).toFloat(), fraction).js()
+        else -> lerp(toNumber(value1).toFloat(), toNumber(value2).toFloat(), fraction).js
     }
 }

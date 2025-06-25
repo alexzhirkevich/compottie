@@ -10,6 +10,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Express
 import io.github.alexzhirkevich.compottie.internal.helpers.text.TextDocument
 import io.github.alexzhirkevich.compottie.internal.utils.toOffset
 import io.github.alexzhirkevich.compottie.internal.utils.toSize
+import io.github.alexzhirkevich.keight.js.JsAny
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -33,7 +34,9 @@ internal class AnimatedTextDocument(
     private val document = TextDocument()
 
     @Transient
-    override val cache: MutableMap<String, Any?> = HashMap()
+    override val jsCache: MutableMap<String, JsAny?> = HashMap()
+
+    override var group: PropertyGroup? = null
 
     private val evaluator by lazy {
         expression?.let { ExpressionEvaluator(it, this) }

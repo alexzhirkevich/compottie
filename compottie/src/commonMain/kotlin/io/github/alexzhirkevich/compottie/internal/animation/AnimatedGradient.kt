@@ -23,7 +23,6 @@ internal abstract class AnimatedGradient : ExpressionProperty<ColorsWithStops>()
     @Transient
     var numberOfColors: Int = 0
 
-
     private val tempExpressionColors by lazy {
         ColorsWithStops(numberOfColors)
     }

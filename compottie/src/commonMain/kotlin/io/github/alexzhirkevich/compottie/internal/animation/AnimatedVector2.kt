@@ -37,6 +37,7 @@ internal fun Vec2(x : Float, y : Float) : Vec2 = Offset(x,y)
 @Serializable(with = AnimatedVector2Serializer::class)
 internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
 
+
     override fun mapEvaluated(e: Any): Vec2 {
         return when (e) {
             is Vec2 -> e

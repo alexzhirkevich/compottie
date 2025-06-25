@@ -7,6 +7,8 @@ import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionComposition
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.JSGetLayerEffect
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.JSLayerToCompOrWorld
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.state
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
@@ -67,7 +69,11 @@ internal sealed interface Layer : DrawingContent, ExpressionHolder, Callable {
 
     var parentLayer: Layer?
 
-    val cache : MutableMap<String, Any?>
+    val jsCache: MutableMap<String, JsAny?>
+
+    val matteLayer: Layer?
+
+    var comp : ExpressionComposition?
 
     fun setDynamicProperties(
         composition: DynamicCompositionProvider?,
@@ -94,12 +100,18 @@ internal sealed interface Layer : DrawingContent, ExpressionHolder, Callable {
 
     override suspend fun invoke(args: List<JsAny?>, runtime: ScriptRuntime): JsAny? {
         return when (args.getOrNull(0)?.toString()) {
-            "Effects" -> cache.getOrPut("Effects") {
+            "1" -> if (isActive(runtime.state)) 1.js else 0.js
+            "6" -> if (this is BaseCompositionLayer) timeRemapping else Undefined
+            "7" -> name?.js
+            "8" -> parentLayer
+            "9" -> blendMode.type.js
+            "10" -> matteLayer
+            "Effects", "ADBE Effect Parade" -> jsCache.getOrPut("Effects") {
                 Callable {
                     val name = it.getOrNull(0)?.toString() ?: return@Callable null
-                    effects.fastFirstOrNull { it.name == name }
+                    effects.fastFirstOrNull { it.name == name || it.matchName == name }
                 }
-            } as JsAny?
+            } 
             else -> Undefined
         }
     }
@@ -109,73 +121,65 @@ internal sealed interface Layer : DrawingContent, ExpressionHolder, Callable {
         excludeSymbols: Boolean,
         excludeNonEnumerables: Boolean
     ): List<JsAny?> = listOf(
-        "index".js(),
-        "name".js(),
-        "inPoint".js(),
-        "outPoint".js(),
-        "startTime".js(),
-        "source".js(),
-        "active".js(),
-        "enabled".js(),
-        "hasParent".js(),
-        "parent".js(),
-        "rotation".js(),
-        "position".js(),
-        "opacity".js(),
-        "timeRemap".js(),
-        "effect".js(),
-        "effect".js(),
-        "toComp".js(),
-        "fromComp".js(),
-        "toWorld".js(),
-        "fromWorld".js(),
+        "index".js,
+        "name".js,
+        "source".js,
+        "inPoint".js,
+        "outPoint".js,
+        "startTime".js,
+        "source".js,
+        "active".js,
+        "enabled".js,
+        "hasParent".js,
+        "parent".js,
+        "transform".js,
+        "rotation".js,
+        "position".js,
+        "opacity".js,
+        "timeRemap".js,
+        "effect".js,
+        "eff".js,
+        "toComp".js,
+        "fromComp".js,
+        "toWorld".js,
+        "fromWorld".js,
     )
 
     override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
         return when (property?.toString()) {
-            "index" -> index?.js() ?: Undefined
-            "name" -> name?.js() ?: Undefined
-            "inPoint" -> inPoint?.div(runtime.state.composition.frameRate)?.js() ?: Undefined
-            "outPoint" -> outPoint?.div(runtime.state.composition.frameRate)?.js() ?: Undefined
-            "startTime" -> startTime?.div(runtime.state.composition.frameRate)?.js() ?: Undefined
-            "active" -> isActive(runtime.state).js()
-            "enabled" -> isHidden(runtime.state).not().js()
-            "hasParent" -> (parentLayer != null).js()
+            "index" -> index?.js ?: Undefined
+            "name" -> name?.js ?: Undefined
+            "source" -> comp
+            "inPoint" -> inPoint?.div(runtime.state.composition.frameRate)?.js ?: Undefined
+            "outPoint" -> outPoint?.div(runtime.state.composition.frameRate)?.js ?: Undefined
+            "startTime" -> startTime?.div(runtime.state.composition.frameRate)?.js ?: Undefined
+            "active" -> isActive(runtime.state).js
+            "enabled" -> isHidden(runtime.state).not().js
+            "hasParent" -> (parentLayer != null).js
             "parent" -> parentLayer ?: Undefined
+            "transform" -> transform
             "rotation" -> transform.rotation
             "position" -> transform.position
             "opacity" -> transform.opacity
-            "effect" -> cache.getOrPut("effect") {
-                Callable {
-                    val index = it[0]?.toKotlin(this) ?: return@Callable Undefined
-
-                    if (index is Number) {
-                        val i = index.toInt()
-                        effects.fastFirstOrNull { e -> e.index == i }
-                    } else {
-                        val n = index.toString()
-                        effects.fastFirstOrNull { e -> e.name == n }
-                    }
-                }
-            } as JsAny?
-            "mask" -> cache.getOrPut("mask") {
+            "effect", "eff" -> jsCache.getOrPut("effect") { JSGetLayerEffect(this) } 
+            "mask" -> jsCache.getOrPut("mask") {
                 Callable {
                     val name = it[0]?.toKotlin(this)?.toString() ?: return@Callable Undefined
                     masks?.fastFirstOrNull { it.name == name }
                 }
-            } as JsAny?
-            "toComp" -> cache.getOrPut("toComp") {
+            } 
+            "toComp" -> jsCache.getOrPut("toComp") {
                 JSLayerToCompOrWorld(layer = this, reverse = false, toComp = true)
-            } as JsAny?
-            "fromComp" -> cache.getOrPut("fromComp") {
+            }
+            "fromComp" -> jsCache.getOrPut("fromComp") {
                 JSLayerToCompOrWorld(layer = this, reverse = true, toComp = true)
-            } as JsAny?
-            "toWorld" -> cache.getOrPut("toWorld") {
+            } 
+            "toWorld" -> jsCache.getOrPut("toWorld") {
                 JSLayerToCompOrWorld(layer = this, reverse = false, toComp = false)
-            } as JsAny?
-            "fromWorld" -> cache.getOrPut("fromWorld") {
+            } 
+            "fromWorld" -> jsCache.getOrPut("fromWorld") {
                 JSLayerToCompOrWorld(layer = this, reverse = true, toComp = false)
-            } as JsAny?
+            } 
             else -> super.get(property, runtime)
         }
     }

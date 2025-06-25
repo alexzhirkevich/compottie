@@ -18,8 +18,8 @@ internal fun JSHexToRgb() = JSFunction(FunctionParam("hex")) {
         .padEnd(8, padChar = 'f')
         .take(8)
         .chunked(2)
-        .fastMap { (it.toInt(16) / 255f).js() }
-        .js()
+        .fastMap { (it.toInt(16) / 255f).js }
+        .js
 }
 
 internal fun JSHslToRgb() = JSFunction(FunctionParam("hsl")) {
@@ -32,11 +32,11 @@ internal fun JSHslToRgb() = JSFunction(FunctionParam("hsl")) {
     val a = hsl[3].toFloat()
 
     mutableListOf(
-        hslToRed(h, s, l).js(),
-        hslToGreen(h, s, l).js(),
-        hslToBlue(h, s, l).js(),
-        a.js()
-    ).js()
+        hslToRed(h, s, l).js,
+        hslToGreen(h, s, l).js,
+        hslToBlue(h, s, l).js,
+        a.js
+    ).js
 }
 
 internal fun JSRgbToHsl() = JSFunction(FunctionParam("rgb")) {
@@ -68,5 +68,5 @@ internal fun JSRgbToHsl() = JSFunction(FunctionParam("rgb")) {
         h /= 6
     }
 
-    mutableListOf(h.js(), s.js(), l.js(), a.js()).js()
+    mutableListOf(h.js, s.js, l.js, a.js).js
 }

@@ -16,8 +16,8 @@ internal fun JSLayerToCompOrWorld(
     reverse: Boolean,
     toComp : Boolean,
 ) = Callable {
-    val point = (it[0] as List<JsAny>).fastMap { it.toKotlin(this) as Number }
-    val time = it.getOrNull(1) as? Number ?: state.timeSeconds
+    val point = (it[0] as List<JsAny?>).fastMap { toNumber(it) }
+    val time = it.getOrNull(1)?.let { toNumber(it) } ?: state.timeSeconds
 
     if (it.size < 2){
         convert(layer, point, state, reverse, toComp)

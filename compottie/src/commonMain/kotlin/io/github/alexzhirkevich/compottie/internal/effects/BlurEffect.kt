@@ -19,6 +19,9 @@ internal class BlurEffect(
     @SerialName("nm")
     override val name : String? = null,
 
+    @SerialName("mn")
+    override val matchName : String? = null,
+
     @SerialName("ix")
     override val index : Int? = null,
 
@@ -28,6 +31,7 @@ internal class BlurEffect(
 ) : LayerEffect() {
 
     val radius get() = values.getAs<EffectValue.Slider>(0)?.value
+
     override fun apply(
         paint: Paint,
         animationState: AnimationState,
@@ -42,10 +46,16 @@ internal class BlurEffect(
     }
 
     override fun copy(): LayerEffect {
-        return BlurEffect(values.map(EffectValue<RawProperty<Any>>::copy))
+        return BlurEffect(
+            values = values.map(EffectValue<RawProperty<Any>>::copy),
+            name = name,
+            matchName = matchName,
+            index = index,
+            enabled = enabled
+        )
     }
 
     override fun prepareExpressions(state: AnimationState) {
-        TODO("Not yet implemented")
+
     }
 }

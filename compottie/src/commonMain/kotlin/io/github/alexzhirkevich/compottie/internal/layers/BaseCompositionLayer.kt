@@ -147,12 +147,12 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
                     val p = layersWithIndex[it.matteParent]
 
                     if (p != null) {
-                        it.setMatteLayer(p)
+                        it.matteLayer = p
                         matteLayers.add(p)
                     }
                 } else {
                     if (i > 0) {
-                        it.setMatteLayer(layers[i - 1])
+                        it.matteLayer = layers[i - 1]
                         matteLayers.add(layers[i - 1])
                     }
                 }

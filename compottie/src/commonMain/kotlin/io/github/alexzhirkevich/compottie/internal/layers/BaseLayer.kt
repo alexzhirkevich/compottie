@@ -17,6 +17,7 @@ import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionComposition
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsApplier
@@ -34,6 +35,7 @@ import io.github.alexzhirkevich.compottie.internal.utils.fastSetFrom
 import io.github.alexzhirkevich.compottie.internal.utils.intersectOrReset
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.union
+import io.github.alexzhirkevich.keight.js.JsAny
 
 internal abstract class BaseLayer : Layer {
 
@@ -99,7 +101,9 @@ internal abstract class BaseLayer : Layer {
 
     override var parentLayer: Layer? = null
 
-    private var matteLayer: BaseLayer? = null
+    override var matteLayer: BaseLayer? = null
+
+    override var comp: ExpressionComposition? = null
 
     private val allMasksAreNone by lazy {
         masks?.all { it.mode == MaskMode.None } == true
@@ -112,7 +116,7 @@ internal abstract class BaseLayer : Layer {
     protected var dynamicLayer : DynamicLayerProvider? = null
         private set
 
-    override val cache: MutableMap<String, Any?> = HashMap()
+    override val jsCache: MutableMap<String, JsAny?> = HashMap()
 
     override fun setDynamicProperties(
         composition: DynamicCompositionProvider?,
@@ -247,11 +251,6 @@ internal abstract class BaseLayer : Layer {
 
 
     final override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
-    }
-
-
-    fun setMatteLayer(layer: BaseLayer) {
-        this.matteLayer = layer
     }
 
     private fun buildParentLayerListIfNeeded() {

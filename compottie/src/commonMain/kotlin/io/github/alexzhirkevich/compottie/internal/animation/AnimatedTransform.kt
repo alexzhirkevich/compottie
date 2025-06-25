@@ -14,12 +14,14 @@ import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
 import io.github.alexzhirkevich.compottie.internal.utils.radiansToDegree
 import io.github.alexzhirkevich.compottie.internal.utils.setValues
+import io.github.alexzhirkevich.keight.ScriptRuntime
+import io.github.alexzhirkevich.keight.js.JsAny
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.tan
 
-internal abstract class AnimatedTransform : ExpressionHolder {
+internal abstract class AnimatedTransform : ExpressionHolder, PropertyGroup {
 
     abstract val anchorPoint: AnimatedVector2
     abstract val position: AnimatedVector2
@@ -32,8 +34,21 @@ internal abstract class AnimatedTransform : ExpressionHolder {
     abstract val skew: AnimatedNumber
     abstract val skewAxis: AnimatedNumber
 
+    override val group: PropertyGroup? = null
 
     override fun prepareExpressions(state: AnimationState) {
+
+        anchorPoint.group = this
+        position.group = this
+        scale.group = this
+        rotation.group = this
+        rotationX?.group = this
+        rotationY?.group = this
+        rotationZ?.group = this
+        opacity.group = this
+        skew.group = this
+        skewAxis.group = this
+
         anchorPoint.prepareExpressions(state)
         position.prepareExpressions(state)
         scale.prepareExpressions(state)
@@ -161,6 +176,22 @@ internal abstract class AnimatedTransform : ExpressionHolder {
         anchorPoint.interpolated(state).let { matrix.preTranslate(-it.x, -it.y) }
 
         return matrix
+    }
+
+    override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
+        return when(property?.toString()){
+            "anchorPoint" -> anchorPoint
+            "position" -> position
+            "scale" -> scale
+            "rotation" -> rotation
+            "rotationX" -> rotationX
+            "rotationY" -> rotationY
+            "rotationZ" -> rotationZ
+            "opacity" -> opacity
+            "skew" -> skew
+            "skewAxis" -> skewAxis
+            else -> super.get(property, runtime)
+        }
     }
 
     private fun clearSkewValues() {

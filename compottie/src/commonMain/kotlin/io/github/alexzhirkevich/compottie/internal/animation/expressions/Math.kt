@@ -19,18 +19,18 @@ internal fun JsClamp() = JSFunction(
     val to = it[2]?.toKotlin(this) as Number
 
     if (v is Long && from is Long && to is Long) {
-        v.coerceIn(from, to).js()
+        v.coerceIn(from, to).js
     } else {
-        v.toDouble().coerceIn(from.toDouble(), to.toDouble()).js()
+        v.toDouble().coerceIn(from.toDouble(), to.toDouble()).js
     }
 }
 
 internal fun JsDegreesToRadians() = JSFunction(FunctionParam("deg")) {
-    degreeToRadians((it[0]?.toKotlin(this) as Number).toDouble()).js()
+    degreeToRadians((it[0]?.toKotlin(this) as Number).toDouble()).js
 }
 
 internal fun JSRadiansToDegrees() = JSFunction(FunctionParam("rad")) {
-    radiansToDegree((it[0]?.toKotlin(this) as Number).toDouble()).js()
+    radiansToDegree((it[0]?.toKotlin(this) as Number).toDouble()).js
 }
 
 internal fun JsDot() = Callable {
@@ -38,7 +38,7 @@ internal fun JsDot() = Callable {
     val b = it[1] as List<JsAny>
     val res = toNumber(a[0]).toFloat() * toNumber(b[0]).toFloat() +
             toNumber(a[1]).toFloat() * toNumber(b[1]).toFloat()
-    res.js()
+    res.js
 }
 internal fun JsLength() = Callable {
     val a = it[0]
@@ -47,7 +47,7 @@ internal fun JsLength() = Callable {
     return@Callable when {
         a is List<*> && b == null -> {
             a as List<JsAny>
-            hypot((toNumber(a[0])).toFloat(), toNumber(a[1]).toFloat()).js()
+            hypot((toNumber(a[0])).toFloat(), toNumber(a[1]).toFloat()).js
         }
         a is List<*> && b is List<*> -> {
             a as List<JsAny>
@@ -55,7 +55,7 @@ internal fun JsLength() = Callable {
             hypot(
                 toNumber(b[0]).toFloat() - toNumber(a[0]).toFloat(),
                 toNumber(b[1]).toFloat() - toNumber(a[1]).toFloat()
-            ).js()
+            ).js
         }
         else -> error("Invalid arguments for length()")
     }
