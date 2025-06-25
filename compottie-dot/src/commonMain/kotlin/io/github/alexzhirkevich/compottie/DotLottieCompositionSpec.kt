@@ -1,12 +1,10 @@
 package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Stable
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
-
 
 
 private var _useStableWasmMemoryManagement : Boolean = false
@@ -50,51 +48,50 @@ private class DotLottieCompositionSpec(
 
     @OptIn(InternalCompottieApi::class)
     override suspend fun load(): LottieComposition {
-        return withContext(Compottie.ioDispatcher()) {
-            val fileSystem = FakeFileSystem()
-            val path = "lottie".toPath()
 
-            fileSystem.write(path) {
-                write(archive)
+        val fileSystem = FakeFileSystem()
+        val path = "lottie".toPath()
+
+        fileSystem.write(path) {
+            write(archive)
+        }
+
+        val entries = fileSystem.listZipEntries(path)
+
+        val zipSystem = ZipFileSystem(fileSystem, entries, path)
+
+        val manifestPath = entries.keys.firstOrNull { it.name == "manifest.json" }
+
+        return if (manifestPath != null) {
+
+            val manifest = DotLottieJson.decodeFromString<DotLottieManifest>(
+                zipSystem.read(manifestPath).decodeToString()
+            )
+
+            val animation = checkNotNull(manifest.animations.firstOrNull()) {
+                "dotLottie animation folder is empty"
             }
 
-            val entries = fileSystem.listZipEntries(path)
+            val anim = zipSystem.read("animations/${animationId ?: animation.id}.json".toPath())
 
-            val zipSystem = ZipFileSystem(fileSystem, entries, path)
-
-            val manifestPath = entries.keys.firstOrNull { it.name == "manifest.json" }
-
-            if (manifestPath != null) {
-
-                val manifest = DotLottieJson.decodeFromString<DotLottieManifest>(
-                    zipSystem.read(manifestPath).decodeToString()
-                )
-
-                val animation = checkNotNull(manifest.animations.firstOrNull()) {
-                    "dotLottie animation folder is empty"
+            LottieComposition.parse(anim.decodeToString()).apply {
+                speed = animation.speed
+                if (animation.loop) {
+                    iterations = Compottie.IterateForever
                 }
+                prepareAssets(DotLottieAssetsManager(zipSystem, manifestPath.parent))
+            }
+        } else {
+            val animPath = entries.keys.first { it.name.endsWith(".json", true) }
+            val anim = zipSystem.read(animPath)
 
-                val anim = zipSystem.read("animations/${animationId ?: animation.id}.json".toPath())
-
-                LottieComposition.parse(anim.decodeToString()).apply {
-                    speed = animation.speed
-                    if (animation.loop) {
-                        iterations = Compottie.IterateForever
-                    }
-                    prepareAssets(DotLottieAssetsManager(zipSystem, manifestPath.parent))
-                }
-            } else {
-                val animPath = entries.keys.first { it.name.endsWith(".json", true) }
-                val anim = zipSystem.read(animPath)
-
-                LottieComposition.parse(anim.decodeToString()).apply {
-                    prepareAssets(
-                        DotLottieAssetsManager(
-                            zipFileSystem = zipSystem,
-                            root = animPath.parent
-                        )
+            LottieComposition.parse(anim.decodeToString()).apply {
+                prepareAssets(
+                    DotLottieAssetsManager(
+                        zipFileSystem = zipSystem,
+                        root = animPath.parent
                     )
-                }
+                )
             }
         }
     }
@@ -110,19 +107,26 @@ private class DotLottieCompositionSpec(
     }
 }
 
+private val ZIP_MAGIC = byteArrayOf(0x50, 0x4b, 0x03, 0x04).toList()
+
 @InternalCompottieApi
-public  suspend fun ByteArray.decodeToLottieComposition(
+public suspend fun ByteArray.decodeToLottieComposition(
     format: LottieAnimationFormat,
 ) : LottieComposition {
     return when (format) {
         LottieAnimationFormat.Json -> LottieCompositionSpec.JsonString(decodeToString()).load()
         LottieAnimationFormat.DotLottie -> LottieCompositionSpec.DotLottie(this).load()
         LottieAnimationFormat.Undefined -> {
-            try {
-                decodeToLottieComposition(LottieAnimationFormat.Json)
-            } catch (t: Throwable) {
+            if (take(4) == ZIP_MAGIC){
                 decodeToLottieComposition(LottieAnimationFormat.DotLottie)
+            } else {
+                decodeToLottieComposition(LottieAnimationFormat.Json)
             }
         }
     }
+}
+
+private fun Byte.isBlankCharCode() : Boolean {
+    val int = toInt()
+    return int == 32 || int == 10 || int == 9
 }

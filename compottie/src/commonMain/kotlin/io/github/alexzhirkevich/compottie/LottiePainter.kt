@@ -70,6 +70,7 @@ public fun rememberLottiePainter(
     progress : () -> Float,
     assetsManager: LottieAssetsManager? = null,
     fontManager: LottieFontManager? = null,
+    coroutineContext: CoroutineContext = Compottie.ioDispatcher(),
     dynamicProperties : LottieDynamicProperties? = null,
     applyOpacityToLayers : Boolean = false,
     clipToCompositionBounds : Boolean = true,
@@ -97,7 +98,7 @@ public fun rememberLottiePainter(
     ) {
         if (composition != null) {
             val assets = if (composition.hasAssets) {
-                async(Compottie.ioDispatcher()) {
+                async(coroutineContext) {
                     composition.loadAssets(assetsManager ?: EmptyAssetsManager, copy)
                 }
             } else {
@@ -105,7 +106,7 @@ public fun rememberLottiePainter(
             }
 
             val fonts = if (composition.hasFonts) {
-                async(Compottie.ioDispatcher()) {
+                async(coroutineContext) {
                     composition.loadFonts(fontManager ?: EmptyFontManager)
                 }
             } else {
@@ -132,7 +133,7 @@ public fun rememberLottiePainter(
             )
 
             if (enableExpressions) {
-                withContext(Compottie.ioDispatcher()) {
+                withContext(coroutineContext) {
                     painter.animationState.scriptEngine.runtime.init()
                     composition.animation.prepareExpressions(painter.animationState)
                 }

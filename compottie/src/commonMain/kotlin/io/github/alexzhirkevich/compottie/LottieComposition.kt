@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.microseconds
 
@@ -46,6 +47,7 @@ import kotlin.time.Duration.Companion.microseconds
 public fun rememberLottieComposition(
     vararg keys: Any?,
     cache: LottieCompositionCache? = LocalLottieCache.current,
+    coroutineContext: CoroutineContext = Compottie.ioDispatcher(),
     spec : suspend () -> LottieCompositionSpec,
 ) : LottieCompositionResult {
 
@@ -55,7 +57,7 @@ public fun rememberLottieComposition(
 
     LaunchedEffect(result, cache) {
         try {
-            val composition = withContext(Compottie.ioDispatcher()) {
+            val composition = withContext(coroutineContext) {
                 val specInstance = spec()
                 cache?.getOrPut(specInstance.key, specInstance::load) ?: specInstance.load()
             }

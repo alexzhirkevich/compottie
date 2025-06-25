@@ -2,8 +2,6 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import kotlinx.coroutines.withContext
-import kotlin.jvm.JvmInline
 
 @Stable
 public interface LottieCompositionSpec {
@@ -38,11 +36,8 @@ private value class JsonStringImpl(
     override val key: String
         get() = "string_${jsonString.hashCode()}"
 
-    @OptIn(InternalCompottieApi::class)
     override suspend fun load(): LottieComposition {
-        return withContext(Compottie.ioDispatcher()) {
-            LottieComposition.parse(jsonString)
-        }
+        return LottieComposition.parse(jsonString)
     }
 
     override fun toString(): String {
