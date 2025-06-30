@@ -17,9 +17,6 @@ package io.github.alexzhirkevich.compottie
  * limitations under the License.
  */
 
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
 import okio.BufferedSource
 import okio.FileSystem
 import okio.IOException
@@ -390,14 +387,6 @@ private fun BufferedSource.readExtra(extraSize: Int, block: (Int, Long) -> Unit)
     }
 }
 
-internal fun BufferedSource.skipLocalHeader() {
-    readOrSkipLocalHeader(null)
-}
-
-internal fun BufferedSource.readLocalHeader(centralDirectoryZipEntry: ZipEntry): ZipEntry {
-    return readOrSkipLocalHeader(centralDirectoryZipEntry)!!
-}
-
 /**
  * If [centralDirectoryZipEntry] is null this will return null. Otherwise, it will return a new
  * entry which unions [centralDirectoryZipEntry] with information from the local header.
@@ -464,42 +453,6 @@ private fun BufferedSource.readOrSkipLocalHeader(
         extendedLastAccessedAtSeconds = extendedLastAccessedAtSeconds,
         extendedCreatedAtSeconds = extendedCreatedAtSeconds,
     )
-}
-
-/**
- * Converts from the Microsoft [filetime] format to the Java epoch millis format.
- *
- *  * Filetime's unit is 100 nanoseconds, and 0 is 1601-01-01T00:00:00Z.
- *  * Java epoch millis' unit is 1 millisecond, and 0 is 1970-01-01T00:00:00Z.
- *
- * See also https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime
- */
-internal fun filetimeToEpochMillis(filetime: Long): Long {
-    // There's 11,644,473,600,000 milliseconds between 1601-01-01T00:00:00Z and 1970-01-01T00:00:00Z.
-    //   val years = 1_970 − 1_601
-    //   val leapYears = floor(years / 4) − floor(years / 100)
-    //   val days = (years * 365) + leapYears
-    //   val millis = days * 24 * 60 * 60 * 1_000
-    return filetime / 10_000 - 11_644_473_600_000L
-}
-
-/**
- * Converts a 32-bit DOS date+time to milliseconds since epoch. Note that this function interprets
- * a value with no time zone as a value with the local time zone.
- */
-internal fun dosDateTimeToEpochMillis(date: Int, time: Int): Long? {
-    if (time == -1) {
-        return null
-    }
-
-    return LocalDateTime(
-        year = 1980 + (date shr 9 and 0x7f),
-        monthNumber = date shr 5 and 0xf,
-        dayOfMonth = date and 0x1f,
-        hour =  time shr 11 and 0x1f,
-        minute = time shr 5 and 0x3f,
-        second = time and 0x1f shl 1,
-    ).toInstant(TimeZone.UTC).toEpochMilliseconds()
 }
 
 private class EocdRecord(

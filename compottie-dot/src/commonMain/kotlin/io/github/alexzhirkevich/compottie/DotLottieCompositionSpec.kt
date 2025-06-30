@@ -4,7 +4,6 @@ import androidx.compose.runtime.Stable
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
-import okio.fakefilesystem.FakeFileSystem
 
 
 private var _useStableWasmMemoryManagement : Boolean = false
@@ -111,22 +110,13 @@ private val ZIP_MAGIC = byteArrayOf(0x50, 0x4b, 0x03, 0x04).toList()
 
 @InternalCompottieApi
 public suspend fun ByteArray.decodeToLottieComposition(
-    format: LottieAnimationFormat,
-) : LottieComposition {
-    return when (format) {
-        LottieAnimationFormat.Json -> LottieCompositionSpec.JsonString(decodeToString()).load()
-        LottieAnimationFormat.DotLottie -> LottieCompositionSpec.DotLottie(this).load()
-        LottieAnimationFormat.Undefined -> {
-            if (take(4) == ZIP_MAGIC){
-                decodeToLottieComposition(LottieAnimationFormat.DotLottie)
-            } else {
-                decodeToLottieComposition(LottieAnimationFormat.Json)
-            }
-        }
+    format: LottieAnimationFormat
+) : LottieComposition = when (format) {
+    LottieAnimationFormat.Json -> LottieCompositionSpec.JsonString(decodeToString()).load()
+    LottieAnimationFormat.DotLottie -> LottieCompositionSpec.DotLottie(this).load()
+    LottieAnimationFormat.Undefined -> if (take(4) == ZIP_MAGIC) {
+        decodeToLottieComposition(LottieAnimationFormat.DotLottie)
+    } else {
+        decodeToLottieComposition(LottieAnimationFormat.Json)
     }
-}
-
-private fun Byte.isBlankCharCode() : Boolean {
-    val int = toInt()
-    return int == 32 || int == 10 || int == 9
 }
