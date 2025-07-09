@@ -77,8 +77,9 @@ public class AnimationState @PublishedApi internal constructor(
     internal val absoluteTime: Duration
         get() = composition.duration * absoluteProgress.toDouble()
 
-    internal val scriptEngine : ExpressionsEngine =
+    internal val scriptEngine : ExpressionsEngine by lazy {
         ExpressionsEngine(ExpressionsRuntime(coroutineContext, this))
+    }
 
     internal var clipToCompositionBounds by mutableStateOf(clipToCompositionBounds)
     internal var clipTextToBoundingBoxes by mutableStateOf(clipTextToBoundingBoxes)

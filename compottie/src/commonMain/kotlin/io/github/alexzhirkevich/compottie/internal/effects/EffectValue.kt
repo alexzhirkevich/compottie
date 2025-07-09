@@ -10,8 +10,8 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.state
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.toJs
 import io.github.alexzhirkevich.keight.Callable
 import io.github.alexzhirkevich.keight.ScriptRuntime
-import io.github.alexzhirkevich.keight.js.JSSymbol
 import io.github.alexzhirkevich.keight.js.JsAny
+import io.github.alexzhirkevich.keight.js.JsSymbol
 import io.github.alexzhirkevich.keight.js.Undefined
 import io.github.alexzhirkevich.keight.js.js
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -51,7 +51,7 @@ internal sealed interface EffectValue<T : RawProperty<Any>> : Callable, Expressi
 
     override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
         return when(property){
-            JSSymbol.toPrimitive -> value?.raw(runtime.state)?.toJs()
+            JsSymbol.toPrimitive -> value?.raw(runtime.state)?.toJs()
             else -> super.get(property, runtime)
         }
     }

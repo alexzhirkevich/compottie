@@ -134,7 +134,6 @@ public fun rememberLottiePainter(
 
             if (enableExpressions) {
                 withContext(coroutineContext) {
-                    painter.animationState.scriptEngine.runtime.init()
                     composition.animation.prepareExpressions(painter.animationState)
                 }
             }
