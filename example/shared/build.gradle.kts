@@ -25,6 +25,8 @@ kotlin {
             implementation(project(":compottie-dot"))
             implementation(project(":compottie-network"))
             implementation(project(":compottie-resources"))
+
+            implementation("org.jetbrains.compose.material:material-icons-core:1.7.3")
 //            implementation("io.github.alexzhirkevich:compottie:2.0.0-beta01")
 //            implementation("io.github.alexzhirkevich:compottie-dot:2.0.0-beta01")
 //            implementation("io.github.alexzhirkevich:compottie-network:2.0.0-beta01")
