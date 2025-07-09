@@ -47,11 +47,11 @@ kotlin {
 //            implementation(libs.ktor.client.ios)
 //        }
 //
-//        val desktopMain by getting {
-//            dependencies {
-//                implementation(libs.ktor.client.okhttp)
-//            }
-//        }
+        val desktopMain by getting {
+            dependencies {
+                implementation(libs.ktor.client.okhttp)
+            }
+        }
 //
 //        jsMain.dependencies {
 //            implementation(libs.ktor.client.js)
