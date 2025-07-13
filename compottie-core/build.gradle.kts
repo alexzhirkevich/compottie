@@ -10,9 +10,11 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            api(project(":compottie-core"))
             implementation(compose.foundation)
-            implementation(libs.keight)
+            implementation(libs.serialization)
+            implementation(libs.okio)
+            implementation(libs.atomicfu)
+            api(libs.keight.core)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

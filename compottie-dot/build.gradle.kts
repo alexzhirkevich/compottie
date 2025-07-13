@@ -8,7 +8,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(project(":compottie"))
+            api(project(":compottie-core"))
             implementation(compose.ui)
             implementation(libs.serialization)
             implementation(libs.okio)

@@ -8,6 +8,10 @@ import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.LottieFontManager
 import io.github.alexzhirkevich.compottie.dynamic.LottieDynamicProperties
 import io.github.alexzhirkevich.compottie.dynamic.rememberLottieDynamicProperties
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionsRuntime
+import io.github.alexzhirkevich.keight.Script
+import io.github.alexzhirkevich.keight.ScriptEngine
+import kotlinx.coroutines.sync.Mutex
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -33,8 +37,6 @@ import kotlin.coroutines.CoroutineContext
  * for any locales as this feature greatly improves texts performance
  * @param enableMergePaths enable experimental merge paths feature. Most of the time animation doesn't need
  * it even if it contains merge paths. This feature should only be enabled for tested animations
- * @param enableExpressions enable experimental expressions feature. Changing this parameter after
- * composition (with recomposition) may cause performance spike
  * */
 @OptIn(InternalCompottieApi::class)
 @Composable
@@ -49,8 +51,7 @@ public fun rememberLottiePainter(
     clipToCompositionBounds : Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
     enableTextGrouping : Boolean = false,
-    enableMergePaths: Boolean = false,
-    enableExpressions: Boolean = true
+    enableMergePaths: Boolean = false
 ) : Painter = rememberLottiePainter(
     composition = composition,
     progress = progress,
@@ -63,13 +64,22 @@ public fun rememberLottiePainter(
     clipTextToBoundingBoxes = clipTextToBoundingBoxes,
     enableTextGrouping = enableTextGrouping,
     enableMergePaths = enableMergePaths,
-    enableExpressions = enableExpressions,
+    enableExpressions = false,
     expressionEngineFactory = remember {
-        { coroutineContext, state ->
-            ExpressionsEngineImpl(ExpressionsRuntimeImpl(coroutineContext, state))
+        { _, _ ->
+            object : ScriptEngine<ExpressionsRuntime>{
+                override val runtime: ExpressionsRuntime
+                    get() = TODO("Not available in compottie-light")
+                override val mutex: Mutex
+                    get() = TODO("Not available in compottie-light")
+                override fun compile(script: String): Script {
+                    TODO("NNot available in compottie-light")
+                }
+            }
         }
     }
 )
+
 
 /**
  * Create and remember Lottie painter.
@@ -93,8 +103,7 @@ public fun rememberLottiePainter(
     useCompositionFrameRate: Boolean = false,
     clipToCompositionBounds: Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
-    enableMergePaths: Boolean = false,
-    enableExpressions: Boolean = false
+    enableMergePaths: Boolean = false
 ) : Painter {
 
     val progress = animateLottieCompositionAsState(
@@ -118,7 +127,6 @@ public fun rememberLottiePainter(
         applyOpacityToLayers = applyOpacityToLayers,
         clipToCompositionBounds = clipToCompositionBounds,
         clipTextToBoundingBoxes = clipTextToBoundingBoxes,
-        enableMergePaths = enableMergePaths,
-        enableExpressions = enableExpressions
+        enableMergePaths = enableMergePaths
     )
 }

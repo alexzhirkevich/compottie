@@ -1,0 +1,320 @@
+package io.github.alexzhirkevich.compottie.internal.animation
+
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.util.fastForEach
+import androidx.compose.ui.util.fastMap
+import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.onTime
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.state
+import io.github.alexzhirkevich.compottie.internal.animation.expressions.toJs
+import io.github.alexzhirkevich.compottie.internal.helpers.Bezier
+import io.github.alexzhirkevich.compottie.internal.isNotNull
+import io.github.alexzhirkevich.keight.Callable
+import io.github.alexzhirkevich.keight.ScriptRuntime
+import io.github.alexzhirkevich.keight.js.JsAny
+import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import kotlinx.serialization.json.JsonContentPolymorphicSerializer
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+
+@Serializable(with = AnimatedShapeSerializer::class)
+internal abstract class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder {
+
+    @Transient
+    override val jsCache: MutableMap<String, JsAny?> = HashMap()
+
+    override var group: PropertyGroup? = null
+    
+    abstract fun rawBezier(state: AnimationState): Bezier
+
+    abstract fun copy(): AnimatedShape
+
+    abstract fun setClosed(closed: Boolean)
+
+    override fun prepareExpressions(state: AnimationState) {
+
+    }
+
+    private suspend fun createPath(args : List<JsAny?>, runtime: ScriptRuntime): AnimatedShape {
+        val points = (args[0]?.toKotlin(runtime) as? List<List<Number>>)
+            ?.fastMap { it.fastMap { it.toFloat() } }
+            ?: DefaultPoints
+
+        val inTangents = (args.getOrNull(1)?.toKotlin(runtime) as? List<List<Number>>)
+            ?.fastMap { it.fastMap { it.toFloat() } }
+            ?: emptyList()
+
+        val outTangents = (args.getOrNull(2)?.toKotlin(runtime) as? List<List<Number>>)
+            ?.fastMap { it.fastMap { it.toFloat() } }
+            ?: emptyList()
+
+        val isClosed = !runtime.isFalse(args.getOrNull(3) ?: true)
+
+        return Default(
+            bezier = Bezier(
+                vertices = points,
+                inTangents = inTangents,
+                outTangents = outTangents,
+                isClosed = isClosed
+            )
+        )
+    }
+//
+//    private fun pointOnPath(perc: Float, time: Float) : Vec2 {
+//
+//        var shapePath = this.v;
+//        if (time !== undefined) {
+//            shapePath = this.getValueAtTime(time, 0);
+//        }
+//        if (!this._segmentsLength) {
+//            this._segmentsLength = bez.getSegmentsLength(shapePath);
+//        }
+//
+//        var segmentsLength = this._segmentsLength;
+//        var lengths = segmentsLength.lengths;
+//        var lengthPos = segmentsLength.totalLength * perc;
+//        var i = 0;
+//        var len = lengths.length;
+//        var accumulatedLength = 0;
+//        var pt;
+//        while (i < len) {
+//            if (accumulatedLength + lengths[i].addedLength > lengthPos) {
+//                var initIndex = i;
+//                var endIndex = (shapePath.c && i === len - 1) ? 0 : i+1;
+//                var segmentPerc = (lengthPos - accumulatedLength) / lengths[i].addedLength;
+//                pt = bez.getPointInSegment(
+//                    shapePath.v[initIndex],
+//                    shapePath.v[endIndex],
+//                    shapePath.o[initIndex],
+//                    shapePath.i[endIndex],
+//                    segmentPerc,
+//                    lengths[i]
+//                );
+//                break;
+//            } else {
+//                accumulatedLength += lengths[i].addedLength;
+//            }
+//            i += 1;
+//        }
+//        if (!pt) {
+//            pt =
+//                shapePath.c ? [shapePath.v[0][0], shapePath.v[0][1]] : [shapePath.v[shapePath._length-1][0], shapePath.v[shapePath._length-1][1]];
+//        }
+//        return pt;
+//    }
+//    private fun vectorOnPath(perc : Float, time : Float, state: AnimationState) : List<Float>{
+//        // perc doesn't use triple equality because it can be a Number object as well as a primitive.
+//        val p  : Float = if (perc == 1f) { // eslint-disable-line eqeqeq
+//            this.v.c;
+//        } else if (perc == 0f) { // eslint-disable-line eqeqeq
+//            0.999f;
+//        } else perc
+//
+//        val pt1 = this.pointOnPath(perc, time);
+//        val pt2 = this.pointOnPath(perc + 0.001f, time);
+//        val xLength = pt2.x - pt1.x;
+//        val yLength = pt2.y - pt1.y;
+//        val magnitude = Math.sqrt(Math.pow(xLength, 2f) + Math.pow(yLength, 2.0));
+//        if (magnitude == 0f) {
+//            return listOf(0f, 0f);
+//        }
+//        var unitVector = vectorType === 'tangent' ? [xLength / magnitude, yLength / magnitude] : [-yLength / magnitude, xLength / magnitude];
+//        return unitVector;
+//    }
+
+    override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
+        return when (property?.toString()) {
+            "points" -> Callable {
+                onTime(it.getOrNull(0)) {
+                    rawBezier(state).vertices.toJs(runtime)
+                }
+            }
+            "inTangents" -> Callable {
+                onTime(it.getOrNull(0)) {
+                    rawBezier(state).inTangents.toJs(runtime)
+                }
+            }
+            "outTangents" -> Callable {
+                onTime(it.getOrNull(0)) {
+                    rawBezier(state).outTangents.toJs(runtime)
+                }
+            }
+            "isClosed" -> Callable { rawBezier(state).isClosed.toJs(this) }
+            "createPath" -> Callable { createPath(it, this) }
+            else -> super.get(property, runtime)
+        }
+    }
+
+
+    @Serializable
+    class Default(
+        @SerialName("x")
+        val expression: String? = null,
+
+        @SerialName("ix")
+        override val index: Int? = null,
+
+        @SerialName("k")
+        val bezier: Bezier,
+    ) : AnimatedShape() {
+
+        @Transient
+        private val tmpPath = Path()
+
+        override fun setClosed(closed: Boolean) {
+            bezier.setIsClosed(closed)
+        }
+
+        override fun rawBezier(state: AnimationState): Bezier {
+            return bezier
+        }
+
+        override fun raw(state: AnimationState): Path {
+            bezier.mapPath(tmpPath)
+            return tmpPath
+        }
+
+        override fun copy(): AnimatedShape {
+            return Default(
+                expression = expression,
+                index = index,
+                bezier = bezier
+            )
+        }
+    }
+
+    @Serializable
+    class Animated(
+        @SerialName("x")
+        val expression: String? = null,
+
+        @SerialName("ix")
+        override val index: Int? = null,
+
+        @SerialName("k")
+        override val keyframes: List<BezierKeyframe>,
+    ) : AnimatedShape(), AnimatedKeyframeProperty<Path, BezierKeyframe> {
+
+        @Transient
+        private val tmpPath = Path()
+
+        @Transient
+        private val tmpBezier = Bezier()
+
+        @Transient
+        private var bezierDelegate = BaseKeyframeAnimation(
+            index = index,
+            keyframes = keyframes,
+            emptyValue = tmpBezier,
+            map = { s, e, p ->
+                tmpBezier.interpolateBetween(s, e, easingX.transform(p))
+                tmpBezier
+            },
+        )
+
+        @Transient
+        private var delegate = BaseKeyframeAnimation(
+            index = index,
+            keyframes = keyframes,
+            emptyValue = tmpPath,
+            map = { s, e, p ->
+                tmpBezier.interpolateBetween(s, e, easingX.transform(p))
+                tmpBezier.mapPath(tmpPath)
+                tmpPath
+            }
+        )
+
+        override fun setClosed(closed: Boolean) {
+            keyframes.fastForEach {
+                it.start?.setIsClosed(closed)
+                it.end?.setIsClosed(closed)
+            }
+        }
+
+        override fun rawBezier(state: AnimationState): Bezier {
+            return bezierDelegate.raw(state)
+        }
+
+        override fun copy(): AnimatedShape {
+            return Animated(
+                expression = expression,
+                index = index,
+                keyframes = keyframes
+            )
+        }
+
+        override fun raw(state: AnimationState): Path {
+            return delegate.raw(state)
+        }
+
+        override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
+            return super<AnimatedKeyframeProperty>.get(property, runtime)
+        }
+    }
+
+    @Serializable
+    class Slottable(
+        private val sid: String,
+        @SerialName("ix")
+        override val index: Int? = null,
+    ) : AnimatedShape() {
+
+        @Transient
+        private val emptyBezier = Bezier()
+
+        private val emptyPath by lazy { Path() }
+
+        override fun rawBezier(state: AnimationState): Bezier {
+            return state.composition.animation.slots.shape(sid)?.rawBezier(state) ?: emptyBezier
+        }
+
+        override fun copy(): AnimatedShape {
+            return Slottable(sid, index)
+        }
+
+        override fun setClosed(closed: Boolean) {}
+
+        override fun raw(state: AnimationState): Path {
+            return state.composition.animation.slots.shape(sid)?.interpolated(state)
+                ?: emptyPath.apply { reset() }
+        }
+    }
+}
+
+internal object AnimatedShapeSerializer : JsonContentPolymorphicSerializer<AnimatedShape>(
+    baseClass = AnimatedShape::class
+){
+    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnimatedShape> {
+
+        if (element.jsonObject["sid"].isNotNull())
+            return AnimatedShape.Slottable.serializer()
+
+        val k = requireNotNull(element.jsonObject["k"]){
+            "Animated shape must have 'k' parameter"
+        }
+
+        return if (element.jsonObject["a"]?.jsonPrimitive?.intOrNull == 0 || k is JsonObject){
+            AnimatedShape.Default.serializer()
+        } else {
+            AnimatedShape.Animated.serializer()
+        }
+    }
+}
+
+
+private val DefaultPoints by lazy {
+    listOf(
+        listOf(0f, 0f),
+        listOf(100f, 0f),
+        listOf(100f, 100f),
+        listOf(0f, 100f)
+    )
+}
+
+
