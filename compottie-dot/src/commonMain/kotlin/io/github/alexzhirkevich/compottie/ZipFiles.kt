@@ -27,6 +27,7 @@ import okio.Path
 import okio.Path.Companion.toPath
 import okio.buffer
 import okio.use
+import kotlin.time.ExperimentalTime
 
 private const val LOCAL_FILE_HEADER_SIGNATURE = 0x4034b50
 private const val CENTRAL_FILE_HEADER_SIGNATURE = 0x2014b50
@@ -487,18 +488,18 @@ internal fun filetimeToEpochMillis(filetime: Long): Long {
  * Converts a 32-bit DOS date+time to milliseconds since epoch. Note that this function interprets
  * a value with no time zone as a value with the local time zone.
  */
+@OptIn(ExperimentalTime::class)
 internal fun dosDateTimeToEpochMillis(date: Int, time: Int): Long? {
     if (time == -1) {
         return null
     }
 
-    return LocalDateTime(
-        year = 1980 + (date shr 9 and 0x7f),
-        monthNumber = date shr 5 and 0xf,
-        dayOfMonth = date and 0x1f,
-        hour =  time shr 11 and 0x1f,
+    return LocalDateTime(year = 1980 + (date shr 9 and 0x7f),
+        month = date shr 5 and 0xf,
+        day = date and 0x1f,
+        hour = time shr 11 and 0x1f,
         minute = time shr 5 and 0x3f,
-        second = time and 0x1f shl 1,
+        second = time and 0x1f shl 1
     ).toInstant(TimeZone.UTC).toEpochMilliseconds()
 }
 
