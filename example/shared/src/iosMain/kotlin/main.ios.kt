@@ -5,7 +5,7 @@ import platform.UIKit.UIViewController
 @OptIn(ExperimentalComposeUiApi::class)
 public fun MainViewController() : UIViewController  = ComposeUIViewController(
     configure = {
-        parallelRendering = true
+//        parallelRendering = false
     }
 ) {
     App()

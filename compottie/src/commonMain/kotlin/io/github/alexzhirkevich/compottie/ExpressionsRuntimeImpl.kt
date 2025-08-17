@@ -27,6 +27,7 @@ import io.github.alexzhirkevich.compottie.internal.effects.EffectValue
 import io.github.alexzhirkevich.keight.Callable
 import io.github.alexzhirkevich.keight.JSRuntime
 import io.github.alexzhirkevich.keight.JavaScriptEngine
+import io.github.alexzhirkevich.keight.Script
 import io.github.alexzhirkevich.keight.ScriptRuntime
 import io.github.alexzhirkevich.keight.VariableType
 import io.github.alexzhirkevich.keight.js.JsAny
@@ -52,8 +53,7 @@ internal class ExpressionsRuntimeImpl(
     init {
         runSync {
             set("time".js, JSProperty { (state.time.inWholeMilliseconds / 1_000f).js }, VariableType.Const)
-
-//        set("value".js, JSProperty { state.thisProperty?.raw(state)?.js }, VariableType.Const)
+            set("value".js, JSProperty { state.thisProperty?.raw(state)?.let { fromKotlin(it) } }, VariableType.Const)
 
             set("thisComp".js, JSProperty { state.thisComp }, VariableType.Const)
             set("thisLayer".js, JSProperty { state.thisLayer }, VariableType.Const)
@@ -180,7 +180,12 @@ internal class ExpressionsRuntimeImpl(
 
 internal class ExpressionsEngineImpl(
      runtime: ExpressionsRuntimeImpl
-) : JavaScriptEngine<ExpressionsRuntimeImpl>(runtime)
+) : JavaScriptEngine<ExpressionsRuntimeImpl>(runtime) {
+
+    override fun compile(script: String): Script {
+        return super.compile("(function(){ $script; return \$bm_rt })()")
+    }
+}
 
 internal fun JSProperty(get : suspend ScriptRuntime.() -> JsAny?) =
     JsPropertyAccessor.BackedField(Callable { get(this) })
