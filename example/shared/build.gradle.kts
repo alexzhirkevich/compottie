@@ -1,13 +1,74 @@
+@file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
-@file:Suppress("DSL_SCOPE_VIOLATION")
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    id("module.android")
-    id("module.multiplatform")
     alias(libs.plugins.serialization)
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.compose)
+    alias(libs.plugins.composeCompiler)
 }
 
+val _jvmTarget = findProperty("jvmTarget") as String
+
+
 kotlin {
+
+    applyDefaultHierarchyTemplate {
+        common {
+            group("jvmNative") {
+                withAndroidTarget()
+                withJvm()
+                withIos()
+                withMacos()
+            }
+            group("java"){
+                withJvm()
+                withAndroidTarget()
+            }
+            group("web") {
+                withJs()
+                withWasmJs()
+            }
+            group("skiko") {
+                withJvm()
+                withIos()
+                withMacos()
+                withJs()
+                withWasmJs()
+            }
+        }
+    }
+
+    androidTarget {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.fromTarget(_jvmTarget))
+        }
+        publishLibraryVariants("release")
+    }
+
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "shared"
+        }
+    }
+    macosX64()
+    macosArm64()
+    jvm()
+
+    js(IR) {
+        browser()
+    }
+
+    wasmJs() {
+        browser()
+    }
 
     sourceSets {
         commonMain.dependencies {
@@ -36,29 +97,25 @@ kotlin {
         commonTest.dependencies {
             implementation(kotlin("test"))
         }
-//        desktopTest.dependencies {
-//            implementation(compose.desktop.currentOs)
-//        }
-//        androidMain.dependencies {
-//            implementation(libs.ktor.client.okhttp)
-//        }
-//
-//        iosMain.dependencies {
-//            implementation(libs.ktor.client.ios)
-//        }
-//
-        val desktopMain by getting {
-            dependencies {
-                implementation(libs.ktor.client.okhttp)
-            }
+        jvmTest.dependencies {
+            implementation(compose.desktop.currentOs)
         }
-//
-//        jsMain.dependencies {
-//            implementation(libs.ktor.client.js)
-//        }
-//        wasmJsMain.dependencies {
-//            implementation(libs.ktor.client.js)
-//        }
+        androidMain.dependencies {
+            implementation(libs.ktor.client.okhttp)
+        }
+
+        iosMain.dependencies {
+            implementation(libs.ktor.client.ios)
+        }
+        jvmMain.dependencies {
+            implementation(libs.ktor.client.okhttp)
+        }
+        jsMain.dependencies {
+            implementation(libs.ktor.client.js)
+        }
+        wasmJsMain.dependencies {
+            implementation(libs.ktor.client.js)
+        }
     }
 }
 
@@ -66,4 +123,19 @@ android {
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     sourceSets["main"].res.srcDirs("src/androidMain/res")
     sourceSets["main"].resources.srcDirs("src/commonMain/resources")
+}
+
+val jvmTarget = findProperty("jvmTarget") as String
+
+android {
+    namespace = "$group.${name.filter { it.isLetter() }}"
+    compileSdk = (findProperty("android.compileSdk") as String).toInt()
+
+    defaultConfig {
+        minSdk = (findProperty("android.minSdk") as String).toInt()
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.toVersion(jvmTarget)
+        targetCompatibility = JavaVersion.toVersion(jvmTarget)
+    }
 }

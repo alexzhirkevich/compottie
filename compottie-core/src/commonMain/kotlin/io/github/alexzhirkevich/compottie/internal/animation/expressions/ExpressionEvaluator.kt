@@ -6,6 +6,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.keight.Script
 import io.github.alexzhirkevich.keight.invokeSync
+import kotlin.time.measureTime
 
 internal interface ExpressionEvaluator : ExpressionHolder {
     fun evaluate(state: AnimationState): Any

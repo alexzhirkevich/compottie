@@ -45,7 +45,7 @@ public fun rememberLottiePainter(
     progress : () -> Float,
     assetsManager: LottieAssetsManager? = null,
     fontManager: LottieFontManager? = null,
-    coroutineContext: CoroutineContext = Compottie.ioDispatcher(),
+    coroutineContext: CoroutineContext = remember { Compottie.ioDispatcher() },
     dynamicProperties : LottieDynamicProperties? = null,
     applyOpacityToLayers : Boolean = false,
     clipToCompositionBounds : Boolean = true,
@@ -70,10 +70,12 @@ public fun rememberLottiePainter(
             object : ScriptEngine<ExpressionsRuntime>{
                 override val runtime: ExpressionsRuntime
                     get() = TODO("Not available in compottie-light")
-                override val mutex: Mutex
-                    get() = TODO("Not available in compottie-light")
-                override fun compile(script: String): Script {
-                    TODO("NNot available in compottie-light")
+
+                override fun compile(
+                    script: String,
+                    name: String?
+                ): Script {
+                    TODO("Not yet implemented")
                 }
             }
         }

@@ -47,7 +47,7 @@ import kotlin.time.Duration.Companion.microseconds
 public fun rememberLottieComposition(
     vararg keys: Any?,
     cache: LottieCompositionCache? = LocalLottieCache.current,
-    coroutineContext: CoroutineContext = Compottie.ioDispatcher(),
+    coroutineContext: CoroutineContext = remember { Compottie.ioDispatcher() },
     spec : suspend () -> LottieCompositionSpec,
 ) : LottieCompositionResult {
 

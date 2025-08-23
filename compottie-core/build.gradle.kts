@@ -5,6 +5,8 @@ import org.jetbrains.compose.ExperimentalComposeLibrary
 
 plugins {
     alias(libs.plugins.serialization)
+    alias(libs.plugins.compose)
+    alias(libs.plugins.composeCompiler)
 }
 
 kotlin {

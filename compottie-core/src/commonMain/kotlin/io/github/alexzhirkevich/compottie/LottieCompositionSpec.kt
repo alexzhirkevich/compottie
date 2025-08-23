@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import kotlin.jvm.JvmInline
 
 @Stable
 public interface LottieCompositionSpec {

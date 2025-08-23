@@ -26,6 +26,7 @@ import io.github.alexzhirkevich.keight.js.JsAny
 import io.github.alexzhirkevich.keight.js.Undefined
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonClassDiscriminator
+import kotlin.jvm.JvmInline
 
 @OptIn(ExperimentalSerializationApi::class)
 @JsonClassDiscriminator("ty")

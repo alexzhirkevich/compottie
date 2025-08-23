@@ -1,6 +1,5 @@
 package io.github.alexzhirkevich.compottie
 
-import androidx.compose.runtime.Stable
 import io.github.alexzhirkevich.compottie.assets.LottieFontManager
 import io.github.alexzhirkevich.compottie.assets.LottieFontSpec
 
@@ -16,7 +15,6 @@ import io.github.alexzhirkevich.compottie.assets.LottieFontSpec
  * @param cacheStrategy caching strategy. Caching to system temp dir by default
  * */
 @OptIn(InternalCompottieApi::class)
-@Stable
 public fun NetworkFontManager(
     cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
 ) : LottieFontManager = NetworkFontManager(

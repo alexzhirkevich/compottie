@@ -1,12 +1,10 @@
 package io.github.alexzhirkevich.compottie
 
-import androidx.compose.runtime.Stable
 import okio.ByteString.Companion.encodeUtf8
 import okio.FileSystem
 import okio.Path
 import kotlin.coroutines.CoroutineContext
 
-@Stable
 internal class RealDiskCache(
     override val maxSize: Long,
     override val directory: Path,

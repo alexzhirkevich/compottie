@@ -1,7 +1,5 @@
 package io.github.alexzhirkevich.compottie
 
-import androidx.compose.runtime.Stable
-
 /**
  * [LottieComposition] from network [url]
  *
@@ -11,7 +9,6 @@ import androidx.compose.runtime.Stable
  * URL assets will be automatically prepared with [NetworkAssetsManager]
  * */
 @OptIn(InternalCompottieApi::class)
-@Stable
 public fun LottieCompositionSpec.Companion.Url(
     url : String,
     format: LottieAnimationFormat = LottieAnimationFormat.Undefined,

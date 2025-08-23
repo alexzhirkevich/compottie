@@ -43,7 +43,7 @@ public fun rememberLottiePainter(
     progress : () -> Float,
     assetsManager: LottieAssetsManager? = null,
     fontManager: LottieFontManager? = null,
-    coroutineContext: CoroutineContext = Compottie.ioDispatcher(),
+    coroutineContext: CoroutineContext = remember { Compottie.ioDispatcher() },
     dynamicProperties : LottieDynamicProperties? = null,
     applyOpacityToLayers : Boolean = false,
     clipToCompositionBounds : Boolean = true,
@@ -94,7 +94,7 @@ public fun rememberLottiePainter(
     clipToCompositionBounds: Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
     enableMergePaths: Boolean = false,
-    enableExpressions: Boolean = false
+    enableExpressions: Boolean = true
 ) : Painter {
 
     val progress = animateLottieCompositionAsState(

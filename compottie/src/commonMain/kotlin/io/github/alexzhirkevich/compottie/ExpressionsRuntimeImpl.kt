@@ -25,13 +25,12 @@ import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionsRuntime
 import io.github.alexzhirkevich.compottie.internal.effects.EffectValue
 import io.github.alexzhirkevich.keight.Callable
+import io.github.alexzhirkevich.keight.JSEngine
 import io.github.alexzhirkevich.keight.JSRuntime
-import io.github.alexzhirkevich.keight.JavaScriptEngine
 import io.github.alexzhirkevich.keight.Script
-import io.github.alexzhirkevich.keight.ScriptRuntime
 import io.github.alexzhirkevich.keight.VariableType
 import io.github.alexzhirkevich.keight.js.JsAny
-import io.github.alexzhirkevich.keight.js.JsPropertyAccessor
+import io.github.alexzhirkevich.keight.js.JsProperty
 import io.github.alexzhirkevich.keight.js.Undefined
 import io.github.alexzhirkevich.keight.js.js
 import io.github.alexzhirkevich.keight.runSync
@@ -52,12 +51,12 @@ internal class ExpressionsRuntimeImpl(
 
     init {
         runSync {
-            set("time".js, JSProperty { (state.time.inWholeMilliseconds / 1_000f).js }, VariableType.Const)
-            set("value".js, JSProperty { state.thisProperty?.raw(state)?.let { fromKotlin(it) } }, VariableType.Const)
+            set("time".js, JsProperty { (state.time.inWholeMilliseconds / 1_000f).js }, VariableType.Const)
+            set("value".js, JsProperty { state.thisProperty?.raw(state)?.let { fromKotlin(it) } }, VariableType.Const)
 
-            set("thisComp".js, JSProperty { state.thisComp }, VariableType.Const)
-            set("thisLayer".js, JSProperty { state.thisLayer }, VariableType.Const)
-            set("thisProp".js, JSProperty { state.thisProperty }, VariableType.Const)
+            set("thisComp".js, JsProperty { state.thisComp }, VariableType.Const)
+            set("thisLayer".js, JsProperty { state.thisLayer }, VariableType.Const)
+            set("thisProp".js, JsProperty { state.thisProperty }, VariableType.Const)
 
             set("add".js, Callable { sum(it[0], it[1]) }, VariableType.Const)
             set("sum".js, Callable { sum(it[0], it[1]) }, VariableType.Const)
@@ -180,13 +179,10 @@ internal class ExpressionsRuntimeImpl(
 
 internal class ExpressionsEngineImpl(
      runtime: ExpressionsRuntimeImpl
-) : JavaScriptEngine<ExpressionsRuntimeImpl>(runtime) {
+) : JSEngine<ExpressionsRuntimeImpl>(runtime) {
 
-    override fun compile(script: String): Script {
-        return super.compile("(function(){ $script; return \$bm_rt })()")
+    override fun compile(script: String, name: String?): Script {
+        return super.compile("(function(){ $script; return \$bm_rt})()", name)
     }
 }
-
-internal fun JSProperty(get : suspend ScriptRuntime.() -> JsAny?) =
-    JsPropertyAccessor.BackedField(Callable { get(this) })
 

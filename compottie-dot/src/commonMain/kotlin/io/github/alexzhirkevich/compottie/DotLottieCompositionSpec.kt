@@ -1,6 +1,5 @@
 package io.github.alexzhirkevich.compottie
 
-import androidx.compose.runtime.Stable
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
@@ -23,7 +22,6 @@ public var Compottie.useStableWasmMemoryManagement: Boolean by ::_useStableWasmM
  * @param archive dotLottie or zip archive file
  * @param animationId animation id (if dotLottie contains multiple animations)
  * */
-@Stable
 public fun LottieCompositionSpec.Companion.DotLottie(
     archive: ByteArray,
     animationId: String? = null
@@ -37,7 +35,6 @@ private val DotLottieJson = Json {
     allowTrailingComma = true
 }
 
-@Stable
 private class DotLottieCompositionSpec(
     private val archive : ByteArray,
     private val animationId : String?,

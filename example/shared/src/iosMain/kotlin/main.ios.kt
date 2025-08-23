@@ -8,5 +8,6 @@ public fun MainViewController() : UIViewController  = ComposeUIViewController(
 //        parallelRendering = false
     }
 ) {
+
     App()
 }

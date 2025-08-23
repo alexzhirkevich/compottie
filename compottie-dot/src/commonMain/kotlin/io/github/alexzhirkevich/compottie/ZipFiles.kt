@@ -391,7 +391,7 @@ private fun BufferedSource.readExtra(extraSize: Int, block: (Int, Long) -> Unit)
  * If [centralDirectoryZipEntry] is null this will return null. Otherwise, it will return a new
  * entry which unions [centralDirectoryZipEntry] with information from the local header.
  */
-private fun BufferedSource.readOrSkipLocalHeader(
+internal fun BufferedSource.readOrSkipLocalHeader(
     centralDirectoryZipEntry: ZipEntry?,
 ): ZipEntry? {
     val signature = readIntLe()

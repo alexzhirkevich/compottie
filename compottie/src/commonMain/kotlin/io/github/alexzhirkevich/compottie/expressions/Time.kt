@@ -2,15 +2,11 @@
 
 package io.github.alexzhirkevich.compottie.expressions
 
-import io.github.alexzhirkevich.compottie.internal.animation.RawKeyframeProperty
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.state
-import io.github.alexzhirkevich.keight.Callable
 import io.github.alexzhirkevich.keight.Expression
 import io.github.alexzhirkevich.keight.js.FunctionParam
 import io.github.alexzhirkevich.keight.js.JSFunction
 import io.github.alexzhirkevich.keight.js.js
-import kotlin.math.abs
-import kotlin.math.max
 
 internal fun JsFramesToTime() = JSFunction(
     FunctionParam("frame", default = Expression {  it.state.frame.js }),
