@@ -1,5 +1,4 @@
 pluginManagement {
-    includeBuild("convention-plugins")
     repositories {
         google()
         gradlePluginPortal()
@@ -14,17 +13,20 @@ dependencyResolutionManagement {
         mavenCentral()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
         maven("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental")
+//        mavenLocal()
     }
 }
 
 rootProject.name = "compottie"
+include(":compottie-core")
 include(":compottie")
+include(":compottie-lite")
 include(":compottie-dot")
 include(":compottie-network")
 include(":compottie-network-core")
 include(":compottie-resources")
 include(":example:desktopApp")
 include(":example:webApp")
-include(":example:androidapp")
+include(":example:androidApp")
 include(":example:shared")
 

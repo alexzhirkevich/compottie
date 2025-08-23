@@ -3,7 +3,6 @@
 
 package io.github.alexzhirkevich.compottie
 
-import androidx.compose.runtime.Stable
 import androidx.compose.ui.text.font.Font
 import io.github.alexzhirkevich.compottie.assets.LottieFontManager
 import io.github.alexzhirkevich.compottie.assets.LottieFontSpec
@@ -23,7 +22,6 @@ import kotlin.jvm.JvmName
  * @param cacheStrategy caching strategy. Caching to system temp dir by default
  * */
 @OptIn(InternalCompottieApi::class)
-@Stable
 public fun NetworkFontManager(
     request : suspend (url: String) -> ByteArray,
     cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
@@ -32,7 +30,6 @@ public fun NetworkFontManager(
     cacheStrategy = cacheStrategy,
 )
 
-@Stable
 private class NetworkFontManagerImpl(
     private val request : suspend (url: String) -> ByteArray,
     private val cacheStrategy: LottieCacheStrategy,

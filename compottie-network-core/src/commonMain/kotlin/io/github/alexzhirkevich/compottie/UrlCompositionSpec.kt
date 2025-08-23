@@ -2,9 +2,8 @@
 
 package io.github.alexzhirkevich.compottie
 
-import androidx.compose.runtime.Stable
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlin.jvm.JvmName
 
 /**
@@ -17,7 +16,6 @@ import kotlin.jvm.JvmName
  * URL assets will be automatically prepared with [NetworkAssetsManager]
  * */
 @OptIn(InternalCompottieApi::class)
-@Stable
 public fun LottieCompositionSpec.Companion.Url(
     url : String,
     request: suspend (url: String) -> ByteArray,
@@ -30,7 +28,6 @@ public fun LottieCompositionSpec.Companion.Url(
     cacheStrategy = cacheStrategy,
 )
 
-@Stable
 private class NetworkCompositionSpec(
     private val url : String,
     private val format: LottieAnimationFormat,
@@ -53,11 +50,10 @@ private class NetworkCompositionSpec(
 
     @OptIn(InternalCompottieApi::class)
     override suspend fun load(): LottieComposition {
-        return withContext(Compottie.ioDispatcher()) {
+        val (_, bytes) = networkLoad(request, cacheStrategy, url)
 
-            val (_, bytes) = networkLoad(request, cacheStrategy, url)
-
-            checkNotNull(bytes?.decodeToLottieComposition(format)){
+        return coroutineScope {
+            checkNotNull(bytes?.decodeToLottieComposition(format)) {
                 "Failed to load animation $url"
             }.apply {
                 launch {
