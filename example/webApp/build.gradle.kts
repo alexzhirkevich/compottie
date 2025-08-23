@@ -10,15 +10,15 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
-
-
 val jsAppName = project.name + "-js"
 val wasmAppName = project.name + "-wasm"
 
 kotlin {
 
+    applyDefaultHierarchyTemplate()
+
     js {
-        moduleName = jsAppName
+        outputModuleName.set(jsAppName)
 
         browser {
             commonWebpackConfig {
@@ -30,7 +30,7 @@ kotlin {
     }
 
     wasmJs {
-        moduleName = wasmAppName
+        outputModuleName.set(wasmAppName)
         browser {
             commonWebpackConfig {
                 outputFileName = "$wasmAppName.js"

@@ -19,7 +19,7 @@ internal actual class ZipFileSystem actual constructor(
         val source = parent.openReadOnly(this.path).use { fileHandle ->
             fileHandle.source(entry.offset).buffer()
         }
-        source.skipLocalHeader()
+        source.readOrSkipLocalHeader(null)
 
         val bytes = source.readByteArray(entry.compressedSize)
 

@@ -1,8 +1,6 @@
 package io.github.alexzhirkevich.compottie
 
 
-import androidx.compose.ui.util.fastForEach
-import io.github.alexzhirkevich.compottie.DiskLruCache.Editor
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CoroutineDispatcher
@@ -821,7 +819,7 @@ internal class DiskLruCache(
             if (currentEditor != null || zombie) return null
 
             // Ensure that the entry's files still exist.
-            cleanFiles.fastForEach { file ->
+            cleanFiles.forEach { file ->
                 if (!fileSystem.exists(file)) {
                     // Since the entry is no longer valid, remove it so the metadata is accurate
                     // (i.e. the cache size).

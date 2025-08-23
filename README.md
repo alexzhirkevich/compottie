@@ -18,34 +18,25 @@ Compose Multiplatform Adobe After Effects Bodymovin (Lottie) animations renderin
 > <br>Please [report](https://github.com/alexzhirkevich/compottie/issues) if you find any, preferably with a reproducible animation.
 > <br>List of supported AE Lottie features can be found [here](/supported_features.md)
 
-|           Module           | Description                                                                                                                                                                                                                                     | 
-|:--------------------------:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
-|        `compottie`         | Main module with rendering engine and `JsonString` animation spec. Currently has two branches - 1.x (with platform renderers - Skottie and lottie-android) and 2.x (with own renderer). 1.x is maintained until the new renderer becomes stable |
-|     `compottie⁠-⁠dot`      | Contains [dotLottie](https://dotlottie.io/) and ZIP animation spec. For Compottie 2.x only                                                                                                                                                      |
-|   `compottie⁠-⁠network`    | Contains `Url` animation spec and asset/font managers (with [Ktor3](https://ktor.io/) and local cache with [Okio](https://square.github.io/okio/)). Allows loading animations and assets from web. For Compottie 2.x only                       |
-| `compottie⁠-⁠network-core` | Contains base HttpClient-free implementations for `network` module. Allows to specify custom HTTP client (Ktor3 or any other).                                                                                                                  |
-|  `compottie⁠-⁠resources`   | Contains asset and font managers powered by official Compose resources. For Compottie 2.x only. <br>WARNING: this module DOES NOT help you to load animations from resources. It is only usefull for loading FONTS and IMAGES. Adding this can cause binary incompatibilies between Compose versions                                                                                                                                               | 
+|          Module          | Description                                                                                                                                                                                                                                                                                          | 
+|:------------------------:|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
+|       `compottie`        | Main module with rendering engine and `JsonString` animation spec. Currently has two branches - 1.x (with platform renderers - Skottie and lottie-android) and 2.x (with own renderer). 1.x is maintained until the new renderer becomes stable                                                      |
+|     `compottie-lite`     | The same as compottie, but without expressions support. Has about 2 times smaller binary size                                                                                                                                                                                                        |                                                                                                                                                                                                       |                                                                                                                                                                                                                                                                                |
+|     `compottie-dot`      | Contains [dotLottie](https://dotlottie.io/) and ZIP animation spec. For Compottie 2.x only                                                                                                                                                                                                           |
+|   `compottie-network`    | Contains `Url` animation spec and asset/font managers (with [Ktor3](https://ktor.io/) and local cache with [Okio](https://square.github.io/okio/)). Allows loading animations and assets from web. For Compottie 2.x only                                                                            |
+| `compottie-network-core` | Contains base HttpClient-free implementations for `network` module. Allows to specify custom HTTP client (Ktor3 or any other).                                                                                                                                                                       |
+|  `compottie-resources`   | Contains asset and font managers powered by official Compose resources. For Compottie 2.x only. <br>WARNING: this module DOES NOT help you to load animations from resources. It is only usefull for loading FONTS and IMAGES. Adding this can cause binary incompatibilies between Compose versions | 
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.alexzhirkevich/compottie)](https://central.sonatype.com/artifact/io.github.alexzhirkevich/compottie)
 
 Add as a Gradle dependency
-```kotlin
-dependencies {
-    implementation("io.github.alexzhirkevich:compottie:<version>")
-    implementation("io.github.alexzhirkevich:compottie-dot:<version>")
-    implementation("io.github.alexzhirkevich:compottie-network:<version>")
-
-    // This module can cause binary incompatibilities. Please read its description first
-    implementation("io.github.alexzhirkevich:compottie-resources:<version>")
-}
-```
-
 ```toml
 [versions]
 compottie="<version>"
 
 [libraries]
 compottie = { module = "io.github.alexzhirkevich:compottie", version.ref = "compottie" }
+compottie.ite = { module = "io.github.alexzhirkevich:compottie-lite", version.ref = "compottie" }
 compottie-dot = { module = "io.github.alexzhirkevich:compottie-dot", version.ref = "compottie" }
 compottie-network = { module = "io.github.alexzhirkevich:compottie-network", version.ref = "compottie" }
 compottie-resources = { module = "io.github.alexzhirkevich:compottie-resources", version.ref = "compottie" }

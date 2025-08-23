@@ -115,28 +115,4 @@ internal data class ZipEntry(
         extraSize = extraSize,
         nameSize = nameSize,
     )
-
-    internal val lastAccessedAtMillis: Long?
-        get() = when {
-            ntfsLastAccessedAtFiletime != null -> filetimeToEpochMillis(ntfsLastAccessedAtFiletime)
-            extendedLastAccessedAtSeconds != null -> extendedLastAccessedAtSeconds * 1000L
-            else -> null
-        }
-
-    internal val lastModifiedAtMillis: Long?
-        get() = when {
-            ntfsLastModifiedAtFiletime != null -> filetimeToEpochMillis(ntfsLastModifiedAtFiletime)
-            extendedLastModifiedAtSeconds != null -> extendedLastModifiedAtSeconds * 1000L
-            dosLastModifiedAtTime != -1 -> {
-                dosDateTimeToEpochMillis(dosLastModifiedAtDate, dosLastModifiedAtTime)
-            }
-            else -> null
-        }
-
-    internal val createdAtMillis: Long?
-        get() = when {
-            ntfsCreatedAtFiletime != null -> filetimeToEpochMillis(ntfsCreatedAtFiletime)
-            extendedCreatedAtSeconds != null -> extendedCreatedAtSeconds * 1000L
-            else -> null
-        }
 }
