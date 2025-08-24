@@ -1,11 +1,9 @@
 package io.github.alexzhirkevich.compottie
 
-import androidx.compose.runtime.Stable
 import okio.ByteString.Companion.encodeUtf8
 import okio.Path
 import okio.use
 
-@Stable
 public class DiskCacheStrategy(
     private val diskCache: DiskCache = SharedDiskCache
 ) : LottieCacheStrategy {

@@ -1,18 +1,17 @@
 
 plugins {
-    kotlin("multiplatform")
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.compose)
+    alias(libs.plugins.composeCompiler)
 }
 
 
 kotlin {
-    jvm {
-        withJava()
-//        compilations.all {
-//            kotlinOptions.jvmTarget = "11"
-//        }
-    }
+
+    jvm()
+    
     sourceSets {
-        val jvmMain by getting {
+       jvmMain {
             kotlin.srcDirs("src/main/kotlin")
             dependencies {
                 implementation(project(":example:shared"))
@@ -20,11 +19,6 @@ kotlin {
 
                 implementation(libs.serialization)
                 implementation(compose.desktop.currentOs)
-                api(compose.runtime)
-                api(compose.foundation)
-                api(compose.material)
-                api(compose.ui)
-                api(compose.materialIconsExtended)
             }
         }
     }

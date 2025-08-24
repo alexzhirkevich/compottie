@@ -73,10 +73,12 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(compose.foundation)
+            implementation(projects.compottie.compottieCore)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.serialization.core)
             implementation(libs.okio)
             implementation(libs.atomicfu)
+            implementation(libs.keight)
 
         }
         commonTest.dependencies {

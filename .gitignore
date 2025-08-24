@@ -11,6 +11,6 @@ xcuserdata
 *.gpg
 *.pgp
 *.psd
-kotlins-js-store
+kotlin-js-store
 .kotlin
 **.log

@@ -1,9 +1,7 @@
 package io.github.alexzhirkevich.compottie
 
-import androidx.compose.runtime.Stable
 import okio.Path
 
-@Stable
 public interface LottieCacheStrategy {
 
     /**
