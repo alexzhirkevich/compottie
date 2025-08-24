@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.platform
 
+import android.annotation.SuppressLint
 import android.os.Build
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Canvas
@@ -54,8 +55,10 @@ internal fun android.graphics.Matrix.setFromInternal(matrix: Matrix) {
     v[8] = v8 // 8
 }
 
+@SuppressLint("ObsoleteSdkInt")
 internal actual fun Canvas.saveLayer(rect : MutableRect, paint : Paint, flag : Int)  {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+        @Suppress("DEPRECATION")
         nativeCanvas.saveLayer(
             /* left = */ rect.left,
             /* top = */ rect.top,

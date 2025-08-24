@@ -1,4 +1,3 @@
-
 package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.graphics.Color
@@ -59,6 +58,7 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
         override fun raw(state: AnimationState) = color
     }
 
+    @Suppress("DELEGATED_MEMBER_HIDES_SUPERTYPE_OVERRIDE")
     @Serializable
     class Animated(
         @SerialName("k")
@@ -174,4 +174,3 @@ internal object AnimatedColorSerializer : JsonContentPolymorphicSerializer<Anima
     }
 
 }
-

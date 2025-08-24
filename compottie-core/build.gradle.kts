@@ -21,7 +21,7 @@ kotlin {
             compileTaskProvider.configure {
                 compilerOptions {
                     freeCompilerArgs.addAll(
-                        "-Xsuppress-warning=UNCHECKED_CAST",
+                        "-Xwarning-level=UNCHECKED_CAST:disabled",
                         "-Xexpect-actual-classes"
                     )
                 }
