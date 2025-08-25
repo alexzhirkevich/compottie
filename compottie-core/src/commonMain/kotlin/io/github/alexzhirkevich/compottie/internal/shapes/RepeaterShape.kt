@@ -139,7 +139,7 @@ internal class RepeaterShape(
         val contentsList = contents.take(thisIndex)
 
         repeat(thisIndex) {
-            contents.removeFirst()
+            contents.removeAt(0)
         }
 
         contentGroup = ContentGroupImpl(
