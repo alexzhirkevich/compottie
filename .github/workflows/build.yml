@@ -24,15 +24,15 @@ jobs:
     strategy:
       matrix:
         include:
-          - target: iosSimulatorArm64Test
+          - target: compileKotlinIosSimulatorArm64
             os: macos-latest
-          - target: jvmTest
+          - target: compileKotlinMacosArm64
+            os: macos-latest
+          - target: compileKotlinWasmJs
             os: ubuntu-latest
-          - target: linuxX64Test
+          - target: compileKotlinJs
             os: ubuntu-latest
-          - target: testDebugUnitTest
-            os: ubuntu-latest
-          - target: testReleaseUnitTest
+          - target: compileKotlinJvm
             os: ubuntu-latest
     runs-on: ${{ matrix.os }}
 
