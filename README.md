@@ -1,4 +1,7 @@
 # Compottie
+<a href="https://lottie.github.io/lottie-spec/latest/"><img width="144" height="56" alt="image" src="https://github.com/user-attachments/assets/36ce2de5-2b15-42e4-b685-100bd47d3bd3" /></a>
+
+Compose Multiplatform library for rendering Lottie animations
 
 ![badge-Android](https://img.shields.io/badge/Platform-Android-brightgreen)
 ![badge-iOS](https://img.shields.io/badge/Platform-iOS-lightgray)
@@ -6,7 +9,6 @@
 ![badge-macOS](https://img.shields.io/badge/Platform-macOS-purple)
 ![badge-web](https://img.shields.io/badge/Platform-Web-blue)
 
-Compose Multiplatform Adobe After Effects Bodymovin (Lottie) animations rendering engine.
 
 ![Example](https://github.com/alexzhirkevich/compottie/assets/63979218/2735c77a-d940-4fd7-825c-208454b3960a)
 
