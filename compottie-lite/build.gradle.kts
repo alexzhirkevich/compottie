@@ -12,6 +12,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlin.serialization)
+    `maven-publish`
 }
 
 kotlin {
@@ -72,7 +73,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(projects.compottie.compottieCore)
+            implementation(projects.compottie.compottieCore)
             implementation(compose.foundation)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.serialization.core)
