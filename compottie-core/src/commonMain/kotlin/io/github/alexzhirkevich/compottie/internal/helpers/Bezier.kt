@@ -75,7 +75,7 @@ internal class Bezier(
         if (closed){
             closeShape()
         } else {
-            curves.removeLast()
+            curves.removeAt(curves.lastIndex)
         }
     }
 
@@ -96,7 +96,7 @@ internal class Bezier(
         }
         if (curves.size > points) {
             repeat(curves.size - points) {
-                curves.removeLast()
+                curves.removeAt(curves.lastIndex)
             }
         }
 

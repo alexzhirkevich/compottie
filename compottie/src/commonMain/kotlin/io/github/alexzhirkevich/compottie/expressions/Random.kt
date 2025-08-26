@@ -119,7 +119,7 @@ internal class RandomSource(val runtime: ScriptRuntime) : JsAny by Undefined {
                         )
                     }
                     if (this.size > max.size) {
-                        removeLast()
+                        removeAt(lastIndex)
                     }
                 }.js
             }
@@ -163,7 +163,7 @@ internal class RandomSource(val runtime: ScriptRuntime) : JsAny by Undefined {
                         )
                     }
                     if (this.size > cap) {
-                        removeLast()
+                        removeAt(lastIndex)
                     }
                 }.js
             }

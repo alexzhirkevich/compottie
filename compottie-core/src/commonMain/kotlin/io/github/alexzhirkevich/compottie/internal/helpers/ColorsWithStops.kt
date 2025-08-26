@@ -47,8 +47,8 @@ internal class ColorsWithStops(
             mColors.add(Color.Transparent)
         }
         while (colorStops.size > size) {
-            mColorStops.removeLast()
-            mColors.removeLast()
+            mColorStops.removeAt(mColorStops.lastIndex)
+            mColors.removeAt(mColors.lastIndex)
         }
     }
 
