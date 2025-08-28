@@ -1,5 +1,5 @@
 # Compottie
-<a href="https://lottie.github.io/lottie-spec/1.0/"><img width="144" height="56" alt="image" src="https://github.com/user-attachments/assets/36ce2de5-2b15-42e4-b685-100bd47d3bd3" /></a>
+<a href="https://lottie.github.io/lottie-spec/1.0/"><img width="144" height="56" alt="image" src="https://lottie.github.io/compliance-buttons/lottie-1.0-light.svg" /></a>
 
 Compose Multiplatform library for rendering Lottie animations
 
