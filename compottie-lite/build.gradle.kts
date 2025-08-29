@@ -73,7 +73,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.compottie.compottieCore)
+            api(projects.compottie.compottieCore)
             implementation(compose.foundation)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.serialization.core)
