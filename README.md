@@ -16,8 +16,6 @@ Compose Multiplatform library for rendering Lottie animations
 
 > [!IMPORTANT]
 > Starting from v2.0 Compottie has its own multiplatform rendering engine without any platform delegates.
-> <br>The new engine is implemented from scratch and therefore may have bugs.
-> <br>Please [report](https://github.com/alexzhirkevich/compottie/issues) if you find any, preferably with a reproducible animation.
 > <br>List of supported AE Lottie features can be found [here](/supported_features.md)
 
 |          Module          | Description                                                                                                                                                                                                                                                                                          | 
