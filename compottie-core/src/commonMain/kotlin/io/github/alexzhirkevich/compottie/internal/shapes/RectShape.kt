@@ -15,6 +15,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.dynamicOffset
 import io.github.alexzhirkevich.compottie.internal.animation.dynamicSize
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
+import io.github.alexzhirkevich.compottie.internal.content.nameOrDefault
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundSimultaneousTrimPath
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
 import io.github.alexzhirkevich.keight.ScriptRuntime
@@ -154,15 +155,12 @@ internal class RectShape(
 
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
+        dynamicShape = properties?.get(layerPath(basePath, nameOrDefault))
+        val dynamicRect = dynamicShape as? DynamicRectProvider?
 
-        if (name != null) {
-            dynamicShape = properties?.get(layerPath(basePath, name))
-            val dynamicRect = dynamicShape as? DynamicRectProvider?
-
-            position.dynamicOffset(dynamicRect?.position)
-            size.dynamicSize(dynamicRect?.size)
-            roundedCorners?.dynamic = dynamicRect?.roundCorners
-        }
+        position.dynamicOffset(dynamicRect?.position)
+        size.dynamicSize(dynamicRect?.size)
+        roundedCorners?.dynamic = dynamicRect?.roundCorners
     }
 
     override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {

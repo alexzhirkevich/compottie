@@ -20,6 +20,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.defaultOpacity
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
+import io.github.alexzhirkevich.compottie.internal.content.nameOrDefault
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsState
 import io.github.alexzhirkevich.compottie.internal.helpers.FillRule
 import io.github.alexzhirkevich.compottie.internal.helpers.asPathFillType
@@ -152,10 +153,10 @@ internal class FillShape(
 
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
-        if (name != null) {
-            dynamicFill = properties?.get(layerPath(basePath, name))
-            dynamicShape = properties?.get(layerPath(basePath, name))
-        }
+
+        val path = layerPath(basePath, nameOrDefault)
+        dynamicFill = properties?.get(path)
+        dynamicShape = properties?.get(path)
     }
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {

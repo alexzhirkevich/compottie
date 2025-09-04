@@ -15,6 +15,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.dynamicOffset
 import io.github.alexzhirkevich.compottie.internal.animation.dynamicSize
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
+import io.github.alexzhirkevich.compottie.internal.content.nameOrDefault
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundSimultaneousTrimPath
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
 import io.github.alexzhirkevich.keight.ScriptRuntime
@@ -100,12 +101,10 @@ internal class EllipseShape(
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
 
-        if (name != null) {
-            dynamicShape = properties?.get(layerPath(basePath, name))
-            val dynamicEllipse = dynamicShape as? DynamicEllipseProvider?
-            size.dynamicSize(dynamicEllipse?.size)
-            position.dynamicOffset(dynamicEllipse?.position)
-        }
+        dynamicShape = properties?.get(layerPath(basePath, nameOrDefault))
+        val dynamicEllipse = dynamicShape as? DynamicEllipseProvider?
+        size.dynamicSize(dynamicEllipse?.size)
+        position.dynamicOffset(dynamicEllipse?.position)
     }
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {
         trimPaths = CompoundSimultaneousTrimPath(contentsBefore)

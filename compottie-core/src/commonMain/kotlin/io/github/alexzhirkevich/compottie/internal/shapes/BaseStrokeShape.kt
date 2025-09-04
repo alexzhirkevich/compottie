@@ -30,6 +30,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
+import io.github.alexzhirkevich.compottie.internal.content.nameOrDefault
 import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsState
 import io.github.alexzhirkevich.compottie.internal.helpers.DashType
 import io.github.alexzhirkevich.compottie.internal.helpers.StrokeDash
@@ -201,10 +202,10 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
 
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
-        name?.let {
-            dynamicStroke = properties?.get(layerPath(basePath, it))
-            dynamicShape = properties?.get(layerPath(basePath, it))
-        }
+        
+        val path = layerPath(basePath, nameOrDefault)
+        dynamicStroke = properties?.get(path)
+        dynamicShape = properties?.get(path)
     }
 
     override fun setContents(contentsBefore: List<Content>, contentsAfter: List<Content>) {

@@ -19,6 +19,7 @@ import io.github.alexzhirkevich.compottie.internal.content.ContentGroupImpl
 import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.GreedyContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
+import io.github.alexzhirkevich.compottie.internal.content.nameOrDefault
 import io.github.alexzhirkevich.compottie.internal.platform.addPath
 import io.github.alexzhirkevich.compottie.internal.utils.fastSetFrom
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
@@ -152,9 +153,8 @@ internal class RepeaterShape(
 
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
-        if (name != null) {
-            dynamicShape = properties?.get(layerPath(basePath, name))
-        }
+
+        dynamicShape = properties?.get(layerPath(basePath, nameOrDefault))
     }
 
     override fun deepCopy(): Shape {

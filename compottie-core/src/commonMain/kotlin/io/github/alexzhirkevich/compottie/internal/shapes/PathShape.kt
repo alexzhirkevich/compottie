@@ -10,6 +10,7 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
+import io.github.alexzhirkevich.compottie.internal.content.nameOrDefault
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundSimultaneousTrimPath
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
 import io.github.alexzhirkevich.compottie.internal.platform.set
@@ -75,10 +76,7 @@ internal class PathShape(
 
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
-
-        if (name != null) {
-            dynamicShape = properties?.get(layerPath(basePath, name))
-        }
+        dynamicShape = properties?.get(layerPath(basePath, nameOrDefault))
     }
 
     override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {

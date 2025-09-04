@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.dynamic
 
+import androidx.compose.ui.util.fastFirstOrNull
 import io.github.alexzhirkevich.compottie.internal.layers.ResolvingPath
 
 
@@ -39,12 +40,13 @@ internal class DynamicCompositionProvider : LottieDynamicProperties {
         // Prioritize an exact match over a pattern match
         if (exactLayer != null) return exactLayer
 
-        val pathParts = path.path.split(LayerPathSeparator).filter(String::isNotEmpty)
-        for (patternLayer in layersByPattern) {
-            val (pattern, layer) = patternLayer
-            if (pathMatches(path = pathParts, pattern = pattern)) return layer
-        }
-        return null
+        val pathParts = path.path
+            .split(LayerPathSeparator)
+            .filter(String::isNotEmpty)
+
+        return layersByPattern.fastFirstOrNull {  (pattern, layer)  ->
+            pathMatches(path = pathParts, pattern = pattern)
+        }?.second
     }
 }
 

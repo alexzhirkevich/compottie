@@ -10,3 +10,6 @@ internal interface Content {
         contentsAfter: List<Content>
     )
 }
+
+internal val Content.nameOrDefault : String
+    get() = name ?: ("__${this::class.simpleName.orEmpty()}_${hashCode()}")

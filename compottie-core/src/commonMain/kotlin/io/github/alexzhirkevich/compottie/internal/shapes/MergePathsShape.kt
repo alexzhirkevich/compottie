@@ -11,6 +11,7 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.GreedyContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
+import io.github.alexzhirkevich.compottie.internal.content.nameOrDefault
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -87,9 +88,7 @@ internal class MergePathsShape(
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
 
-        if (name != null) {
-            dynamicShape = properties?.get(layerPath(basePath, name))
-        }
+        dynamicShape = properties?.get(layerPath(basePath, nameOrDefault))
     }
 
     override fun deepCopy(): Shape {

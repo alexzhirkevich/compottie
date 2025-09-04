@@ -16,6 +16,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.defaultScale
 import io.github.alexzhirkevich.compottie.internal.animation.defaultSkew
 import io.github.alexzhirkevich.compottie.internal.animation.defaultSkewAxis
 import io.github.alexzhirkevich.compottie.internal.content.Content
+import io.github.alexzhirkevich.compottie.internal.content.nameOrDefault
 import io.github.alexzhirkevich.keight.ScriptRuntime
 import io.github.alexzhirkevich.keight.js.JsAny
 import io.github.alexzhirkevich.keight.js.Undefined
@@ -81,9 +82,7 @@ internal class TransformShape(
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
 
-        if (name != null) {
-            dynamicShape = properties?.get(layerPath(basePath, name))
-        }
+        dynamicShape = properties?.get(layerPath(basePath, nameOrDefault))
     }
 
     override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {

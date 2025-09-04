@@ -211,9 +211,6 @@ internal value class ResolvingPath private constructor(val path : String) {
     }
 }
 
-internal fun ResolvingPath.resolveOrNull(child: String?) : ResolvingPath? =
-    if (child != null) resolve(child) else null
-
 internal val Layer.isContainerLayer get()  =  name == CONTAINER_NAME
 
 

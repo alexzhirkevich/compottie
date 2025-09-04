@@ -11,6 +11,7 @@ import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
+import io.github.alexzhirkevich.compottie.internal.content.nameOrDefault
 import io.github.alexzhirkevich.compottie.internal.helpers.isSupported
 import io.github.alexzhirkevich.compottie.internal.platform.clipRect
 import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
@@ -120,7 +121,7 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
         val layers = compose(state).filterIsInstance<BaseLayer>()
 
         layers.fastForEach {
-            it.resolvingPath = this.resolvingPath?.resolveOrNull(it.name)
+            it.resolvingPath = this.resolvingPath?.resolve(it.nameOrDefault)
         }
 
         layers.fastForEach {

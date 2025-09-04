@@ -20,6 +20,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.dynamicOffset
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.content.Content
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
+import io.github.alexzhirkevich.compottie.internal.content.nameOrDefault
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundSimultaneousTrimPath
 import io.github.alexzhirkevich.compottie.internal.helpers.CompoundTrimPath
 import io.github.alexzhirkevich.compottie.internal.utils.degreeToRadians
@@ -135,18 +136,17 @@ internal class PolystarShape(
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
 
-        if (name != null) {
-            dynamicShape = properties?.get(layerPath(basePath, name))
-            val dynamicPolystar = dynamicShape as? DynamicPolystarProvider?
+        dynamicShape = properties?.get(layerPath(basePath, nameOrDefault))
+        val dynamicPolystar = dynamicShape as? DynamicPolystarProvider?
 
-            position.dynamicOffset(dynamicPolystar?.position)
-            points.dynamic = dynamicPolystar?.points
-            rotation.dynamic = dynamicPolystar?.rotation
-            innerRadius.dynamic = dynamicPolystar?.innerRadius
-            innerRoundness.dynamic = dynamicPolystar?.innerRoundness
-            outerRadius.dynamic = dynamicPolystar?.outerRadius
-            outerRoundness.dynamic = dynamicPolystar?.outerRoundness
-        }
+        position.dynamicOffset(dynamicPolystar?.position)
+        points.dynamic = dynamicPolystar?.points
+        rotation.dynamic = dynamicPolystar?.rotation
+        innerRadius.dynamic = dynamicPolystar?.innerRadius
+        innerRoundness.dynamic = dynamicPolystar?.innerRoundness
+        outerRadius.dynamic = dynamicPolystar?.outerRadius
+        outerRoundness.dynamic = dynamicPolystar?.outerRoundness
+
     }
 
     override fun deepCopy(): Shape {

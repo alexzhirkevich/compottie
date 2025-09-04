@@ -8,6 +8,7 @@ import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroup
 import io.github.alexzhirkevich.compottie.internal.content.ContentGroupImpl
+import io.github.alexzhirkevich.compottie.internal.content.nameOrDefault
 import io.github.alexzhirkevich.compottie.internal.utils.firstInstanceOf
 import io.github.alexzhirkevich.keight.Callable
 import io.github.alexzhirkevich.keight.ScriptRuntime
@@ -52,12 +53,11 @@ internal class GroupShape(
 
     override fun setDynamicProperties(basePath: String?, properties: DynamicShapeLayerProvider?) {
         super.setDynamicProperties(basePath, properties)
-        if (name != null) {
-            val path = layerPath(basePath, name)
-            dynamicShape = properties?.get(path)
-            items.forEach {
-                it.setDynamicProperties(path, properties)
-            }
+
+        val path = layerPath(basePath, nameOrDefault)
+        dynamicShape = properties?.get(path)
+        items.forEach {
+            it.setDynamicProperties(path, properties)
         }
     }
 

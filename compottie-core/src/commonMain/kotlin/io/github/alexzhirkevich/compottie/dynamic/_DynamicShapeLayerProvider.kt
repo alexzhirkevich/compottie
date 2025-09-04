@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.dynamic
 
+import androidx.compose.ui.util.fastFirstOrNull
 import kotlin.reflect.KClass
 
 @PublishedApi
@@ -8,16 +9,16 @@ internal class DynamicShapeLayerProvider(
     private val root : DynamicShapeLayerProvider? = null
 ) : DynamicLayerProvider(), DynamicShapeLayer {
 
-    private val nRoot get() = root ?: this
+    internal val shapes : MutableMap<String, DynamicShape> =
+        root?.shapes ?: mutableMapOf()
 
-    internal val shapes = mutableMapOf<String, DynamicShape>()
-
-    private val shapesByPattern = mutableListOf<Pair<List<String>, DynamicShape>>()
+    private val shapesByPattern : MutableList<Pair<List<String>, DynamicShape>> =
+        root?.shapesByPattern ?: mutableListOf()
 
     override fun group(vararg path: String, builder: DynamicShapeLayer.() -> Unit) {
         DynamicShapeLayerProvider(
             basePath = layerPath(basePath, path.joinToString(LayerPathSeparator)),
-            root = nRoot
+            root = root ?: this
         ).apply(builder)
     }
 
@@ -49,22 +50,26 @@ internal class DynamicShapeLayerProvider(
         getInternal(path, S::class) as S?
 
     private inline operator fun <reified T : DynamicShape> set(path: List<String>, instance: T) {
+        val totalPath = layerPath(basePath, path.joinToString(LayerPathSeparator))
+
         if (path.containsWildcards()) {
-            nRoot.shapesByPattern.add(path.toList() to  instance)
+            val split = totalPath.split(LayerPathSeparator).filter { it.isNotEmpty() }
+            shapesByPattern.add(split to instance)
         } else {
-            nRoot.shapes[layerPath(basePath, path.joinToString(LayerPathSeparator))] = instance
+            shapes[totalPath] = instance
         }
     }
 
     private fun <S : DynamicShape> getInternal(path: String, clazz: KClass<S>): DynamicShape? {
-        nRoot.shapes[path]?.let { return it }
 
-        val pathParts = path.split(LayerPathSeparator).filter(String::isNotEmpty)
-        for (patternLayer in shapesByPattern) {
-            val (pattern, shape) = patternLayer
-            if (pathMatches(path = pathParts, pattern = pattern) && clazz.isInstance(shape))
-                return shape
-        }
-        return null
+        shapes[path]?.let { return it }
+
+        val pathParts = path
+            .split(LayerPathSeparator)
+            .filter(String::isNotEmpty)
+
+        return shapesByPattern.fastFirstOrNull { (pattern, shape) ->
+            pathMatches(path = pathParts, pattern = pattern) && clazz.isInstance(shape)
+        }?.second
     }
 }
