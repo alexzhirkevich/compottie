@@ -166,7 +166,7 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
 
     private fun getRemappedFrame(state: AnimationState): Float {
 
-        val frame = timeRemapping?.interpolated(state)
+        val frame = timeRemapping?.interpolatedFloat(state)
             ?.times(state.composition.frameRate)
             ?.minus(state.composition.startFrame)
             ?: (state.frame - (startTime ?: inPoint ?: 0f)  )

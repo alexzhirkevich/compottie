@@ -289,12 +289,15 @@ internal class TextLayer(
 
         val strokeOpacity = textAnimation?.style?.strokeOpacity?.interpolatedNorm(state) ?: 1f
 
-        val fillH = textAnimation?.style?.fillHue?.interpolated(state)?.coerceIn(0f, 360f)
-        val fillS = textAnimation?.style?.fillSaturation?.interpolated(state)?.coerceIn(0f, 1f)
-        val fillB = textAnimation?.style?.fillBrightness?.interpolated(state)?.coerceIn(0f, 1f)
+        val fillHue = textAnimation?.style?.fillHue
+        val fillSaturation = textAnimation?.style?.fillSaturation
+        val fillBrightness = textAnimation?.style?.fillBrightness
+        fillProperties.color = if (fillHue != null && fillSaturation != null && fillBrightness != null) {
+            val h = fillHue.interpolatedFloat(state).coerceIn(0f, 360f)
+            val s = fillSaturation.interpolatedFloat(state).coerceIn(0f, 1f)
+            val b = fillBrightness.interpolatedFloat(state).coerceIn(0f, 1f)
 
-        fillProperties.color = if (fillH != null && fillS != null && fillB != null) {
-            Color.hsl(fillH, fillS, fillB)
+            Color.hsl(h, s, b)
         } else {
             textAnimation?.style?.fillColor?.interpolated(state)
                 ?: document.fillColor?.toColor() ?: Color.Transparent
@@ -305,12 +308,15 @@ internal class TextLayer(
         fillPaint.color = fillProperties.color
         fillPaint.alpha = fillProperties.alpha
 
-        val strokeH = textAnimation?.style?.strokeHue?.interpolated(state)?.coerceIn(0f, 360f)
-        val strokeS = textAnimation?.style?.strokeSaturation?.interpolated(state)?.coerceIn(0f, 1f)
-        val strokeB = textAnimation?.style?.strokeBrightness?.interpolated(state)?.coerceIn(0f, 1f)
+        val strokeHue = textAnimation?.style?.strokeHue
+        val strokeSaturation = textAnimation?.style?.strokeSaturation
+        val strokeBrightness = textAnimation?.style?.strokeBrightness
+        strokeProperties.color = if (strokeHue != null && strokeSaturation != null && strokeBrightness != null) {
+            val h = strokeHue.interpolatedFloat(state).coerceIn(0f, 360f)
+            val s = strokeSaturation.interpolatedFloat(state).coerceIn(0f, 1f)
+            val b = strokeBrightness.interpolatedFloat(state).coerceIn(0f, 1f)
 
-        strokeProperties.color = if (strokeH != null && strokeS != null && strokeB != null) {
-            Color.hsl(strokeH, strokeS, strokeB)
+            Color.hsl(h, s, b)
         } else {
             textAnimation?.style?.strokeColor?.interpolated(state)
                 ?: document.strokeColor?.toColor() ?: Color.Transparent
@@ -322,7 +328,7 @@ internal class TextLayer(
 
         strokeProperties.alpha = (parentAlpha * transformOpacity * strokeOpacity).coerceIn(0f, 1f)
 
-        val strokeWidth = textAnimation?.style?.strokeWidth?.interpolated(state)
+        val strokeWidth = textAnimation?.style?.strokeWidth?.interpolatedFloat(state)
             ?: document.strokeWidth
 
         if (strokeProperties.style.width != strokeWidth) {
@@ -352,7 +358,7 @@ internal class TextLayer(
         val style = fontSpec?.style ?: FontStyle.Normal
 
         val letterSpacing = textAnimation?.style?.letterSpacing
-            ?.interpolated(animationState)?.toSp()
+            ?.interpolatedFloat(animationState)?.toSp()
             ?: textStyle.letterSpacing
 
         val lineHeight = document.lineHeight.toSp()
@@ -629,7 +635,7 @@ internal class TextLayer(
 
         val size = document.wrapSize?.let { Size(it[0], it[1]) } ?: Size.Zero
 
-        val lineSpacing = textAnimation?.style?.lineSpacing?.interpolated(state) ?: 0f
+        val lineSpacing = textAnimation?.style?.lineSpacing?.interpolatedFloat(state) ?: 0f
 
         var lineOffsetY = (lineIndex * (document.lineHeight + lineSpacing)) + position.y
 

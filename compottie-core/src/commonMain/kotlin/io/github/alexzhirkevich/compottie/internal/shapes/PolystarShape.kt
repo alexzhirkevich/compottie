@@ -1,6 +1,5 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
 import io.github.alexzhirkevich.compottie.dynamic.DynamicPolystarProvider
@@ -169,8 +168,8 @@ internal class PolystarShape(
 
 
     private fun createStarPath(state: AnimationState) {
-        val points = points.interpolated(state = state)
-        var currentAngle = degreeToRadians(rotation.interpolated(state) - 90f)
+        val points = points.interpolatedFloat(state = state)
+        var currentAngle = degreeToRadians(rotation.interpolatedFloat(state) - 90f)
 
         // adjust current angle for partial points
         var anglePerPoint: Float = (TwoPI / points).toFloat()
@@ -183,8 +182,8 @@ internal class PolystarShape(
             currentAngle += (halfAnglePerPoint * (1f - partialPointAmount))
         }
 
-        val outerRadius = outerRadius.interpolated(state)
-        val innerRadius = innerRadius.interpolated(state)
+        val outerRadius = outerRadius.interpolatedFloat(state)
+        val innerRadius = innerRadius.interpolatedFloat(state)
 
         val innerRoundedness = innerRoundness.interpolatedNorm(state)
         val outerRoundedness = outerRoundness.interpolatedNorm(state)

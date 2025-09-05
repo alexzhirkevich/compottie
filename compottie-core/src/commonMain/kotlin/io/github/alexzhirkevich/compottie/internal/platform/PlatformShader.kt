@@ -75,8 +75,8 @@ internal fun GradientShader(
     cache: GradientCache
 ) : Shader {
 
-    val start = startPoint.interpolated(state)
-    val end = endPoint.interpolated(state)
+    val start = startPoint.interpolatedVec2(state)
+    val end = endPoint.interpolatedVec2(state)
 
     colors.colors.numberOfColors = colors.numberOfColors
 

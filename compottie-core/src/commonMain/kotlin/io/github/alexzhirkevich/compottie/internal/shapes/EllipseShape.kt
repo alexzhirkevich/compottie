@@ -63,7 +63,7 @@ internal class EllipseShape(
             return path
         }
 
-        val size = size.interpolated(state).toSize()
+        val size = size.interpolatedVec2(state).toSize()
 
         val halfWidth = size.width / 2f
         val halfHeight = size.height / 2f
@@ -87,7 +87,7 @@ internal class EllipseShape(
         path.cubicTo(-halfWidth, 0 - cpH, 0 - cpW, -halfHeight, 0f, -halfHeight)
 //        }
 
-        val position = position.interpolated(state).toOffset()
+        val position = position.interpolatedVec2(state).toOffset()
 
         path.translate(position)
 

@@ -79,9 +79,9 @@ internal class RectShape(
 
         path.reset()
 
-        val position = position.interpolated(state)
-        val size = size.interpolated(state)
-        var radius =  roundedCorners?.interpolated(state) ?: 0f
+        val position = position.interpolatedVec2(state)
+        val size = size.interpolatedVec2(state)
+        var radius =  roundedCorners?.interpolatedFloat(state) ?: 0f
 
         val halfWidth = size.x / 2f
         val halfHeight = size.y / 2f
