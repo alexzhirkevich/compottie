@@ -250,7 +250,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         }
 
         outBounds.set(path.getBounds())
-        outBounds.extendBy(strokeWidth.interpolated(state) + 1)
+        outBounds.extendBy(strokeWidth.interpolatedFloat(state) + 1)
     }
 
     override fun prepareExpressions(state: AnimationState) {
@@ -275,7 +275,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         }
         val animStartValue: Float = pathGroup.trimPath.start.interpolatedNorm(state)
         val animEndValue: Float = pathGroup.trimPath.end.interpolatedNorm(state)
-        val animOffsetValue: Float = pathGroup.trimPath.offset.interpolated(state) / 360f
+        val animOffsetValue: Float = pathGroup.trimPath.offset.interpolatedFloat(state) / 360f
 
         // If the start-end is ~100, consider it to be the full path.
         if (animStartValue < 0.01f && animEndValue > 0.99f) {

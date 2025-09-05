@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.layout.ScaleFactor
 import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.dynamic.PropertyProvider
+import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.dynamic.map
 import io.github.alexzhirkevich.compottie.dynamic.toOffset
 import io.github.alexzhirkevich.compottie.dynamic.toScaleFactor
@@ -14,9 +15,6 @@ import io.github.alexzhirkevich.compottie.dynamic.toSize
 import io.github.alexzhirkevich.compottie.dynamic.toVec2
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.isNotNull
-import io.github.alexzhirkevich.keight.ScriptRuntime
-import io.github.alexzhirkevich.keight.js.JsAny
-import io.github.alexzhirkevich.keight.js.Undefined
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -47,6 +45,21 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
     }
 
     abstract fun copy() : AnimatedVector2
+
+    abstract override fun raw(state: AnimationState): Vec2
+
+    /**
+     * Property value interpolation including dynamics and expressions.
+     * Should be called from the DrawScope. Calling from expressions can overflow the stack.
+     * */
+    fun interpolatedVec2(state: AnimationState): Vec2 {
+        val interpolated = if (!state.enableExpressions) {
+            raw(state)
+        } else {
+            super.interpolated(state)
+        }
+        return dynamic.derive(interpolated, state)
+    }
 
 
     @Serializable
@@ -93,7 +106,7 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
         private val pathMeasure = PathMeasure()
 
         @Transient
-        private val delegate = BaseKeyframeAnimation(
+        private val delegate = VectorKeyframeAnimation(
             index = index,
             keyframes = keyframes,
             emptyValue = Offset.Zero,
@@ -124,8 +137,8 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
             }
         )
 
-        override fun raw(state: AnimationState): Offset {
-            return delegate.raw(state)
+        override fun raw(state: AnimationState): Vec2 {
+            return delegate.raw(state).toVec2()
         }
 
         override fun copy(): AnimatedVector2 {
@@ -155,8 +168,8 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
 
         override fun raw(state: AnimationState): Vec2 {
             return Vec2(
-                x.interpolated(state),
-                y.interpolated(state)
+                x.interpolatedFloat(state),
+                y.interpolatedFloat(state)
             )
         }
     }
@@ -180,7 +193,7 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
         }
 
         override fun raw(state: AnimationState): Vec2 {
-            return state.composition.animation.slots.vector(sid)?.interpolated(state) ?: Vec2.Zero
+            return state.composition.animation.slots.vector(sid)?.interpolatedVec2(state) ?: Vec2.Zero
         }
     }
 }
@@ -198,7 +211,7 @@ private val FloatList3 = listOf(0f,0f,0f)
 private val FloatList3_100 = listOf(100f, 100f, 100f)
 
 
-internal fun AnimatedVector2.interpolatedNorm(state: AnimationState) = interpolated(state) / 100f
+internal fun AnimatedVector2.interpolatedNorm(state: AnimationState) = interpolatedVec2(state) / 100f
 
 internal fun AnimatedVector2.dynamicOffset(
     provider: PropertyProvider<Offset>?

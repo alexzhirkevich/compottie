@@ -8,6 +8,7 @@ import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.dynamic.layerPath
+import io.github.alexzhirkevich.compottie.dynamic.toOffset
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
@@ -273,8 +274,9 @@ internal class PolystarShape(
             longSegment = !longSegment
         }
 
-        position.interpolated(state).takeIf { it != Vec2.Zero }?.let {
-            path.translate(it)
+        val position = position.interpolatedVec2(state)
+        if (position != Vec2.Zero) {
+            path.translate(position.toOffset())
         }
 
         path.close()
@@ -361,8 +363,9 @@ internal class PolystarShape(
             currentAngle += anglePerPoint
         }
 
-        position.interpolated(state).takeIf { it != Offset.Zero }?.let {
-            path.translate(it)
+        val position = position.interpolatedVec2(state)
+        if (position != Vec2.Zero) {
+            path.translate(position.toOffset())
         }
         path.close()
     }

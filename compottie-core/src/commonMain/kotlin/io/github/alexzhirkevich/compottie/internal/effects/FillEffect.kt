@@ -41,7 +41,7 @@ internal class FillEffect(
     ) {
         val color = color?.interpolated(animationState)?.let {
             it.copy(                              // don't divide by 100
-                alpha = it.alpha * (opacity?.interpolated(animationState)?.coerceIn(0f, 1f) ?: 1f)
+                alpha = it.alpha * (opacity?.interpolatedFloat(animationState)?.coerceIn(0f, 1f) ?: 1f)
             )
         }
         if (paint !== effectState.lastPaint || effectState.lastFillColor != color) {

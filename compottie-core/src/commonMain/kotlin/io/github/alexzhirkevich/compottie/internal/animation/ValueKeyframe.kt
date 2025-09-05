@@ -8,10 +8,10 @@ import kotlinx.serialization.Serializable
 internal class ValueKeyframe(
 
     @SerialName("s")
-    override val start: List<Float>? = null,
+    override val start: FloatArray? = null,
 
     @SerialName("e")
-    override val end: List<Float>? = null,
+    override val end: FloatArray? = null,
 
     @SerialName("t")
     override val time: Float,
@@ -25,7 +25,7 @@ internal class ValueKeyframe(
 
     @SerialName("o")
     override val outValue : BezierInterpolation? = null,
-) : Keyframe<List<Float>> by BaseKeyframe(
+) : Keyframe<FloatArray> by BaseKeyframe(
     start = start,
     end = end,
     time = time,

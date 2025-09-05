@@ -93,10 +93,8 @@ internal abstract class AnimatedTransform : ExpressionHolder, PropertyGroup {
             return matrix
         }
 
-        val interpolatedPosition = position.interpolated(state)
-            .also {
-                matrix.preTranslate(it.x, it.y)
-            }
+        val interpolatedPosition = position.interpolatedVec2(state)
+        matrix.preTranslate(interpolatedPosition.x, interpolatedPosition.y)
 
         if (state.thisLayer.autoOrient) {
             if (interpolatedPosition != Vec2.Zero) {
@@ -106,34 +104,36 @@ internal abstract class AnimatedTransform : ExpressionHolder, PropertyGroup {
                 // 1) Find the next position value.
                 // 2) Create a vector from the current position to the next position.
                 // 3) Find the angle of that vector to the X axis (0 degrees).
-                val nextPosition = state.onFrame(state.frame + 0.1f, position::interpolated)
+                val nextPosition = state.onFrame(state.frame + 0.1f, position::interpolatedVec2)
 
                 radiansToDegree(atan2((nextPosition.y - startY), (nextPosition.x - startX)))
                     .let(matrix::preRotate)
             }
         } else {
-            rotation.interpolated(state)
-                .takeIf { it != 0f }
-                ?.let(matrix::preRotate)
+            rotation.interpolatedFloat(state).let {
+                if (it != 0f) {
+                    matrix.preRotate(it)
+                }
+            }
         }
 
         rotationX?.let {
-            matrix.preRotateX(it.interpolated(state))
+            matrix.preRotateX(it.interpolatedFloat(state))
         }
 
         rotationY?.let {
-            matrix.preRotateY(it.interpolated(state))
+            matrix.preRotateY(it.interpolatedFloat(state))
         }
 
         rotationZ?.let {
-            matrix.preRotateZ(it.interpolated(state))
+            matrix.preRotateZ(it.interpolatedFloat(state))
         }
 
-        skew.interpolated(state)
-            .takeIf { it != 0f }
-            ?.let { sk ->
+        skew.interpolatedFloat(state)
+            .let { sk ->
+                if (sk == 0f) return@let
 
-                val skewAngle = skewAxis.interpolated(state)
+                val skewAngle = skewAxis.interpolatedFloat(state)
 
                 val mCos = if (skewAngle == 0f)
                     0f
@@ -172,8 +172,10 @@ internal abstract class AnimatedTransform : ExpressionHolder, PropertyGroup {
                 matrix.preConcat(skewMatrix3)
             }
 
-        scale.interpolatedNorm(state).let { matrix.preScale(it.x, it.y) }
-        anchorPoint.interpolated(state).let { matrix.preTranslate(-it.x, -it.y) }
+        val s = scale.interpolatedNorm(state)
+        matrix.preScale(s.x, s.y)
+        val ap = anchorPoint.interpolatedVec2(state)
+        matrix.preTranslate(-ap.x, -ap.y)
 
         return matrix
     }

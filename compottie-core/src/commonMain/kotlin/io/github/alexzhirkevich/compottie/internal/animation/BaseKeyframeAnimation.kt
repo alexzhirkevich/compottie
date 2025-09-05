@@ -22,7 +22,7 @@ internal class BaseKeyframeAnimation<T : Any, K, out KF : Keyframe<K>>(
 
     private val timeIntervals = if (keyframes.isNotEmpty()) {
         List(sortedKeyframes.lastIndex) {
-            sortedKeyframes[it].time..sortedKeyframes[it + 1].time
+            FloatRange(sortedKeyframes[it].time, sortedKeyframes[it + 1].time)
         }
     } else {
         emptyList()
@@ -112,3 +112,8 @@ internal class BaseKeyframeAnimation<T : Any, K, out KF : Keyframe<K>>(
 private val InvalidKeyframeError = {
     "Invalid keyframe"
 }
+
+internal class FloatRange(
+    val start: Float,
+    val endInclusive: Float
+)

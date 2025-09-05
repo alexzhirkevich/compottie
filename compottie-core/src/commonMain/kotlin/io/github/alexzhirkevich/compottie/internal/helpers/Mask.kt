@@ -62,8 +62,8 @@ internal class Mask(
     override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
         return when(property?.toString()){
             "invert" -> isInverted.toJs(runtime)
-            "maskOpacity" -> opacity?.raw(runtime.state)?.toJs(runtime)
-            "maskExpansion" -> expand?.raw(runtime.state)?.toJs(runtime)
+            "maskOpacity" -> opacity?.rawFloat(runtime.state)?.toJs(runtime)
+            "maskExpansion" -> expand?.rawFloat(runtime.state)?.toJs(runtime)
             "maskPath" -> shape
             else -> super.get(property, runtime)
         }

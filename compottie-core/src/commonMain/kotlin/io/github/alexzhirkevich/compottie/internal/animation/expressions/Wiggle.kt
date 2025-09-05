@@ -1,6 +1,8 @@
 package io.github.alexzhirkevich.compottie.internal.animation.expressions
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.lerp
+import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.Vec2
@@ -122,9 +124,9 @@ private fun wiggle(
 
         when {
             mValue is Float && p is Float && c is Float ->
-                mValue += androidx.compose.ui.util.lerp(p, c, progress)
+                mValue += lerp(p, c, progress)
             mValue is Vec2 && p is Vec2 && c is Vec2 ->
-                mValue += androidx.compose.ui.geometry.lerp(p, c, progress)
+                mValue += lerp(p, c, progress)
             else -> error("Can't wiggle ${mValue::class}")
         }
     }

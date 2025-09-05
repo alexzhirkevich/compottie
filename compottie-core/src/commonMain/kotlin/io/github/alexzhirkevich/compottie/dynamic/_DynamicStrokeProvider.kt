@@ -37,7 +37,7 @@ internal fun DynamicStrokeProvider?.applyToPaint(
         gradientCache = gradientCache
     )
 
-    paint.strokeWidth = strokeWidth.interpolated(state)
+    paint.strokeWidth = strokeWidth.interpolatedFloat(state)
     paint.strokeWidth = this?.width.derive(paint.strokeWidth, state)
 //    paint.strokeWidth *= parentMatrix.scale
 }

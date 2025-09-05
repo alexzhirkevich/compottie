@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.dynamic.PropertyProvider
+import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.dynamic.invoke
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.isNotNull
@@ -27,10 +28,31 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
 
     override fun mapEvaluated(e: Any): Float {
         return when (e) {
+            is Float -> e
             is Number -> e.toFloat()
             is List<*> -> (e[0] as Number).toFloat()
             else -> error("Failed to cast $e to number")
         }
+    }
+
+    @Deprecated("prefer rawFloat without boxing", ReplaceWith("rawFloat(state)"))
+    final override fun raw(state: AnimationState): Float {
+        return rawFloat(state)
+    }
+
+    abstract fun rawFloat(state: AnimationState): Float
+
+    /**
+     * Property value interpolation including dynamics and expressions.
+     * Should be called from the DrawScope. Calling from expressions can overflow the stack.
+     * */
+    fun interpolatedFloat(state: AnimationState): Float {
+        val interpolated = if (!state.enableExpressions) {
+            rawFloat(state)
+        } else {
+            super.interpolated(state)
+        }
+        return dynamic.derive(interpolated, state)
     }
 
     @Serializable
@@ -54,7 +76,7 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
             )
         }
 
-        override fun raw(state: AnimationState): Float = value
+        override fun rawFloat(state: AnimationState): Float = value
     }
 
     @Serializable
@@ -70,7 +92,7 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
     ) : AnimatedNumber(), AnimatedKeyframeProperty<Float, ValueKeyframe> {
 
         @Transient
-        private val delegate = BaseKeyframeAnimation(
+        private val delegate = ValueKeyframeAnimation(
             index = index,
             keyframes = keyframes,
             emptyValue = 1f,
@@ -87,8 +109,8 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
             )
         }
 
-        override fun raw(state: AnimationState): Float {
-            return delegate.raw(state)
+        override fun rawFloat(state: AnimationState): Float {
+            return delegate.rawFloat(state)
         }
     }
 
@@ -111,8 +133,8 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
             )
         }
 
-        override fun raw(state: AnimationState): Float {
-            return state.composition.animation.slots.number(sid)?.interpolated(state) ?: 0f
+        override fun rawFloat(state: AnimationState): Float {
+            return state.composition.animation.slots.number(sid)?.interpolatedFloat(state) ?: 0f
         }
     }
 }
@@ -142,7 +164,7 @@ internal fun AnimatedNumber.Companion.defaultRadius() : AnimatedNumber =
     AnimatedNumber.Default(0f)
 
 
-internal fun AnimatedNumber.interpolatedNorm(state: AnimationState) = interpolated(state) / 100f
+internal fun AnimatedNumber.interpolatedNorm(state: AnimationState) = interpolatedFloat(state) / 100f
 
 internal object ValueSerializer : JsonTransformingSerializer<Float>(Float.serializer()){
     override fun transformDeserialize(element: JsonElement): JsonElement {
