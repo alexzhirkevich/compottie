@@ -108,10 +108,10 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
         @Transient
         private val delegate = VectorKeyframeAnimation(
             index = index,
-            keyframes = keyframes,
+            sourceKeyframes = keyframes,
             emptyValue = Offset.Zero,
             map = { s, e, p ->
-                if (inTangent != null && outTangent != null && s != e) {
+                if (inTangent != null && outTangent != null && !s.contentEquals(e)) {
                     path.reset()
                     path.createPath(s, e, outTangent, inTangent)
                     pathMeasure.setPath(path, false)
@@ -259,10 +259,10 @@ internal object AnimatedVector2Serializer : JsonContentPolymorphicSerializer<Ani
 
 
 private fun Path.createPath(
-    startPoint : List<Float>,
-    endPoint: List<Float>,
-    cp1: List<Float>,
-    cp2: List<Float>
+    startPoint : FloatArray,
+    endPoint: FloatArray,
+    cp1: FloatArray,
+    cp2: FloatArray
 ) {
     moveTo(startPoint[0], startPoint[1])
 
@@ -279,4 +279,4 @@ private fun Path.createPath(
     }
 }
 
-private fun List<Float>.hypot() = hypot(this[0], this[1])
+private fun FloatArray.hypot() = hypot(this[0], this[1])

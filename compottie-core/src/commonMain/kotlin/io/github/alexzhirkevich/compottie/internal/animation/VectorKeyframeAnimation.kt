@@ -5,15 +5,28 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.keight.js.JsAny
 
 internal fun interface VectorKeyframeMapper {
-    fun VectorKeyframe.map(start : List<Float>, end : List<Float>, progress: Float) : Offset
+    fun FloatArrayVectorKeyframe.map(start : FloatArray, end : FloatArray, progress: Float) : Offset
 }
 
 internal class VectorKeyframeAnimation(
     override val index: Int?,
-    override val keyframes: List<VectorKeyframe>,
+    sourceKeyframes: List<VectorKeyframe>,
     private val emptyValue : Offset,
     private val map : VectorKeyframeMapper
-) : RawKeyframeProperty<Offset, VectorKeyframe> {
+) : RawKeyframeProperty<Offset, FloatArrayVectorKeyframe> {
+
+    override val keyframes = sourceKeyframes.map {
+        FloatArrayVectorKeyframe(
+            start = it.start?.toFloatArray(),
+            end = it.end?.toFloatArray(),
+            time = it.time,
+            hold = it.hold,
+            inValue = it.inValue,
+            outValue = it.outValue,
+            inTangent = it.inTangent?.toFloatArray(),
+            outTangent = it.outTangent?.toFloatArray()
+        )
+    }
 
     override val jsCache: MutableMap<String, JsAny?> = HashMap()
 
@@ -119,6 +132,39 @@ internal class VectorKeyframeAnimation(
 
     override fun raw(state: AnimationState): Offset {
         return Offset(rawPacked(state))
+    }
+}
+
+internal class FloatArrayVectorKeyframe(
+    override val start : FloatArray? = null,
+    override val end : FloatArray? = null,
+    override val time : Float,
+    override val hold: Boolean = false,
+    override val endHold: FloatArray? = if (hold) start else end,
+    override val inValue : BezierInterpolation? = null,
+    override val outValue : BezierInterpolation? = null,
+    val inTangent: FloatArray? = null,
+    val outTangent: FloatArray? = null,
+): Keyframe<FloatArray> by BaseKeyframe(
+    start = start,
+    end = end,
+    time = time,
+    hold = hold,
+    inValue = inValue,
+    outValue = outValue
+) {
+
+    fun copy(): FloatArrayVectorKeyframe {
+        return FloatArrayVectorKeyframe(
+            start = start,
+            end = end,
+            time = time,
+            hold = hold,
+            inValue = inValue,
+            outValue = outValue,
+            inTangent = inTangent,
+            outTangent = outTangent
+        )
     }
 }
 
