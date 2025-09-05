@@ -33,6 +33,16 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
         }
     }
 
+    abstract override fun raw(state: AnimationState): Color
+
+    override fun interpolated(state: AnimationState): Color {
+        return if (!state.enableExpressions) {
+            raw(state)
+        } else {
+            super.interpolated(state)
+        }
+    }
+
     @Serializable
     class Default(
         @SerialName("k")
@@ -69,12 +79,12 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
 
         @SerialName("ix")
         override val index: Int? = null
-    ) : AnimatedColor(), RawKeyframeProperty<Color, VectorKeyframe> by BaseKeyframeAnimation(
+    ) : AnimatedColor(), RawKeyframeProperty<Color, ColorKeyframe> by ColorKeyframeAnimation(
         index = index,
-        keyframes = value,
+        sourceKeyframes = value,
         emptyValue = Color.Transparent,
         map = { s, e, p ->
-            lerp(s.toColor(), e.toColor(), easingX.transform(p))
+            lerp(s, e, easingX.transform(p))
         }
     ) {
 
