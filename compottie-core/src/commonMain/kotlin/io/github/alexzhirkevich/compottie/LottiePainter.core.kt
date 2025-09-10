@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -178,7 +179,7 @@ private class LateInitPainter(
     val painter : () -> LottiePainter?
 ) : Painter() {
 
-    private var alpha by mutableStateOf(1f)
+    private var alpha by mutableFloatStateOf(1f)
     private var colorFilter by mutableStateOf<ColorFilter?>(null)
 
     override val intrinsicSize: Size by derivedStateOf {
@@ -229,7 +230,7 @@ private class LottiePainter(
 
     private val matrix = Matrix()
 
-    private var alpha by mutableStateOf(1f)
+    private var alpha by mutableFloatStateOf(1f)
 
     private val compositionLayer: Layer = CompositionLayer(composition)
 

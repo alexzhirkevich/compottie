@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie
 
 import androidx.compose.animation.core.AnimationConstants
+import androidx.compose.runtime.FloatState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 
@@ -15,7 +16,7 @@ import androidx.compose.runtime.State
  * @see animateLottieCompositionAsState
  */
 @Stable
-public interface LottieAnimationState : State<Float> {
+public interface LottieAnimationState : FloatState {
     public val isPlaying: Boolean
 
     public val progress: Float

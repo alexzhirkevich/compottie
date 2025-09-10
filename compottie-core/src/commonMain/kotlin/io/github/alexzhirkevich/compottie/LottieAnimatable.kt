@@ -7,6 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -158,13 +161,13 @@ private class LottieAnimatableImpl : LottieAnimatable {
     override var isPlaying: Boolean by mutableStateOf(false)
         private set
 
-    override val value: Float
+    override val floatValue: Float
         get() = progress
 
-    override var iteration: Int by mutableStateOf(1)
+    override var iteration: Int by mutableIntStateOf(1)
         private set
 
-    override var iterations: Int by mutableStateOf(1)
+    override var iterations: Int by mutableIntStateOf(1)
         private set
 
     override var reverseOnRepeat: Boolean by mutableStateOf(false)
@@ -173,7 +176,7 @@ private class LottieAnimatableImpl : LottieAnimatable {
     override var clipSpec: LottieClipSpec? by mutableStateOf(null)
         private set
 
-    override var speed: Float by mutableStateOf(1f)
+    override var speed: Float by mutableFloatStateOf(1f)
         private set
 
     override var useCompositionFrameRate: Boolean by mutableStateOf(false)
@@ -189,12 +192,12 @@ private class LottieAnimatableImpl : LottieAnimatable {
     override var composition: LottieComposition? by mutableStateOf(null)
         private set
 
-    private var progressRaw: Float by mutableStateOf(0f)
+    private var progressRaw: Float by mutableFloatStateOf(0f)
 
-    override var progress: Float by mutableStateOf(0f)
+    override var progress: Float by mutableFloatStateOf(0f)
         private set
 
-    override var lastFrameNanos: Long by mutableStateOf(AnimationConstants.UnspecifiedTime)
+    override var lastFrameNanos: Long by mutableLongStateOf(AnimationConstants.UnspecifiedTime)
         private set
 
     private val endProgress: Float by derivedStateOf {
