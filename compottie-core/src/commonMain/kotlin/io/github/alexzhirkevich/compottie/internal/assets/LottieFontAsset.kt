@@ -47,7 +47,7 @@ internal class LottieFontAsset(
     val origin : FontOrigin? = null,
 
     @SerialName("ascent")
-    val ascent : Float
+    val ascent : Float = 0f
 ) {
 
 
