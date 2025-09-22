@@ -1,6 +1,6 @@
 
 fun main() {
-    CompatComposeWindow("Compottie") {
+    CompatComposeWindow {
         App()
     }
 }

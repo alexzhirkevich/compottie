@@ -1,16 +1,17 @@
+
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.window.CanvasBasedWindow
+import androidx.compose.ui.window.ComposeViewport
 import org.jetbrains.skiko.wasm.onWasmReady
 
 @OptIn(ExperimentalComposeUiApi::class)
 internal actual fun CompatComposeWindow(
-    title : String?,
+    containerId : String?,
     content : @Composable () -> Unit
 ){
     onWasmReady {
-        CanvasBasedWindow(
-            title = title,
+        ComposeViewport(
+            viewportContainerId = containerId,
             content = content
         )
     }
