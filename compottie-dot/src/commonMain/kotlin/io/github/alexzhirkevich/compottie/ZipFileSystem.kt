@@ -8,5 +8,8 @@ internal expect class ZipFileSystem(
     entries: Map<Path, ZipEntry>,
     path : Path
 ) {
+
+    val entries: Map<Path, ZipEntry>
+
     suspend fun read(path: Path) : ByteArray
 }

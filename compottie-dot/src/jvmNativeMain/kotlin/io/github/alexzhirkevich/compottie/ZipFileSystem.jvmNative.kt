@@ -9,7 +9,7 @@ import okio.openZip
 
 internal actual class ZipFileSystem actual constructor(
     parent : FileSystem,
-    entries: Map<Path, ZipEntry>,
+    actual val entries: Map<Path, ZipEntry>,
     path : Path
 ) {
 

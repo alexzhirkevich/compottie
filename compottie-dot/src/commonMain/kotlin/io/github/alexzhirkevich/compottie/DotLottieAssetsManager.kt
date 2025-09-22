@@ -1,8 +1,8 @@
 package io.github.alexzhirkevich.compottie
 
 import io.github.alexzhirkevich.compottie.assets.ImageRepresentable
-import io.github.alexzhirkevich.compottie.assets.LottieImageSpec
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
+import io.github.alexzhirkevich.compottie.assets.LottieImageSpec
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import okio.Path
@@ -31,7 +31,13 @@ internal class DotLottieAssetsManager(
                 return ImageRepresentable.Bytes(it)
             }
 
-            load("/images", trimPath, trimName)?.let {
+            val imagesDir = when  {
+                zipFileSystem.entries.any { it.key.name == "images" && it.value.isDirectory } -> "images"
+                zipFileSystem.entries.any { it.key.name == "i" && it.value.isDirectory } -> "i"
+                else -> error("Failed to decode .lottie file: unrecognized format")
+            }
+
+            load("/$imagesDir", trimPath, trimName)?.let {
                 ImageRepresentable.Bytes(it)
             } ?: run {
                 Compottie.logger?.warn("Failed to decode dotLottie asset $trimName")

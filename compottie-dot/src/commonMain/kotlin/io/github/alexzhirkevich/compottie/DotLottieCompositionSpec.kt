@@ -68,7 +68,13 @@ private class DotLottieCompositionSpec(
                 "dotLottie animation folder is empty"
             }
 
-            val anim = zipSystem.read("animations/${animationId ?: animation.id}.json".toPath())
+            val animDir = when  {
+                zipSystem.entries.any { it.key.name == "animations" && it.value.isDirectory } -> "animations"
+                zipSystem.entries.any { it.key.name == "a" && it.value.isDirectory } -> "a"
+                else -> error("Failed to decode .lottie file: unrecognized format")
+            }
+
+            val anim = zipSystem.read("$animDir/${animationId ?: animation.id}.json".toPath())
 
             LottieComposition.parse(anim.decodeToString()).apply {
                 speed = animation.speed

@@ -10,9 +10,10 @@ internal expect suspend fun decompress(array: ByteArray, decompressedSize : Int)
 
 internal actual class ZipFileSystem actual constructor(
     private val parent : FileSystem,
-    private val entries: Map<Path, ZipEntry>,
+    actual val entries: Map<Path, ZipEntry>,
     private val path : Path
 ) {
+
     actual suspend fun read(path: Path) : ByteArray {
         val entry = entries[root.resolve(path, true)] ?: error("Invalid entry")
 
