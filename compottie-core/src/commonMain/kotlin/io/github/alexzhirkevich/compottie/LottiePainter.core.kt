@@ -96,25 +96,26 @@ public fun rememberLottiePainter(
     val painter by produceState<LottiePainter?>(
         null, composition, copy, coroutineScope
     ) {
-        if (composition != null) {
-            val assets = if (composition.hasAssets) {
-                async(coroutineContext) {
-                    composition.loadAssets(assetsManager ?: EmptyAssetsManager, copy)
-                }
-            } else {
-                null
-            }
 
-            val fonts = if (composition.hasFonts) {
-                async(coroutineContext) {
-                    composition.loadFonts(fontManager ?: EmptyFontManager)
-                }
-            } else {
-                null
-            }
+        if (composition != null) {
 
             val comp = if (copy) composition.deepCopy() else composition
 
+            val assets = if (comp.hasAssets) {
+                async(coroutineContext) {
+                    comp.loadAssets(assetsManager ?: EmptyAssetsManager, copy)
+                }
+            } else {
+                null
+            }
+
+            val fonts = if (comp.hasFonts) {
+                async(coroutineContext) {
+                    comp.loadFonts(fontManager ?: EmptyFontManager)
+                }
+            } else {
+                null
+            }
 
             val painter = LottiePainter(
                 composition = comp,
@@ -135,7 +136,7 @@ public fun rememberLottiePainter(
 
             if (enableExpressions) {
                 withContext(coroutineContext) {
-                    composition.animation.prepareExpressions(painter.animationState)
+                    comp.animation.prepareExpressions(painter.animationState)
                 }
             }
 
