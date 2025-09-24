@@ -28,6 +28,7 @@ import io.github.alexzhirkevich.keight.Callable
 import io.github.alexzhirkevich.keight.JSEngine
 import io.github.alexzhirkevich.keight.JSRuntime
 import io.github.alexzhirkevich.keight.Script
+import io.github.alexzhirkevich.keight.ScriptRuntime
 import io.github.alexzhirkevich.keight.VariableType
 import io.github.alexzhirkevich.keight.js.JsAny
 import io.github.alexzhirkevich.keight.js.JsProperty
@@ -182,7 +183,14 @@ internal class ExpressionsEngineImpl(
 ) : JSEngine<ExpressionsRuntimeImpl>(runtime) {
 
     override fun compile(script: String, name: String?): Script {
-        return super.compile("(function(){ $script; return \$bm_rt})()", name)
+        val script = super.compile(script, name)
+        return object : Script by script {
+            override suspend fun invoke(runtime: ScriptRuntime): JsAny? {
+                return runtime.withScope(isIsolated = true){
+                    script.invoke(it)
+                }
+            }
+        }
     }
 }
 
