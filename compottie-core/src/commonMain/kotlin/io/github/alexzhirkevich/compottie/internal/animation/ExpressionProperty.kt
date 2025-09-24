@@ -34,7 +34,11 @@ internal abstract class ExpressionProperty<T : Any> : AnimatedProperty<T>, Expre
         val evaluated = expressionEvaluator?.evaluate(state) ?: return raw(state)
 
         return when (evaluated) {
-            is AnimatedProperty<*> -> evaluated.interpolated(state) as T
+            is AnimatedProperty<*> -> if (this === evaluated) {
+                evaluated.raw(state)
+            }else {
+                evaluated.interpolated(state)
+            } as T
             is RawProperty<*> -> evaluated.raw(state) as T
             is EffectValue<*> -> (evaluated.value?.raw(state) as T?) ?: raw(state)
             else -> try {
