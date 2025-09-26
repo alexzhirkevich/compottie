@@ -37,7 +37,7 @@ internal class BlurEffect(
         animationState: AnimationState,
         effectState: LayerEffectsState
     ) {
-        val radius = radius?.interpolated(animationState)?.takeIf { it > 0f } ?: return
+        val radius = radius?.interpolatedFloat(animationState)?.takeIf { it > 0f } ?: return
 
         if (paint !== effectState.lastPaint || radius != effectState.blurRadius) {
             paint.setBlurMaskFilter(radius)

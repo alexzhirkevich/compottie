@@ -1,12 +1,12 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
+import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.keight.js.JsAny
 
-
-internal class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
+internal open class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
     override val index: Int?,
-    override val keyframes: List<KF>,
+    sourceKeyframes: List<KF>,
     private val emptyValue : T,
     private val map : KF.(start : K, end : K, progress: Float) -> T
 ) : RawKeyframeProperty<T, KF> {
@@ -15,100 +15,123 @@ internal class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
 
     override var group: PropertyGroup? = null
 
-    private val sortedKeyframes = keyframes
-        .sortedBy(Keyframe<*>::time)
-        .takeIf { it != keyframes }
-        ?: keyframes // ensure keyframes are sorted. don't store extra refs list if so
+    override val keyframes = if (sourceKeyframes.isSorted())
+        sourceKeyframes
+    else
+        sourceKeyframes.sortedBy(Keyframe<*>::time)
 
     private val timeIntervals = if (keyframes.isNotEmpty()) {
-        List(sortedKeyframes.lastIndex) {
-            sortedKeyframes[it].time..sortedKeyframes[it + 1].time
+        List(keyframes.lastIndex) {
+            FloatRange(keyframes[it].time, keyframes[it + 1].time)
         }
     } else {
         emptyList()
     }
 
-    private val firstFrame: Float by lazy { sortedKeyframes.first().time }
+    private val firstFrame: Float = if (keyframes.isEmpty()) 0f else keyframes.first().time
+    private val lastFrame: Float = if (keyframes.isEmpty()) 0f else  keyframes.last().time
 
-    private val lastFrame: Float by lazy { sortedKeyframes.last().time }
-
-    private val initialValue : T get() {
-        return sortedKeyframes.first().run {
-            map(
-                requireNotNull(
-                    start,
-                    InvalidKeyframeError
-                ),
-                requireNotNull(
-                    endHold ?: sortedKeyframes.getOrNull(1)?.start,
-                    InvalidKeyframeError
-                ),
-                0f,
+    protected val keyframesMappingRanges : Map<Int, Pair<K?,K?>> = if (keyframes.isNotEmpty()) {
+        buildMap {
+            val first = keyframes.first()
+            set(
+                -1,
+                Pair(
+                    first.start,
+                    first.endHold ?: keyframes.getOrNull(1)?.start
+                )
             )
+
+            val last = keyframes.last()
+            val preLast = keyframes.getOrNull(keyframes.lastIndex - 1)
+
+            set(
+                keyframes.lastIndex,
+                Pair(
+            preLast?.start ?: last.start,
+                last.start ?: preLast?.end ?: preLast?.start,
+                )
+            )
+
+            for (i in 0 until keyframes.lastIndex) {
+                set(
+                    i,
+                     Pair(
+                        keyframes[i].start,
+                        keyframes[i].endHold
+                            ?: keyframes.getOrNull(i + 1)?.start,
+                    )
+                )
+            }
+        }
+    } else {
+        emptyMap()
+    }
+
+    protected fun progress(keyframeIndex : Int, state: AnimationState) : Float {
+        return when {
+            keyframeIndex < 0 -> 0f
+            keyframeIndex > timeIntervals.lastIndex -> 1f
+            else -> timeIntervals[keyframeIndex].let {
+                (state.frame - it.start) / (it.endInclusive - it.start)
+            }
         }
     }
 
-    private val targetValue : T get()  {
+    protected fun keyframeNumber(state: AnimationState) : Int {
+        return when {
+            keyframes.isEmpty() -> -2
+            state.frame <= firstFrame -> -1
+            state.frame >= lastFrame -> keyframes.lastIndex
+            else -> timeIntervals.binarySearch {
+                when {
+                    state.frame < it.start -> 1
+                    state.frame > it.endInclusive -> -1
+                    else -> 0
+                }
+            }.also {
+                require(it >= 0, InvalidKeyframeError)
+            }
+        }
+    }
 
-        val preLast = sortedKeyframes.getOrNull(sortedKeyframes.lastIndex - 1)
+    protected inline fun rawInline(
+        state: AnimationState,
+        emptyValue: T = this.emptyValue,
+        map : KF.(start : K, end : K, progress: Float) -> T
+    ) : T {
+        val kfId = keyframeNumber(state)
+        val range = keyframesMappingRanges[kfId]?: return emptyValue
 
-        return sortedKeyframes.last().run {
-            map(
-                requireNotNull(
-                    preLast?.start ?: start,
-                    InvalidKeyframeError
-                ),
-                requireNotNull(
-                    start ?: preLast?.end ?: preLast?.start,
-                    InvalidKeyframeError
-                ),
-                1f,
-            )
+        if (range.first == null || range.second == null)
+            return emptyValue
+
+        return with(keyframes[kfId.coerceIn(keyframes.indices)]) {
+            map(range.first!!, range.second!!, progress(kfId, state))
         }
     }
 
     override fun raw(state: AnimationState): T {
-
-        return when {
-            sortedKeyframes.isEmpty() -> emptyValue
-            state.frame >= lastFrame -> targetValue
-            state.frame <= firstFrame -> initialValue
-            else -> {
-
-                val kfIdx = timeIntervals.binarySearch {
-                    when {
-                        state.frame < it.start -> 1
-                        state.frame > it.endInclusive -> -1
-                        else -> 0
-                    }
-                }
-
-                require(kfIdx >= 0, InvalidKeyframeError)
-
-                val progress = timeIntervals[kfIdx].let {
-                    (state.frame - it.start) / (it.endInclusive - it.start)
-                }
-
-                val keyframe = sortedKeyframes[kfIdx]
-                keyframe.run {
-                    map(
-                        requireNotNull(
-                            keyframe.start,
-                            InvalidKeyframeError
-                        ),
-                        requireNotNull(
-                            keyframe.endHold
-                                ?: sortedKeyframes.getOrNull(kfIdx + 1)?.start,
-                            InvalidKeyframeError
-                        ),
-                        progress,
-                    )
-                }
-            }
-        }
+        return rawInline(state, emptyValue, map)
     }
+}
+
+private fun List<Keyframe<*>>.isSorted() : Boolean{
+    var time = Float.MIN_VALUE
+    fastForEach {
+        if (it.time < time){
+            return false
+        }
+        time = it.time
+    }
+    return true
 }
 
 private val InvalidKeyframeError = {
     "Invalid keyframe"
 }
+
+private class FloatRange(
+    val start: Float,
+    val endInclusive: Float
+)

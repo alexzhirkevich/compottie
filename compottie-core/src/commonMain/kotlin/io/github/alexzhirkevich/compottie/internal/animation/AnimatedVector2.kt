@@ -14,9 +14,6 @@ import io.github.alexzhirkevich.compottie.dynamic.toSize
 import io.github.alexzhirkevich.compottie.dynamic.toVec2
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.isNotNull
-import io.github.alexzhirkevich.keight.ScriptRuntime
-import io.github.alexzhirkevich.keight.js.JsAny
-import io.github.alexzhirkevich.keight.js.Undefined
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -38,10 +35,13 @@ internal fun Vec2(x : Float, y : Float) : Vec2 = Offset(x,y)
 internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
 
 
-    override fun mapEvaluated(e: Any): Vec2 {
+    override fun mapEvaluated(e: Any): Vec2 = Vec2(mapVec(e))
+
+    override fun mapVec(e: Any): Long {
         return when (e) {
-            is Vec2 -> e
-            is List<*> -> Vec2((e[0] as Number).toFloat(), (e[1] as Number).toFloat())
+            is Vec2 -> e.packedValue
+            is FloatArray -> Vec2((e[0] as Number).toFloat(), (e[1] as Number).toFloat()).packedValue
+            is List<*> -> Vec2((e[0] as Number).toFloat(), (e[1] as Number).toFloat()).packedValue
             else -> error("Failed to cast $e to Vec2")
         }
     }
@@ -52,7 +52,7 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
     @Serializable
     class Default(
         @SerialName("k")
-        val value: List<Float>,
+        val value: FloatArray,
 
         @SerialName("x")
         override val expression: String? = null,
@@ -66,6 +66,8 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
         private val vec = Vec2(value[0], value[1])
 
         override fun raw(state: AnimationState): Vec2 = vec
+
+        override fun rawVec(state: AnimationState): Long = vec.packedValue
 
         override fun copy(): AnimatedVector2 {
             return Default(
@@ -93,12 +95,12 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
         private val pathMeasure = PathMeasure()
 
         @Transient
-        private val delegate = BaseKeyframeAnimation(
+        private val delegate = VectorKeyframeAnimation(
             index = index,
             keyframes = keyframes,
             emptyValue = Offset.Zero,
             map = { s, e, p ->
-                if (inTangent != null && outTangent != null && s != e) {
+                if (inTangent != null && outTangent != null && !s.contentEquals(e)) {
                     path.reset()
                     path.createPath(s, e, outTangent, inTangent)
                     pathMeasure.setPath(path, false)
@@ -114,18 +116,22 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
                         distance < 0 -> pos + tangent * distance
                         distance > length -> pos + tangent * (distance - length)
                         else -> pos
-                    }
+                    }.packedValue
                 } else {
                     Offset(
                         lerp(s[0], e[0], easingX.transform(p)),
                         lerp(s[1], e[1], easingY.transform(p))
-                    )
+                    ).packedValue
                 }
             }
         )
 
         override fun raw(state: AnimationState): Offset {
-            return delegate.raw(state)
+            return Offset(rawVec(state))
+        }
+
+        override fun rawVec(state: AnimationState): Long {
+            return delegate.rawVec(state)
         }
 
         override fun copy(): AnimatedVector2 {
@@ -153,11 +159,13 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
             return Split(x.copy(), y.copy())
         }
 
-        override fun raw(state: AnimationState): Vec2 {
+        override fun raw(state: AnimationState): Vec2 = Vec2(rawVec(state))
+
+        override fun rawVec(state: AnimationState): Long {
             return Vec2(
-                x.interpolated(state),
-                y.interpolated(state)
-            )
+                x.interpolatedFloat(state),
+                y.interpolatedFloat(state)
+            ).packedValue
         }
     }
 
@@ -171,6 +179,7 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
         @SerialName("ix")
         override val index: Int? = null
     ) : AnimatedVector2() {
+
         override fun copy(): AnimatedVector2 {
             return Slottable(
                 sid = sid,
@@ -180,7 +189,12 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
         }
 
         override fun raw(state: AnimationState): Vec2 {
-            return state.composition.animation.slots.vector(sid)?.interpolated(state) ?: Vec2.Zero
+            return Vec2(rawVec(state))
+        }
+
+        override fun rawVec(state: AnimationState): Long {
+            return state.composition.animation.slots.vector(sid)
+                ?.interpolatedVec(state) ?: 0L
         }
     }
 }
@@ -194,17 +208,17 @@ internal fun AnimatedVector2.Companion.defaultAnchorPoint() : AnimatedVector2 =
 internal fun AnimatedVector2.Companion.defaultScale() : AnimatedVector2 =
     AnimatedVector2.Default(FloatList3_100)
 
-private val FloatList3 = listOf(0f,0f,0f)
-private val FloatList3_100 = listOf(100f, 100f, 100f)
+private val FloatList3 = floatArrayOf(0f,0f,0f)
+private val FloatList3_100 = floatArrayOf(100f, 100f, 100f)
 
 
-internal fun AnimatedVector2.interpolatedNorm(state: AnimationState) = interpolated(state) / 100f
+internal fun AnimatedVector2.interpolatedNorm(state: AnimationState) : Long =
+    (Vec2(interpolatedVec(state)) / 100f).packedValue
 
 internal fun AnimatedVector2.dynamicOffset(
     provider: PropertyProvider<Offset>?
 ) {
     dynamic = provider?.map(from = Offset::toVec2, to = Vec2::toOffset)
-
 }
 
 internal fun AnimatedVector2.dynamicSize(
@@ -246,10 +260,10 @@ internal object AnimatedVector2Serializer : JsonContentPolymorphicSerializer<Ani
 
 
 private fun Path.createPath(
-    startPoint : List<Float>,
-    endPoint: List<Float>,
-    cp1: List<Float>,
-    cp2: List<Float>
+    startPoint : FloatArray,
+    endPoint: FloatArray,
+    cp1: FloatArray,
+    cp2: FloatArray
 ) {
     moveTo(startPoint[0], startPoint[1])
 
@@ -266,4 +280,4 @@ private fun Path.createPath(
     }
 }
 
-private fun List<Float>.hypot() = hypot(this[0], this[1])
+private fun FloatArray.hypot() = hypot(this[0], this[1])

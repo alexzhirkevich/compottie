@@ -13,7 +13,7 @@ internal class ColorsWithStops(
     private val mColors: MutableList<Color> = ArrayList(size)
 
 
-    fun fill(colors: List<Float>, numberOfColors: Int) {
+    fun fill(colors: FloatArray, numberOfColors: Int) {
         resizeTo(numberOfColors)
 
         repeat(numberOfColors) {
@@ -53,7 +53,7 @@ internal class ColorsWithStops(
     }
 
     private fun addOpacityStopsToGradientIfNeeded(
-        array: List<Float>,
+        array: FloatArray,
         colorPoints : Int,
     ){
         val startIndex: Int = colorPoints * 4

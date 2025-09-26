@@ -16,17 +16,17 @@ internal abstract class DynamicProperty<T : Any> : ExpressionProperty<T>() {
         return dynamic.derive(super.interpolated(state), state)
     }
 
-    override fun interpolatedFloat(state: AnimationState): Float {
+    final override fun interpolatedFloat(state: AnimationState): Float {
         val d = dynamic ?: return super.interpolatedFloat(state)
         return d.invoke(state, super.interpolated(state)) as Float
     }
 
-    override fun interpolatedVec(state: AnimationState): Long {
+    final override fun interpolatedVec(state: AnimationState): Long {
         val d = dynamic ?: return super.interpolatedVec(state)
         return (d.invoke(state, super.interpolated(state)) as Vec2).packedValue
     }
 
-    override fun interpolatedColor(state: AnimationState): ULong {
+    final override fun interpolatedColor(state: AnimationState): ULong {
         val d = dynamic ?: return super.interpolatedColor(state)
         return (d.invoke(state, super.interpolated(state)) as Color).value
     }

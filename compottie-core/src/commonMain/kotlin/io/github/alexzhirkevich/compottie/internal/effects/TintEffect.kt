@@ -51,12 +51,13 @@ internal class TintEffect(
         val intensity = intensity?.interpolatedNorm(animationState)
             ?.coerceIn(0f, 1f) ?: 1f
 
-        val black = black?.interpolated(animationState)?.let {
-            it.copy(alpha = it.alpha * intensity)
-        } ?: Color.Black
-        val white = white?.interpolated(animationState)?.let {
-            it.copy(alpha = it.alpha * intensity)
-        }
+        val black = black?.interpolatedColor(animationState)
+            ?.let(::Color)
+            ?.let { it.copy(alpha = it.alpha * intensity) }
+            ?: Color.Black
+        val white = white?.interpolatedColor(animationState)
+            ?.let(::Color)
+            ?.let { it.copy(alpha = it.alpha * intensity) }
 
         if (black.red != 0f || black.green != 0f || black.blue != 0f)
             return //unsupported
@@ -80,7 +81,7 @@ internal class TintEffect(
 
     override fun copy(): LayerEffect {
         return TintEffect(
-            values = values.map(EffectValue<RawProperty<*>>::copy),
+            values = values.map { it.copy() },
             name = name,
             matchName = matchName,
             index = index,

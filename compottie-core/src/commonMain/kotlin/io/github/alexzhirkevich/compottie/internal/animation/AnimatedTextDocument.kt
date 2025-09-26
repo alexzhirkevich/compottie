@@ -50,26 +50,25 @@ internal class AnimatedTextDocument(
     var dynamic : DynamicTextLayerProvider? = null
 
     private val fillColorList by lazy {
-        allocateArrayList(4)
+        FloatArray(4)
     }
 
     private val strokeColorList by lazy {
-        allocateArrayList(4)
+        FloatArray(4)
     }
 
     private val sizeList by lazy {
-        allocateArrayList(2)
+        FloatArray(2)
     }
 
     private val positionList by lazy {
-        allocateArrayList(2)
+        FloatArray(2)
     }
-
 
     @Transient
     private val delegate = BaseKeyframeAnimation(
         index = index,
-        keyframes = keyframes,
+        sourceKeyframes = keyframes,
         emptyValue = document,
         map = { s, e, p ->
             //TODO: lerp properties?
@@ -92,16 +91,15 @@ internal class AnimatedTextDocument(
 
         return document.apply {
             fontFamily = raw.fontFamily
-            fillColor = dynamic?.fillColor?.let {
-                it.derive(raw.fillColor?.toColor() ?: Color.Unspecified, state).let {
-                    fillColorList.fill(it)
-                }
-            } ?: raw.fillColor
-            strokeColor = dynamic?.strokeColor?.let {
-                it.derive(raw.strokeColor?.toColor() ?: Color.Unspecified, state).let {
-                    strokeColorList.fill(it)
-                }
-            } ?: raw.strokeColor
+            fillColor = dynamic?.fillColor
+                ?.derive(raw.fillColor?.toColor() ?: Color.Unspecified, state)
+                ?.let(fillColorList::fill)
+                ?: raw.fillColor
+
+            strokeColor = dynamic?.strokeColor
+                ?.derive(raw.strokeColor?.toColor() ?: Color.Unspecified, state)
+                ?.let(strokeColorList::fill)
+                ?: raw.strokeColor
             strokeWidth = dynamic?.strokeWidth.derive(raw.strokeWidth, state)
             strokeOverFill = dynamic?.strokeOverFill.derive(raw.strokeOverFill, state)
             fontSize = dynamic?.fontSize.derive(raw.fontSize, state)
@@ -137,7 +135,7 @@ internal class AnimatedTextDocument(
     )
 }
 
-private fun MutableList<Float>.fill(color : Color) : MutableList<Float> {
+private fun FloatArray.fill(color : Color) : FloatArray {
     this[0] = color.red
     this[1] = color.green
     this[2] = color.blue
@@ -145,5 +143,3 @@ private fun MutableList<Float>.fill(color : Color) : MutableList<Float> {
 
     return this
 }
-
-private fun allocateArrayList(size: Int) = MutableList(size) { 0f }

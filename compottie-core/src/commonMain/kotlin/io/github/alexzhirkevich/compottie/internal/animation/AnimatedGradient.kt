@@ -32,12 +32,14 @@ internal abstract class AnimatedGradient : ExpressionProperty<ColorsWithStops>()
     override fun mapEvaluated(e: Any): ColorsWithStops {
         return when (e) {
             is ColorsWithStops -> e
-            is List<*> -> {
-                tempExpressionColors.fill(
-                    (e as List<Number>).fastMap(Number::toFloat),
+            is FloatArray -> tempExpressionColors.apply {
+                fill(e, numberOfColors)
+            }
+            is List<*> ->  tempExpressionColors.apply {
+                fill(
+                    (e as List<Number>).fastMap(Number::toFloat).toFloatArray(),
                     numberOfColors
                 )
-                tempExpressionColors
             }
 
             else -> error("Failed to cast $e to gradient vector")
@@ -47,7 +49,7 @@ internal abstract class AnimatedGradient : ExpressionProperty<ColorsWithStops>()
     @Serializable
     class Default(
         @SerialName("k")
-        val colorsVector: List<Float>,
+        val colorsVector: FloatArray,
 
         @SerialName("ix")
         override val index: Int? = null,
@@ -100,7 +102,7 @@ internal abstract class AnimatedGradient : ExpressionProperty<ColorsWithStops>()
         @Transient
         private val delegate = BaseKeyframeAnimation(
             index = index,
-            keyframes = keyframes,
+            sourceKeyframes = keyframes,
             emptyValue = tempColors
         ) { s, e, p ->
             val progress = easingX.transform(p)

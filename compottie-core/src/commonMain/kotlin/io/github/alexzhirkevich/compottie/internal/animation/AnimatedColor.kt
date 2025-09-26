@@ -25,10 +25,13 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
 
     abstract fun copy(): AnimatedColor
 
-    override fun mapEvaluated(e: Any): Color {
+    override fun mapEvaluated(e: Any): Color = Color(mapColor(e))
+
+    override fun mapColor(e: Any): ULong {
         return when (e) {
-            is Color -> e
-            is List<*> -> (e as List<Number>).toColor2()
+            is Color -> e.value
+            is FloatArray -> e.toColor().value
+            is List<*> -> (e as List<Number>).toColor2().value
             else -> error("Can't convert $e to color")
         }
     }
@@ -36,7 +39,7 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
     @Serializable
     class Default(
         @SerialName("k")
-        val value: List<Float>,
+        val value: FloatArray,
 
         @SerialName("x")
         override val expression: String? = null,
@@ -57,26 +60,40 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
         }
 
         override fun raw(state: AnimationState) = color
+
+        override fun rawColor(state: AnimationState): ULong = color.value
     }
 
     @Serializable
     class Animated(
         @SerialName("k")
-        val value: List<VectorKeyframe>,
+        override val keyframes: List<VectorKeyframe>,
 
         @SerialName("x")
         override val expression: String? = null,
 
         @SerialName("ix")
         override val index: Int? = null
-    ) : AnimatedColor(), RawKeyframeProperty<Color, VectorKeyframe> by BaseKeyframeAnimation(
-        index = index,
-        keyframes = value,
-        emptyValue = Color.Transparent,
-        map = { s, e, p ->
-            lerp(s.toColor(), e.toColor(), easingX.transform(p))
-        }
-    ) {
+    ) : AnimatedColor(), RawKeyframeProperty<Color, VectorKeyframe> {
+
+        @Transient
+        private val delegate = ColorKeyframeAnimation(
+            index = index,
+            keyframes = keyframes.map {
+                ColorKeyframe(
+                    start = it.start?.toColor() ?: Color.Transparent,
+                    end = it.end?.toColor()  ?: Color.Transparent,
+                    time = it.time,
+                    hold = it.hold,
+                    inValue = it.inValue,
+                    outValue = it.outValue
+                )
+            },
+            emptyValue = Color.Transparent,
+            map = { s, e, p ->
+                lerp(s, e, easingX.transform(p)).value
+            }
+        )
 
         override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
             return super<AnimatedColor>.get(property, runtime).let {
@@ -88,10 +105,18 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
 
         override fun copy(): AnimatedColor {
             return Animated(
-                value = value,
+                keyframes = keyframes,
                 expression = expression,
                 index = index
             )
+        }
+
+        override fun raw(state: AnimationState): Color {
+            return Color(rawColor(state))
+        }
+
+        override fun rawColor(state: AnimationState): ULong {
+            return delegate.rawColor(state)
         }
     }
 
@@ -114,13 +139,18 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
         }
 
         override fun raw(state: AnimationState): Color {
-            return state.composition.animation.slots.color(sid)?.interpolated(state)
-                ?: Color.Transparent
+            return Color(rawColor(state))
+        }
+
+        override fun rawColor(state: AnimationState): ULong {
+            return state.composition.animation.slots.color(sid)
+                ?.interpolatedColor(state)
+                ?: Color.Transparent.value
         }
     }
 }
 
-internal fun List<Float>.toColor() = Color(
+internal fun FloatArray.toColor() = Color(
     red = get(0).toColorComponent(),
     green = get(1).toColorComponent(),
     blue = get(2).toColorComponent(),

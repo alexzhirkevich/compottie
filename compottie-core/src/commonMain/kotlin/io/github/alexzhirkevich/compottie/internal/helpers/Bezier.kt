@@ -11,7 +11,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlin.math.min
 
-private val EmptyTangent = listOf(0f,0f)
 
 @Serializable
 internal class Bezier(
@@ -20,13 +19,13 @@ internal class Bezier(
     var isClosed : Boolean = false,
 
     @SerialName("i")
-    var inTangents : List<List<Float>> = emptyList(),
+    var inTangents : List<FloatArray> = emptyList(),
 
     @SerialName("o")
-    var outTangents : List<List<Float>> = emptyList(),
+    var outTangents : List<FloatArray> = emptyList(),
 
     @SerialName("v")
-    val vertices : List<List<Float>> = emptyList(),
+    val vertices : List<FloatArray> = emptyList(),
 ) {
 
     @Transient
@@ -168,3 +167,5 @@ internal class CubicCurveData(
     var controlPoint2: Offset = Offset.Zero,
     var vertex: Offset = Offset.Zero
 )
+
+private val EmptyTangent = floatArrayOf(0f,0f)

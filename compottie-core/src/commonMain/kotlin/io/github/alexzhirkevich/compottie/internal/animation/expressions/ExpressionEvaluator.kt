@@ -6,7 +6,6 @@ import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.keight.Script
 import io.github.alexzhirkevich.keight.invokeSync
-import kotlin.time.measureTime
 
 internal interface ExpressionEvaluator : ExpressionHolder {
     fun evaluate(state: AnimationState): Any
@@ -26,6 +25,11 @@ private class ExpressionEvaluatorImpl(
     private var script: Script? = null
 
     override fun prepareExpressions(state: AnimationState) {
+        if (script != null){
+            state.scriptEngine // ensure engine is allocated
+            return
+        }
+
         script = try {
             state.scriptEngine.compile(expr)
         } catch (t: Throwable) {

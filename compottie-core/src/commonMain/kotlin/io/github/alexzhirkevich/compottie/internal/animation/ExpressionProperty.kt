@@ -15,7 +15,7 @@ internal abstract class ExpressionProperty<T : Any> : AnimatedProperty<T>, Expre
     override var group: PropertyGroup? = null
 
     @Transient
-    open val expressionEvaluator: ExpressionEvaluator? by lazy {
+    private val expressionEvaluator: ExpressionEvaluator? by lazy {
         expression?.let { ExpressionEvaluator(it, this) }
     }
 
