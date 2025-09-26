@@ -4,7 +4,7 @@ import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.keight.js.JsAny
 
 
-internal class BaseKeyframeAnimation<T : Any, K, out KF : Keyframe<K>>(
+internal class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
     override val index: Int?,
     override val keyframes: List<KF>,
     private val emptyValue : T,

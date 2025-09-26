@@ -23,7 +23,7 @@ internal fun <F, T> PropertyProvider<F>.map(
 /**
  * Returns [source] if this is null and provided value otherwise
  * */
-internal fun <T> PropertyProvider<T>?.derive(source : T, state: AnimationState) : T {
+internal inline fun <T> PropertyProvider<T>?.derive(source : T, state: AnimationState) : T {
     return if (this == null) source else invoke(state, source)
 }
 

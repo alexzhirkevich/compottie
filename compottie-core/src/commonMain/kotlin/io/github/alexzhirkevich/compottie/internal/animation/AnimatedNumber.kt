@@ -88,7 +88,11 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
         }
 
         override fun raw(state: AnimationState): Float {
-            return delegate.raw(state)
+            return rawFloat(state)
+        }
+
+        override fun rawFloat(state: AnimationState): Float {
+            return delegate.rawFloat(state)
         }
     }
 
