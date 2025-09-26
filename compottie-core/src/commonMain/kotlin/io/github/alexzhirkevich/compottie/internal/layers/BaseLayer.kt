@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.layers
 
 import androidx.compose.ui.geometry.MutableRect
+import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
@@ -10,6 +11,7 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.withSaveLayer
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
@@ -190,23 +192,25 @@ internal abstract class BaseLayer : Layer {
                 // https://github.com/airbnb/lottie-android/issues/1625
                 if (rect.width >= 1f && rect.height >= 1f) {
                     contentPaint.alpha = 1f
-                    canvas.saveLayer(rect, contentPaint)
+                    canvas.withSaveLayer(rect.toRect(), contentPaint) {
 
-                    clearCanvas(canvas)
-                    drawLayer(drawScope, matrix, alpha, state)
-
-                    if (hasMasks()) {
-                        applyMasks(canvas, matrix, state)
-                    }
-
-                    matteLayer?.let {
-                        canvas.saveLayer(rect, mattePaint, SAVE_FLAGS)
                         clearCanvas(canvas)
-                        it.draw(drawScope, parentMatrix, parentAlpha, state)
-                        canvas.restore()
-                    }
+                        drawLayer(drawScope, matrix, alpha, state)
 
-                    canvas.restore()
+                        if (hasMasks()) {
+                            applyMasks(canvas, matrix, state)
+                        }
+
+                        matteLayer?.let {
+                            canvas.saveLayer(rect, mattePaint, SAVE_FLAGS)
+                            try {
+                                clearCanvas(canvas)
+                                it.draw(drawScope, parentMatrix, parentAlpha, state)
+                            } finally {
+                                canvas.restore()
+                            }
+                        }
+                    }
                 }
 
 //                        val outlineMasksAndMattesPaint = Paint().apply {
@@ -337,51 +341,51 @@ internal abstract class BaseLayer : Layer {
 
     private fun applyMasks(canvas: Canvas, matrix: Matrix, state: AnimationState) {
         canvas.saveLayer(rect, dstInPaint, SAVE_FLAGS)
+        try {
+            clearCanvas(canvas)
+            masks?.fastForEachIndexed { i, mask ->
 
-        clearCanvas(canvas)
+                when (mask.mode) {
+                    MaskMode.None ->
+                        // None mask should have no effect. If all masks are NONE, fill the
+                        // mask canvas with a rectangle so it fully covers the original layer content.
+                        // However, if there are other masks, they should be the only ones that have an effect so
+                        // this should noop.
+                        if (allMasksAreNone) {
+                            contentPaint.alpha = 1f
+                            canvas.drawRect(rect, contentPaint)
+                        }
 
-        masks?.fastForEachIndexed { i, mask ->
-
-            when (mask.mode) {
-                MaskMode.None ->
-                    // None mask should have no effect. If all masks are NONE, fill the
-                    // mask canvas with a rectangle so it fully covers the original layer content.
-                    // However, if there are other masks, they should be the only ones that have an effect so
-                    // this should noop.
-                    if (allMasksAreNone) {
-                        contentPaint.alpha = 1f
-                        canvas.drawRect(rect, contentPaint)
+                    MaskMode.Subtract -> {
+                        if (i == 0) {
+                            contentPaint.color = Color.Black
+                            contentPaint.alpha = 1f
+                            canvas.drawRect(rect, contentPaint)
+                        }
+                        if (mask.isInverted) {
+                            applyInvertedSubtractMask(canvas, matrix, mask, state)
+                        } else {
+                            applySubtractMask(canvas, matrix, mask, state)
+                        }
                     }
 
-                MaskMode.Subtract-> {
-                    if (i == 0) {
-                        contentPaint.color = Color.Black
-                        contentPaint.alpha = 1f
-                        canvas.drawRect(rect, contentPaint)
-                    }
-                    if (mask.isInverted) {
-                        applyInvertedSubtractMask(canvas, matrix, mask, state)
+                    MaskMode.Intersect -> if (mask.isInverted) {
+                        applyInvertedIntersectMask(canvas, matrix, mask, state)
                     } else {
-                        applySubtractMask(canvas, matrix, mask, state)
+                        applyIntersectMask(canvas, matrix, mask, state)
+                    }
+
+                    // MaskMode.Add
+                    else -> if (mask.isInverted) {
+                        applyInvertedAddMask(canvas, matrix, mask, state)
+                    } else {
+                        applyAddMask(canvas, matrix, mask, state)
                     }
                 }
-
-                MaskMode.Intersect -> if (mask.isInverted) {
-                    applyInvertedIntersectMask(canvas, matrix, mask, state)
-                } else {
-                    applyIntersectMask(canvas, matrix, mask, state)
-                }
-
-                // MaskMode.Add
-                else -> if (mask.isInverted) {
-                    applyInvertedAddMask(canvas, matrix, mask, state)
-                } else {
-                    applyAddMask(canvas, matrix, mask, state)
-                }
-
             }
+        } finally {
+            canvas.restore()
         }
-        canvas.restore()
     }
 
     private fun applyInvertedAddMask(
@@ -390,14 +394,14 @@ internal abstract class BaseLayer : Layer {
         mask: Mask,
         state: AnimationState,
     ) {
-        canvas.saveLayer(rect, contentPaint)
-        canvas.drawRect(rect, contentPaint)
-        val maskPath = mask.shape?.interpolated(state) ?: return
-        path.set(maskPath)
-        path.transform(matrix)
-        contentPaint.alpha = mask.opacity?.interpolatedNorm(state)?.coerceIn(0f, 1f) ?: 1f
-        canvas.drawPath(path, dstOutPaint)
-        canvas.restore()
+        canvas.withSaveLayer(rect.toRect(), contentPaint) {
+            canvas.drawRect(rect, contentPaint)
+            val maskPath = mask.shape?.interpolated(state) ?: return
+            path.set(maskPath)
+            path.transform(matrix)
+            contentPaint.alpha = mask.opacity?.interpolatedNorm(state)?.coerceIn(0f, 1f) ?: 1f
+            canvas.drawPath(path, dstOutPaint)
+        }
     }
 
     private fun applyAddMask(
@@ -431,30 +435,29 @@ internal abstract class BaseLayer : Layer {
         mask: Mask,
         state: AnimationState,
     ) {
-        canvas.saveLayer(rect, dstOutPaint)
-        canvas.drawRect(rect, contentPaint)
-        dstOutPaint.alpha = mask.opacity?.interpolatedNorm(state)
-            ?.coerceIn(0f, 1f) ?: 1f
-        val maskPath = mask.shape?.interpolated(state) ?: return
-        path.set(maskPath)
-        path.transform(matrix)
-        canvas.drawPath(path, dstOutPaint)
-        canvas.restore()
+        canvas.withSaveLayer(rect.toRect(), dstOutPaint) {
+            canvas.drawRect(rect, contentPaint)
+            dstOutPaint.alpha = mask.opacity?.interpolatedNorm(state)
+                ?.coerceIn(0f, 1f) ?: 1f
+            val maskPath = mask.shape?.interpolated(state) ?: return
+            path.set(maskPath)
+            path.transform(matrix)
+            canvas.drawPath(path, dstOutPaint)
+        }
     }
-
     private fun applyIntersectMask(
         canvas: Canvas,
         matrix: Matrix,
         mask: Mask,
         state: AnimationState,
     ) {
-        canvas.saveLayer(rect, dstInPaint)
-        val maskPath = mask.shape?.interpolated(state) ?: return
-        path.set(maskPath)
-        path.transform(matrix)
-        contentPaint.alpha = mask.opacity?.interpolatedNorm(state)?.coerceIn(0f, 1f) ?: 1f
-        canvas.drawPath(path, contentPaint)
-        canvas.restore()
+        canvas.withSaveLayer(rect.toRect(), dstInPaint) {
+            val maskPath = mask.shape?.interpolated(state) ?: return
+            path.set(maskPath)
+            path.transform(matrix)
+            contentPaint.alpha = mask.opacity?.interpolatedNorm(state)?.coerceIn(0f, 1f) ?: 1f
+            canvas.drawPath(path, contentPaint)
+        }
     }
 
     private fun applyInvertedIntersectMask(
@@ -463,16 +466,15 @@ internal abstract class BaseLayer : Layer {
         mask: Mask,
         state: AnimationState,
     ) {
-        canvas.saveLayer(rect, dstInPaint)
-        canvas.drawRect(rect, contentPaint)
-        dstOutPaint.alpha = mask.opacity?.interpolatedNorm(state)?.coerceIn(0f, 1f) ?: 1f
-        val maskPath = mask.shape?.interpolated(state) ?: return
-        path.set(maskPath)
-        path.transform(matrix)
-        canvas.drawPath(path, dstOutPaint)
-        canvas.restore()
+        canvas.withSaveLayer(rect.toRect(), dstInPaint) {
+            canvas.drawRect(rect, contentPaint)
+            dstOutPaint.alpha = mask.opacity?.interpolatedNorm(state)?.coerceIn(0f, 1f) ?: 1f
+            val maskPath = mask.shape?.interpolated(state) ?: return
+            path.set(maskPath)
+            path.transform(matrix)
+            canvas.drawPath(path, dstOutPaint)
+        }
     }
-
 }
 
 private const val CLIP_SAVE_FLAG = 0x02

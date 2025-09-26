@@ -25,6 +25,7 @@ internal class ContentGroupImpl(
     private val rect = MutableRect(0f, 0f, 0f, 0f)
     private val offscreenRect = MutableRect(0f, 0f, 0f, 0f)
     private val offscreenPaint = Paint()
+    private val boundsMatrix = Matrix()
     private val matrix = Matrix()
     private val path = Path()
 
@@ -84,15 +85,18 @@ internal class ContentGroupImpl(
             offscreenPaint.alpha = layerAlpha
             canvas.saveLayer(offscreenRect, offscreenPaint)
         }
+        try {
 
-        val childAlpha = if (isRenderingWithOffScreen) 1f else layerAlpha
+            val childAlpha = if (isRenderingWithOffScreen) 1f else layerAlpha
 
-        drawingContents.fastForEachReversed { content ->
-            content.draw(drawScope, matrix, childAlpha, state)
-        }
+            drawingContents.fastForEachReversed { content ->
+                content.draw(drawScope, matrix, childAlpha, state)
+            }
 
-        if (isRenderingWithOffScreen) {
-            canvas.restore()
+        } finally {
+            if (isRenderingWithOffScreen) {
+                canvas.restore()
+            }
         }
     }
 
@@ -131,14 +135,14 @@ internal class ContentGroupImpl(
         state: AnimationState,
         outBounds: MutableRect,
     ) {
-        matrix.fastSetFrom(parentMatrix)
+        boundsMatrix.fastSetFrom(parentMatrix)
         if (transform != null) {
-            matrix.preConcat(transform.matrix(state))
+            boundsMatrix.preConcat(transform.matrix(state))
         }
-        rect.set(0f, 0f, 0f, 0f)
 
+        rect.set(0f, 0f, 0f, 0f)
         drawingContents.fastForEachReversed {
-            it.getBounds(drawScope, matrix, applyParents, state, rect)
+            it.getBounds(drawScope, boundsMatrix, applyParents, state, rect)
             outBounds.union(rect)
         }
     }

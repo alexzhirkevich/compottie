@@ -21,14 +21,6 @@ internal fun MutableRect.intersect(other: MutableRect) =
         bottom = other.bottom
     )
 
-internal fun MutableRect.overlaps(other: MutableRect): Boolean {
-    if (right <= other.left || other.right <= left)
-        return false
-    if (bottom <= other.top || other.bottom <= top)
-        return false
-    return true
-}
-
 internal fun MutableRect.union(other : MutableRect) {
 
     if ((other.left >= other.right) || (other.top >= other.bottom)) {
