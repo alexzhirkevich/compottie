@@ -27,11 +27,11 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
 
     override fun mapEvaluated(e: Any): Color = Color(mapColor(e))
 
-    override fun mapColor(e: Any): ULong {
+    override fun mapColor(e: Any): Long {
         return when (e) {
-            is Color -> e.value
-            is FloatArray -> e.toColor().value
-            is List<*> -> (e as List<Number>).toColor2().value
+            is Color -> e.toColorLong()
+            is FloatArray -> e.toColor().toColorLong()
+            is List<*> -> (e as List<Number>).toColor2().toColorLong()
             else -> error("Can't convert $e to color")
         }
     }
@@ -61,7 +61,7 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
 
         override fun raw(state: AnimationState) = color
 
-        override fun rawColor(state: AnimationState): ULong = color.value
+        override fun rawColor(state: AnimationState): Long = color.toColorLong()
     }
 
     @Serializable
@@ -91,7 +91,7 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
             },
             emptyValue = Color.Transparent,
             map = { s, e, p ->
-                lerp(s, e, easingX.transform(p)).value
+                lerp(s, e, easingX.transform(p)).toColorLong()
             }
         )
 
@@ -115,7 +115,7 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
             return Color(rawColor(state))
         }
 
-        override fun rawColor(state: AnimationState): ULong {
+        override fun rawColor(state: AnimationState): Long {
             return delegate.rawColor(state)
         }
     }
@@ -142,12 +142,16 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
             return Color(rawColor(state))
         }
 
-        override fun rawColor(state: AnimationState): ULong {
+        override fun rawColor(state: AnimationState): Long {
             return state.composition.animation.slots.color(sid)
                 ?.interpolatedColor(state)
-                ?: Color.Transparent.value
+                ?: 0L
         }
     }
+}
+
+internal fun Color.toColorLong() : Long {
+    return (value shr 32).toLong()
 }
 
 internal fun FloatArray.toColor() = Color(

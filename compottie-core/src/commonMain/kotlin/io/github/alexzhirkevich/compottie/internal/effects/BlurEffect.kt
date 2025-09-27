@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.effects
 
+import androidx.compose.animation.core.rememberTransition
 import androidx.compose.ui.graphics.Paint
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
@@ -37,7 +38,9 @@ internal class BlurEffect(
         animationState: AnimationState,
         effectState: LayerEffectsState
     ) {
-        val radius = radius?.interpolatedFloat(animationState)?.takeIf { it > 0f } ?: return
+        val radius = radius?.interpolatedFloat(animationState)
+        if (radius == null || radius <= 0f)
+            return
 
         if (paint !== effectState.lastPaint || radius != effectState.blurRadius) {
             paint.setBlurMaskFilter(radius)

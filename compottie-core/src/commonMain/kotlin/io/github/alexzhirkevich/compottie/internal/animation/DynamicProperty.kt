@@ -26,8 +26,8 @@ internal abstract class DynamicProperty<T : Any> : ExpressionProperty<T>() {
         return (d.invoke(state, super.interpolated(state)) as Vec2).packedValue
     }
 
-    final override fun interpolatedColor(state: AnimationState): ULong {
+    final override fun interpolatedColor(state: AnimationState): Long {
         val d = dynamic ?: return super.interpolatedColor(state)
-        return (d.invoke(state, super.interpolated(state)) as Color).value
+        return (d.invoke(state, super.interpolated(state)) as Color).toColorLong()
     }
 }

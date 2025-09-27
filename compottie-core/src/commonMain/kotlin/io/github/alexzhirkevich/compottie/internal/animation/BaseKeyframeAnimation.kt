@@ -5,7 +5,6 @@ import androidx.collection.MutableIntObjectMap
 import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.keight.js.JsAny
-import kotlin.collections.set
 
 internal open class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
     override val index: Int?,
@@ -98,11 +97,7 @@ internal open class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
         }
     }
 
-    protected inline fun rawInline(
-        state: AnimationState,
-        emptyValue: T = this.emptyValue,
-        map : KF.(start : K, end : K, progress: Float) -> T
-    ) : T {
+    override fun raw(state: AnimationState): T {
         val kfId = keyframeNumber(state)
         val range = keyframesMappingRanges[kfId]?: return emptyValue
 
@@ -112,10 +107,6 @@ internal open class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
         return with(keyframes[kfId.coerceIn(keyframes.indices)]) {
             map(range.first!!, range.second!!, progress(kfId, state))
         }
-    }
-
-    override fun raw(state: AnimationState): T {
-        return rawInline(state, emptyValue, map)
     }
 }
 

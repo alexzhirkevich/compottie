@@ -126,7 +126,7 @@ internal class SolidColorLayer(
             return
         }
 
-        paint.alpha = (parentAlpha * (transform.opacity?.interpolatedNorm(state)?: 1f)).coerceIn(0f, 1f)
+        paint.alpha = (parentAlpha * (transform.opacity.interpolatedNorm(state))).coerceIn(0f, 1f)
 
         if (paint.alpha == 0f) {
             return

@@ -26,7 +26,7 @@ internal abstract class ExpressionProperty<T : Any> : AnimatedProperty<T>, Expre
     abstract fun mapEvaluated(e: Any): T
     open fun mapFloat(e: Any): Float = mapEvaluated(e) as Float
     open fun mapVec(e: Any): Long = mapEvaluated(e) as Long
-    open fun mapColor(e: Any): ULong = mapEvaluated(e) as ULong
+    open fun mapColor(e: Any): Long = mapEvaluated(e) as Long
 
     override fun interpolated(state: AnimationState): T {
         return interpolatedInternal(
@@ -56,7 +56,7 @@ internal abstract class ExpressionProperty<T : Any> : AnimatedProperty<T>, Expre
         )
     }
 
-    override fun interpolatedColor(state: AnimationState): ULong {
+    override fun interpolatedColor(state: AnimationState): Long {
         return interpolatedInternal(
             state = state,
             raw = { p, s -> p.rawColor(s) },

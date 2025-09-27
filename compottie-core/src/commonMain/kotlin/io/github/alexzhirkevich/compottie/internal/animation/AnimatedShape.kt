@@ -281,7 +281,8 @@ internal abstract class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder
         override fun setClosed(closed: Boolean) {}
 
         override fun raw(state: AnimationState): Path {
-            return state.composition.animation.slots.shape(sid)?.interpolated(state)
+            return state.composition.animation.slots.shape(sid)
+                ?.interpolated(state)
                 ?: emptyPath.apply { reset() }
         }
     }

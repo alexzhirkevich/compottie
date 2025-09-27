@@ -26,7 +26,7 @@ internal interface RawProperty<T : Any> : JsAny {
 
     fun rawFloat(state : AnimationState) : Float = raw(state) as Float
     fun rawVec(state : AnimationState) : Long = raw(state) as Long
-    fun rawColor(state : AnimationState) : ULong = raw(state) as ULong
+    fun rawColor(state: AnimationState): Long = raw(state) as Long
 
     override suspend fun keys(
         runtime: ScriptRuntime,
@@ -106,7 +106,7 @@ internal interface AnimatedProperty<T : Any> : RawProperty<T> {
 
     fun interpolatedFloat(state: AnimationState) : Float = interpolated(state) as Float
     fun interpolatedVec(state: AnimationState) : Long = interpolated(state) as Long
-    fun interpolatedColor(state: AnimationState) : ULong = interpolated(state) as ULong
+    fun interpolatedColor(state: AnimationState): Long = interpolated(state) as Long
 }
 
 internal interface AnimatedKeyframeProperty<T : Any, K : Keyframe<*>>

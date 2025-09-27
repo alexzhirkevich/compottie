@@ -87,8 +87,8 @@ internal fun DynamicDrawProvider?.applyToPaint(
 
     paint.alpha = parentAlpha
 
-    opacity?.interpolatedNorm(state)?.let {
-        paint.alpha = (paint.alpha * it).coerceIn(0f,1f)
+    if (opacity != null){
+        paint.alpha = (paint.alpha * opacity.interpolatedNorm(state)).coerceIn(0f,1f)
     }
 
     paint.alpha = this?.opacity.derive(paint.alpha, state).coerceIn(0f,1f)

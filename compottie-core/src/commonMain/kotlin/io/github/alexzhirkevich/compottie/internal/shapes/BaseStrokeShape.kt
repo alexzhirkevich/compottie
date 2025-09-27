@@ -351,7 +351,6 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
 
         val o = dashOffset?.interpolatedFloat(state) ?: 0f
 
-
         dp.fastForEachIndexed { i, strokeDash ->
 
             dashPatternValues[i] = strokeDash.interpolatedFloat(state)

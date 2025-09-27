@@ -289,12 +289,16 @@ internal class TextLayer(
 
         val strokeOpacity = textAnimation?.style?.strokeOpacity?.interpolatedNorm(state) ?: 1f
 
-        val fillH = textAnimation?.style?.fillHue?.interpolatedFloat(state)?.coerceIn(0f, 360f)
-        val fillS = textAnimation?.style?.fillSaturation?.interpolatedFloat(state)?.coerceIn(0f, 1f)
-        val fillB = textAnimation?.style?.fillBrightness?.interpolatedFloat(state)?.coerceIn(0f, 1f)
+        val fillH = textAnimation?.style?.fillHue?.interpolatedFloat(state) ?: -1f
+        val fillS = textAnimation?.style?.fillSaturation?.interpolatedFloat(state) ?: -1f
+        val fillB = textAnimation?.style?.fillBrightness?.interpolatedFloat(state) ?: -1f
 
-        fillProperties.color = if (fillH != null && fillS != null && fillB != null) {
-            Color.hsl(fillH, fillS, fillB)
+        fillProperties.color = if (fillH >=0 && fillS >= 0f && fillB >=0f) {
+            Color.hsl(
+                fillH.coerceIn(0f, 360f),
+                fillS.coerceIn(0f, 1f),
+                fillB.coerceIn(0f, 1f)
+            )
         } else {
             textAnimation?.style?.fillColor?.interpolatedColor(state)
                 ?.let(::Color)
@@ -306,12 +310,12 @@ internal class TextLayer(
         fillPaint.color = fillProperties.color
         fillPaint.alpha = fillProperties.alpha
 
-        val strokeH = textAnimation?.style?.strokeHue?.interpolatedFloat(state)?.coerceIn(0f, 360f)
-        val strokeS = textAnimation?.style?.strokeSaturation?.interpolatedFloat(state)?.coerceIn(0f, 1f)
-        val strokeB = textAnimation?.style?.strokeBrightness?.interpolatedFloat(state)?.coerceIn(0f, 1f)
+        val strokeH = textAnimation?.style?.strokeHue?.interpolatedFloat(state) ?: -1f
+        val strokeS = textAnimation?.style?.strokeSaturation?.interpolatedFloat(state) ?: -1f
+        val strokeB = textAnimation?.style?.strokeBrightness?.interpolatedFloat(state) ?: -1f
 
-        strokeProperties.color = if (strokeH != null && strokeS != null && strokeB != null) {
-            Color.hsl(strokeH, strokeS, strokeB)
+        strokeProperties.color = if (strokeH >=0 && strokeS >=0 && strokeB  >=0) {
+            Color.hsl(strokeH.coerceIn(0f, 360f), strokeS.coerceIn(0f, 1f), strokeB.coerceIn(0f, 1f))
         } else {
             textAnimation?.style?.strokeColor?.interpolatedColor(state)
                 ?.let(::Color)

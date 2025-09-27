@@ -158,7 +158,8 @@ internal abstract class AnimatedGradient : ExpressionProperty<ColorsWithStops>()
         }
 
         override fun raw(state: AnimationState): ColorsWithStops {
-            return state.composition.animation.slots.gradient(sid)?.interpolated(state) ?: emptyColorStops
+            return state.composition.animation.slots.gradient(sid)
+                ?.interpolated(state) ?: emptyColorStops
         }
     }
 }
