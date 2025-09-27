@@ -16,7 +16,9 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalFontFamilyResolver
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.assets.EmptyAssetsManager
 import io.github.alexzhirkevich.compottie.assets.EmptyFontManager
@@ -33,6 +35,7 @@ import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.utils.fastReset
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
@@ -82,6 +85,8 @@ public fun rememberLottiePainter(
 
     val fontFamilyResolver = LocalFontFamilyResolver.current
 
+    val textMeasurer = rememberTextMeasurer()
+
     val updatedProgress by rememberUpdatedState(progress)
 
     val dp = when (dynamicProperties) {
@@ -122,7 +127,7 @@ public fun rememberLottiePainter(
                 progress = updatedProgress::invoke,
                 dynamicProperties = dp,
                 clipTextToBoundingBoxes = clipTextToBoundingBoxes,
-                fontFamilyResolver = fontFamilyResolver,
+                textMeasurer = textMeasurer,
                 clipToCompositionBounds = clipToCompositionBounds,
                 enableTextGrouping = enableTextGrouping,
                 enableMergePaths = enableMergePaths,
@@ -159,7 +164,6 @@ public fun rememberLottiePainter(
             it.applyOpacityToLayers = applyOpacityToLayers
             it.clipToCompositionBounds = clipToCompositionBounds
             it.clipTextToBoundingBoxes = clipTextToBoundingBoxes
-            it.fontFamilyResolver = fontFamilyResolver
         }
     }
 
@@ -209,7 +213,7 @@ private class LottiePainter(
     assets : List<LottieAsset>,
     fonts : Map<String, FontFamily>,
     dynamicProperties: DynamicCompositionProvider?,
-    fontFamilyResolver : FontFamily.Resolver,
+    textMeasurer: TextMeasurer,
     applyOpacityToLayers : Boolean,
     clipTextToBoundingBoxes : Boolean,
     enableTextGrouping : Boolean,
@@ -243,7 +247,7 @@ private class LottiePainter(
         assets = assets.associateBy(LottieAsset::id),
         fonts = fonts,
         frame = frame,
-        fontFamilyResolver = fontFamilyResolver,
+        textMeasurer = textMeasurer,
         applyOpacityToLayers = applyOpacityToLayers,
         clipToCompositionBounds = clipToCompositionBounds,
         clipTextToBoundingBoxes = clipTextToBoundingBoxes,
@@ -266,7 +270,6 @@ private class LottiePainter(
     var applyOpacityToLayers: Boolean by animationState::applyOpacityToLayers
     var clipTextToBoundingBoxes: Boolean by animationState::clipTextToBoundingBoxes
     var clipToCompositionBounds: Boolean by animationState::clipToCompositionBounds
-    var fontFamilyResolver: FontFamily.Resolver by animationState::fontFamilyResolver
     var enableMergePaths: Boolean by animationState::enableMergePaths
     var enableExpressions: Boolean by animationState::enableExpressions
 

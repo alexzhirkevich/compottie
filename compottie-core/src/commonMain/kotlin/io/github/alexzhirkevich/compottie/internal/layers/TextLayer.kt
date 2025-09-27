@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEachIndexed
+import io.github.alexzhirkevich.compottie.Compottie
+import io.github.alexzhirkevich.compottie.InternalCompottieApi
 import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicTextLayerProvider
@@ -52,13 +54,17 @@ import io.github.alexzhirkevich.compottie.internal.utils.fastReset
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
 import io.github.alexzhirkevich.compottie.internal.utils.toOffset
+import io.github.alexzhirkevich.compottie.ioDispatcher
 import io.github.alexzhirkevich.keight.Callable
 import io.github.alexzhirkevich.keight.ScriptRuntime
 import io.github.alexzhirkevich.keight.js.JsAny
 import io.github.alexzhirkevich.keight.js.JsPropertyAccessor
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlin.time.measureTime
 
 
 @Serializable
@@ -140,15 +146,6 @@ internal class TextLayer(
 
     @Transient
     private val textAnimation = textData.ranges.firstOrNull()
-
-    @Transient
-    private var textMeasurer: TextMeasurer? = null
-
-    @Transient
-    private var lastLayoutDirection: LayoutDirection? = null
-
-    @Transient
-    private var lastDensity: Density? = null
 
     @Transient
     private val textSubLines: MutableList<TextSubLine> = ArrayList()
@@ -380,41 +377,12 @@ internal class TextLayer(
         fontFamily != null
     }
 
-    private fun getTextMeasurer(
-        fontFamilyResolver: FontFamily.Resolver,
-        density: Density,
-        layoutDirection: LayoutDirection
-    ): TextMeasurer {
-        textMeasurer?.let {
-            if (lastDensity == density && lastLayoutDirection == layoutDirection) {
-                return it
-            }
-        }
-
-        val tm = TextMeasurer(
-            defaultDensity = density,
-            defaultLayoutDirection = layoutDirection,
-            defaultFontFamilyResolver = fontFamilyResolver
-        )
-
-        lastLayoutDirection = layoutDirection
-        lastDensity = density
-        textMeasurer = tm
-
-        return tm
-    }
-
     private fun drawTextWithFonts(
         state: AnimationState,
         ascent: Float,
         drawScope: DrawScope,
         document: TextDocument
     ) {
-        val measurer = getTextMeasurer(
-            state.fontFamilyResolver,
-            drawScope,
-            drawScope.layoutDirection
-        )
         var tracking = document.textTracking?.div(10f) ?: 0f
 
         val text = document.text ?: return
@@ -432,7 +400,15 @@ internal class TextLayer(
             val boxWidth = document.wrapSize?.firstOrNull() ?: 0f
 
             val lines = splitGlyphTextIntoLines(
-                measurer, textLine, document.fontScale,boxWidth, tracking,null)
+                textMeasurer = state.textMeasurer,
+                density = drawScope,
+                layoutDirection = drawScope.layoutDirection,
+                textLine = textLine,
+                fontScale = document.fontScale,
+                boxWidth = boxWidth,
+                tracking = tracking,
+                glyphs = null
+            )
 
             lines.fastForEachIndexed { idx, line ->
 
@@ -448,7 +424,7 @@ internal class TextLayer(
                     )) {
                     drawFontTextLine(
                         text = line.text,
-                        textMeasurer = measurer,
+                        textMeasurer = state.textMeasurer,
                         documentData = document,
                         drawScope = drawScope,
                         canvas = canvas,
@@ -472,19 +448,21 @@ internal class TextLayer(
         // Split full text in multiple lines
         val textLines = getTextLines(document.text ?: return)
         val tracking = (document.textTracking ?: 0f) / 10f
-
-        val measurer = getTextMeasurer(
-            state.fontFamilyResolver,
-            drawScope,
-            drawScope.layoutDirection
-        )
-
         val canvas = drawScope.drawContext.canvas
 
         textLines.fastForEachIndexed { outerIndex, line ->
             val boxWidth = document.wrapSize?.getOrNull(0) ?: 0f
 
-            val lines = splitGlyphTextIntoLines(measurer, line, document.fontScale, boxWidth, tracking, glyphs);
+            val lines = splitGlyphTextIntoLines(
+                textMeasurer = state.textMeasurer,
+                density = drawScope,
+                layoutDirection = drawScope.layoutDirection,
+                textLine = line,
+                fontScale = document.fontScale,
+                boxWidth = boxWidth,
+                tracking = tracking,
+                glyphs = glyphs
+            );
 
             lines.forEachIndexed { innerIndex, l ->
                 canvas.save()
@@ -525,6 +503,8 @@ internal class TextLayer(
 
     private fun splitGlyphTextIntoLines(
         textMeasurer: TextMeasurer,
+        density: Density,
+        layoutDirection: LayoutDirection,
         textLine: String,
         fontScale: Float,
         boxWidth: Float,
@@ -549,11 +529,9 @@ internal class TextLayer(
                 val character = glyphs[textLine[i].toString()]
                 (character?.width ?: 0f) * fontScale + tracking
             } else {
-                val measureResult = textMeasurer.measure(textLine[i].toString(), textStyle)
+                val measureResult = textMeasurer.measure(textLine[i].toString(), textStyle, density = density, layoutDirection = layoutDirection)
                 measureResult.size.width + tracking
-//                currentCharWidth = fillPaint.measureText(textLine.substring(i, i + 1)) + tracking
             }
-
 
             if (c == ' ') {
                 spaceWidth = currentCharWidth
@@ -665,7 +643,13 @@ internal class TextLayer(
     ) {
 
         if (drawFullLine) {
-            drawCharacterFromFont(textMeasurer.measure(text, textStyle), documentData, drawScope)
+            val character = textMeasurer.measure(
+                text,
+                textStyle,
+                density = drawScope,
+                layoutDirection = drawScope.layoutDirection,
+            )
+            drawCharacterFromFont(character, documentData, drawScope)
             return
         }
 
