@@ -1,8 +1,11 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
+import androidx.collection.IntObjectMap
+import androidx.collection.MutableIntObjectMap
 import androidx.compose.ui.util.fastForEach
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.keight.js.JsAny
+import kotlin.collections.set
 
 internal open class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
     override val index: Int?,
@@ -31,8 +34,11 @@ internal open class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
     private val firstFrame: Float = if (keyframes.isEmpty()) 0f else keyframes.first().time
     private val lastFrame: Float = if (keyframes.isEmpty()) 0f else  keyframes.last().time
 
-    protected val keyframesMappingRanges : Map<Int, Pair<K?,K?>> = if (keyframes.isNotEmpty()) {
-        buildMap {
+    protected val keyframesMappingRanges : IntObjectMap<Pair<K?,K?>> =
+        MutableIntObjectMap<Pair<K?,K?>>().apply {
+            if (keyframes.isEmpty())
+                return@apply
+
             val first = keyframes.first()
             set(
                 -1,
@@ -48,15 +54,15 @@ internal open class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
             set(
                 keyframes.lastIndex,
                 Pair(
-            preLast?.start ?: last.start,
-                last.start ?: preLast?.end ?: preLast?.start,
+                    preLast?.start ?: last.start,
+                    last.start ?: preLast?.end ?: preLast?.start,
                 )
             )
 
             for (i in 0 until keyframes.lastIndex) {
                 set(
                     i,
-                     Pair(
+                    Pair(
                         keyframes[i].start,
                         keyframes[i].endHold
                             ?: keyframes.getOrNull(i + 1)?.start,
@@ -64,9 +70,6 @@ internal open class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
                 )
             }
         }
-    } else {
-        emptyMap()
-    }
 
     protected fun progress(keyframeIndex : Int, state: AnimationState) : Float {
         return when {
