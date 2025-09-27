@@ -322,12 +322,6 @@ internal class TextLayer(
                 ?: document.strokeColor?.toColor() ?: Color.Transparent
         }
 
-        strokeProperties.color = textAnimation?.style?.strokeColor
-            ?.interpolatedColor(state)
-            ?.let(::Color)
-            ?: document.strokeColor?.toColor() ?: Color.Transparent
-
-
         strokeProperties.alpha = (parentAlpha * transformOpacity * strokeOpacity).coerceIn(0f, 1f)
 
         val strokeWidth = textAnimation?.style?.strokeWidth?.interpolatedFloat(state)
