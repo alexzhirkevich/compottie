@@ -66,18 +66,20 @@ internal abstract class BaseCompositionLayer: BaseLayer() {
             canvas.save()
         }
 
-        val childAlpha = if (isDrawingWithOffScreen) 1f else parentAlpha
+        try {
+            val childAlpha = if (isDrawingWithOffScreen) 1f else parentAlpha
 
-        state.onFrame(getRemappedFrame(state)) { remappedState ->
-            layers.fastForEachReversed { layer ->
-                if (state.clipToCompositionBounds && !newClipRect.isEmpty) {
-                    canvas.clipRect(newClipRect)
+            state.onFrame(getRemappedFrame(state)) { remappedState ->
+                layers.fastForEachReversed { layer ->
+                    if (state.clipToCompositionBounds && !newClipRect.isEmpty) {
+                        canvas.clipRect(newClipRect)
+                    }
+                    layer.draw(drawScope, parentMatrix, childAlpha, remappedState)
                 }
-                layer.draw(drawScope, parentMatrix, childAlpha, remappedState)
             }
+        } finally {
+            canvas.restore()
         }
-
-        canvas.restore()
     }
 
     override fun getBounds(

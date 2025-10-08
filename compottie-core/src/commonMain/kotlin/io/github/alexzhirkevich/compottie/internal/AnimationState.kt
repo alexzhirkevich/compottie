@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.font.FontFamily
 import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
@@ -26,7 +27,7 @@ public class AnimationState @PublishedApi internal constructor(
     internal val assets: Map<String, LottieAsset>,
     internal val fonts: Map<String, FontFamily>,
     frame: Float,
-    fontFamilyResolver: FontFamily.Resolver,
+    internal val textMeasurer: TextMeasurer,
     applyOpacityToLayers : Boolean,
     clipToCompositionBounds: Boolean,
     clipTextToBoundingBoxes: Boolean,
@@ -86,7 +87,6 @@ public class AnimationState @PublishedApi internal constructor(
 
     internal var clipToCompositionBounds by mutableStateOf(clipToCompositionBounds)
     internal var clipTextToBoundingBoxes by mutableStateOf(clipTextToBoundingBoxes)
-    internal var fontFamilyResolver by mutableStateOf(fontFamilyResolver)
     internal var applyOpacityToLayers by mutableStateOf(applyOpacityToLayers)
     internal var enableMergePaths by mutableStateOf(enableMergePaths)
     internal var enableExpressions by mutableStateOf(enableExpressions)
@@ -185,7 +185,7 @@ public class AnimationState @PublishedApi internal constructor(
         if (frame != other.frame) return false
         if (clipToCompositionBounds != other.clipToCompositionBounds) return false
         if (clipTextToBoundingBoxes != other.clipTextToBoundingBoxes) return false
-        if (fontFamilyResolver != other.fontFamilyResolver) return false
+        if (textMeasurer != other.textMeasurer) return false
         if (enableMergePaths != other.enableMergePaths) return false
 
         return true
@@ -198,7 +198,7 @@ public class AnimationState @PublishedApi internal constructor(
         result = 31 * result + frame.hashCode()
         result = 31 * result + clipToCompositionBounds.hashCode()
         result = 31 * result + clipTextToBoundingBoxes.hashCode()
-        result = 31 * result + fontFamilyResolver.hashCode()
+        result = 31 * result + textMeasurer.hashCode()
         result = 31 * result + enableMergePaths.hashCode()
         return result
     }
