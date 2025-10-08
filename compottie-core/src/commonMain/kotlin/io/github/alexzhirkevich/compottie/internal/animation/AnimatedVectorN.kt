@@ -76,7 +76,7 @@ internal sealed class AnimatedVectorN : DynamicProperty<List<Float>>() {
         @Transient
         private val delegate = BaseKeyframeAnimation(
             index = index,
-            keyframes = keyframes,
+            sourceKeyframes = keyframes,
             emptyValue = emptyList(),
             map = { s, e, p ->
                 val p = easingX.transform(p)

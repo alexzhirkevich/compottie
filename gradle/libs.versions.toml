@@ -1,6 +1,7 @@
 [versions]
 androidx-activity-compose="1.10.1"
 androidx-core-ktx="1.17.0"
+collection="1.5.0"
 kotlin="2.1.20"
 compose="1.9.0"
 agp = "8.12.1"
@@ -10,12 +11,13 @@ ktor="3.2.3"
 atomicfu="0.23.2"
 coroutines="1.10.2"
 coil="3.1.0"
-keight="0.0.03"
+keight="0.0.04"
 maven-publish="0.34.0"
 kotlinx-browser="0.3.1"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
+androidx-collection = { module = "androidx.collection:collection", version.ref = "collection" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core-ktx" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }

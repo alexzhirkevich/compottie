@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Paint
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
+import io.github.alexzhirkevich.compottie.internal.animation.toColorLong
 import io.github.alexzhirkevich.compottie.internal.helpers.BooleanIntSerializer
 import io.github.alexzhirkevich.compottie.internal.utils.getAs
 import kotlinx.serialization.Contextual
@@ -36,7 +37,6 @@ internal class TintEffect(
     val black
         get() = values.getAs<EffectValue.Color>(0)?.value
 
-
     val white
         get() = values.getAs<EffectValue.Color>(1)?.value
 
@@ -48,15 +48,14 @@ internal class TintEffect(
         animationState: AnimationState,
         effectState: LayerEffectsState
     ) {
-        val intensity = intensity?.interpolatedNorm(animationState)
-            ?.coerceIn(0f, 1f) ?: 1f
+        val intensity = (intensity?.interpolatedNorm(animationState) ?: 1f).coerceIn(0f, 1f)
 
-        val black = black?.interpolated(animationState)?.let {
-            it.copy(alpha = it.alpha * intensity)
-        } ?: Color.Black
-        val white = white?.interpolated(animationState)?.let {
-            it.copy(alpha = it.alpha * intensity)
-        }
+        val black = Color(black?.interpolatedColor(animationState) ?: Color.Black.toColorLong())
+            .let { it.copy(alpha = it.alpha * intensity) }
+
+        val white = white?.interpolatedColor(animationState)
+            ?.let(::Color)
+            ?.let { it.copy(alpha = it.alpha * intensity) }
 
         if (black.red != 0f || black.green != 0f || black.blue != 0f)
             return //unsupported
@@ -80,7 +79,7 @@ internal class TintEffect(
 
     override fun copy(): LayerEffect {
         return TintEffect(
-            values = values.map(EffectValue<RawProperty<*>>::copy),
+            values = values.map { it.copy() },
             name = name,
             matchName = matchName,
             index = index,

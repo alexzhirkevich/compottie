@@ -14,7 +14,7 @@ import io.github.alexzhirkevich.keight.ScriptRuntime
 import io.github.alexzhirkevich.keight.js.JsAny
 import io.github.alexzhirkevich.keight.js.Undefined
 
-internal interface RawProperty<out T : Any> : JsAny {
+internal interface RawProperty<T : Any> : JsAny {
 
     val index: Int?
 
@@ -23,6 +23,10 @@ internal interface RawProperty<out T : Any> : JsAny {
     var group : PropertyGroup?
 
     fun raw(state: AnimationState): T
+
+    fun rawFloat(state : AnimationState) : Float = raw(state) as Float
+    fun rawVec(state : AnimationState) : Long = raw(state) as Long
+    fun rawColor(state: AnimationState): Long = raw(state) as Long
 
     override suspend fun keys(
         runtime: ScriptRuntime,
@@ -73,7 +77,7 @@ internal interface RawProperty<out T : Any> : JsAny {
     }
 }
 
-internal interface RawKeyframeProperty<out T : Any,out K : Keyframe<*>>  : RawProperty<T> {
+internal interface RawKeyframeProperty<T : Any, K : Keyframe<*>> : RawProperty<T> {
 
     val keyframes: List<K>
 
@@ -92,14 +96,18 @@ internal interface RawKeyframeProperty<out T : Any,out K : Keyframe<*>>  : RawPr
     }
 }
 
-internal interface AnimatedProperty<out T : Any> : RawProperty<T> {
+internal interface AnimatedProperty<T : Any> : RawProperty<T> {
 
     /**
      * Property value interpolation including dynamics and expressions.
      * Should be called from the DrawScope. Calling from expressions can overflow the stack.
      * */
     fun interpolated(state: AnimationState) : T = raw(state)
+
+    fun interpolatedFloat(state: AnimationState) : Float = interpolated(state) as Float
+    fun interpolatedVec(state: AnimationState) : Long = interpolated(state) as Long
+    fun interpolatedColor(state: AnimationState): Long = interpolated(state) as Long
 }
 
-internal interface AnimatedKeyframeProperty<out T : Any, out K : Keyframe<*>>
+internal interface AnimatedKeyframeProperty<T : Any, K : Keyframe<*>>
     : AnimatedProperty<T>, RawKeyframeProperty<T, K>

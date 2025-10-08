@@ -10,6 +10,7 @@ import io.github.alexzhirkevich.compottie.dynamic.layerPath
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import io.github.alexzhirkevich.compottie.internal.animation.defaultPosition
 import io.github.alexzhirkevich.compottie.internal.animation.dynamicOffset
 import io.github.alexzhirkevich.compottie.internal.animation.dynamicSize
@@ -79,9 +80,9 @@ internal class RectShape(
 
         path.reset()
 
-        val position = position.interpolated(state)
-        val size = size.interpolated(state)
-        var radius =  roundedCorners?.interpolated(state) ?: 0f
+        val position = Vec2(position.interpolatedVec(state))
+        val size = Vec2(size.interpolatedVec(state))
+        var radius =  roundedCorners?.interpolatedFloat(state) ?: 0f
 
         val halfWidth = size.x / 2f
         val halfHeight = size.y / 2f

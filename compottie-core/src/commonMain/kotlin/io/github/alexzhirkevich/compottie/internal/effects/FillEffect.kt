@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.effects
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Paint
 import io.github.alexzhirkevich.compottie.internal.AnimationState
@@ -39,9 +40,11 @@ internal class FillEffect(
         animationState: AnimationState,
         effectState: LayerEffectsState
     ) {
-        val color = color?.interpolated(animationState)?.let {
+        val color = color?.interpolatedColor(animationState)
+            ?.let(::Color)
+            ?.let {
             it.copy(                              // don't divide by 100
-                alpha = it.alpha * (opacity?.interpolated(animationState)?.coerceIn(0f, 1f) ?: 1f)
+                alpha = it.alpha * (opacity?.interpolatedFloat(animationState)?.coerceIn(0f, 1f) ?: 1f)
             )
         }
         if (paint !== effectState.lastPaint || effectState.lastFillColor != color) {

@@ -25,7 +25,9 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
 
     abstract fun copy(): AnimatedNumber
 
-    override fun mapEvaluated(e: Any): Float {
+    override fun mapEvaluated(e: Any): Float = mapFloat(e)
+
+    override fun mapFloat(e: Any): Float {
         return when (e) {
             is Number -> e.toFloat()
             is List<*> -> (e[0] as Number).toFloat()
@@ -54,7 +56,9 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
             )
         }
 
-        override fun raw(state: AnimationState): Float = value
+        override fun raw(state: AnimationState): Float = rawFloat(state)
+
+        override fun rawFloat(state: AnimationState): Float = value
     }
 
     @Serializable
@@ -70,7 +74,7 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
     ) : AnimatedNumber(), AnimatedKeyframeProperty<Float, ValueKeyframe> {
 
         @Transient
-        private val delegate = BaseKeyframeAnimation(
+        private val delegate = ValueKeyframeAnimation(
             index = index,
             keyframes = keyframes,
             emptyValue = 1f,
@@ -88,7 +92,11 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
         }
 
         override fun raw(state: AnimationState): Float {
-            return delegate.raw(state)
+            return rawFloat(state)
+        }
+
+        override fun rawFloat(state: AnimationState): Float {
+            return delegate.rawFloat(state)
         }
     }
 
@@ -112,7 +120,12 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
         }
 
         override fun raw(state: AnimationState): Float {
-            return state.composition.animation.slots.number(sid)?.interpolated(state) ?: 0f
+            return rawFloat(state)
+        }
+
+        override fun rawFloat(state: AnimationState): Float {
+            return state.composition.animation.slots.number(sid)
+                ?.interpolatedFloat(state) ?: 0f
         }
     }
 }
@@ -142,7 +155,7 @@ internal fun AnimatedNumber.Companion.defaultRadius() : AnimatedNumber =
     AnimatedNumber.Default(0f)
 
 
-internal fun AnimatedNumber.interpolatedNorm(state: AnimationState) = interpolated(state) / 100f
+internal fun AnimatedNumber.interpolatedNorm(state: AnimationState) = interpolatedFloat(state) / 100f
 
 internal object ValueSerializer : JsonTransformingSerializer<Float>(Float.serializer()){
     override fun transformDeserialize(element: JsonElement): JsonElement {

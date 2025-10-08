@@ -20,7 +20,7 @@ import kotlinx.serialization.json.JsonClassDiscriminator
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonClassDiscriminator("ty")
-internal sealed interface EffectValue<T : RawProperty<Any>> : Callable, ExpressionHolder {
+internal sealed interface EffectValue<T : RawProperty<*>> : Callable, ExpressionHolder {
 
     val value: T?
 

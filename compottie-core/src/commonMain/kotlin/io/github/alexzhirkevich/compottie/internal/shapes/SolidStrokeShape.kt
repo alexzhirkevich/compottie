@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import io.github.alexzhirkevich.compottie.internal.AnimationState
@@ -46,7 +47,7 @@ internal class SolidStrokeShape(
 ) : BaseStrokeShape(), Shape {
 
     override fun draw(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
-        paint.color = color.interpolated(state)
+        paint.color = Color(color.interpolatedColor(state))
 
         super.draw(drawScope, parentMatrix, parentAlpha, state)
     }

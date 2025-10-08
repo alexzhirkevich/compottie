@@ -6,10 +6,10 @@ import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicShapeProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.dynamic.layerPath
-import io.github.alexzhirkevich.compottie.dynamic.toOffset
 import io.github.alexzhirkevich.compottie.dynamic.toSize
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import io.github.alexzhirkevich.compottie.internal.animation.defaultPosition
 import io.github.alexzhirkevich.compottie.internal.animation.dynamicOffset
 import io.github.alexzhirkevich.compottie.internal.animation.dynamicSize
@@ -63,7 +63,7 @@ internal class EllipseShape(
             return path
         }
 
-        val size = size.interpolated(state).toSize()
+        val size = Vec2(size.interpolatedVec(state)).toSize()
 
         val halfWidth = size.width / 2f
         val halfHeight = size.height / 2f
@@ -87,9 +87,10 @@ internal class EllipseShape(
         path.cubicTo(-halfWidth, 0 - cpH, 0 - cpW, -halfHeight, 0f, -halfHeight)
 //        }
 
-        val position = position.interpolated(state).toOffset()
-
-        path.translate(position)
+        val position = Vec2(position.interpolatedVec(state))
+        if (position != Vec2.Zero) {
+            path.translate(position)
+        }
 
         path.close()
 

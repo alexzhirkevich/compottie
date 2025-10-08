@@ -43,22 +43,20 @@ internal class RepeaterTransform(
     fun repeaterMatrix(state: AnimationState, amount: Float): Matrix {
         matrix.fastReset()
 
-        position.interpolated(state).let {
-            matrix.preTranslate(
-                it.x * amount,
-                it.y * amount
-            )
-        }
+        val pos = Vec2(position.interpolatedVec(state))
+        matrix.preTranslate(
+            pos.x * amount,
+            pos.y * amount
+        )
 
-        scale.interpolatedNorm(state).let {
-            matrix.preScale(
-                it.x.pow(amount),
-                it.y.pow(amount)
-            )
-        }
+        val sc = Vec2(scale.interpolatedNorm(state))
+        matrix.preScale(
+            sc.x.pow(amount),
+            sc.y.pow(amount)
+        )
 
-        rotation.interpolated(state).let {
-            val anchorPoint = anchorPoint.interpolated(state)
+        rotation.interpolatedFloat(state).let {
+            val anchorPoint = Vec2(anchorPoint.interpolatedVec(state))
             matrix.translate(anchorPoint.x, anchorPoint.y)
             matrix.preRotate(it * amount)
             matrix.translate(-anchorPoint.x, -anchorPoint.y)

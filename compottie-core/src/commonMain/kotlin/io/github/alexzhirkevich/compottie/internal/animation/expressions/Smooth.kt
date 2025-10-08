@@ -7,8 +7,8 @@ import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.timeSeconds
 import io.github.alexzhirkevich.keight.Callable
 
-internal fun JsSmooth(
-    prop : RawProperty<*>,
+internal fun <T : Any> JsSmooth(
+    prop : RawProperty<T>,
 ) = Callable {
     val width = (it.getOrNull(0)?.toKotlin(this) as? Number)?.toFloat() ?: .4f
     val samples = (it.getOrNull(1)?.toKotlin(this) as? Number)?.toInt() ?: 5
@@ -20,8 +20,8 @@ internal fun JsSmooth(
 }
 
 @Suppress("unchecked_cast")
-private fun smooth(
-    prop : RawProperty<Any>,
+private fun <T: Any> smooth(
+    prop : RawProperty<T>,
     state: AnimationState,
     width : Float,
     samples : Int

@@ -69,8 +69,8 @@ internal class RepeaterShape(
         state: AnimationState
     ) {
         contentGroup?.let { contentGroup ->
-            val copies = copies.interpolated(state)
-            val offset = offset.interpolated(state)
+            val copies = copies.interpolatedFloat(state)
+            val offset = offset.interpolatedFloat(state)
             val startOpacity = transform.startOpacity?.interpolatedNorm(state) ?: 1f
             val endOpacity = transform.endOpacity?.interpolatedNorm(state) ?: 1f
 
@@ -97,8 +97,8 @@ internal class RepeaterShape(
         path.reset()
         val contentPath = contentGroup?.getPath(state) ?: return path
 
-        val copies = copies.interpolated(state)
-        val offset = offset.interpolated(state)
+        val copies = copies.interpolatedFloat(state)
+        val offset = offset.interpolatedFloat(state)
 
         for (i in copies.toInt() - 1 downTo 0) {
             matrix.fastSetFrom(transform.repeaterMatrix(state, i + offset))

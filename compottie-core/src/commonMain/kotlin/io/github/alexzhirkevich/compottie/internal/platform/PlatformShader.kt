@@ -9,12 +9,11 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.util.fastMap
-import io.github.alexzhirkevich.compottie.ExperimentalCompottieApi
-import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.LruMap
 import io.github.alexzhirkevich.compottie.dynamic.LottieGradient
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
+import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import io.github.alexzhirkevich.compottie.internal.helpers.GradientColors
 import io.github.alexzhirkevich.compottie.internal.helpers.GradientType
 import kotlin.math.hypot
@@ -75,8 +74,8 @@ internal fun GradientShader(
     cache: GradientCache
 ) : Shader {
 
-    val start = startPoint.interpolated(state)
-    val end = endPoint.interpolated(state)
+    val start = Vec2(startPoint.interpolatedVec(state))
+    val end = Vec2(endPoint.interpolatedVec(state))
 
     colors.colors.numberOfColors = colors.numberOfColors
 

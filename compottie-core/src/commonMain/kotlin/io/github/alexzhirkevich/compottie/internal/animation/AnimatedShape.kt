@@ -43,15 +43,15 @@ internal abstract class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder
 
     private suspend fun createPath(args : List<JsAny?>, runtime: ScriptRuntime): AnimatedShape {
         val points = (args[0]?.toKotlin(runtime) as? List<List<Number>>)
-            ?.fastMap { it.fastMap { it.toFloat() } }
+            ?.fastMap { it.fastMap { it.toFloat() }.toFloatArray() }
             ?: DefaultPoints
 
         val inTangents = (args.getOrNull(1)?.toKotlin(runtime) as? List<List<Number>>)
-            ?.fastMap { it.fastMap { it.toFloat() } }
+            ?.fastMap {  l -> FloatArray(l.size) { l[it].toFloat() } }
             ?: emptyList()
 
         val outTangents = (args.getOrNull(2)?.toKotlin(runtime) as? List<List<Number>>)
-            ?.fastMap { it.fastMap { it.toFloat() } }
+            ?.fastMap {  l -> FloatArray(l.size) { l[it].toFloat() } }
             ?: emptyList()
 
         val isClosed = !runtime.isFalse(args.getOrNull(3) ?: true)
@@ -210,7 +210,7 @@ internal abstract class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder
         @Transient
         private var bezierDelegate = BaseKeyframeAnimation(
             index = index,
-            keyframes = keyframes,
+            sourceKeyframes = keyframes,
             emptyValue = tmpBezier,
             map = { s, e, p ->
                 tmpBezier.interpolateBetween(s, e, easingX.transform(p))
@@ -221,7 +221,7 @@ internal abstract class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder
         @Transient
         private var delegate = BaseKeyframeAnimation(
             index = index,
-            keyframes = keyframes,
+            sourceKeyframes = keyframes,
             emptyValue = tmpPath,
             map = { s, e, p ->
                 tmpBezier.interpolateBetween(s, e, easingX.transform(p))
@@ -281,7 +281,8 @@ internal abstract class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder
         override fun setClosed(closed: Boolean) {}
 
         override fun raw(state: AnimationState): Path {
-            return state.composition.animation.slots.shape(sid)?.interpolated(state)
+            return state.composition.animation.slots.shape(sid)
+                ?.interpolated(state)
                 ?: emptyPath.apply { reset() }
         }
     }
@@ -310,10 +311,10 @@ internal object AnimatedShapeSerializer : JsonContentPolymorphicSerializer<Anima
 
 private val DefaultPoints by lazy {
     listOf(
-        listOf(0f, 0f),
-        listOf(100f, 0f),
-        listOf(100f, 100f),
-        listOf(0f, 100f)
+        floatArrayOf(0f, 0f),
+        floatArrayOf(100f, 0f),
+        floatArrayOf(100f, 100f),
+        floatArrayOf(0f, 100f)
     )
 }
 

@@ -413,7 +413,9 @@ internal abstract class BaseLayer : Layer {
         val maskPath = mask.shape?.interpolated(state) ?: return
         path.set(maskPath)
         path.transform(matrix)
-        contentPaint.alpha = mask.opacity?.interpolatedNorm(state)?.coerceIn(0f, 1f) ?: 1f
+        contentPaint.alpha = if (mask.opacity != null){
+            mask.opacity.interpolatedNorm(state).coerceIn(0f, 1f)
+        } else 1f
         canvas.drawPath(path, contentPaint)
     }
 
@@ -435,7 +437,7 @@ internal abstract class BaseLayer : Layer {
         mask: Mask,
         state: AnimationState,
     ) {
-        canvas.withSaveLayer(rect.toRect(), dstOutPaint) {
+       canvas.withSaveLayer(rect.toRect(), dstOutPaint) {
             canvas.drawRect(rect, contentPaint)
             dstOutPaint.alpha = mask.opacity?.interpolatedNorm(state)
                 ?.coerceIn(0f, 1f) ?: 1f

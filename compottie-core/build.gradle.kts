@@ -17,6 +17,7 @@ kotlin {
             implementation(libs.okio)
             implementation(libs.atomicfu)
             api(libs.keight.core)
+            implementation(libs.androidx.collection)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

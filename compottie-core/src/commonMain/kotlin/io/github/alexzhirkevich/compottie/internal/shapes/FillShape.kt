@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie.internal.shapes
 
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
@@ -108,7 +109,7 @@ internal class FillShape(
             return
         }
 
-        paint.color = color.interpolated(state)
+        paint.color = Color(color.interpolatedColor(state))
         paint.pathEffect = null
 
         dynamicFill.applyToPaint(

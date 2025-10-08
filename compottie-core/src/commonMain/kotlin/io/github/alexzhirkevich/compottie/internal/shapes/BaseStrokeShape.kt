@@ -250,7 +250,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         }
 
         outBounds.set(path.getBounds())
-        outBounds.extendBy(strokeWidth.interpolated(state) + 1)
+        outBounds.extendBy(strokeWidth.interpolatedFloat(state) + 1)
     }
 
     override fun prepareExpressions(state: AnimationState) {
@@ -349,12 +349,11 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         }
 
 
-        val o = dashOffset?.interpolated(state) ?: 0f
-
+        val o = dashOffset?.interpolatedFloat(state) ?: 0f
 
         dp.fastForEachIndexed { i, strokeDash ->
 
-            dashPatternValues[i] = strokeDash.interpolated(state)
+            dashPatternValues[i] = strokeDash.interpolatedFloat(state)
 
             // If the value of the dash pattern or gap is too small, the number of individual sections
             // approaches infinity as the value approaches 0.

@@ -93,10 +93,9 @@ internal abstract class AnimatedTransform : ExpressionHolder, PropertyGroup {
             return matrix
         }
 
-        val interpolatedPosition = position.interpolated(state)
-            .also {
-                matrix.preTranslate(it.x, it.y)
-            }
+        val interpolatedPosition = Vec2(position.interpolatedVec(state))
+        matrix.preTranslate(interpolatedPosition.x, interpolatedPosition.y)
+
 
         if (state.thisLayer.autoOrient) {
             if (interpolatedPosition != Vec2.Zero) {
@@ -106,74 +105,78 @@ internal abstract class AnimatedTransform : ExpressionHolder, PropertyGroup {
                 // 1) Find the next position value.
                 // 2) Create a vector from the current position to the next position.
                 // 3) Find the angle of that vector to the X axis (0 degrees).
-                val nextPosition = state.onFrame(state.frame + 0.1f, position::interpolated)
+                val nextPosition = state.onFrame(state.frame + 0.1f){
+                    Vec2(position.interpolatedVec(it))
+                }
 
                 radiansToDegree(atan2((nextPosition.y - startY), (nextPosition.x - startX)))
                     .let(matrix::preRotate)
             }
         } else {
-            rotation.interpolated(state)
-                .takeIf { it != 0f }
-                ?.let(matrix::preRotate)
+            val r = rotation.interpolatedFloat(state)
+            if (r != 0f){
+                matrix.preRotate(r)
+            }
         }
 
         rotationX?.let {
-            matrix.preRotateX(it.interpolated(state))
+            matrix.preRotateX(it.interpolatedFloat(state))
         }
 
         rotationY?.let {
-            matrix.preRotateY(it.interpolated(state))
+            matrix.preRotateY(it.interpolatedFloat(state))
         }
 
         rotationZ?.let {
-            matrix.preRotateZ(it.interpolated(state))
+            matrix.preRotateZ(it.interpolatedFloat(state))
         }
 
-        skew.interpolated(state)
-            .takeIf { it != 0f }
-            ?.let { sk ->
+        val sk = skew.interpolatedFloat(state)
+         if (sk != 0f) {
 
-                val skewAngle = skewAxis.interpolated(state)
+             val skewAngle = skewAxis.interpolatedFloat(state)
 
-                val mCos = if (skewAngle == 0f)
-                    0f
-                else cos(degreeToRadians(-skewAngle + 90))
+             val mCos = if (skewAngle == 0f)
+                 0f
+             else cos(degreeToRadians(-skewAngle + 90))
 
-                val mSin = if (skewAngle == 0f)
-                    1f
-                else sin(degreeToRadians(-skewAngle + 90))
+             val mSin = if (skewAngle == 0f)
+                 1f
+             else sin(degreeToRadians(-skewAngle + 90))
 
-                val aTan = tan(degreeToRadians(sk))
+             val aTan = tan(degreeToRadians(sk))
 
-                clearSkewValues()
-                skewValues[0] = mCos
-                skewValues[1] = mSin
-                skewValues[3] = -mSin
-                skewValues[4] = mCos
-                skewValues[8] = 1f
-                skewMatrix1.setValues(skewValues)
-                clearSkewValues()
-                skewValues[0] = 1f
-                skewValues[3] = aTan
-                skewValues[4] = 1f
-                skewValues[8] = 1f
-                skewMatrix2.setValues(skewValues)
-                clearSkewValues()
-                skewValues[0] = mCos
-                skewValues[1] = -mSin
-                skewValues[3] = mSin
-                skewValues[4] = mCos
-                skewValues[8] = 1f
+             clearSkewValues()
+             skewValues[0] = mCos
+             skewValues[1] = mSin
+             skewValues[3] = -mSin
+             skewValues[4] = mCos
+             skewValues[8] = 1f
+             skewMatrix1.setValues(skewValues)
+             clearSkewValues()
+             skewValues[0] = 1f
+             skewValues[3] = aTan
+             skewValues[4] = 1f
+             skewValues[8] = 1f
+             skewMatrix2.setValues(skewValues)
+             clearSkewValues()
+             skewValues[0] = mCos
+             skewValues[1] = -mSin
+             skewValues[3] = mSin
+             skewValues[4] = mCos
+             skewValues[8] = 1f
 
-                skewMatrix3.setValues(skewValues)
-                skewMatrix2.preConcat(skewMatrix1)
-                skewMatrix3.preConcat(skewMatrix2)
+             skewMatrix3.setValues(skewValues)
+             skewMatrix2.preConcat(skewMatrix1)
+             skewMatrix3.preConcat(skewMatrix2)
 
-                matrix.preConcat(skewMatrix3)
-            }
+             matrix.preConcat(skewMatrix3)
+         }
 
-        scale.interpolatedNorm(state).let { matrix.preScale(it.x, it.y) }
-        anchorPoint.interpolated(state).let { matrix.preTranslate(-it.x, -it.y) }
+        val sc = Vec2(scale.interpolatedNorm(state))
+        matrix.preScale(sc.x, sc.y)
+        val ap = Vec2(anchorPoint.interpolatedVec(state))
+        matrix.preTranslate(-ap.x, -ap.y)
 
         return matrix
     }

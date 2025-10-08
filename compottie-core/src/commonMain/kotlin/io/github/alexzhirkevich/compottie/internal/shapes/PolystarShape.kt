@@ -1,6 +1,5 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
 import io.github.alexzhirkevich.compottie.dynamic.DynamicPolystarProvider
@@ -169,7 +168,7 @@ internal class PolystarShape(
 
     private fun createStarPath(state: AnimationState) {
         val points = points.interpolated(state = state)
-        var currentAngle = degreeToRadians(rotation.interpolated(state) - 90f)
+        var currentAngle = degreeToRadians(rotation.interpolatedFloat(state) - 90f)
 
         // adjust current angle for partial points
         var anglePerPoint: Float = (TwoPI / points).toFloat()
@@ -182,8 +181,8 @@ internal class PolystarShape(
             currentAngle += (halfAnglePerPoint * (1f - partialPointAmount))
         }
 
-        val outerRadius = outerRadius.interpolated(state)
-        val innerRadius = innerRadius.interpolated(state)
+        val outerRadius = outerRadius.interpolatedFloat(state)
+        val innerRadius = innerRadius.interpolatedFloat(state)
 
         val innerRoundedness = innerRoundness.interpolatedNorm(state)
         val outerRoundedness = outerRoundness.interpolatedNorm(state)
@@ -273,22 +272,23 @@ internal class PolystarShape(
             longSegment = !longSegment
         }
 
-        position.interpolated(state).takeIf { it != Vec2.Zero }?.let {
-            path.translate(it)
+        val pos = Vec2(position.interpolatedVec(state))
+        if (pos != Vec2.Zero) {
+            path.translate(pos)
         }
 
         path.close()
     }
 
     private fun createPolygonPath(state: AnimationState) {
-        val points = floor(points.interpolated(state)).toInt()
-        var currentAngle = degreeToRadians((rotation.interpolated(state)) - 90f)
+        val points = floor(points.interpolatedFloat(state)).toInt()
+        var currentAngle = degreeToRadians((rotation.interpolatedFloat(state)) - 90f)
 
         // adjust current angle for partial points
         val anglePerPoint = (TwoPI / points).toFloat()
 
         val roundedness = outerRoundness.interpolatedNorm(state)
-        val radius = outerRadius.interpolated(state)
+        val radius = outerRadius.interpolatedFloat(state)
         var x: Float
         var y: Float
         var previousX: Float
@@ -361,8 +361,9 @@ internal class PolystarShape(
             currentAngle += anglePerPoint
         }
 
-        position.interpolated(state).takeIf { it != Offset.Zero }?.let {
-            path.translate(it)
+        val pos = Vec2(position.interpolatedVec(state))
+        if (pos != Vec2.Zero) {
+            path.translate(pos)
         }
         path.close()
     }

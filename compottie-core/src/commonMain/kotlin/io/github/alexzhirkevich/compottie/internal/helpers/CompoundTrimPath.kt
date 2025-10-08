@@ -40,7 +40,7 @@ internal fun Path.applyTrimPath(trimPath: TrimPathShape, state: AnimationState) 
     }
     val start: Float = trimPath.start.interpolatedNorm(state)
     val end: Float = trimPath.end.interpolatedNorm(state)
-    val offset: Float = trimPath.offset.interpolated(state)
+    val offset: Float = trimPath.offset.interpolatedFloat(state)
 
     applyTrimPath(
         startValue = start,

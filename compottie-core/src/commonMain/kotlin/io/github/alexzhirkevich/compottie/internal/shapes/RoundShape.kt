@@ -64,7 +64,7 @@ internal class RoundShape(
 
 internal fun RoundShape.applyTo(paint: Paint, state: AnimationState) {
     if (!isHidden(state)) {
-        val radius = radius.interpolated(state)
+        val radius = radius.interpolatedFloat(state)
         if (radius > 1) {
             paint.appendPathEffect(PathEffect.cornerPathEffect(radius))
         }

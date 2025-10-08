@@ -9,8 +9,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 internal fun FloatArray.toOffset() = Offset(this[0], this[1])
-internal fun List<Float>.toOffset() = Offset(this[0], this[1])
-internal fun List<Float>.toSize() = Size(this[0], this[1])
+internal fun FloatArray.toSize() = Size(this[0], this[1])
 
 private val PiDiv180 = PI / 180
 private val PiDiv180Float = PiDiv180.toFloat()
