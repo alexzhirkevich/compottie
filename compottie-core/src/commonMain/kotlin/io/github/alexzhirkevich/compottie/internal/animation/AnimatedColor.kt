@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.isNotNull
 import io.github.alexzhirkevich.keight.ScriptRuntime
@@ -79,10 +80,10 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
         @Transient
         private val delegate = ColorKeyframeAnimation(
             index = index,
-            keyframes = keyframes.map {
+            keyframes = keyframes.fastMap {
                 ColorKeyframe(
-                    start = it.start?.toColor() ?: Color.Transparent,
-                    end = it.end?.toColor()  ?: Color.Transparent,
+                    start = it.start?.toColor(),
+                    end = it.end?.toColor(),
                     time = it.time,
                     hold = it.hold,
                     inValue = it.inValue,

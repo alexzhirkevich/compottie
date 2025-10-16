@@ -3,8 +3,8 @@ package io.github.alexzhirkevich.compottie.internal.animation
 import androidx.compose.ui.graphics.Color
 
 internal class ColorKeyframe(
-    override val start : Color,
-    override val end : Color,
+    override val start : Color?,
+    override val end : Color?,
     time : Float,
     hold: Boolean = false,
     inValue : BezierInterpolation? = null,
