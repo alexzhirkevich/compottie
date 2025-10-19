@@ -84,8 +84,8 @@ kotlin {
 //            implementation("io.github.alexzhirkevich:compottie-network:2.0.0-beta01")
 //            implementation("io.github.alexzhirkevich:compottie-resources:2.0.0-beta01")
 
-            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.0-beta01")
-            implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0-beta01")
+            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.1")
+            implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.9.5")
             implementation("org.jetbrains.compose.material3.adaptive:adaptive:1.1.0")
             implementation("org.jetbrains.compose.material3.adaptive:adaptive-layout:1.1.0")
             implementation("org.jetbrains.compose.material3.adaptive:adaptive-navigation:1.1.0")
