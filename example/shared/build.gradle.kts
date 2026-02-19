@@ -28,10 +28,6 @@ kotlin {
                 withJvm()
                 withAndroidTarget()
             }
-            group("web") {
-                withJs()
-                withWasmJs()
-            }
             group("skiko") {
                 withJvm()
                 withIos()
@@ -50,7 +46,6 @@ kotlin {
     }
 
     listOf(
-        iosX64(),
         iosArm64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
@@ -58,7 +53,6 @@ kotlin {
             baseName = "shared"
         }
     }
-    macosX64()
     macosArm64()
     jvm()
 
@@ -73,28 +67,26 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation("org.jetbrains.compose.material:material-icons-core:1.7.3")
+
             implementation(project(":compottie"))
             implementation(project(":compottie-dot"))
             implementation(project(":compottie-network"))
             implementation(project(":compottie-resources"))
 
-            implementation("org.jetbrains.compose.material:material-icons-core:1.7.3")
-//            implementation("io.github.alexzhirkevich:compottie:2.0.0-beta01")
-//            implementation("io.github.alexzhirkevich:compottie-dot:2.0.0-beta01")
-//            implementation("io.github.alexzhirkevich:compottie-network:2.0.0-beta01")
-//            implementation("io.github.alexzhirkevich:compottie-resources:2.0.0-beta01")
+//            implementation("io.github.alexzhirkevich:compottie:2.0.2")
+//            implementation("io.github.alexzhirkevich:compottie-dot:2.0.2")
+//            implementation("io.github.alexzhirkevich:compottie-network:2.0.2")
+//            implementation("io.github.alexzhirkevich:compottie-resources:2.0.2")
 
-            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.0-beta01")
-            implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0-beta01")
-            implementation("org.jetbrains.compose.material3.adaptive:adaptive:1.1.0")
-            implementation("org.jetbrains.compose.material3.adaptive:adaptive-layout:1.1.0")
-            implementation("org.jetbrains.compose.material3.adaptive:adaptive-navigation:1.1.0")
+//            implementation(libs.androidx.navigation.compose)
+            implementation(libs.androidx.lifecycle.viewmodel)
 
-            implementation(compose.material3)
+            implementation(libs.compose.material3)
             implementation(compose.components.resources)
             implementation(libs.serialization)
             implementation(libs.coil.compose)
             implementation(libs.coil.network)
+            implementation(libs.atomicfu)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
@@ -111,6 +103,8 @@ kotlin {
         }
         jvmMain.dependencies {
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.coroutines.swing)
+
         }
         jsMain.dependencies {
             implementation(libs.ktor.client.js)

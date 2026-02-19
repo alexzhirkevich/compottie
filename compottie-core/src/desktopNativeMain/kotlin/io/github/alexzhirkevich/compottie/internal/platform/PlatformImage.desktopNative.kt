@@ -41,7 +41,7 @@ internal actual suspend fun ImageBitmap.Companion.fromBytes(
         rowBytes = imageInfo.minRowBytes
     )
 
-    image.scalePixels(pixMap, SamplingMode.DEFAULT, false)
+    image.scalePixels(pixMap, SamplingMode.LINEAR, false)
 
     return Image
         .makeFromPixmap(pixMap)
