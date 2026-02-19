@@ -12,7 +12,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":compottie-core"))
-            implementation(compose.foundation)
+            implementation(libs.compose.foundation)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

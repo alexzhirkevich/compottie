@@ -4,18 +4,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
 
-
-private var _useStableWasmMemoryManagement : Boolean = false
-
-/**
- * Stable memory management will be much slower but more compatible with Kotlin compiler
- * versions.
- *
- * It is disabled by default. Turn this on if you have problems with dotLottie decompression on wasm
- * */
-@ExperimentalCompottieApi
-public var Compottie.useStableWasmMemoryManagement: Boolean by ::_useStableWasmMemoryManagement
-
 /**
  * [LottieComposition] from a dotLottie zip archive.
  *

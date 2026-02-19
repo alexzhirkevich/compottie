@@ -74,7 +74,7 @@ internal class RectShape(
     override fun getPath(state: AnimationState): Path {
 
         if (dynamicShape?.hidden.derive(hidden, state)) {
-            path.reset()
+            path.rewind()
             return path
         }
 

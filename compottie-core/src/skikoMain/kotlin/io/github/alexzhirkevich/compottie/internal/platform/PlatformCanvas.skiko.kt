@@ -6,11 +6,14 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.nativeCanvas
 
 internal actual fun Canvas.saveLayer(rect : MutableRect, paint : Paint, flag : Int) {
-    nativeCanvas.saveLayer(
-        left = rect.left,
-        top = rect.top,
-        right = rect.right,
-        bottom = rect.bottom,
-        paint = paint.asFrameworkPaint()
-    )
+    try {
+        nativeCanvas.saveLayer(
+            left = rect.left,
+            top = rect.top,
+            right = rect.right,
+            bottom = rect.bottom,
+            paint = paint.asFrameworkPaint()
+        )
+    } catch (t : ClassCastException) {
+    }
 }

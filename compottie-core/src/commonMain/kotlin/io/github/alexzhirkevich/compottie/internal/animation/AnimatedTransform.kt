@@ -36,6 +36,8 @@ internal abstract class AnimatedTransform : ExpressionHolder, PropertyGroup {
 
     override val group: PropertyGroup? = null
 
+    var isAutoOrient : Boolean = false
+
     override fun prepareExpressions(state: AnimationState) {
 
         anchorPoint.group = this
@@ -93,31 +95,24 @@ internal abstract class AnimatedTransform : ExpressionHolder, PropertyGroup {
             return matrix
         }
 
-        val interpolatedPosition = Vec2(position.interpolatedVec(state))
-        matrix.preTranslate(interpolatedPosition.x, interpolatedPosition.y)
+        val curPos = Vec2(position.interpolatedVec(state))
+        matrix.preTranslate(curPos.x, curPos.y)
 
+        val angle = if (isAutoOrient) {
+            // 1) Find the next position value.
+            // 2) Create a vector from the current position to the next position.
+            // 3) Find the angle of that vector to the X axis (0 degrees).
+            val vector = state.onFrame(state.frame + 0.01f) {
+                Vec2(position.interpolatedVec(it))
+            } - curPos
 
-        if (state.thisLayer.autoOrient) {
-            if (interpolatedPosition != Vec2.Zero) {
-                // Store the start X and Y values because the pointF will be overwritten by the next getValue call.
-                val startX = interpolatedPosition.x
-                val startY = interpolatedPosition.y
-                // 1) Find the next position value.
-                // 2) Create a vector from the current position to the next position.
-                // 3) Find the angle of that vector to the X axis (0 degrees).
-                val nextPosition = state.onFrame(state.frame + 0.1f){
-                    Vec2(position.interpolatedVec(it))
-                }
-
-                radiansToDegree(atan2((nextPosition.y - startY), (nextPosition.x - startX)))
-                    .let(matrix::preRotate)
-            }
+            radiansToDegree(atan2(vector.y, vector.x)) +
+                    rotation.interpolatedFloat(state)
         } else {
-            val r = rotation.interpolatedFloat(state)
-            if (r != 0f){
-                matrix.preRotate(r)
-            }
+            rotation.interpolatedFloat(state)
         }
+
+        matrix.preRotate(angle)
 
         rotationX?.let {
             matrix.preRotateX(it.interpolatedFloat(state))

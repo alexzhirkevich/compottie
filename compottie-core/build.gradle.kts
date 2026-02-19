@@ -12,12 +12,15 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation(compose.foundation)
+            implementation(libs.compose.foundation)
             implementation(libs.serialization)
             implementation(libs.okio)
             implementation(libs.atomicfu)
             api(libs.keight.core)
             implementation(libs.androidx.collection)
+        }
+        webMain.dependencies {
+            implementation(libs.kotlinx.browser)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

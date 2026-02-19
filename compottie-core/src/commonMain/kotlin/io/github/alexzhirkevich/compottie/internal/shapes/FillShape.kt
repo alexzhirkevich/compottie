@@ -126,7 +126,7 @@ internal class FillShape(
 
         state.thisLayer.effectsApplier.applyTo(paint, state, effectsState)
 
-        path.reset()
+        path.rewind()
         path.fillType = fillType
 
         paths.fastForEach {
@@ -143,7 +143,7 @@ internal class FillShape(
         outBounds: MutableRect
     ) {
 
-        path.reset()
+        path.rewind()
         paths.fastForEach {
             path.addPath(it.getPath(state), parentMatrix)
         }

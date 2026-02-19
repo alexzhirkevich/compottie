@@ -11,7 +11,7 @@ kotlin {
             implementation(project(":compottie-dot"))
             implementation(libs.serialization)
             implementation(libs.atomicfu)
-            implementation(compose.ui)
+            implementation(libs.compose.ui)
             api(libs.okio)
             implementation(libs.coroutines.core)
         }

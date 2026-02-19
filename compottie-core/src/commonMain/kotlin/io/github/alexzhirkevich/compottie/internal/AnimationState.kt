@@ -24,10 +24,10 @@ import kotlin.time.Duration
 
 public class AnimationState @PublishedApi internal constructor(
     public val composition: LottieComposition,
+    internal val textMeasurer: TextMeasurer,
     internal val assets: Map<String, LottieAsset>,
     internal val fonts: Map<String, FontFamily>,
     frame: Float,
-    internal val textMeasurer: TextMeasurer,
     applyOpacityToLayers : Boolean,
     clipToCompositionBounds: Boolean,
     clipTextToBoundingBoxes: Boolean,

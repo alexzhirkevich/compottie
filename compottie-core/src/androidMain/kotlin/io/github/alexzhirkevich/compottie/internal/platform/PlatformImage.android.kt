@@ -1,13 +1,31 @@
 package io.github.alexzhirkevich.compottie.internal.platform
 
+import android.annotation.SuppressLint
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.text.font.Font
 
-public actual fun ImageBitmap.Companion.fromBytes(bytes: ByteArray) : ImageBitmap {
+@SuppressLint("UseKtx")
+internal actual suspend fun ImageBitmap.Companion.fromBytes(
+    bytes: ByteArray,
+    width : Int,
+    height : Int
+) : ImageBitmap {
+
+//    return BitmapFactory
+//        .decodeByteArray(bytes, 0, bytes.size)
+//        .asImageBitmap()
+//        .resize(width, height)
+
     return BitmapFactory
         .decodeByteArray(bytes, 0, bytes.size)
-        .asImageBitmap()
+        .let {
+            if (it.width == width && it.height == height) {
+                it
+            } else {
+                Bitmap.createScaledBitmap(it, width, height, false)
+            }
+        }.asImageBitmap()
 }
 

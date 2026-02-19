@@ -59,7 +59,7 @@ internal class EllipseShape(
     override fun getPath(state: AnimationState): Path {
 
         if (dynamicShape?.hidden.derive(hidden, state)) {
-            path.reset()
+            path.rewind()
             return path
         }
 
@@ -72,7 +72,7 @@ internal class EllipseShape(
         val cpW = halfWidth * ELLIPSE_CONTROL_POINT_PERCENTAGE
         val cpH = halfHeight * ELLIPSE_CONTROL_POINT_PERCENTAGE
 
-        path.reset()
+        path.rewind()
 //        if (circleShape.isReversed) {
 //            path.moveTo(0f, -halfHeight)
 //            path.cubicTo(0 - cpW, -halfHeight, -halfWidth, 0 - cpH, -halfWidth, 0f)

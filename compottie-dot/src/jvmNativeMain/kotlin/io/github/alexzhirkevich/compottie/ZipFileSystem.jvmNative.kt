@@ -16,10 +16,8 @@ internal actual class ZipFileSystem actual constructor(
     private val zipFileSystem = parent.openZip(path)
 
     actual suspend fun read(path: Path): ByteArray {
-        return withContext(Dispatchers.IO) {
-            zipFileSystem.read(path) {
-                readByteArray()
-            }
+        return zipFileSystem.read(path) {
+            readByteArray()
         }
     }
 }

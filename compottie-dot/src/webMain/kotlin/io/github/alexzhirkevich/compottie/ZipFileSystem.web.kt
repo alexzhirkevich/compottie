@@ -5,8 +5,8 @@ import okio.Path
 import okio.Path.Companion.toPath
 import okio.buffer
 import okio.use
-
-internal expect suspend fun decompress(array: ByteArray, decompressedSize : Int) : ByteArray
+import org.khronos.webgl.Int8Array
+import org.khronos.webgl.toByteArray
 
 internal actual class ZipFileSystem actual constructor(
     private val parent : FileSystem,
@@ -27,7 +27,7 @@ internal actual class ZipFileSystem actual constructor(
         if (entry.compressionMethod == COMPRESSION_METHOD_STORED)
             return bytes
 
-        return decompress(bytes, entry.size.toInt())
+        return Int8Array(deflate(bytes)).toByteArray()
     }
 
     private val root = "/".toPath()

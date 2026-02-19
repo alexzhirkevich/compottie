@@ -54,25 +54,25 @@ internal class ImageAsset(
 
     @OptIn(ExperimentalEncodingApi::class)
     @Transient
-    var bitmap: ImageBitmap? = fileName
-        .takeIf { embedded || it.isBase64Data }
-        ?.substringAfter("base64,")
-        ?.trim()
-        ?.let {
-            runCatching {
-                ImageBitmap.fromBytes(Base64.decode(it))
-            }.getOrNull()
-        }?.let(::transformBitmap)
+    var bitmap: ImageBitmap? = null
         private set
 
-    fun setBitmap(bitmap: ImageBitmap) {
-        this.bitmap = transformBitmap(bitmap)
+    override suspend fun prepare() {
+        if (bitmap == null) {
+            fileName
+                .takeIf { embedded || it.isBase64Data }
+                ?.substringAfter("base64,")
+                ?.trim()
+                ?.let {
+                    runCatching {
+                        setBitmap(ImageBitmap.fromBytes(Base64.decode(it), width, height))
+                    }
+                }
+        }
     }
 
-    private fun transformBitmap(bitmap: ImageBitmap): ImageBitmap {
-        return if (w != null && w != bitmap.width || h != null && h != bitmap.width) {
-            bitmap.resize(w ?: bitmap.width, h ?: bitmap.height)
-        } else bitmap
+    fun setBitmap(bitmap: ImageBitmap) {
+        this.bitmap = bitmap
     }
 
     override fun copy(): LottieAsset =
@@ -94,8 +94,9 @@ private val String.isBase64Data : Boolean
 
 
 private val emptyPaint = Paint()
+
 internal fun ImageBitmap.resize(w : Int, h : Int) : ImageBitmap {
-    if (width == w && h == h){
+    if (width == w && height == h){
         return this
     }
     val bitmap = ImageBitmap(w, h)
@@ -103,7 +104,7 @@ internal fun ImageBitmap.resize(w : Int, h : Int) : ImageBitmap {
     Canvas(bitmap).apply {
         drawImageRect(
             image = this@resize,
-            dstSize = IntSize(w, h),
+            dstSize = IntSize(w-1, h-1),
             paint = emptyPaint
         )
     }

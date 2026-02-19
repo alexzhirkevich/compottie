@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.withSaveLayer
+import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastForEachReversed
@@ -48,8 +49,6 @@ internal abstract class BaseLayer : Layer {
     private val path = Path()
 
     private val matrix = Matrix()
-    private val canvasMatrix = Matrix()
-    private val canvasBounds = MutableRect(0f, 0f, 0f, 0f)
 
     private val contentPaint by lazy {
         Paint().apply {
@@ -58,11 +57,9 @@ internal abstract class BaseLayer : Layer {
         }
     }
 
-    private val clearPaint by lazy {
-        Paint().apply {
-            isAntiAlias = true
-            blendMode = BlendMode.Clear
-        }
+    private val clearPaint = Paint().apply {
+        isAntiAlias = true
+        blendMode = BlendMode.Clear
     }
 
     private val dstInPaint by lazy {
@@ -76,12 +73,6 @@ internal abstract class BaseLayer : Layer {
         Paint().apply {
             blendMode = BlendMode.DstOut
             isAntiAlias = true
-        }
-    }
-
-    private val solidWhitePaint by lazy {
-        Paint().apply {
-            color = Color.White
         }
     }
 
@@ -108,7 +99,7 @@ internal abstract class BaseLayer : Layer {
     override var comp: ExpressionComposition? = null
 
     private val allMasksAreNone by lazy {
-        masks?.all { it.mode == MaskMode.None } == true
+        masks?.fastAll { it.mode == MaskMode.None } == true
     }
 
     final override val effectsApplier by lazy {
@@ -169,8 +160,8 @@ internal abstract class BaseLayer : Layer {
 
             if (
                 matteLayer == null
-                    && !hasMasks()
-                    && blendMode == LottieBlendMode.Normal
+                && !hasMasks()
+                && blendMode == LottieBlendMode.Normal
             ) {
                 matrix.preConcat(transform.matrix(state))
                 drawLayer(drawScope, matrix, alpha, state)
@@ -258,6 +249,8 @@ internal abstract class BaseLayer : Layer {
     }
 
     private fun buildParentLayerListIfNeeded() {
+        transform.isAutoOrient = this.autoOrient
+
         if (parentLayers != null) {
             return
         }

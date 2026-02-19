@@ -102,7 +102,7 @@ internal class ContentGroupImpl(
 
     override fun getPath(state: AnimationState): Path {
 
-        path.reset()
+        path.rewind()
         if (hidden(state)) {
             return path
         }

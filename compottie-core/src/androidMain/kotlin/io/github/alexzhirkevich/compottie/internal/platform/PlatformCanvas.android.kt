@@ -55,22 +55,26 @@ internal fun android.graphics.Matrix.setFromInternal(matrix: Matrix) {
 }
 
 internal actual fun Canvas.saveLayer(rect : MutableRect, paint : Paint, flag : Int)  {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-        nativeCanvas.saveLayer(
-            /* left = */ rect.left,
-            /* top = */ rect.top,
-            /* right = */ rect.right,
-            /* bottom = */ rect.bottom,
-            /* paint = */ paint.asFrameworkPaint(),
-            /* saveFlags = */ flag
-        )
-    } else {
-        nativeCanvas.saveLayer(
-            /* left = */ rect.left,
-            /* top = */rect.top,
-            /* right = */rect.right,
-            /* bottom = */rect.bottom,
-            /* paint = */paint.asFrameworkPaint()
-        )
+    try {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            nativeCanvas.saveLayer(
+                /* left = */ rect.left,
+                /* top = */ rect.top,
+                /* right = */ rect.right,
+                /* bottom = */ rect.bottom,
+                /* paint = */ paint.asFrameworkPaint(),
+                /* saveFlags = */ flag
+            )
+        } else {
+            nativeCanvas.saveLayer(
+                /* left = */ rect.left,
+                /* top = */rect.top,
+                /* right = */rect.right,
+                /* bottom = */rect.bottom,
+                /* paint = */paint.asFrameworkPaint()
+            )
+        }
+    } catch (t : ClassCastException){
+
     }
 }

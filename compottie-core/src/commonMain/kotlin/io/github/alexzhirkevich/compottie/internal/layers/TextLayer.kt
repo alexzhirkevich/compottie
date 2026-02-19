@@ -17,7 +17,6 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.BaselineShift
@@ -25,8 +24,6 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEachIndexed
-import io.github.alexzhirkevich.compottie.Compottie
-import io.github.alexzhirkevich.compottie.InternalCompottieApi
 import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicTextLayerProvider
@@ -54,17 +51,13 @@ import io.github.alexzhirkevich.compottie.internal.utils.fastReset
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
 import io.github.alexzhirkevich.compottie.internal.utils.toOffset
-import io.github.alexzhirkevich.compottie.ioDispatcher
 import io.github.alexzhirkevich.keight.Callable
 import io.github.alexzhirkevich.keight.ScriptRuntime
 import io.github.alexzhirkevich.keight.js.JsAny
 import io.github.alexzhirkevich.keight.js.JsPropertyAccessor
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlin.time.measureTime
 
 
 @Serializable
@@ -531,8 +524,12 @@ internal class TextLayer(
                 val character = glyphs[textLine[i].toString()]
                 (character?.width ?: 0f) * fontScale + tracking
             } else {
-                val measureResult = textMeasurer.measure(textLine[i].toString(), textStyle, density = density, layoutDirection = layoutDirection)
-                measureResult.size.width + tracking
+                textMeasurer.measure(
+                    text = textLine[i].toString(),
+                    style = textStyle,
+                    density = density,
+                    layoutDirection = layoutDirection,
+                ).size.width + tracking
             }
 
             if (c == ' ') {
@@ -692,7 +689,7 @@ internal class TextLayer(
     private fun drawCharacterAsGlyph(
       drawScope: DrawScope,
       state: AnimationState,
-       character : CharacterData,
+      character : CharacterData,
       fontScale : Float,
       document: TextDocument,
     ) {

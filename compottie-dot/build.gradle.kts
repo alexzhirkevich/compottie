@@ -6,6 +6,8 @@ plugins {
 
 kotlin {
 
+    applyDefaultHierarchyTemplate()
+
     sourceSets {
         commonMain.dependencies {
             api(project(":compottie-core"))
@@ -13,7 +15,7 @@ kotlin {
             implementation(libs.okio)
             implementation(libs.coroutines.core)
         }
-        wasmJsMain.dependencies {
+        webMain.dependencies {
             implementation(libs.kotlinx.browser)
         }
     }

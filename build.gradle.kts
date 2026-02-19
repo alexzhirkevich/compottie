@@ -84,6 +84,7 @@ fun Project.publicationSetup() {
 }
 
 
+@OptIn(ExperimentalKotlinGradlePluginApi::class)
 fun Project.multiplatformSetup() {
     project.kotlin {
 
@@ -99,16 +100,17 @@ fun Project.multiplatformSetup() {
                     withJvm()
                     withAndroidTarget()
                 }
-                group("web") {
-                    withJs()
-                    withWasmJs()
-                }
                 group("skiko") {
                     withJvm()
                     withIos()
                     withMacos()
                     withJs()
                     withWasmJs()
+                }
+                group("desktopNative") {
+                    withJvm()
+                    withIos()
+                    withMacos()
                 }
             }
         }
@@ -128,9 +130,7 @@ fun Project.multiplatformSetup() {
         }
 
         iosArm64()
-        iosX64()
         iosSimulatorArm64()
-        macosX64()
         macosArm64()
 
         js(IR) {

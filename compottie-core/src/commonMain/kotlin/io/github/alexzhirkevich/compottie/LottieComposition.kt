@@ -21,7 +21,6 @@ import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.helpers.Marker
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -177,6 +176,8 @@ public class LottieComposition internal constructor(
         @InternalCompottieApi
         set
 
+    internal var isFirstDraw : Boolean = true
+
     internal val expressionComposition = object : ExpressionComposition {
 
         override val name: String?
@@ -258,8 +259,9 @@ public class LottieComposition internal constructor(
             assets.mapNotNull { asset ->
                 when (asset) {
                     is ImageAsset -> {
+                        asset.prepare()
                         if (asset.bitmap == null) {
-                            launch(Dispatchers.Default) {
+                            launch {
                                 try {
                                     assetsManager.image(asset.spec)?.let {
                                         asset.setBitmap(it.toBitmap(asset.width, asset.height))
@@ -323,5 +325,3 @@ public class LottieComposition internal constructor(
 
     internal fun marker(name: String?) = markersMap[name]
 }
-
-private object UnspecifiedCompositionKey

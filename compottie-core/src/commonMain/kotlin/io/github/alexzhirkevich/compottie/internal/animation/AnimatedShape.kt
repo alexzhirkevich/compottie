@@ -265,13 +265,10 @@ internal abstract class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder
         override val index: Int? = null,
     ) : AnimatedShape() {
 
-        @Transient
-        private val emptyBezier = Bezier()
-
-        private val emptyPath by lazy { Path() }
-
         override fun rawBezier(state: AnimationState): Bezier {
-            return state.composition.animation.slots.shape(sid)?.rawBezier(state) ?: emptyBezier
+            return state.composition.animation.slots.shape(sid)
+                ?.rawBezier(state)
+                ?: EmptyBezier
         }
 
         override fun copy(): AnimatedShape {
@@ -283,10 +280,13 @@ internal abstract class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder
         override fun raw(state: AnimationState): Path {
             return state.composition.animation.slots.shape(sid)
                 ?.interpolated(state)
-                ?: emptyPath.apply { reset() }
+                ?: EmptyPath.apply { reset() }
         }
     }
 }
+
+private val EmptyPath = Path()
+private val EmptyBezier = Bezier()
 
 internal object AnimatedShapeSerializer : JsonContentPolymorphicSerializer<AnimatedShape>(
     baseClass = AnimatedShape::class

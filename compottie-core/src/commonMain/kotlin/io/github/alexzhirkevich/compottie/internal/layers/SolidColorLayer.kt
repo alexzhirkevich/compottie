@@ -132,7 +132,7 @@ internal class SolidColorLayer(
             return
         }
 
-        path.reset()
+        path.rewind()
 
         parentMatrix.map(Offset.Zero).let { path.moveTo(it.x, it.y) }
         parentMatrix.map(Offset(width, 0f)).let { path.lineTo(it.x, it.y) }

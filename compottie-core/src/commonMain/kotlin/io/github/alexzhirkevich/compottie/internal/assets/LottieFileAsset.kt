@@ -4,4 +4,6 @@ internal interface LottieFileAsset : LottieAsset {
     val path : String
     val fileName : String?
     val embedded: Boolean
+
+    suspend fun prepare()
 }

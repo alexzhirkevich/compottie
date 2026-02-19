@@ -5,8 +5,10 @@ import io.github.alexzhirkevich.compottie.internal.animation.ExpressionHolder
 import io.github.alexzhirkevich.compottie.internal.assets.CharacterData
 import io.github.alexzhirkevich.compottie.internal.assets.FontList
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.assets.PrecompositionAsset
 import io.github.alexzhirkevich.compottie.internal.helpers.Marker
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
+import io.github.alexzhirkevich.compottie.internal.layers.TextLayer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -75,4 +77,12 @@ internal class Animation(
             slotsMap = slotsMap
         )
     }
+}
+
+private fun List<Layer>.hasTextLayers() : Boolean {
+    return any { it is TextLayer}
+}
+
+internal fun Animation.hasTextLayers() : Boolean {
+    return layers.hasTextLayers() || assets.any { it is PrecompositionAsset && it.layers.hasTextLayers() }
 }

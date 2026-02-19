@@ -15,7 +15,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -28,8 +27,10 @@ import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.dynamic.LottieDynamicProperties
 import io.github.alexzhirkevich.compottie.dynamic.rememberLottieDynamicProperties
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.EmptyDrawScope
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionsEngineFactory
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
+import io.github.alexzhirkevich.compottie.internal.hasTextLayers
 import io.github.alexzhirkevich.compottie.internal.layers.CompositionLayer
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.utils.fastReset
@@ -38,6 +39,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
+
 
 /**
  * Create and remember Lottie painter
@@ -83,9 +85,7 @@ public fun rememberLottiePainter(
     expressionEngineFactory : ExpressionsEngineFactory
 ) : Painter {
 
-    val fontFamilyResolver = LocalFontFamilyResolver.current
-
-    val textMeasurer = rememberTextMeasurer()
+    val textMeasurer = rememberTextMeasurer(20)
 
     val updatedProgress by rememberUpdatedState(progress)
 
@@ -122,6 +122,14 @@ public fun rememberLottiePainter(
                 null
             }
 
+            if (comp.animation.hasTextLayers()) {
+                launch(coroutineContext) {
+                    // for some reason the first text measure may take up to 50 ms.
+                    // do it in background
+                    textMeasurer.measure("A")
+                }
+            }
+
             val painter = LottiePainter(
                 composition = comp,
                 progress = updatedProgress::invoke,
@@ -145,13 +153,20 @@ public fun rememberLottiePainter(
                 }
             }
 
+            withContext(coroutineContext) {
+                with(painter) {
+                    with(EmptyDrawScope) {
+                        draw(size)
+                    }
+                }
+            }
+
             value = painter
         }
     }
 
     LaunchedEffect(
         painter,
-        fontFamilyResolver,
         clipTextToBoundingBoxes,
         clipToCompositionBounds,
         applyOpacityToLayers,
@@ -175,7 +190,6 @@ public fun rememberLottiePainter(
         LateInitPainter { painter }
     }
 }
-
 
 internal expect fun mockFontFamilyResolver() : FontFamily.Resolver
 
@@ -224,13 +238,10 @@ private class LottiePainter(
     expressionEngineFactory: ExpressionsEngineFactory
 ) : Painter() {
 
-
     override val intrinsicSize: Size = Size(
         composition.animation.width,
         composition.animation.height
     )
-
-    private val progress: Float by derivedStateOf(progress::invoke)
 
     private val matrix = Matrix()
 
@@ -239,7 +250,7 @@ private class LottiePainter(
     private val compositionLayer: Layer = CompositionLayer(composition)
 
     private val frame: Float by derivedStateOf {
-        lerp(composition.startFrame, composition.endFrame, this.progress)
+        lerp(composition.startFrame, composition.endFrame, progress())
     }
 
     val animationState = AnimationState(
@@ -259,19 +270,19 @@ private class LottiePainter(
         expressionEngineFactory = expressionEngineFactory
     )
 
-    fun setDynamicProperties(provider: DynamicCompositionProvider?) {
-        compositionLayer.setDynamicProperties(provider, animationState)
-    }
-
-    init {
-        setDynamicProperties(dynamicProperties)
-    }
-
     var applyOpacityToLayers: Boolean by animationState::applyOpacityToLayers
     var clipTextToBoundingBoxes: Boolean by animationState::clipTextToBoundingBoxes
     var clipToCompositionBounds: Boolean by animationState::clipToCompositionBounds
     var enableMergePaths: Boolean by animationState::enableMergePaths
     var enableExpressions: Boolean by animationState::enableExpressions
+
+    init {
+        setDynamicProperties(dynamicProperties)
+    }
+
+    fun setDynamicProperties(provider: DynamicCompositionProvider?) {
+        compositionLayer.setDynamicProperties(provider, animationState)
+    }
 
     public override fun applyAlpha(alpha: Float): Boolean {
         if (alpha !in 0f..1f)
@@ -283,7 +294,6 @@ private class LottiePainter(
 
     override fun DrawScope.onDraw() {
         try {
-
             matrix.fastReset()
             matrix.preScale(
                 size.width / intrinsicSize.width,

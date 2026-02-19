@@ -55,7 +55,7 @@ internal class PathShape(
     private var dynamicShape : DynamicShapeProvider? = null
 
     override fun getPath(state: AnimationState): Path {
-        path.reset()
+        path.rewind()
         if (dynamicShape?.hidden.derive(hidden, state)) {
             return path
         }

@@ -2,23 +2,29 @@
 androidx-activity-compose="1.10.1"
 androidx-core-ktx="1.17.0"
 collection="1.5.0"
-kotlin="2.1.20"
-compose="1.9.1"
+kotlin="2.3.0"
+compose="1.10.0"
+androidx-lifecycle="2.10.0-alpha07"
+material3="1.10.0-alpha05"
 agp = "8.12.1"
 okio = "3.15.0"
 serialization="1.6.3"
 ktor="3.2.3"
 atomicfu="0.23.2"
 coroutines="1.10.2"
-coil="3.1.0"
+coil="3.3.0"
 keight="0.0.04"
 maven-publish="0.34.0"
-kotlinx-browser="0.3.1"
+kotlinx-browser="0.5.0"
 
 [libraries]
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
+compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
 androidx-collection = { module = "androidx.collection:collection", version.ref = "collection" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core-ktx" }
+androidx-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
@@ -26,7 +32,9 @@ ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
 ktor-client-ios = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "coroutines" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-core = { module = "io.coil-kt.coil3:coil-core", version.ref = "coil" }
 coil-network = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
 keight = { module = "io.github.alexzhirkevich:keight", version.ref = "keight" }

@@ -13,31 +13,26 @@ import androidx.compose.ui.graphics.painter.Painter as ComposePainter
 
 public interface ImageRepresentable {
 
-    public fun toBitmap(width: Int, height: Int): ImageBitmap
+    public suspend fun toBitmap(width: Int, height: Int): ImageBitmap
 
-    public class Bytes(bytes: ByteArray) : ImageRepresentable {
+    @JvmInline
+    public value class Bytes(private val bytes: ByteArray) : ImageRepresentable {
 
-        private val bmp = ImageBitmap.fromBytes(bytes)
-
-        override fun toBitmap(width: Int, height: Int): ImageBitmap {
-            return if (bmp.width == width && bmp.height == height){
-                bmp
-            } else {
-                bmp.resize(width,height)
-            }
+        override suspend fun toBitmap(width: Int, height: Int): ImageBitmap {
+            return ImageBitmap.fromBytes(bytes, width, height)
         }
     }
 
     @JvmInline
     public value class Painter(private val painter: ComposePainter) : ImageRepresentable {
-        override fun toBitmap(width: Int, height: Int): ImageBitmap {
+        override suspend fun toBitmap(width: Int, height: Int): ImageBitmap {
             return painter.toBitmap(width, height)
         }
     }
 
     @JvmInline
     public value class Bitmap(private val bitmap: ImageBitmap) : ImageRepresentable {
-        override fun toBitmap(width: Int, height: Int): ImageBitmap {
+        override suspend fun toBitmap(width: Int, height: Int): ImageBitmap {
             return bitmap.resize(width, height)
         }
     }
