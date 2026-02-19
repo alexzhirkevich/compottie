@@ -6,7 +6,10 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
-val _jvmTarget = findProperty("jvmTarget") as String
+
+kotlin {
+    jvmToolchain((findProperty("jvmTarget") as String).toInt())
+}
 
 android {
     namespace = "io.github.alexzhirkevich.compottie.example.android"
@@ -22,13 +25,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    kotlinOptions {
-        jvmTarget = _jvmTarget
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.toVersion(_jvmTarget)
-        targetCompatibility = JavaVersion.toVersion(_jvmTarget)
-    }
+
     buildTypes {
         getByName("release") {
             signingConfig = signingConfigs.getByName("debug")
@@ -45,6 +42,6 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(compose.uiTooling)
     implementation(compose.preview)
-    implementation(compose.foundation)
+    implementation(libs.compose.foundation)
     implementation(compose.components.resources)
 }

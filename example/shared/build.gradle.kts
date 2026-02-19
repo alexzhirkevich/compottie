@@ -47,6 +47,7 @@ kotlin {
 
     listOf(
         iosArm64(),
+        iosX64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
@@ -54,6 +55,7 @@ kotlin {
         }
     }
     macosArm64()
+    macosX64()
     jvm()
 
     js(IR) {
