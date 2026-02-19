@@ -78,8 +78,8 @@ kotlin {
 //            implementation("io.github.alexzhirkevich:compottie-network:2.0.2")
 //            implementation("io.github.alexzhirkevich:compottie-resources:2.0.2")
 
-//            implementation(libs.androidx.navigation.compose)
             implementation(libs.androidx.lifecycle.viewmodel)
+
 
             implementation(libs.compose.material3)
             implementation(compose.components.resources)
