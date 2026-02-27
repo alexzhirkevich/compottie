@@ -149,14 +149,18 @@ public fun rememberLottiePainter(
 
             if (enableExpressions) {
                 withContext(coroutineContext) {
-                    comp.animation.prepareExpressions(painter.animationState)
+                    runCatching {
+                        comp.animation.prepareExpressions(painter.animationState)
+                    }
                 }
             }
 
             withContext(coroutineContext) {
-                with(painter) {
-                    with(EmptyDrawScope) {
-                        draw(size)
+                runCatching {
+                    with(painter) {
+                        with(EmptyDrawScope) {
+                            draw(size)
+                        }
                     }
                 }
             }

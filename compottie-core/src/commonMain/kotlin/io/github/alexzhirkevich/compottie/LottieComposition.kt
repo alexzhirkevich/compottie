@@ -176,8 +176,6 @@ public class LottieComposition internal constructor(
         @InternalCompottieApi
         set
 
-    internal var isFirstDraw : Boolean = true
-
     internal val expressionComposition = object : ExpressionComposition {
 
         override val name: String?
@@ -259,7 +257,12 @@ public class LottieComposition internal constructor(
             assets.mapNotNull { asset ->
                 when (asset) {
                     is ImageAsset -> {
-                        asset.prepare()
+                        try {
+                            asset.prepare()
+                        }catch (t : Throwable){
+                            Compottie.logger?.error("Failed to prepare asset ${asset.name}", t)
+                        }
+
                         if (asset.bitmap == null) {
                             launch {
                                 try {
