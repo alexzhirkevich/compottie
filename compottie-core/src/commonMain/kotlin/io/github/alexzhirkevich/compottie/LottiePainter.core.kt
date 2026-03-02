@@ -165,15 +165,9 @@ public fun rememberLottiePainter(
                     composition.prepareMutex.withLock {
                         if (composition.isFirstDraw) {
                             composition.isFirstDraw = false
-                            measureTime {
-                                with(painter) {
-                                    with(EmptyDrawScope) {
-                                        draw(size)
-                                    }
-                                }
-                            }.let {
-                                if (it > 3.milliseconds) {
-                                    println(it)
+                            with(painter) {
+                                with(EmptyDrawScope) {
+                                    draw(size)
                                 }
                             }
                         }
