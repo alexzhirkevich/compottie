@@ -54,7 +54,7 @@ fun Project.publicationSetup() {
         publishToMavenCentral()
         signAllPublications()
 
-        coordinates(group.toString(), name, version.toString())
+//        coordinates(group.toString(), name, version.toString())
 
         pom {
             name.set("Compottie")
