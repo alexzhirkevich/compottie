@@ -36,9 +36,14 @@ import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.utils.fastReset
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.measureTime
 
 
 /**
@@ -157,9 +162,20 @@ public fun rememberLottiePainter(
 
             withContext(coroutineContext) {
                 runCatching {
-                    with(painter) {
-                        with(EmptyDrawScope) {
-                            draw(size)
+                    composition.prepareMutex.withLock {
+                        if (composition.isFirstDraw) {
+                            composition.isFirstDraw = false
+                            measureTime {
+                                with(painter) {
+                                    with(EmptyDrawScope) {
+                                        draw(size)
+                                    }
+                                }
+                            }.let {
+                                if (it > 3.milliseconds) {
+                                    println(it)
+                                }
+                            }
                         }
                     }
                 }

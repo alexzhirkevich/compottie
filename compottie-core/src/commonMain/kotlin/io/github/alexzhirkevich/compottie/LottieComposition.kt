@@ -176,6 +176,9 @@ public class LottieComposition internal constructor(
         @InternalCompottieApi
         set
 
+    internal var isFirstDraw : Boolean = true
+    internal val prepareMutex = Mutex()
+
     internal val expressionComposition = object : ExpressionComposition {
 
         override val name: String?
