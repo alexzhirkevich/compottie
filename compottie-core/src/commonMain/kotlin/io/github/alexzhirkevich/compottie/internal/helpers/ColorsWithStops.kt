@@ -3,17 +3,17 @@ package io.github.alexzhirkevich.compottie.internal.helpers
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 
-internal class ColorsWithStops(
+public class ColorsWithStops internal constructor(
     size: Int
 ) {
-    val colorStops: List<Float> get() = mColorStops
-    val colors: List<Color> get() = mColors
+    internal val colorStops: List<Float> get() = mColorStops
+    internal val colors: List<Color> get() = mColors
 
     private val mColorStops: MutableList<Float> = ArrayList(size)
     private val mColors: MutableList<Color> = ArrayList(size)
 
 
-    fun fill(colors: FloatArray, numberOfColors: Int) {
+    internal fun fill(colors: FloatArray, numberOfColors: Int) {
         resizeTo(numberOfColors)
 
         repeat(numberOfColors) {
@@ -30,7 +30,7 @@ internal class ColorsWithStops(
     }
 
 
-    fun interpolateBetween(a: ColorsWithStops, b: ColorsWithStops, progress: Float) {
+    internal fun interpolateBetween(a: ColorsWithStops, b: ColorsWithStops, progress: Float) {
         val n = minOf(a.colors.size, b.colors.size)
 
         resizeTo(n)

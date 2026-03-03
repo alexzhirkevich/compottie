@@ -10,6 +10,7 @@ plugins {
 }
 
 kotlin {
+    explicitApi()
     sourceSets {
         commonMain.dependencies {
             implementation(libs.compose.foundation)

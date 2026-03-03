@@ -16,7 +16,7 @@ import io.github.alexzhirkevich.compottie.internal.Animation
 import io.github.alexzhirkevich.compottie.internal.CombinedSlotResolver
 import io.github.alexzhirkevich.compottie.internal.LottieJson
 import io.github.alexzhirkevich.compottie.internal.SlotResolver
-import io.github.alexzhirkevich.compottie.internal.Theme
+import io.github.alexzhirkevich.compottie.internal.AnimationTheme
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionComposition
 import io.github.alexzhirkevich.compottie.internal.assets.CharacterData
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
@@ -184,7 +184,9 @@ public class LottieComposition internal constructor(
     internal val prepareMutex = Mutex()
 
     @Transient
-    internal var themes : Map<String, Theme>? = null
+    public var themes : Map<String, AnimationTheme>? = null
+        @InternalCompottieApi
+        set
 
     internal val slotResolver : SlotResolver = CombinedSlotResolver(
         first = { themes?.get(it.theme) },

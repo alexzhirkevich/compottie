@@ -22,14 +22,14 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @InternalCompottieApi
-fun WorkerScript(code : String): Worker {
+public fun WorkerScript(code : String): Worker {
     val url = URL.createObjectURL(blob(code))
     return Worker(url).also { URL.revokeObjectURL(url) }
 }
 
 @OptIn(ExperimentalUuidApi::class, ExperimentalWasmJsInterop::class)
 @InternalCompottieApi
-suspend fun Worker.doWork(
+public suspend fun Worker.doWork(
     input : ByteArray,
     message : (String, ArrayBuffer) -> JsAny
 ) : ArrayBuffer = suspendCancellableCoroutine { continuation ->
@@ -76,9 +76,9 @@ private fun blob(code: String): Blob =
 
 @InternalCompottieApi
 public external interface WebWorkerResponse : JsAny {
-    val id: String
-    val kind: String
-    val buffer: ArrayBuffer
+    public val id: String
+    public val kind: String
+    public val buffer: ArrayBuffer
 }
 
 private external interface WebWorkerError : JsAny {

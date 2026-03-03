@@ -13,27 +13,27 @@ import kotlin.math.min
 
 
 @Serializable
-internal class Bezier(
+public class Bezier internal constructor(
 
     @SerialName("c")
-    var isClosed : Boolean = false,
+    internal var isClosed : Boolean = false,
 
     @SerialName("i")
-    var inTangents : List<FloatArray> = emptyList(),
+    internal var inTangents : List<FloatArray> = emptyList(),
 
     @SerialName("o")
-    var outTangents : List<FloatArray> = emptyList(),
+    internal var outTangents : List<FloatArray> = emptyList(),
 
     @SerialName("v")
-    val vertices : List<FloatArray> = emptyList(),
+    internal val vertices : List<FloatArray> = emptyList(),
 ) {
 
     @Transient
-    var curves: MutableList<CubicCurveData> = ArrayList(vertices.size)
+    internal var curves: MutableList<CubicCurveData> = ArrayList(vertices.size)
         private set
 
     @Transient
-    var initialPoint: Offset = Offset.Zero
+    internal var initialPoint: Offset = Offset.Zero
         private set
 
     init {
@@ -65,7 +65,7 @@ internal class Bezier(
         }
     }
 
-    fun setIsClosed(closed : Boolean){
+    internal fun setIsClosed(closed : Boolean){
         if (isClosed == closed){
             return
         }
@@ -78,7 +78,7 @@ internal class Bezier(
         }
     }
 
-    fun interpolateBetween(
+    internal fun interpolateBetween(
         a: Bezier,
         b: Bezier,
         percentage: Float,
@@ -111,7 +111,7 @@ internal class Bezier(
         }
     }
 
-    fun mapPath(outPath : Path) {
+    internal fun mapPath(outPath : Path) {
         outPath.rewind()
         outPath.moveTo(initialPoint.x, initialPoint.y)
 

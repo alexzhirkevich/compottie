@@ -27,6 +27,7 @@ rootProject.projectDir.resolve("local.properties").let {
 
 kotlin {
     jvm()
+    explicitApi()
 }
 
 val _jvmTarget = findProperty("jvmTarget").toString()
@@ -34,7 +35,6 @@ val _jvmTarget = findProperty("jvmTarget").toString()
 subprojects {
     group = findProperty("group") as String
     version = findProperty("version") as String
-
 
     if (!name.startsWith("compottie")) {
         return@subprojects

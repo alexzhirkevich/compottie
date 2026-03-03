@@ -14,19 +14,19 @@ import io.github.alexzhirkevich.keight.ScriptRuntime
 import io.github.alexzhirkevich.keight.js.JsAny
 import io.github.alexzhirkevich.keight.js.Undefined
 
-internal interface RawProperty<T : Any> : JsAny {
+public interface RawProperty<T : Any> : JsAny {
 
-    val index: Int?
+    public val index: Int?
 
-    val jsCache: MutableMap<String, JsAny?>
+    public val jsCache: MutableMap<String, JsAny?>
 
-    var group : PropertyGroup?
+    public var group : PropertyGroup?
 
-    fun raw(state: AnimationState): T
+    public fun raw(state: AnimationState): T
 
-    fun rawFloat(state : AnimationState) : Float = raw(state) as Float
-    fun rawVec(state : AnimationState) : Long = raw(state) as Long
-    fun rawColor(state: AnimationState): Long = raw(state) as Long
+    public fun rawFloat(state : AnimationState) : Float = raw(state) as Float
+    public fun rawVec(state : AnimationState) : Long = raw(state) as Long
+    public fun rawColor(state: AnimationState): Long = raw(state) as Long
 
     override suspend fun keys(
         runtime: ScriptRuntime,

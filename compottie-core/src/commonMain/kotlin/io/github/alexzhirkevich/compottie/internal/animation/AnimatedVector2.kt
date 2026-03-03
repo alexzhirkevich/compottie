@@ -32,7 +32,7 @@ internal typealias Vec2 = Offset
 internal fun Vec2(x : Float, y : Float) : Vec2 = Offset(x,y)
 
 @Serializable(with = AnimatedVector2Serializer::class)
-internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
+public sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
 
 
     override fun mapEvaluated(e: Any): Vec2 = Vec2(mapVec(e))
@@ -46,13 +46,13 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
         }
     }
 
-    abstract fun copy() : AnimatedVector2
+    internal abstract fun copy() : AnimatedVector2
 
 
     @Serializable
-    class Default(
+    public class Default(
         @SerialName("k")
-        val value: FloatArray,
+        public val value: FloatArray,
 
         @SerialName("x")
         override val expression: String? = null,
@@ -60,7 +60,7 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
         @SerialName("ix")
         override val index: Int? = null,
 
-        val sid : String? = null,
+        public val sid : String? = null,
     ) : AnimatedVector2() {
 
 
@@ -90,7 +90,7 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
     }
 
     @Serializable
-    class Animated(
+    public class Animated(
         @SerialName("k")
         override val keyframes: List<VectorKeyframe>,
 
@@ -100,7 +100,7 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
         @SerialName("ix")
         override val index: Int? = null,
 
-        val sid : String? = null,
+        public val sid : String? = null,
     ) : AnimatedVector2(), AnimatedKeyframeProperty<Vec2, VectorKeyframe> {
 
         private val path = Path()
@@ -164,9 +164,9 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
     }
 
     @Serializable
-    class Split(
-        val x: AnimatedNumber,
-        val y: AnimatedNumber,
+    public class Split(
+        public val x: AnimatedNumber,
+        public val y: AnimatedNumber,
     ) : AnimatedVector2() {
 
 

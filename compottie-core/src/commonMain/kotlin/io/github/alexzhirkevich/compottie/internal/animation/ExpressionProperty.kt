@@ -6,9 +6,9 @@ import io.github.alexzhirkevich.compottie.internal.effects.EffectValue
 import io.github.alexzhirkevich.keight.js.JsAny
 import kotlinx.serialization.Transient
 
-internal abstract class ExpressionProperty<T : Any> : AnimatedProperty<T>, ExpressionHolder {
+public sealed class ExpressionProperty<T : Any> : AnimatedProperty<T>, ExpressionHolder {
 
-    abstract val expression: String?
+    internal abstract val expression: String?
 
     override val jsCache: MutableMap<String, JsAny?> = HashMap()
 
@@ -23,10 +23,10 @@ internal abstract class ExpressionProperty<T : Any> : AnimatedProperty<T>, Expre
         expressionEvaluator?.prepareExpressions(state)
     }
 
-    abstract fun mapEvaluated(e: Any): T
-    open fun mapFloat(e: Any): Float = mapEvaluated(e) as Float
-    open fun mapVec(e: Any): Long = mapEvaluated(e) as Long
-    open fun mapColor(e: Any): Long = mapEvaluated(e) as Long
+    internal abstract fun mapEvaluated(e: Any): T
+    internal open fun mapFloat(e: Any): Float = mapEvaluated(e) as Float
+    internal open fun mapVec(e: Any): Long = mapEvaluated(e) as Long
+    internal open fun mapColor(e: Any): Long = mapEvaluated(e) as Long
 
     override fun interpolated(state: AnimationState): T {
         return interpolatedInternal(

@@ -1,5 +1,3 @@
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-
 package io.github.alexzhirkevich.compottie.dot
 
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor

@@ -159,20 +159,20 @@ public fun rememberLottiePainter(
                 }
             }
 
-            withContext(coroutineContext) {
-                runCatching {
-                    composition.prepareMutex.withLock {
-                        if (composition.isFirstDraw) {
-                            composition.isFirstDraw = false
-                            with(painter) {
-                                with(EmptyDrawScope) {
-                                    draw(size)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+//            withContext(coroutineContext) {
+//                runCatching {
+//                    comp.prepareMutex.withLock {
+//                        if (comp.isFirstDraw) {
+//                            comp.isFirstDraw = false
+//                            with(painter) {
+//                                with(EmptyDrawScope) {
+//                                    draw(size)
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
 
             value = painter
         }

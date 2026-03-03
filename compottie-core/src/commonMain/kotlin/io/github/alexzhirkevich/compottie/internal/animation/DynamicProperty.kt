@@ -7,10 +7,10 @@ import io.github.alexzhirkevich.compottie.dynamic.invoke
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import kotlinx.serialization.Transient
 
-internal abstract class DynamicProperty<T : Any> : ExpressionProperty<T>() {
+public sealed class DynamicProperty<T : Any> : ExpressionProperty<T>() {
 
     @Transient
-    var dynamic: PropertyProvider<T>? = null
+    internal var dynamic: PropertyProvider<T>? = null
 
     final override fun interpolated(state: AnimationState): T {
         return dynamic.derive(super.interpolated(state), state)

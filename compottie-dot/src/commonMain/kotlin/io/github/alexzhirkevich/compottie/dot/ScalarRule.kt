@@ -1,9 +1,8 @@
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-
 package io.github.alexzhirkevich.compottie.dot
 
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.BezierInterpolation
+import io.github.alexzhirkevich.compottie.internal.animation.Keyframe
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import io.github.alexzhirkevich.compottie.internal.animation.ValueKeyframe
 import kotlinx.serialization.SerialName

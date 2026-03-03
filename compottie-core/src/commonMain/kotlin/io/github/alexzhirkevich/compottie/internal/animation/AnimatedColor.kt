@@ -21,9 +21,9 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = AnimatedColorSerializer::class)
-internal sealed class AnimatedColor : ExpressionProperty<Color>() {
+public sealed class AnimatedColor : ExpressionProperty<Color>() {
 
-    abstract fun copy(): AnimatedColor
+    internal abstract fun copy(): AnimatedColor
 
     override fun mapEvaluated(e: Any): Color = Color(mapColor(e))
 
@@ -37,9 +37,9 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
     }
 
     @Serializable
-    class Default(
+    public class Default(
         @SerialName("k")
-        val value: FloatArray,
+        public val value: FloatArray,
 
         @SerialName("x")
         override val expression: String? = null,
@@ -47,7 +47,7 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
         @SerialName("ix")
         override val index: Int? = null,
 
-        val sid: String? = null,
+        public val sid: String? = null,
     ) : AnimatedColor() {
 
         @Transient
@@ -62,7 +62,7 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
             )
         }
 
-        override fun raw(state: AnimationState) = color
+        override fun raw(state: AnimationState): Color = color
 
         override fun rawColor(state: AnimationState): Long {
             return if (sid != null){
@@ -76,7 +76,7 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
     }
 
     @Serializable
-    class Animated(
+    public class Animated(
         @SerialName("k")
         override val keyframes: List<VectorKeyframe>,
 
@@ -86,7 +86,7 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
         @SerialName("ix")
         override val index: Int? = null,
 
-        val sid: String? = null,
+        public val sid: String? = null,
     ) : AnimatedColor(), RawKeyframeProperty<Color, VectorKeyframe> {
 
         @Transient

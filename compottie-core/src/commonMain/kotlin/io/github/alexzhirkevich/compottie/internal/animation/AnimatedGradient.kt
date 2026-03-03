@@ -17,16 +17,16 @@ import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = AnimatedGradientSerializer::class)
-internal abstract class AnimatedGradient : ExpressionProperty<ColorsWithStops>() {
+public sealed class AnimatedGradient : ExpressionProperty<ColorsWithStops>() {
 
     @Transient
-    var numberOfColors: Int = 0
+    public var numberOfColors: Int = 0
 
     private val tempExpressionColors by lazy {
         ColorsWithStops(numberOfColors)
     }
 
-    abstract fun copy() : AnimatedGradient
+    internal abstract fun copy() : AnimatedGradient
 
     override fun mapEvaluated(e: Any): ColorsWithStops {
         return when (e) {
@@ -46,9 +46,9 @@ internal abstract class AnimatedGradient : ExpressionProperty<ColorsWithStops>()
     }
 
     @Serializable
-    class Default(
+    public class Default(
         @SerialName("k")
-        val colorsVector: FloatArray,
+        public val colorsVector: FloatArray,
 
         @SerialName("ix")
         override val index: Int? = null,
@@ -77,7 +77,7 @@ internal abstract class AnimatedGradient : ExpressionProperty<ColorsWithStops>()
     }
 
     @Serializable
-    class Animated(
+    public class Animated(
         @SerialName("k")
         override val keyframes: List<VectorKeyframe>,
         @SerialName("ix")

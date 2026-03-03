@@ -51,7 +51,7 @@ internal class Animation(
 ) : ExpressionHolder {
 
     @Transient
-    val slots = Slots(
+    val slots = AnimationSlots(
         slots = slotsMap?.mapValues {
             checkNotNull(it.value.jsonObject["p"]) {
                 "Invalid slottable property: ${it.value}"

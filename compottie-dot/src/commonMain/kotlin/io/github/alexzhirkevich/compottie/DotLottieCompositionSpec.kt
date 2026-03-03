@@ -1,5 +1,3 @@
-@file: Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-
 package io.github.alexzhirkevich.compottie
 
 import io.github.alexzhirkevich.compottie.dot.ColorRule
@@ -10,7 +8,8 @@ import io.github.alexzhirkevich.compottie.dot.ScalarRule
 import io.github.alexzhirkevich.compottie.dot.ThemeRule
 import io.github.alexzhirkevich.compottie.dot.ThemeRules
 import io.github.alexzhirkevich.compottie.dot.VectorRule
-import io.github.alexzhirkevich.compottie.internal.Theme
+import io.github.alexzhirkevich.compottie.dot.toTheme
+import io.github.alexzhirkevich.compottie.internal.AnimationTheme
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
@@ -89,7 +88,7 @@ private class DotLottieCompositionSpec(
             val anim = zipSystem.read("$animDir/${animationId ?: animation.id}.json".toPath())
 
             val dotThemes = manifest.themes?.mapNotNull {
-                val theme = runCatching<Theme> {
+                val theme = runCatching<AnimationTheme> {
                     DotLottieJson.decodeFromString<ThemeRules>(
                         zipSystem.read("t/${it.id}.json".toPath()).decodeToString()
                     ).toTheme()

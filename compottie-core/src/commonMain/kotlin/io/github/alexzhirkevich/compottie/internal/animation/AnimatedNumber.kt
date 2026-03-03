@@ -20,9 +20,9 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = AnimatedNumberSerializer::class)
-internal sealed class AnimatedNumber : DynamicProperty<Float>() {
+public sealed class AnimatedNumber : DynamicProperty<Float>() {
 
-    abstract fun copy(): AnimatedNumber
+    internal abstract fun copy(): AnimatedNumber
 
     override fun mapEvaluated(e: Any): Float = mapFloat(e)
 
@@ -35,10 +35,10 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
     }
 
     @Serializable
-    class Default(
+    public class Default(
         @SerialName("k")
         @Serializable(with = ValueSerializer::class)
-        val value: Float,
+        public val value: Float,
 
         @SerialName("x")
         override val expression: String? = null,
@@ -46,7 +46,7 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
         @SerialName("ix")
         override val index: Int? = null,
 
-        val sid: String? = null,
+        public val sid: String? = null,
     ) : AnimatedNumber() {
 
         override fun copy(): AnimatedNumber {
@@ -72,7 +72,7 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
     }
 
     @Serializable
-    class Animated(
+    public class Animated(
         @SerialName("k")
         override val keyframes: List<ValueKeyframe>,
 
@@ -82,7 +82,7 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
         @SerialName("ix")
         override val index: Int? = null,
 
-        val sid: String? = null,
+        public val sid: String? = null,
     ) : AnimatedNumber(), AnimatedKeyframeProperty<Float, ValueKeyframe> {
 
         @Transient

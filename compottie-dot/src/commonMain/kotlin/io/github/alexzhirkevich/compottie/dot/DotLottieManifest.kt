@@ -14,3 +14,9 @@ internal class DotLottieAnimation(
     val speed : Float = 1f,
     val loop : Boolean = false
 )
+@Serializable
+internal class DotLottieTheme(
+    val id : String,
+    val name : String? = null
+)
+

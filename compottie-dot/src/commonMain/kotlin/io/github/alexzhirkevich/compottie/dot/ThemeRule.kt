@@ -1,20 +1,18 @@
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-
 package io.github.alexzhirkevich.compottie.dot
 
-import io.github.alexzhirkevich.compottie.internal.Theme
+import io.github.alexzhirkevich.compottie.internal.AnimationTheme
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
 import kotlinx.serialization.Serializable
 
 @Serializable
 internal class ThemeRules(
     val rules : List<ThemeRule<*>>
-) {
-    fun toTheme() : Theme {
-        return Theme(
-            rules = rules.associate { it.id to it.property() }
-        )
-    }
+)
+
+internal fun ThemeRules.toTheme() : AnimationTheme {
+    return AnimationTheme(
+        rules = rules.associate { it.id to it.property() }
+    )
 }
 
 @Serializable

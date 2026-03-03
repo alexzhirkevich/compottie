@@ -18,7 +18,7 @@ internal interface SlotResolver {
     fun shape(sid: String, state: AnimationState) : AnimatedShape?
 }
 
-internal class Slots(
+internal class AnimationSlots(
     private val slots : Map<String, JsonElement>,
 ) : SlotResolver {
     private val cache = mutableMapOf<String, RawProperty<*>>()
@@ -45,8 +45,8 @@ internal class Slots(
     }
 }
 
-internal class Theme(
-    val rules : Map<String, RawProperty<*>>,
+public class AnimationTheme(
+    private val rules : Map<String, RawProperty<*>>,
 ) : SlotResolver {
 
     override fun number(sid: String, state: AnimationState): AnimatedNumber? = rules[sid] as AnimatedNumber?
