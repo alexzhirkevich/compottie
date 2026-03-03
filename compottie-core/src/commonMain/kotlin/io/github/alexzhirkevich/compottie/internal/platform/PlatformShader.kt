@@ -77,9 +77,7 @@ internal fun GradientShader(
     val start = Vec2(startPoint.interpolatedVec(state))
     val end = Vec2(endPoint.interpolatedVec(state))
 
-    colors.colors.numberOfColors = colors.numberOfColors
-
-    val c = colors.colors.interpolated(state)
+    val c = colors.interpolated(state)
 
     return if (type == GradientType.Linear) {
         CachedLinearGradient(

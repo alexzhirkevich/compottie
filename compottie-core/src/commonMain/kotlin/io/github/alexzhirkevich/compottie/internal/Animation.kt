@@ -51,11 +51,13 @@ internal class Animation(
 ) : ExpressionHolder {
 
     @Transient
-    val slots = Slots(slotsMap?.mapValues {
-        checkNotNull(it.value.jsonObject["p"]) {
-            "Invalid slottable property: ${it.value}"
-        }
-    }.orEmpty())
+    val slots = Slots(
+        slots = slotsMap?.mapValues {
+            checkNotNull(it.value.jsonObject["p"]) {
+                "Invalid slottable property: ${it.value}"
+            }
+        }.orEmpty()
+    )
 
     override fun prepareExpressions(state: AnimationState) {
         layers.fastForEach { it.prepareExpressions(state) }

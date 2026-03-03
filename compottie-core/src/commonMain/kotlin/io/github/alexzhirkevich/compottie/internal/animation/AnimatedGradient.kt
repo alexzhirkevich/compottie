@@ -3,7 +3,6 @@ package io.github.alexzhirkevich.compottie.internal.animation
 import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.helpers.ColorsWithStops
-import io.github.alexzhirkevich.compottie.internal.isNotNull
 import io.github.alexzhirkevich.keight.ScriptRuntime
 import io.github.alexzhirkevich.keight.js.JsAny
 import io.github.alexzhirkevich.keight.js.Undefined
@@ -135,33 +134,6 @@ internal abstract class AnimatedGradient : ExpressionProperty<ColorsWithStops>()
             return delegate.raw(state)
         }
     }
-
-    @Serializable
-    class Slottable(
-        val sid : String,
-
-        @SerialName("ix")
-        override val index: Int? = null,
-        @SerialName("x")
-        override val expression: String? = null
-    ) : AnimatedGradient() {
-
-        @Transient
-        private val emptyColorStops = ColorsWithStops(0)
-
-        override fun copy(): AnimatedGradient {
-            return Slottable(
-                sid = sid,
-                index = index,
-                expression = expression
-            )
-        }
-
-        override fun raw(state: AnimationState): ColorsWithStops {
-            return state.composition.animation.slots.gradient(sid)
-                ?.interpolated(state) ?: emptyColorStops
-        }
-    }
 }
 
 internal object AnimatedGradientSerializer : JsonContentPolymorphicSerializer<AnimatedGradient>(AnimatedGradient::class){
@@ -171,7 +143,6 @@ internal object AnimatedGradientSerializer : JsonContentPolymorphicSerializer<An
         }
 
         return when {
-            element["sid"].isNotNull() -> AnimatedGradient.Slottable.serializer()
             element["a"]?.jsonPrimitive?.int == 1 -> AnimatedGradient.Animated.serializer()
             else -> AnimatedGradient.Default.serializer()
         }

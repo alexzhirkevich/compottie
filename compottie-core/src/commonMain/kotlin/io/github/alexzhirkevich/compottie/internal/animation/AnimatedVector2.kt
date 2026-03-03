@@ -58,22 +58,33 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
         override val expression: String? = null,
 
         @SerialName("ix")
-        override val index: Int? = null
+        override val index: Int? = null,
+
+        val sid : String? = null,
     ) : AnimatedVector2() {
 
 
         @Transient
         private val vec = Vec2(value[0], value[1])
 
-        override fun raw(state: AnimationState): Vec2 = vec
+        override fun raw(state: AnimationState): Vec2 = Vec2(rawVec(state))
 
-        override fun rawVec(state: AnimationState): Long = vec.packedValue
+        override fun rawVec(state: AnimationState): Long {
+            return if (sid != null){
+                state.composition.slotResolver.vector(sid, state)
+                    ?.interpolatedVec(state)
+                    ?: vec.packedValue
+            } else {
+                vec.packedValue
+            }
+        }
 
         override fun copy(): AnimatedVector2 {
             return Default(
                 value = value,
                 expression = expression,
-                index = index
+                index = index,
+                sid = sid
             )
         }
     }
@@ -87,7 +98,9 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
         override val expression: String? = null,
 
         @SerialName("ix")
-        override val index: Int? = null
+        override val index: Int? = null,
+
+        val sid : String? = null,
     ) : AnimatedVector2(), AnimatedKeyframeProperty<Vec2, VectorKeyframe> {
 
         private val path = Path()
@@ -131,14 +144,21 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
         }
 
         override fun rawVec(state: AnimationState): Long {
-            return delegate.rawVec(state)
+            return if (sid != null) {
+                state.composition.slotResolver.vector(sid, state)
+                    ?.interpolatedVec(state)
+                    ?: delegate.rawVec(state)
+            } else {
+                delegate.rawVec(state)
+            }
         }
 
         override fun copy(): AnimatedVector2 {
             return Animated(
                 keyframes = keyframes,
                 expression = expression,
-                index = index
+                index = index,
+                sid = sid
             )
         }
     }
@@ -166,35 +186,6 @@ internal sealed class AnimatedVector2 : DynamicProperty<Vec2>() {
                 x.interpolatedFloat(state),
                 y.interpolatedFloat(state)
             ).packedValue
-        }
-    }
-
-    @Serializable
-    class Slottable(
-        val sid : String,
-
-        @SerialName("x")
-        override val expression: String? = null,
-
-        @SerialName("ix")
-        override val index: Int? = null
-    ) : AnimatedVector2() {
-
-        override fun copy(): AnimatedVector2 {
-            return Slottable(
-                sid = sid,
-                expression = expression,
-                index = index
-            )
-        }
-
-        override fun raw(state: AnimationState): Vec2 {
-            return Vec2(rawVec(state))
-        }
-
-        override fun rawVec(state: AnimationState): Long {
-            return state.composition.animation.slots.vector(sid)
-                ?.interpolatedVec(state) ?: 0L
         }
     }
 }
@@ -243,8 +234,6 @@ internal object AnimatedVector2Serializer : JsonContentPolymorphicSerializer<Ani
         val k = element["k"]
 
         return when {
-
-            element["sid"].isNotNull()-> AnimatedVector2.Slottable.serializer()
 
             element["s"]?.jsonPrimitive?.booleanOrNull == true ->
                 AnimatedVector2.Split.serializer()

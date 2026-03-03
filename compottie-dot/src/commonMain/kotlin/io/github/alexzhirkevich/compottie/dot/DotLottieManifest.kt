@@ -1,10 +1,11 @@
-package io.github.alexzhirkevich.compottie
+package io.github.alexzhirkevich.compottie.dot
 
 import kotlinx.serialization.Serializable
 
 @Serializable
 internal class DotLottieManifest(
-    val animations : List<DotLottieAnimation>
+    val animations : List<DotLottieAnimation>,
+    val themes : List<DotLottieTheme>? = null
 )
 
 @Serializable

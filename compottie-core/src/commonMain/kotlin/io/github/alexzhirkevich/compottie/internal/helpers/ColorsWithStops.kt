@@ -66,22 +66,8 @@ internal class ColorsWithStops(
         // For a given opacity stop, we linearly interpolate the color for the two color stops around it.
 
         val opacityStops = (array.size - startIndex) / 2
-        val opacityStopPositions = MutableList(opacityStops) { 0f }
-        val opacityStopOpacities = MutableList(opacityStops) { 0f }
-
-        run {
-            var i = startIndex
-            var j = 0
-            while (i < array.size) {
-                if (i % 2 == 0) {
-                    opacityStopPositions[j] = array[i]
-                } else {
-                    opacityStopOpacities[j] = array[i]
-                    j++
-                }
-                i++
-            }
-        }
+        val opacityStopPositions = List(opacityStops) { array[startIndex + 2 * it] }
+        val opacityStopOpacities = List(opacityStops) { array[startIndex + 2 * it + 1] }
 
         // Pre-SKIA (Oreo) devices render artifacts when there is two stops in the same position.
         // As a result, we have to de-dupe the merge color and opacity stop positions.

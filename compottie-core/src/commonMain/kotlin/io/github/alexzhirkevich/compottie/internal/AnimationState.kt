@@ -27,6 +27,7 @@ public class AnimationState @PublishedApi internal constructor(
     internal val textMeasurer: TextMeasurer,
     internal val assets: Map<String, LottieAsset>,
     internal val fonts: Map<String, FontFamily>,
+    theme : String?,
     frame: Float,
     applyOpacityToLayers : Boolean,
     clipToCompositionBounds: Boolean,
@@ -91,6 +92,7 @@ public class AnimationState @PublishedApi internal constructor(
     internal var enableMergePaths by mutableStateOf(enableMergePaths)
     internal var enableExpressions by mutableStateOf(enableExpressions)
     internal var enableTextGrouping by mutableStateOf(enableTextGrouping)
+    internal var theme by mutableStateOf(theme)
 
     internal var thisLayer: Layer = layer
         private set

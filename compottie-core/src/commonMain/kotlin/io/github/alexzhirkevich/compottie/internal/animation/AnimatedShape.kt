@@ -266,7 +266,7 @@ internal abstract class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder
     ) : AnimatedShape() {
 
         override fun rawBezier(state: AnimationState): Bezier {
-            return state.composition.animation.slots.shape(sid)
+            return state.composition.slotResolver.shape(sid, state)
                 ?.rawBezier(state)
                 ?: EmptyBezier
         }
@@ -278,7 +278,7 @@ internal abstract class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder
         override fun setClosed(closed: Boolean) {}
 
         override fun raw(state: AnimationState): Path {
-            return state.composition.animation.slots.shape(sid)
+            return state.composition.slotResolver.shape(sid, state)
                 ?.interpolated(state)
                 ?: EmptyPath.apply { reset() }
         }
