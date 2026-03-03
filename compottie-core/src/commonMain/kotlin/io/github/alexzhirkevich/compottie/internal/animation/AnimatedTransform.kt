@@ -115,58 +115,58 @@ internal abstract class AnimatedTransform : ExpressionHolder, PropertyGroup {
         matrix.preRotate(angle)
 
         rotationX?.let {
-            matrix.preRotateX(it.interpolatedFloat(state))
+            matrix.preRotateX(it.interpolatedFloat(state), skewMatrix1)
         }
 
         rotationY?.let {
-            matrix.preRotateY(it.interpolatedFloat(state))
+            matrix.preRotateY(it.interpolatedFloat(state), skewMatrix1)
         }
 
         rotationZ?.let {
-            matrix.preRotateZ(it.interpolatedFloat(state))
+            matrix.preRotateZ(it.interpolatedFloat(state), skewMatrix1)
         }
 
         val sk = skew.interpolatedFloat(state)
-         if (sk != 0f) {
+        if (sk != 0f) {
 
-             val skewAngle = skewAxis.interpolatedFloat(state)
+            val skewAngle = skewAxis.interpolatedFloat(state)
 
-             val mCos = if (skewAngle == 0f)
-                 0f
-             else cos(degreeToRadians(-skewAngle + 90))
+            val mCos = if (skewAngle == 0f)
+                0f
+            else cos(degreeToRadians(-skewAngle + 90))
 
-             val mSin = if (skewAngle == 0f)
-                 1f
-             else sin(degreeToRadians(-skewAngle + 90))
+            val mSin = if (skewAngle == 0f)
+                1f
+            else sin(degreeToRadians(-skewAngle + 90))
 
-             val aTan = tan(degreeToRadians(sk))
+            val aTan = tan(degreeToRadians(sk))
 
-             clearSkewValues()
-             skewValues[0] = mCos
-             skewValues[1] = mSin
-             skewValues[3] = -mSin
-             skewValues[4] = mCos
-             skewValues[8] = 1f
-             skewMatrix1.setValues(skewValues)
-             clearSkewValues()
-             skewValues[0] = 1f
-             skewValues[3] = aTan
-             skewValues[4] = 1f
-             skewValues[8] = 1f
-             skewMatrix2.setValues(skewValues)
-             clearSkewValues()
-             skewValues[0] = mCos
-             skewValues[1] = -mSin
-             skewValues[3] = mSin
-             skewValues[4] = mCos
-             skewValues[8] = 1f
+            clearSkewValues()
+            skewValues[0] = mCos
+            skewValues[1] = mSin
+            skewValues[3] = -mSin
+            skewValues[4] = mCos
+            skewValues[8] = 1f
+            skewMatrix1.setValues(skewValues)
+            clearSkewValues()
+            skewValues[0] = 1f
+            skewValues[3] = aTan
+            skewValues[4] = 1f
+            skewValues[8] = 1f
+            skewMatrix2.setValues(skewValues)
+            clearSkewValues()
+            skewValues[0] = mCos
+            skewValues[1] = -mSin
+            skewValues[3] = mSin
+            skewValues[4] = mCos
+            skewValues[8] = 1f
 
-             skewMatrix3.setValues(skewValues)
-             skewMatrix2.preConcat(skewMatrix1)
-             skewMatrix3.preConcat(skewMatrix2)
+            skewMatrix3.setValues(skewValues)
+            skewMatrix2.preConcat(skewMatrix1)
+            skewMatrix3.preConcat(skewMatrix2)
 
-             matrix.preConcat(skewMatrix3)
-         }
+            matrix.preConcat(skewMatrix3)
+        }
 
         val sc = Vec2(scale.interpolatedNorm(state))
         matrix.preScale(sc.x, sc.y)
