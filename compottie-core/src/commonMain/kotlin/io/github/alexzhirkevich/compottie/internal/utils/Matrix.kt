@@ -8,10 +8,6 @@ import kotlin.math.hypot
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
-private val tempMatrixConcat = Matrix()
-private val tempMatrixTransform = Matrix()
-
-
 internal val IdentityMatrix = Matrix()
 
 internal fun Matrix.preTranslate(x : Float, y : Float) {
@@ -36,9 +32,10 @@ internal fun Matrix.preConcat(other : Matrix) {
         return
     }
 
-    tempMatrixConcat.fastSetFrom(other)
-    tempMatrixConcat.timesAssign(this)
-    fastSetFrom(tempMatrixConcat)
+    val temp = Matrix()
+    temp.fastSetFrom(other)
+    temp.timesAssign(this)
+    fastSetFrom(temp)
 
 //    timesAssign(other)
 }
@@ -79,8 +76,7 @@ internal fun Matrix.preRotateX(degree : Float) {
     if (degree.absoluteValue < Float.MIN_VALUE) {
         return
     }
-    preConcat(tempMatrixTransform.apply {
-        fastReset()
+    preConcat(Matrix().apply {
         rotateX(degree)
     })
 }
@@ -89,8 +85,7 @@ internal fun Matrix.preRotateY(degree : Float) {
     if (degree.absoluteValue < Float.MIN_VALUE) {
         return
     }
-    preConcat(tempMatrixTransform.apply {
-        fastReset()
+    preConcat(Matrix().apply {
         rotateY(degree)
     })
 }
@@ -98,8 +93,7 @@ internal fun Matrix.preRotateZ(degree : Float) {
     if (degree.absoluteValue < Float.MIN_VALUE) {
         return
     }
-    preConcat(tempMatrixTransform.apply {
-        fastReset()
+    preConcat(Matrix().apply {
         rotateZ(degree)
     })
 }

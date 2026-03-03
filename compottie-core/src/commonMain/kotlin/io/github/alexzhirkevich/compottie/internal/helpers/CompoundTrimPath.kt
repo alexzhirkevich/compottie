@@ -50,17 +50,15 @@ internal fun Path.applyTrimPath(trimPath: TrimPathShape, state: AnimationState) 
 }
 
 
-private val pathMeasure by lazy {
-    ExtendedPathMeasure()
-}
-private val tempPath = Path()
-private val tempPath2 = Path()
-
 internal fun Path.applyTrimPath(
     startValue: Float,
     endValue: Float,
     offsetValue: Float,
 ) {
+    val pathMeasure = ExtendedPathMeasure()
+    val tempPath = Path()
+    val tempPath2 = Path()
+
     pathMeasure.setPath(this, false)
 
     val length: Float = pathMeasure.length

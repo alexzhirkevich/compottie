@@ -11,13 +11,12 @@ internal actual fun ExtendedPathMeasure() : ExtendedPathMeasure = AndroidExtende
     android.graphics.PathMeasure()
 )
 
-private val tempAndroidMatrix = android.graphics.Matrix()
 internal actual fun Path.addPath(path: Path, matrix: Matrix) : Path {
+    val androidMatrix = android.graphics.Matrix()
     return asAndroidPath().apply {
         addPath(
             path.asAndroidPath(),
-            tempAndroidMatrix.apply {
-                reset()
+            androidMatrix.apply {
                 setFromInternal(matrix)
             }
         )

@@ -44,8 +44,6 @@ internal fun JSLayerToCompOrWorld(
     }
 }
 
-private val conversionMatrix = Matrix()
-
 private fun ScriptRuntime.convert(
     layer: Layer,
     point : List<Number>,
@@ -54,6 +52,7 @@ private fun ScriptRuntime.convert(
     toComp : Boolean,
 ) : JsAny {
 
+    val conversionMatrix = Matrix()
     val layerMatrix = layer.totalTransformMatrix(state, toComp = toComp)
     val compMatrix = state.thisComp.transformMatrix(state)
 

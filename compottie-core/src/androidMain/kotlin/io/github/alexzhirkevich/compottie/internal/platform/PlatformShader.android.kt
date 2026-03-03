@@ -10,8 +10,6 @@ import androidx.compose.ui.graphics.RadialGradientShader
 import androidx.compose.ui.graphics.TileMode
 
 
-private val tempMatrix = android.graphics.Matrix()
-
 internal actual fun MakeLinearGradient(
     from : Offset,
     to : Offset,
@@ -26,8 +24,9 @@ internal actual fun MakeLinearGradient(
     tileMode = tileMode,
     colors = colors
 ).apply {
-    tempMatrix.setFromInternal(matrix)
-    setLocalMatrix(tempMatrix)
+    val localMatrix = android.graphics.Matrix()
+    localMatrix.setFromInternal(matrix)
+    setLocalMatrix(localMatrix)
 }
 
 internal actual fun MakeRadialGradient(
@@ -44,8 +43,9 @@ internal actual fun MakeRadialGradient(
     tileMode = tileMode,
     colors = colors
 ).apply {
-    tempMatrix.setFromInternal(matrix)
-    setLocalMatrix(tempMatrix)
+    val localMatrix = android.graphics.Matrix()
+    localMatrix.setFromInternal(matrix)
+    setLocalMatrix(localMatrix)
 }
 
 internal actual fun Paint.setBlurMaskFilter(radius: Float, isImage : Boolean) {

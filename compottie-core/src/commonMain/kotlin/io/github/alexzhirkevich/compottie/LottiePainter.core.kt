@@ -99,7 +99,7 @@ public fun rememberLottiePainter(
         null -> null
     }
 
-    val copy = dp != null
+    val copy = true
 
     val coroutineScope = rememberCoroutineScope()
 
