@@ -23,6 +23,7 @@ import kotlin.coroutines.CoroutineContext
  * @param fontManager used to load animation fonts
  * @param dynamicProperties dynamically-configurable animation properties. Can be created with
  * [rememberLottieDynamicProperties]
+ * @param theme id of the animation theme bundled in a dotLottie file
  * @param applyOpacityToLayers Sets whether to apply opacity to the each layer instead of shape.
  * Opacity is normally applied directly to a shape. In cases where translucent
  * shapes overlap, applying opacity to a layer will be more accurate at the expense of performance.
