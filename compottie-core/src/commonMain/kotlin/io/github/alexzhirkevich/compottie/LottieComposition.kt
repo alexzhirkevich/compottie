@@ -13,10 +13,10 @@ import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.LottieFontManager
 import io.github.alexzhirkevich.compottie.internal.Animation
+import io.github.alexzhirkevich.compottie.internal.AnimationTheme
 import io.github.alexzhirkevich.compottie.internal.CombinedSlotResolver
 import io.github.alexzhirkevich.compottie.internal.LottieJson
 import io.github.alexzhirkevich.compottie.internal.SlotResolver
-import io.github.alexzhirkevich.compottie.internal.AnimationTheme
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionComposition
 import io.github.alexzhirkevich.compottie.internal.assets.CharacterData
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
@@ -246,9 +246,12 @@ public class LottieComposition internal constructor(
 
 
     @InternalCompottieApi
-    public suspend fun prepareAssets(assetsManager: LottieAssetsManager) {
+    public suspend fun prepareAssets(
+        assetsManager: LottieAssetsManager,
+        extraAssets : List<LottieAsset> = emptyList()
+    ) {
         assetsMutex.withLock {
-            loadAssets(assetsManager, false)
+            loadAssets(assetsManager, false, extraAssets)
         }
     }
 
@@ -261,11 +264,13 @@ public class LottieComposition internal constructor(
 
     internal suspend fun loadAssets(
         assetsManager: LottieAssetsManager,
-        copy : Boolean
+        copy : Boolean,
+        extraAssets : List<LottieAsset> = emptyList(),
     ) : List<LottieAsset> {
+
         val assets = if (copy)
-            animation.assets.map(LottieAsset::copy)
-        else animation.assets
+            animation.assets.map(LottieAsset::copy) + extraAssets
+        else animation.assets + extraAssets
 
         coroutineScope {
             assets.mapNotNull { asset ->

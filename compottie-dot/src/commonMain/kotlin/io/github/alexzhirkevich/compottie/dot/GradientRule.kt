@@ -12,11 +12,10 @@ import kotlinx.serialization.Serializable
 @SerialName("Gradient")
 internal class GradientRule(
     override val id: String,
-    override val animations: List<String>? = null,
+    override val value: List<GradientStop>? = null,
     override val expression: String? = null,
     override val keyframes: List<GradientDotKeyframe>? = null,
-    override val value: List<GradientStop>? = null
-) : ThemeRule<List<GradientStop>> {
+) : PropertyThemeRule<List<GradientStop>> {
 
     override fun property(): RawProperty<*> {
         return when {

@@ -1,11 +1,13 @@
 package io.github.alexzhirkevich.compottie.internal
 
+import androidx.compose.ui.graphics.ImageBitmap
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedColor
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedGradient
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedNumber
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedShape
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedVector2
 import io.github.alexzhirkevich.compottie.internal.animation.RawProperty
+import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.json.JsonElement
 
@@ -16,6 +18,7 @@ internal interface SlotResolver {
     fun color(sid: String, state: AnimationState): AnimatedColor?
     fun gradient(sid: String, state: AnimationState): AnimatedGradient?
     fun shape(sid: String, state: AnimationState) : AnimatedShape?
+    fun image(sid : String, state : AnimationState) : ImageBitmap?
 }
 
 internal class AnimationSlots(
@@ -23,11 +26,18 @@ internal class AnimationSlots(
 ) : SlotResolver {
     private val cache = mutableMapOf<String, RawProperty<*>>()
 
-    override fun number(sid: String, state: AnimationState): AnimatedNumber? = property(sid, AnimatedNumber.serializer())
-    override fun vector(sid: String, state: AnimationState): AnimatedVector2? = property(sid, AnimatedVector2.serializer())
-    override fun color(sid: String, state: AnimationState): AnimatedColor? = property(sid, AnimatedColor.serializer())
-    override fun gradient(sid: String, state: AnimationState): AnimatedGradient? = property(sid, AnimatedGradient.serializer())
-    override fun shape(sid: String, state: AnimationState) : AnimatedShape? = property(sid, AnimatedShape.serializer())
+    override fun number(sid: String, state: AnimationState): AnimatedNumber? =
+        property(sid, AnimatedNumber.serializer())
+    override fun vector(sid: String, state: AnimationState): AnimatedVector2? =
+        property(sid, AnimatedVector2.serializer())
+    override fun color(sid: String, state: AnimationState): AnimatedColor? =
+        property(sid, AnimatedColor.serializer())
+    override fun gradient(sid: String, state: AnimationState): AnimatedGradient? =
+        property(sid, AnimatedGradient.serializer())
+    override fun shape(sid: String, state: AnimationState) : AnimatedShape? =
+        property(sid, AnimatedShape.serializer())
+    override fun image(sid: String, state: AnimationState): ImageBitmap? =
+        (state.assets[sid] as? ImageAsset)?.bitmap
 
     @Suppress("UNCHECKED_CAST")
     private fun <T : RawProperty<*>> property(
@@ -46,19 +56,27 @@ internal class AnimationSlots(
 }
 
 public class AnimationTheme(
-    private val rules : Map<String, RawProperty<*>>,
+    public val rules : Map<String, RawProperty<*>>,
+    public val images : Map<String, ImageAsset>
 ) : SlotResolver {
 
-    override fun number(sid: String, state: AnimationState): AnimatedNumber? = rules[sid] as AnimatedNumber?
+    override fun number(sid: String, state: AnimationState): AnimatedNumber? =
+        rules[sid] as AnimatedNumber?
 
-    override fun vector(sid: String, state: AnimationState): AnimatedVector2?  = rules[sid] as AnimatedVector2?
+    override fun vector(sid: String, state: AnimationState): AnimatedVector2? =
+        rules[sid] as AnimatedVector2?
 
-    override fun color(sid: String, state: AnimationState): AnimatedColor?  = rules[sid] as AnimatedColor?
+    override fun color(sid: String, state: AnimationState): AnimatedColor? =
+        rules[sid] as AnimatedColor?
 
-    override fun gradient(sid: String, state: AnimationState): AnimatedGradient? = rules[sid] as AnimatedGradient?
+    override fun gradient(sid: String, state: AnimationState): AnimatedGradient? =
+        rules[sid] as AnimatedGradient?
 
-    override fun shape(sid: String, state: AnimationState): AnimatedShape? = rules[sid] as AnimatedShape?
+    override fun shape(sid: String, state: AnimationState): AnimatedShape? =
+        rules[sid] as AnimatedShape?
 
+    override fun image(sid: String, state: AnimationState): ImageBitmap? =
+        images[sid]?.bitmap
 }
 
 internal class CombinedSlotResolver(
@@ -80,4 +98,7 @@ internal class CombinedSlotResolver(
 
     override fun shape(sid: String, state: AnimationState): AnimatedShape?  =
         first(state)?.shape(sid, state) ?: second(state)?.shape(sid,state)
+
+    override fun image(sid: String, state: AnimationState): ImageBitmap?  =
+        first(state)?.image(sid, state) ?: second(state)?.image(sid,state)
 }

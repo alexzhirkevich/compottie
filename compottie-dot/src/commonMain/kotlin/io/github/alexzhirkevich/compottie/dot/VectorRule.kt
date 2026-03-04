@@ -13,11 +13,10 @@ import kotlinx.serialization.Serializable
 @SerialName("Vector")
 internal class VectorRule(
     override val id: String,
-    override val animations: List<String>? = null,
+    override val value: FloatArray? = null,
     override val expression: String? = null,
     override val keyframes: List<VectorDotKeyframe>? = null,
-    override val value: FloatArray? = null
-) : ThemeRule<FloatArray> {
+) : PropertyThemeRule<FloatArray> {
 
     override fun property(): RawProperty<*> {
         return when {

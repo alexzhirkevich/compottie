@@ -7,9 +7,8 @@ import kotlinx.serialization.Serializable
 @SerialName("Position")
 internal class PositionRule(
     override val id: String,
-    override val animations: List<String>? = null,
+    override val value: FloatArray? = null,
     override val expression: String? = null,
     override val keyframes: List<VectorDotKeyframe>? = null,
-    override val value: FloatArray? = null
-) : ThemeRule<FloatArray> by VectorRule(id, animations, expression, keyframes, value)
+) : PropertyThemeRule<FloatArray> by VectorRule(id, value, expression, keyframes, )
 

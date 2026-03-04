@@ -1,9 +1,9 @@
 package io.github.alexzhirkevich.compottie.internal.assets
 
-internal interface LottieFileAsset : LottieAsset {
-    val path : String
-    val fileName : String?
-    val embedded: Boolean
+public sealed interface LottieFileAsset : LottieAsset {
+    public val path : String
+    public val fileName : String?
+    public val embedded: Boolean
 
-    suspend fun prepare()
+    public suspend fun prepare()
 }

@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie.internal.layers
 
 import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -85,26 +86,29 @@ internal class ImageLayer(
         LayerEffectsState()
     }
 
-    private fun dynamicAsset(state: AnimationState) : ImageAsset? {
+    private fun bitmap(state: AnimationState) : ImageBitmap? {
 
         val dynamic = dynamicLayer as? DynamicImageLayerProvider
 
         val asset = state.assets[refId] as? ImageAsset ?: return null
-        val image = dynamic?.image?.invoke(state, asset.spec) ?: return asset
+
+        val assetBitmap = if (asset.sid == null)
+            asset.bitmap
+        else
+            state.composition.slotResolver.image(asset.sid,state) ?: asset.bitmap
+
+        val image = dynamic?.image?.invoke(state, asset.spec) ?: return assetBitmap
 
 
         require(image.width == asset.spec.width && image.height == asset.spec.height) {
             "Dynamic image must be exactly same size as requested in spec!"
         }
 
-        asset.setBitmap(image)
-
-        return asset
+        return image
     }
 
     override fun drawLayer(drawScope: DrawScope, parentMatrix: Matrix, parentAlpha: Float, state: AnimationState) {
-        val mAsset = dynamicAsset(state) ?: return
-        val bitmap = mAsset.bitmap ?: return
+        val bitmap = bitmap(state) ?: return
 
         paint.alpha = parentAlpha
 
@@ -130,7 +134,7 @@ internal class ImageLayer(
     ) {
         super.getBounds(drawScope, parentMatrix, applyParents, state, outBounds)
 
-        dynamicAsset(state)?.let {
+        bitmap(state)?.let {
             outBounds.set(
                 left = 0f,
                 top = 0f,

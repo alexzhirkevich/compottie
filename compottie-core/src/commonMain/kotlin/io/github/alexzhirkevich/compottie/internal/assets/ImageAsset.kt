@@ -14,7 +14,7 @@ import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 @Serializable
-internal class ImageAsset(
+public class ImageAsset(
 
     @SerialName("id")
     override val id: String,
@@ -26,7 +26,7 @@ internal class ImageAsset(
     override val path: String ="",
 
     @SerialName("nm")
-    val name: String? = null,
+    public val name: String? = null,
 
     @SerialName("e")
     @Serializable(with = BooleanIntSerializer::class)
@@ -37,14 +37,16 @@ internal class ImageAsset(
 
     @SerialName("h")
     private val h: Int? = null,
+
+    internal val sid: String? = null,
 ) : LottieFileAsset {
 
-    val width: Int get() = w ?: bitmap?.width ?: 0
+    public val width: Int get() = w ?: bitmap?.width ?: 0
 
-    val height: Int get() = h ?: bitmap?.height ?: 0
+    public val height: Int get() = h ?: bitmap?.height ?: 0
 
     @Transient
-    val spec = LottieImageSpec(
+    internal val spec = LottieImageSpec(
         id = id,
         path = path,
         name = fileName,
@@ -54,7 +56,7 @@ internal class ImageAsset(
 
     @OptIn(ExperimentalEncodingApi::class)
     @Transient
-    var bitmap: ImageBitmap? = null
+    internal var bitmap: ImageBitmap? = null
         private set
 
     override suspend fun prepare() {
@@ -71,7 +73,7 @@ internal class ImageAsset(
         }
     }
 
-    fun setBitmap(bitmap: ImageBitmap) {
+    internal fun setBitmap(bitmap: ImageBitmap) {
         this.bitmap = bitmap
     }
 

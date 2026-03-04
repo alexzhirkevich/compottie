@@ -7,17 +7,17 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 
 @Serializable(with = AssetSerializer::class)
-internal sealed interface LottieAsset {
+public sealed interface LottieAsset {
 
-    val id: String
+    public val id: String
 
-    fun copy() : LottieAsset
+    public fun copy() : LottieAsset
 
     @Serializable
-    class Unsupported() : LottieAsset {
+    public class Unsupported() : LottieAsset {
         override val id: String get() = ""
 
-        override fun copy() = Unsupported()
+        override fun copy(): Unsupported = Unsupported()
     }
 }
 

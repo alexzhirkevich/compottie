@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie
 import io.github.alexzhirkevich.compottie.dot.ColorRule
 import io.github.alexzhirkevich.compottie.dot.DotLottieManifest
 import io.github.alexzhirkevich.compottie.dot.GradientRule
+import io.github.alexzhirkevich.compottie.dot.ImageRule
 import io.github.alexzhirkevich.compottie.dot.PositionRule
 import io.github.alexzhirkevich.compottie.dot.ScalarRule
 import io.github.alexzhirkevich.compottie.dot.ThemeRule
@@ -42,6 +43,7 @@ private val DotLottieJson = Json {
             subclass(VectorRule::class)
             subclass(PositionRule::class)
             subclass(GradientRule::class)
+            subclass(ImageRule::class)
         }
     }
 }
@@ -104,10 +106,11 @@ private class DotLottieCompositionSpec(
                 }
                 themes = dotThemes
                 prepareAssets(
-                    DotLottieAssetsManager(
+                    assetsManager = DotLottieAssetsManager(
                         zipSystem,
-                        manifestPath.parent
-                    )
+                        manifestPath.parent,
+                    ),
+                    extraAssets = dotThemes?.flatMap { it.value.images.values }.orEmpty()
                 )
             }
         } else {
