@@ -5,6 +5,8 @@ plugins {
 }
 
 kotlin {
+    explicitApi()
+
     sourceSets {
         commonMain.dependencies {
             api(project(":compottie-core"))

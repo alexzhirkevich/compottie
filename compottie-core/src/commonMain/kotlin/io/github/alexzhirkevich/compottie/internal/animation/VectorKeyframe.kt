@@ -5,7 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal class VectorKeyframe(
+public class VectorKeyframe(
 
     @SerialName("s")
     override val start : FloatArray? = null,
@@ -27,10 +27,10 @@ internal class VectorKeyframe(
     override val outValue : BezierInterpolation? = null,
 
     @SerialName("ti")
-    val inTangent: FloatArray? = null,
+    public val inTangent: FloatArray? = null,
 
     @SerialName("to")
-    val outTangent: FloatArray? = null,
+    public val outTangent: FloatArray? = null,
 ) : Keyframe<FloatArray> by BaseKeyframe(
     start = start,
     end = end,
@@ -39,7 +39,7 @@ internal class VectorKeyframe(
     inValue = inValue,
     outValue = outValue
 ) {
-    fun copy(): VectorKeyframe {
+    internal fun copy(): VectorKeyframe {
         return VectorKeyframe(
             start = start,
             end = end,

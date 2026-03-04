@@ -1,7 +1,21 @@
 package io.github.alexzhirkevich.compottie
 
+import io.github.alexzhirkevich.compottie.dot.ColorRule
+import io.github.alexzhirkevich.compottie.dot.DotLottieManifest
+import io.github.alexzhirkevich.compottie.dot.GradientRule
+import io.github.alexzhirkevich.compottie.dot.ImageRule
+import io.github.alexzhirkevich.compottie.dot.PositionRule
+import io.github.alexzhirkevich.compottie.dot.ScalarRule
+import io.github.alexzhirkevich.compottie.dot.ThemeRule
+import io.github.alexzhirkevich.compottie.dot.ThemeRules
+import io.github.alexzhirkevich.compottie.dot.VectorRule
+import io.github.alexzhirkevich.compottie.dot.toTheme
+import io.github.alexzhirkevich.compottie.internal.AnimationTheme
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 import okio.Path.Companion.toPath
 
 /**
@@ -21,6 +35,17 @@ private val DotLottieJson = Json {
     isLenient = true
     ignoreUnknownKeys = true
     allowTrailingComma = true
+
+    serializersModule = SerializersModule {
+        polymorphic(ThemeRule::class){
+            subclass(ScalarRule::class)
+            subclass(ColorRule::class)
+            subclass(VectorRule::class)
+            subclass(PositionRule::class)
+            subclass(GradientRule::class)
+            subclass(ImageRule::class)
+        }
+    }
 }
 
 private class DotLottieCompositionSpec(
@@ -64,12 +89,29 @@ private class DotLottieCompositionSpec(
 
             val anim = zipSystem.read("$animDir/${animationId ?: animation.id}.json".toPath())
 
+            val dotThemes = manifest.themes?.mapNotNull {
+                val theme = runCatching<AnimationTheme> {
+                    DotLottieJson.decodeFromString<ThemeRules>(
+                        zipSystem.read("t/${it.id}.json".toPath()).decodeToString()
+                    ).toTheme()
+                }.getOrElse { return@mapNotNull null }
+
+                it.id to theme
+            }?.toMap()
+
             LottieComposition.parse(anim.decodeToString()).apply {
                 speed = animation.speed
                 if (animation.loop) {
                     iterations = Compottie.IterateForever
                 }
-                prepareAssets(DotLottieAssetsManager(zipSystem, manifestPath.parent))
+                themes = dotThemes
+                prepareAssets(
+                    assetsManager = DotLottieAssetsManager(
+                        zipSystem,
+                        manifestPath.parent,
+                    ),
+                    extraAssets = dotThemes?.flatMap { it.value.images.values }.orEmpty()
+                )
             }
         } else {
             val animPath = entries.keys.first { it.name.endsWith(".json", true) }

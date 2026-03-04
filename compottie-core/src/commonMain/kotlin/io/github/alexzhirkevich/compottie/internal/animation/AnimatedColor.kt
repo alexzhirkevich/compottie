@@ -5,7 +5,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.isNotNull
 import io.github.alexzhirkevich.keight.ScriptRuntime
 import io.github.alexzhirkevich.keight.js.JsAny
 import io.github.alexzhirkevich.keight.js.Undefined
@@ -22,9 +21,9 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = AnimatedColorSerializer::class)
-internal sealed class AnimatedColor : ExpressionProperty<Color>() {
+public sealed class AnimatedColor : ExpressionProperty<Color>() {
 
-    abstract fun copy(): AnimatedColor
+    internal abstract fun copy(): AnimatedColor
 
     override fun mapEvaluated(e: Any): Color = Color(mapColor(e))
 
@@ -38,15 +37,17 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
     }
 
     @Serializable
-    class Default(
+    public class Default(
         @SerialName("k")
-        val value: FloatArray,
+        public val value: FloatArray,
 
         @SerialName("x")
         override val expression: String? = null,
 
         @SerialName("ix")
-        override val index: Int? = null
+        override val index: Int? = null,
+
+        public val sid: String? = null,
     ) : AnimatedColor() {
 
         @Transient
@@ -56,17 +57,26 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
             return Default(
                 value = value,
                 expression = expression,
-                index = index
+                index = index,
+                sid = sid
             )
         }
 
-        override fun raw(state: AnimationState) = color
+        override fun raw(state: AnimationState): Color = color
 
-        override fun rawColor(state: AnimationState): Long = color.toColorLong()
+        override fun rawColor(state: AnimationState): Long {
+            return if (sid != null){
+                state.composition.slotResolver.color(sid, state)
+                    ?.interpolatedColor(state)
+                    ?: color.toColorLong()
+            } else {
+                color.toColorLong()
+            }
+        }
     }
 
     @Serializable
-    class Animated(
+    public class Animated(
         @SerialName("k")
         override val keyframes: List<VectorKeyframe>,
 
@@ -74,7 +84,9 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
         override val expression: String? = null,
 
         @SerialName("ix")
-        override val index: Int? = null
+        override val index: Int? = null,
+
+        public val sid: String? = null,
     ) : AnimatedColor(), RawKeyframeProperty<Color, VectorKeyframe> {
 
         @Transient
@@ -108,7 +120,8 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
             return Animated(
                 keyframes = keyframes,
                 expression = expression,
-                index = index
+                index = index,
+                sid = sid
             )
         }
 
@@ -117,36 +130,11 @@ internal sealed class AnimatedColor : ExpressionProperty<Color>() {
         }
 
         override fun rawColor(state: AnimationState): Long {
-            return delegate.rawColor(state)
-        }
-    }
-
-    @Serializable
-    class Slottable(
-        val sid: String,
-
-        @SerialName("x")
-        override val expression: String? = null,
-
-        @SerialName("ix")
-        override val index: Int? = null
-    ) : AnimatedColor() {
-        override fun copy(): AnimatedColor {
-            return Slottable(
-                sid = sid,
-                expression = expression,
-                index = index
-            )
-        }
-
-        override fun raw(state: AnimationState): Color {
-            return Color(rawColor(state))
-        }
-
-        override fun rawColor(state: AnimationState): Long {
-            return state.composition.animation.slots.color(sid)
-                ?.interpolatedColor(state)
-                ?: 0L
+            return if (sid != null) {
+                state.composition.slotResolver.color(sid, state)
+                    ?.interpolatedColor(state)
+                    ?: delegate.rawColor(state)
+            } else delegate.rawColor(state)
         }
     }
 }
@@ -188,10 +176,6 @@ internal object AnimatedColorSerializer : JsonContentPolymorphicSerializer<Anima
 
         check(element is JsonObject){
             "Invalid color: $element"
-        }
-
-        if (element["sid"].isNotNull()){
-            return AnimatedColor.Slottable.serializer()
         }
 
         val k = requireNotNull(element.jsonObject["k"]) {

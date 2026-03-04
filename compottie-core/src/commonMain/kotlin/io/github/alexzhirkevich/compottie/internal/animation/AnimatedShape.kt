@@ -24,18 +24,18 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = AnimatedShapeSerializer::class)
-internal abstract class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder {
+public sealed class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder {
 
     @Transient
     override val jsCache: MutableMap<String, JsAny?> = HashMap()
 
     override var group: PropertyGroup? = null
     
-    abstract fun rawBezier(state: AnimationState): Bezier
+    internal abstract fun rawBezier(state: AnimationState): Bezier
 
-    abstract fun copy(): AnimatedShape
+    internal abstract fun copy(): AnimatedShape
 
-    abstract fun setClosed(closed: Boolean)
+    internal abstract fun setClosed(closed: Boolean)
 
     override fun prepareExpressions(state: AnimationState) {
 
@@ -153,15 +153,15 @@ internal abstract class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder
 
 
     @Serializable
-    class Default(
+    public class Default(
         @SerialName("x")
-        val expression: String? = null,
+        public val expression: String? = null,
 
         @SerialName("ix")
         override val index: Int? = null,
 
         @SerialName("k")
-        val bezier: Bezier,
+        public val bezier: Bezier,
     ) : AnimatedShape() {
 
         @Transient
@@ -190,9 +190,9 @@ internal abstract class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder
     }
 
     @Serializable
-    class Animated(
+    public class Animated(
         @SerialName("x")
-        val expression: String? = null,
+        public val expression: String? = null,
 
         @SerialName("ix")
         override val index: Int? = null,
@@ -259,14 +259,17 @@ internal abstract class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder
     }
 
     @Serializable
-    class Slottable(
+    public class Slottable(
         private val sid: String,
         @SerialName("ix")
         override val index: Int? = null,
     ) : AnimatedShape() {
 
+        private val EmptyPath by lazy { Path() }
+        private val EmptyBezier by lazy { Bezier() }
+
         override fun rawBezier(state: AnimationState): Bezier {
-            return state.composition.animation.slots.shape(sid)
+            return state.composition.slotResolver.shape(sid, state)
                 ?.rawBezier(state)
                 ?: EmptyBezier
         }
@@ -278,15 +281,12 @@ internal abstract class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder
         override fun setClosed(closed: Boolean) {}
 
         override fun raw(state: AnimationState): Path {
-            return state.composition.animation.slots.shape(sid)
+            return state.composition.slotResolver.shape(sid, state)
                 ?.interpolated(state)
                 ?: EmptyPath.apply { reset() }
         }
     }
 }
-
-private val EmptyPath = Path()
-private val EmptyBezier = Bezier()
 
 internal object AnimatedShapeSerializer : JsonContentPolymorphicSerializer<AnimatedShape>(
     baseClass = AnimatedShape::class

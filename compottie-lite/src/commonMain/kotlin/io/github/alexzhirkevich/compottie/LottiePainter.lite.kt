@@ -11,7 +11,6 @@ import io.github.alexzhirkevich.compottie.dynamic.rememberLottieDynamicPropertie
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionsRuntime
 import io.github.alexzhirkevich.keight.Script
 import io.github.alexzhirkevich.keight.ScriptEngine
-import kotlinx.coroutines.sync.Mutex
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -24,6 +23,7 @@ import kotlin.coroutines.CoroutineContext
  * @param fontManager used to load animation fonts
  * @param dynamicProperties dynamically-configurable animation properties. Can be created with
  * [rememberLottieDynamicProperties]
+ * @param theme id of the animation theme bundled in a dotLottie file
  * @param applyOpacityToLayers Sets whether to apply opacity to the each layer instead of shape.
  * Opacity is normally applied directly to a shape. In cases where translucent
  * shapes overlap, applying opacity to a layer will be more accurate at the expense of performance.
@@ -47,6 +47,7 @@ public fun rememberLottiePainter(
     fontManager: LottieFontManager? = null,
     coroutineContext: CoroutineContext = remember { Compottie.ioDispatcher() },
     dynamicProperties : LottieDynamicProperties? = null,
+    theme : String? = null,
     applyOpacityToLayers : Boolean = false,
     clipToCompositionBounds : Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
@@ -59,6 +60,7 @@ public fun rememberLottiePainter(
     fontManager = fontManager,
     coroutineContext = coroutineContext,
     dynamicProperties = dynamicProperties,
+    theme = theme,
     applyOpacityToLayers = applyOpacityToLayers,
     clipToCompositionBounds = clipToCompositionBounds,
     clipTextToBoundingBoxes = clipTextToBoundingBoxes,
@@ -94,6 +96,7 @@ public fun rememberLottiePainter(
     assetsManager: LottieAssetsManager? = null,
     fontManager: LottieFontManager? = null,
     dynamicProperties : LottieDynamicProperties? = null,
+    theme : String? = null,
     isPlaying: Boolean = true,
     restartOnPlay: Boolean = true,
     reverseOnRepeat: Boolean = false,
@@ -126,6 +129,7 @@ public fun rememberLottiePainter(
         assetsManager = assetsManager,
         fontManager = fontManager,
         dynamicProperties = dynamicProperties,
+        theme = theme,
         applyOpacityToLayers = applyOpacityToLayers,
         clipToCompositionBounds = clipToCompositionBounds,
         clipTextToBoundingBoxes = clipTextToBoundingBoxes,

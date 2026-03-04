@@ -9,7 +9,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonTransformingSerializer
 
 @Serializable
-internal class BezierKeyframe(
+public class BezierKeyframe internal constructor(
 
     @SerialName("s")
     @Serializable(with = BezierSerializer::class)

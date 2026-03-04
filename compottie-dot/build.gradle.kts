@@ -5,6 +5,7 @@ plugins {
 }
 
 kotlin {
+    explicitApi()
 
     applyDefaultHierarchyTemplate()
 

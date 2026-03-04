@@ -3,17 +3,17 @@ package io.github.alexzhirkevich.compottie.internal.helpers
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 
-internal class ColorsWithStops(
+public class ColorsWithStops internal constructor(
     size: Int
 ) {
-    val colorStops: List<Float> get() = mColorStops
-    val colors: List<Color> get() = mColors
+    internal val colorStops: List<Float> get() = mColorStops
+    internal val colors: List<Color> get() = mColors
 
     private val mColorStops: MutableList<Float> = ArrayList(size)
     private val mColors: MutableList<Color> = ArrayList(size)
 
 
-    fun fill(colors: FloatArray, numberOfColors: Int) {
+    internal fun fill(colors: FloatArray, numberOfColors: Int) {
         resizeTo(numberOfColors)
 
         repeat(numberOfColors) {
@@ -30,7 +30,7 @@ internal class ColorsWithStops(
     }
 
 
-    fun interpolateBetween(a: ColorsWithStops, b: ColorsWithStops, progress: Float) {
+    internal fun interpolateBetween(a: ColorsWithStops, b: ColorsWithStops, progress: Float) {
         val n = minOf(a.colors.size, b.colors.size)
 
         resizeTo(n)
@@ -66,22 +66,8 @@ internal class ColorsWithStops(
         // For a given opacity stop, we linearly interpolate the color for the two color stops around it.
 
         val opacityStops = (array.size - startIndex) / 2
-        val opacityStopPositions = MutableList(opacityStops) { 0f }
-        val opacityStopOpacities = MutableList(opacityStops) { 0f }
-
-        run {
-            var i = startIndex
-            var j = 0
-            while (i < array.size) {
-                if (i % 2 == 0) {
-                    opacityStopPositions[j] = array[i]
-                } else {
-                    opacityStopOpacities[j] = array[i]
-                    j++
-                }
-                i++
-            }
-        }
+        val opacityStopPositions = List(opacityStops) { array[startIndex + 2 * it] }
+        val opacityStopOpacities = List(opacityStops) { array[startIndex + 2 * it + 1] }
 
         // Pre-SKIA (Oreo) devices render artifacts when there is two stops in the same position.
         // As a result, we have to de-dupe the merge color and opacity stop positions.

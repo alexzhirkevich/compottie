@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 kotlin {
+    explicitApi()
+
     sourceSets {
         commonMain.dependencies {
             api(project(":compottie-core"))

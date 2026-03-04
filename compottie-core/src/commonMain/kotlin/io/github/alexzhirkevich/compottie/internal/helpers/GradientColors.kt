@@ -13,8 +13,27 @@ internal class GradientColors(
     val colors: AnimatedGradient,
 
     @SerialName("p")
-    val numberOfColors: Int = 0
+    val numberOfColors: Int = 0,
+
+    val sid : String? = null
 ) : ExpressionHolder {
+
+    fun interpolated(state: AnimationState) : ColorsWithStops {
+        colors.numberOfColors = numberOfColors
+
+        return if (sid != null) {
+            state.composition.slotResolver.gradient(sid, state)
+                ?.also {
+                    if (it.numberOfColors == 0) {
+                        it.numberOfColors = numberOfColors
+                    }
+                }
+                ?.interpolated(state)
+                ?: colors.interpolated(state)
+        } else {
+            colors.interpolated(state)
+        }
+    }
 
     override fun prepareExpressions(state: AnimationState) {
         colors.prepareExpressions(state)
@@ -22,6 +41,7 @@ internal class GradientColors(
 
     fun copy()  = GradientColors(
         colors = colors.copy(),
-        numberOfColors = numberOfColors
+        numberOfColors = numberOfColors,
+        sid = sid
     )
 }

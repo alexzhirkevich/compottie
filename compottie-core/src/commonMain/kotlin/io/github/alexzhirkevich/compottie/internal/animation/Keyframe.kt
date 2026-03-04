@@ -5,18 +5,18 @@ import androidx.compose.animation.core.LinearEasing
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
-internal interface Keyframe<out T> {
-    val start: T?
-    val end: T?
-    val time: Float
-    val hold: Boolean
-    val inValue: BezierInterpolation?
-    val outValue: BezierInterpolation?
+public interface Keyframe<out T> {
+    public val start: T?
+    public val end: T?
+    public val time: Float
+    public val hold: Boolean
+    public val inValue: BezierInterpolation?
+    public val outValue: BezierInterpolation?
 
-    val endHold get() = if (hold) start else end
+    public val endHold: T? get() = if (hold) start else end
 
-    val easingX: Easing
-    val easingY: Easing
+    public val easingX: Easing
+    public val easingY: Easing
 }
 
 internal class BaseKeyframe<out T>(
@@ -28,7 +28,7 @@ internal class BaseKeyframe<out T>(
     override val outValue: BezierInterpolation?,
 ) : Keyframe<T> {
 
-    override val easingX: Easing = kotlin.run {
+    override val easingX: Easing = run {
         val i = inValue
         val o = outValue
 
@@ -50,7 +50,7 @@ internal class BaseKeyframe<out T>(
         }
     }
 
-    override val easingY = kotlin.run {
+    override val easingY = run {
 
         val i = inValue
         val o = outValue

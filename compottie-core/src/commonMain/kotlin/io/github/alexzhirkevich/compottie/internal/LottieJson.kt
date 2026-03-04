@@ -126,13 +126,11 @@ internal val LottieJson by lazy{
             polymorphic(AnimatedColor::class) {
                 subclass(AnimatedColor.Default::class)
                 subclass(AnimatedColor.Animated::class)
-                subclass(AnimatedColor.Slottable::class)
             }
 
             polymorphic(AnimatedGradient::class) {
                 subclass(AnimatedGradient.Default::class)
                 subclass(AnimatedGradient.Animated::class)
-                subclass(AnimatedGradient.Slottable::class)
             }
 
             polymorphic(AnimatedShape::class) {
@@ -144,14 +142,12 @@ internal val LottieJson by lazy{
             polymorphic(AnimatedNumber::class) {
                 subclass(AnimatedNumber.Default::class)
                 subclass(AnimatedNumber.Animated::class)
-                subclass(AnimatedNumber.Slottable::class)
             }
 
             polymorphic(AnimatedVector2::class) {
                 subclass(AnimatedVector2.Default::class)
                 subclass(AnimatedVector2.Animated::class)
                 subclass(AnimatedVector2.Split::class)
-                subclass(AnimatedVector2.Slottable::class)
             }
 
             polymorphic(AnimatedVectorN::class) {

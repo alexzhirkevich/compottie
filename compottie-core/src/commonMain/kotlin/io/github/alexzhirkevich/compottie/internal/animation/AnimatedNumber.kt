@@ -4,7 +4,6 @@ import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.dynamic.PropertyProvider
 import io.github.alexzhirkevich.compottie.dynamic.invoke
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.isNotNull
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -21,9 +20,9 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = AnimatedNumberSerializer::class)
-internal sealed class AnimatedNumber : DynamicProperty<Float>() {
+public sealed class AnimatedNumber : DynamicProperty<Float>() {
 
-    abstract fun copy(): AnimatedNumber
+    internal abstract fun copy(): AnimatedNumber
 
     override fun mapEvaluated(e: Any): Float = mapFloat(e)
 
@@ -36,33 +35,44 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
     }
 
     @Serializable
-    class Default(
+    public class Default(
         @SerialName("k")
         @Serializable(with = ValueSerializer::class)
-        val value: Float,
+        public val value: Float,
 
         @SerialName("x")
         override val expression: String? = null,
 
         @SerialName("ix")
         override val index: Int? = null,
+
+        public val sid: String? = null,
     ) : AnimatedNumber() {
 
         override fun copy(): AnimatedNumber {
             return Default(
                 value = value,
                 expression = expression,
-                index = index
+                index = index,
+                sid = sid
             )
         }
 
         override fun raw(state: AnimationState): Float = rawFloat(state)
 
-        override fun rawFloat(state: AnimationState): Float = value
+        override fun rawFloat(state: AnimationState): Float {
+            return if (sid != null){
+                state.composition.slotResolver.number(sid, state)
+                    ?.interpolatedFloat(state)
+                    ?: value
+            } else {
+                value
+            }
+        }
     }
 
     @Serializable
-    class Animated(
+    public class Animated(
         @SerialName("k")
         override val keyframes: List<ValueKeyframe>,
 
@@ -71,6 +81,8 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
 
         @SerialName("ix")
         override val index: Int? = null,
+
+        public val sid: String? = null,
     ) : AnimatedNumber(), AnimatedKeyframeProperty<Float, ValueKeyframe> {
 
         @Transient
@@ -87,7 +99,8 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
             return Animated(
                 keyframes = keyframes,
                 expression = expression,
-                index = index
+                index = index,
+                sid = sid
             )
         }
 
@@ -96,36 +109,13 @@ internal sealed class AnimatedNumber : DynamicProperty<Float>() {
         }
 
         override fun rawFloat(state: AnimationState): Float {
-            return delegate.rawFloat(state)
-        }
-    }
-
-    @Serializable
-    class Slottable(
-        val sid: String,
-
-        @SerialName("x")
-        override val expression: String? = null,
-
-        @SerialName("ix")
-        override val index: Int? = null,
-    ) : AnimatedNumber() {
-
-        override fun copy(): AnimatedNumber {
-            return Slottable(
-                sid = sid,
-                expression = expression,
-                index = index
-            )
-        }
-
-        override fun raw(state: AnimationState): Float {
-            return rawFloat(state)
-        }
-
-        override fun rawFloat(state: AnimationState): Float {
-            return state.composition.animation.slots.number(sid)
-                ?.interpolatedFloat(state) ?: 0f
+            return if (sid != null) {
+                state.composition.slotResolver.number(sid, state)
+                    ?.interpolatedFloat(state)
+                    ?: delegate.rawFloat(state)
+            } else {
+                delegate.rawFloat(state)
+            }
         }
     }
 }
@@ -171,10 +161,6 @@ internal object AnimatedNumberSerializer : JsonContentPolymorphicSerializer<Anim
 
         if (element is JsonPrimitive) {
             return AnimatedNumberAsPrimitiveSerializer
-        }
-
-        if (element is JsonObject && element["sid"].isNotNull()) {
-            return AnimatedNumber.Slottable.serializer()
         }
 
         val value = requireNotNull(element.jsonObject["k"]) {

@@ -36,14 +36,10 @@ import io.github.alexzhirkevich.compottie.internal.layers.Layer
 import io.github.alexzhirkevich.compottie.internal.utils.fastReset
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.measureTime
 
 
 /**
@@ -56,6 +52,7 @@ import kotlin.time.measureTime
  * @param fontManager used to load animation fonts
  * @param dynamicProperties dynamically-configurable animation properties. Can be created with
  * [rememberLottieDynamicProperties]
+ * @param theme id of the animation theme bundled in a dotLottie file
  * @param applyOpacityToLayers Sets whether to apply opacity to the each layer instead of shape.
  * Opacity is normally applied directly to a shape. In cases where translucent
  * shapes overlap, applying opacity to a layer will be more accurate at the expense of performance.
@@ -81,6 +78,7 @@ public fun rememberLottiePainter(
     fontManager: LottieFontManager? = null,
     coroutineContext: CoroutineContext = remember { Compottie.ioDispatcher() },
     dynamicProperties : LottieDynamicProperties? = null,
+    theme : String? = null,
     applyOpacityToLayers : Boolean = false,
     clipToCompositionBounds : Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
@@ -139,6 +137,7 @@ public fun rememberLottiePainter(
                 composition = comp,
                 progress = updatedProgress::invoke,
                 dynamicProperties = dp,
+                theme = theme,
                 clipTextToBoundingBoxes = clipTextToBoundingBoxes,
                 textMeasurer = textMeasurer,
                 clipToCompositionBounds = clipToCompositionBounds,
@@ -160,21 +159,6 @@ public fun rememberLottiePainter(
                 }
             }
 
-            withContext(coroutineContext) {
-                runCatching {
-                    composition.prepareMutex.withLock {
-                        if (composition.isFirstDraw) {
-                            composition.isFirstDraw = false
-                            with(painter) {
-                                with(EmptyDrawScope) {
-                                    draw(size)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
             value = painter
         }
     }
@@ -185,7 +169,8 @@ public fun rememberLottiePainter(
         clipToCompositionBounds,
         applyOpacityToLayers,
         enableMergePaths,
-        enableExpressions
+        enableExpressions,
+        theme
     ) {
         painter?.let {
             it.enableMergePaths = enableMergePaths
@@ -193,6 +178,7 @@ public fun rememberLottiePainter(
             it.applyOpacityToLayers = applyOpacityToLayers
             it.clipToCompositionBounds = clipToCompositionBounds
             it.clipTextToBoundingBoxes = clipTextToBoundingBoxes
+            it.theme = theme
         }
     }
 
@@ -240,6 +226,7 @@ private class LottiePainter(
     progress : () -> Float,
     assets : List<LottieAsset>,
     fonts : Map<String, FontFamily>,
+    theme : String?,
     dynamicProperties: DynamicCompositionProvider?,
     textMeasurer: TextMeasurer,
     applyOpacityToLayers : Boolean,
@@ -271,6 +258,7 @@ private class LottiePainter(
         composition = composition,
         assets = assets.associateBy(LottieAsset::id),
         fonts = fonts,
+        theme = theme,
         frame = frame,
         textMeasurer = textMeasurer,
         applyOpacityToLayers = applyOpacityToLayers,
@@ -289,6 +277,7 @@ private class LottiePainter(
     var clipToCompositionBounds: Boolean by animationState::clipToCompositionBounds
     var enableMergePaths: Boolean by animationState::enableMergePaths
     var enableExpressions: Boolean by animationState::enableExpressions
+    var theme : String? by animationState::theme
 
     init {
         setDynamicProperties(dynamicProperties)
