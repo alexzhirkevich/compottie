@@ -99,21 +99,19 @@ public fun rememberLottiePainter(
         null -> null
     }
 
-    val copy = true
-
     val coroutineScope = rememberCoroutineScope()
 
     val painter by produceState<LottiePainter?>(
-        null, composition, copy, coroutineScope
+        null, composition, coroutineScope
     ) {
 
         if (composition != null) {
 
-            val comp = if (copy) composition.deepCopy() else composition
+            val comp = composition.deepCopy()
 
             val assets = if (comp.hasAssets) {
                 async(coroutineContext) {
-                    comp.loadAssets(assetsManager ?: EmptyAssetsManager, copy)
+                    comp.loadAssets(assetsManager ?: EmptyAssetsManager, true)
                 }
             } else {
                 null

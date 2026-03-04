@@ -3,9 +3,12 @@ package io.github.alexzhirkevich.compottie.internal.utils
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.isIdentity
+import kotlin.math.PI
 import kotlin.math.absoluteValue
+import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.roundToInt
+import kotlin.math.sin
 import kotlin.math.sqrt
 
 internal val IdentityMatrix = Matrix()
@@ -72,30 +75,25 @@ internal fun Matrix.preRotate(degree : Float) {
     return rotateZ(degree)
 }
 
-internal fun Matrix.preRotateX(degree : Float) {
-    if (degree.absoluteValue < Float.MIN_VALUE) {
-        return
-    }
-    preConcat(Matrix().apply {
-        rotateX(degree)
-    })
-}
+internal fun Matrix.preRotateX(degree: Float) = preRotateOnAxis(degree, 1, 2)
+internal fun Matrix.preRotateY(degree: Float) = preRotateOnAxis(degree, 2, 0)
+internal fun Matrix.preRotateZ(degree: Float) = preRotateOnAxis(degree, 0, 1)
 
-internal fun Matrix.preRotateY(degree : Float) {
+private fun Matrix.preRotateOnAxis(degree: Float, rowA: Int, rowB: Int) {
     if (degree.absoluteValue < Float.MIN_VALUE) {
         return
     }
-    preConcat(Matrix().apply {
-        rotateY(degree)
-    })
-}
-internal fun Matrix.preRotateZ(degree : Float) {
-    if (degree.absoluteValue < Float.MIN_VALUE) {
-        return
+    val rad = degree.toDouble() * (PI / 180.0)
+    val c = cos(rad).toFloat()
+    val s = sin(rad).toFloat()
+    val v = values
+    for (col in 0..3) {
+        val i = col * 4
+        val a = v[i + rowA]
+        val b = v[i + rowB]
+        v[i + rowA] = c * a - s * b
+        v[i + rowB] = s * a + c * b
     }
-    preConcat(Matrix().apply {
-        rotateZ(degree)
-    })
 }
 
 internal fun Matrix.preScale(x : Float, y : Float) {
