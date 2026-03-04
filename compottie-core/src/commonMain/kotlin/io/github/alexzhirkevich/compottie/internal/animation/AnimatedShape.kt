@@ -265,6 +265,9 @@ public sealed class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder {
         override val index: Int? = null,
     ) : AnimatedShape() {
 
+        private val EmptyPath by lazy { Path() }
+        private val EmptyBezier by lazy { Bezier() }
+
         override fun rawBezier(state: AnimationState): Bezier {
             return state.composition.slotResolver.shape(sid, state)
                 ?.rawBezier(state)
@@ -284,9 +287,6 @@ public sealed class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder {
         }
     }
 }
-
-private val EmptyPath = Path()
-private val EmptyBezier = Bezier()
 
 internal object AnimatedShapeSerializer : JsonContentPolymorphicSerializer<AnimatedShape>(
     baseClass = AnimatedShape::class

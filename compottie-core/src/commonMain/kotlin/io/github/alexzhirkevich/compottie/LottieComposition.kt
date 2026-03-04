@@ -180,9 +180,6 @@ public class LottieComposition internal constructor(
         @InternalCompottieApi
         set
 
-    internal var isFirstDraw : Boolean = true
-    internal val prepareMutex = Mutex()
-
     @Transient
     public var themes : Map<String, AnimationTheme>? = null
         @InternalCompottieApi
