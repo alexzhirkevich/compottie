@@ -12,6 +12,10 @@ internal class PrecompositionAsset(
     val layers : List<Layer>
 ) : LottieAsset {
     override fun copy(): LottieAsset {
-        return this
+        return PrecompositionAsset(
+            id = id,
+            name = name,
+            layers = layers.map(Layer::deepCopy)
+        )
     }
 }
