@@ -209,6 +209,19 @@ fun LottieCompositionSpec.Companion.DotLottie(
 ) : LottieCompositionSpec
 ```
 
+### Theming
+
+dotLottie files support [themes](https://dotlottie.io/spec/2.0/#themes). Designers can include multiple animation styles to the single .lottie file.
+To select an animation theme you can use the `theme` parameter of the `rememberLottiePainter` function.
+
+```kotlin
+val painter = rememberLottiePainter(
+    composition = dotLottieComposition,
+    progress = progress,
+    theme = "night"
+)
+```
+
 ## Images
 
 Images should be avoided whenever possible. They are much larger, less performant, and can lead to pixelation. Whenever possible, try and make your animation consist solely of vectors. However, Lottie does support images in one of 4 ways:
