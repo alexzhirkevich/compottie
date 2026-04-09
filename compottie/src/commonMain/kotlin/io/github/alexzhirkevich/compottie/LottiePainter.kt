@@ -3,7 +3,6 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.painter.Painter
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.LottieFontManager
 import io.github.alexzhirkevich.compottie.dynamic.LottieDynamicProperties
@@ -53,7 +52,7 @@ public fun rememberLottiePainter(
     enableTextGrouping : Boolean = false,
     enableMergePaths: Boolean = false,
     enableExpressions: Boolean = true
-) : Painter = rememberLottiePainter(
+) : LottiePainter = rememberLottiePainter(
     composition = composition,
     progress = progress,
     assetsManager = assetsManager,
@@ -99,7 +98,7 @@ public fun rememberLottiePainter(
     clipTextToBoundingBoxes: Boolean = false,
     enableMergePaths: Boolean = false,
     enableExpressions: Boolean = true
-) : Painter {
+) : LottiePainter {
 
     val progress = animateLottieCompositionAsState(
         composition = composition,

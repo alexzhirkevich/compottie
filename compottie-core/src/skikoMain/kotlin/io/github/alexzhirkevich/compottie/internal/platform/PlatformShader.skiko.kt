@@ -1,16 +1,11 @@
 package io.github.alexzhirkevich.compottie.internal.platform
 
-import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.graphics.ColorMatrixColorFilter
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.TileMode.Companion.Clamp
-import androidx.compose.ui.graphics.asComposeColorFilter
 import androidx.compose.ui.graphics.toArgb
 import org.jetbrains.skia.FilterBlurMode
 import org.jetbrains.skia.FilterTileMode
@@ -19,9 +14,7 @@ import org.jetbrains.skia.ImageFilter
 import org.jetbrains.skia.MaskFilter
 import org.jetbrains.skia.Matrix33
 import org.jetbrains.skia.Shader
-import kotlin.math.PI
 import kotlin.math.abs
-import kotlin.math.sqrt
 
 internal actual fun MakeLinearGradient(
     from : Offset,
@@ -70,6 +63,8 @@ internal actual fun MakeRadialGradient(
     )
 )
 
+private val _tmpMatrix33 = Matrix33.makeTranslate(0f,0f)
+
 
 internal fun Matrix.asSkia33(coerceScale : Boolean = false) : Matrix33 {
 
@@ -85,18 +80,17 @@ internal fun Matrix.asSkia33(coerceScale : Boolean = false) : Matrix33 {
         else -> values[Matrix.ScaleY]
     }
 
-
-    return Matrix33(
-        scaleX,
-        values[Matrix.SkewX],
-        values[Matrix.TranslateX],
-        values[Matrix.SkewY],
-        scaleY,
-        values[Matrix.TranslateY],
-        values[Matrix.Perspective0],
-        values[Matrix.Perspective1],
-        values[Matrix.Perspective2],
-    )
+    return _tmpMatrix33.apply {
+        mat[0] = scaleX
+        mat[1] = values[Matrix.SkewX]
+        mat[2] = values[Matrix.TranslateX]
+        mat[3] = values[Matrix.SkewY]
+        mat[4] = scaleY
+        mat[5] = values[Matrix.TranslateY]
+        mat[6] = values[Matrix.Perspective0]
+        mat[7] = values[Matrix.Perspective1]
+        mat[8] = values[Matrix.Perspective2]
+    }
 }
 
 private fun List<Color>.toIntArray(): IntArray =

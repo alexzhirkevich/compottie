@@ -11,6 +11,7 @@ import io.github.alexzhirkevich.compottie.dot.ThemeRules
 import io.github.alexzhirkevich.compottie.dot.VectorRule
 import io.github.alexzhirkevich.compottie.dot.toTheme
 import io.github.alexzhirkevich.compottie.internal.AnimationTheme
+import io.github.alexzhirkevich.compottie.statemachine.LottieStateMachine
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
@@ -45,6 +46,8 @@ private val DotLottieJson = Json {
             subclass(GradientRule::class)
             subclass(ImageRule::class)
         }
+
+        include(LottieStateMachine.serializersModule)
     }
 }
 
@@ -94,10 +97,28 @@ private class DotLottieCompositionSpec(
                     DotLottieJson.decodeFromString<ThemeRules>(
                         zipSystem.read("t/${it.id}.json".toPath()).decodeToString()
                     ).toTheme()
-                }.getOrElse { return@mapNotNull null }
+                }.getOrElse {
+                    Compottie.logger?.error("Failed to parse dotLottie theme", it)
+                    return@mapNotNull null
+                }
 
                 it.id to theme
             }?.toMap()
+
+            val states = manifest.stateMachines?.mapNotNull {
+                val sm = runCatching<LottieStateMachine> {
+                    DotLottieJson.decodeFromString<LottieStateMachine>(
+                        zipSystem.read("s/${it.id}.json".toPath()).decodeToString()
+                    )
+                }.getOrElse {
+                    Compottie.logger?.error("Failed to parse dotLottie state machine", it)
+
+                    return@mapNotNull null
+                }
+
+                it.id to sm
+            }?.toMap()
+
 
             LottieComposition.parse(anim.decodeToString()).apply {
                 speed = animation.speed
@@ -105,6 +126,7 @@ private class DotLottieCompositionSpec(
                     iterations = Compottie.IterateForever
                 }
                 themes = dotThemes
+                stateMachines = states
                 prepareAssets(
                     assetsManager = DotLottieAssetsManager(
                         zipSystem,

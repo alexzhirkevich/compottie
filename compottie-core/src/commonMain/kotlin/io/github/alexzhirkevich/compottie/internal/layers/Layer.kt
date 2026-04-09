@@ -187,8 +187,13 @@ internal sealed interface Layer : DrawingContent, ExpressionHolder, Callable {
 }
 
 internal fun Layer.totalTransformMatrix(state : AnimationState, toComp : Boolean = false) : Matrix {
-
     val matrix = transform.matrix(state)
+    applyParentsMatrix(matrix, state, toComp)
+    return matrix
+}
+
+internal fun Layer.applyParentsMatrix(matrix: Matrix, state : AnimationState, toComp : Boolean = false) {
+
     var layer = parentLayer
 
     while (layer != null) {
@@ -198,8 +203,6 @@ internal fun Layer.totalTransformMatrix(state : AnimationState, toComp : Boolean
         }
         layer = layer.parentLayer
     }
-
-    return matrix
 }
 
 @JvmInline

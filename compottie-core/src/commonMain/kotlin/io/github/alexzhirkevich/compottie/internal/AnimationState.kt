@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
@@ -60,11 +61,7 @@ public class AnimationState @PublishedApi internal constructor(
      * Current animation progress from 0.0 to 1.0
      * */
     public val progress: Float
-        get() {
-            val p = (frame - composition.animation.inPoint) /
-                    (composition.animation.outPoint - composition.animation.inPoint)
-            return p.coerceIn(0f, 1f)
-        }
+        get() = composition.frameToProgress(frame)
 
     internal val absoluteProgress: Float
         get() {
@@ -93,6 +90,11 @@ public class AnimationState @PublishedApi internal constructor(
     internal var enableExpressions by mutableStateOf(enableExpressions)
     internal var enableTextGrouping by mutableStateOf(enableTextGrouping)
     internal var theme by mutableStateOf(theme)
+
+//    internal var currentState : SMState? by mutableStateOf(
+//    composition.stateMachines?.get(stateMachine)
+//        ?.let { it.statesMap[it.initial] }
+//    )
 
     internal var thisLayer: Layer = layer
         private set
@@ -125,7 +127,7 @@ public class AnimationState @PublishedApi internal constructor(
     internal fun <R> onTime(time: Float, block: (AnimationState) -> R): R {
         contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
 
-        val start = kotlin.runCatching {
+        val start = runCatching {
             thisComp.startTime
         }.getOrElse { composition.startTime }
 

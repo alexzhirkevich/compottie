@@ -27,7 +27,6 @@ import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.dynamic.LottieDynamicProperties
 import io.github.alexzhirkevich.compottie.dynamic.rememberLottieDynamicProperties
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.EmptyDrawScope
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionsEngineFactory
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.hasTextLayers
@@ -37,7 +36,6 @@ import io.github.alexzhirkevich.compottie.internal.utils.fastReset
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
@@ -86,7 +84,7 @@ public fun rememberLottiePainter(
     enableMergePaths: Boolean = false,
     enableExpressions: Boolean,
     expressionEngineFactory : ExpressionsEngineFactory
-) : Painter {
+) : LottiePainter {
 
     val textMeasurer = rememberTextMeasurer(20)
 
@@ -101,7 +99,7 @@ public fun rememberLottiePainter(
 
     val coroutineScope = rememberCoroutineScope()
 
-    val painter by produceState<LottiePainter?>(
+    val painter by produceState<LottiePainterImpl?>(
         null, composition, copy, coroutineScope
     ) {
 
@@ -133,7 +131,7 @@ public fun rememberLottiePainter(
                 }
             }
 
-            val painter = LottiePainter(
+            val painter = LottiePainterImpl(
                 composition = comp,
                 progress = updatedProgress::invoke,
                 dynamicProperties = dp,
@@ -187,14 +185,14 @@ public fun rememberLottiePainter(
     }
 
     return remember {
-        LateInitPainter { painter }
+        LottiePainter { painter }
     }
 }
 
 internal expect fun mockFontFamilyResolver() : FontFamily.Resolver
 
-private class LateInitPainter(
-    val painter : () -> LottiePainter?
+public class LottiePainter internal constructor(
+    internal val painter : () -> LottiePainterImpl?
 ) : Painter() {
 
     private var alpha by mutableStateOf(1f)
@@ -221,8 +219,8 @@ private class LateInitPainter(
     }
 }
 
-private class LottiePainter(
-    private val composition: LottieComposition,
+internal class LottiePainterImpl(
+    val composition: LottieComposition,
     progress : () -> Float,
     assets : List<LottieAsset>,
     fonts : Map<String, FontFamily>,

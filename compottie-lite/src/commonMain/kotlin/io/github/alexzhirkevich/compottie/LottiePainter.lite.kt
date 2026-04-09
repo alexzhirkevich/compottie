@@ -53,7 +53,7 @@ public fun rememberLottiePainter(
     clipTextToBoundingBoxes: Boolean = false,
     enableTextGrouping : Boolean = false,
     enableMergePaths: Boolean = false
-) : Painter = rememberLottiePainter(
+) : LottiePainter = rememberLottiePainter(
     composition = composition,
     progress = progress,
     assetsManager = assetsManager,
@@ -97,6 +97,7 @@ public fun rememberLottiePainter(
     fontManager: LottieFontManager? = null,
     dynamicProperties : LottieDynamicProperties? = null,
     theme : String? = null,
+    stateMachine : String? = null,
     isPlaying: Boolean = true,
     restartOnPlay: Boolean = true,
     reverseOnRepeat: Boolean = false,
@@ -109,7 +110,7 @@ public fun rememberLottiePainter(
     clipToCompositionBounds: Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
     enableMergePaths: Boolean = false
-) : Painter {
+) : LottiePainter {
 
     val progress = animateLottieCompositionAsState(
         composition = composition,
@@ -130,6 +131,7 @@ public fun rememberLottiePainter(
         fontManager = fontManager,
         dynamicProperties = dynamicProperties,
         theme = theme,
+        stateMachine = stateMachine,
         applyOpacityToLayers = applyOpacityToLayers,
         clipToCompositionBounds = clipToCompositionBounds,
         clipTextToBoundingBoxes = clipTextToBoundingBoxes,

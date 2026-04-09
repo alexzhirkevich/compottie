@@ -37,6 +37,7 @@ import io.github.alexzhirkevich.compottie.internal.shapes.Shape
 import io.github.alexzhirkevich.compottie.internal.shapes.SolidStrokeShape
 import io.github.alexzhirkevich.compottie.internal.shapes.TransformShape
 import io.github.alexzhirkevich.compottie.internal.shapes.TrimPathShape
+import io.github.alexzhirkevich.compottie.statemachine.LottieStateMachine
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -154,6 +155,8 @@ internal val LottieJson by lazy{
                 subclass(AnimatedVectorN.Default::class)
                 subclass(AnimatedVectorN.Animated::class)
             }
+
+            include(LottieStateMachine.serializersModule)
         }
     }
 }
