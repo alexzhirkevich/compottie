@@ -1,6 +1,10 @@
 package io.github.alexzhirkevich.compottie.statemachine
 
 import androidx.compose.runtime.Stable
+import io.github.alexzhirkevich.compottie.LottieStateMachine
+import io.github.alexzhirkevich.compottie.booleanOrValue
+import io.github.alexzhirkevich.compottie.floatOrValue
+import io.github.alexzhirkevich.compottie.stringOrValue
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -10,7 +14,7 @@ internal sealed interface SMGuard {
 
     public val inputName : String
 
-    public fun check(variables : Map<String, Any>) : Boolean = false
+    public fun check(machine: LottieStateMachine) : Boolean = false
 
     @Serializable
     @SerialName("Numeric")
@@ -20,8 +24,12 @@ internal sealed interface SMGuard {
         public val compareTo : String
     ) : SMGuard {
 
-        override fun check(variables: Map<String, Any>): Boolean =
-            compare<Float>(variables, inputName, compareTo, conditionType)
+        override fun check(machine: LottieStateMachine): Boolean {
+            return conditionType.check(
+                machine.getFloat(inputName) ?: return false,
+                machine.floatOrValue(compareTo) ?: return false
+            )
+        }
     }
 
     @Serializable
@@ -32,8 +40,12 @@ internal sealed interface SMGuard {
         public val compareTo : String
     ) : SMGuard {
 
-        override fun check(variables: Map<String, Any>): Boolean =
-            compare<String>(variables, inputName, compareTo, conditionType)
+        override fun check(machine: LottieStateMachine): Boolean {
+            return conditionType.check(
+                machine.getString(inputName) ?: return false,
+                machine.stringOrValue(compareTo) ?: return false
+            )
+        }
     }
 
     @Serializable
@@ -44,8 +56,12 @@ internal sealed interface SMGuard {
         public val compareTo : String
     ) : SMGuard {
 
-        override fun check(variables: Map<String, Any>): Boolean =
-            compare<Boolean>(variables, inputName, compareTo, conditionType)
+        override fun check(machine: LottieStateMachine): Boolean {
+            return conditionType.check(
+                machine.getBoolean(inputName) ?: return false,
+                machine.booleanOrValue(compareTo) ?: return false
+            )
+        }
     }
 
     @Serializable
@@ -53,25 +69,9 @@ internal sealed interface SMGuard {
     public class Event(
         override val inputName : String,
     ) : SMGuard {
-        override fun check(variables: Map<String, Any>): Boolean {
-            val e = variables[inputName] as? SMInput.Event ?: return false
-            return e.isTriggered
+
+        override fun check(machine: LottieStateMachine): Boolean {
+            return machine.isFired(inputName)
         }
     }
-}
-
-private inline fun <reified T> compare(
-    variables: Map<String, Any>,
-    inputName : String,
-    compareTo : String,
-    condition: SMGuardCondition
-) : Boolean{
-    val v = variables[inputName] as? T ?: return false
-    val compare = if (compareTo.startsWith("#")){
-        variables[compareTo.drop(1)] as? T ?: return false
-    } else {
-        compareTo.toFloatOrNull() ?: return false
-    }
-
-    return condition.check(v, compare)
 }

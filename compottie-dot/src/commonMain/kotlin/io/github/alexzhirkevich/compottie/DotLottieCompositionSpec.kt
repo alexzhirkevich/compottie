@@ -11,7 +11,7 @@ import io.github.alexzhirkevich.compottie.dot.ThemeRules
 import io.github.alexzhirkevich.compottie.dot.VectorRule
 import io.github.alexzhirkevich.compottie.dot.toTheme
 import io.github.alexzhirkevich.compottie.internal.AnimationTheme
-import io.github.alexzhirkevich.compottie.statemachine.LottieStateMachine
+import io.github.alexzhirkevich.compottie.statemachine.SMConfig
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
@@ -47,7 +47,7 @@ private val DotLottieJson = Json {
             subclass(ImageRule::class)
         }
 
-        include(LottieStateMachine.serializersModule)
+        include(SMConfig.serializersModule)
     }
 }
 
@@ -106,8 +106,8 @@ private class DotLottieCompositionSpec(
             }?.toMap()
 
             val states = manifest.stateMachines?.mapNotNull {
-                val sm = runCatching<LottieStateMachine> {
-                    DotLottieJson.decodeFromString<LottieStateMachine>(
+                val sm = runCatching<SMConfig> {
+                    DotLottieJson.decodeFromString<SMConfig>(
                         zipSystem.read("s/${it.id}.json".toPath()).decodeToString()
                     )
                 }.getOrElse {

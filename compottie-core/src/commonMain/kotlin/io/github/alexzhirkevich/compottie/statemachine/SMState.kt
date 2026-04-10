@@ -47,7 +47,7 @@ internal sealed interface SMState {
         public val animation : String,
         public val loop : Boolean = false,
         public val loopCount : Int = 1,
-        public val autoPlay : Boolean = false,
+        public val autoplay : Boolean = false,
         public val final : Boolean = false,
         public val mode : SMPlaybackMode = SMPlaybackMode.Forward,
         public val speed : Float = 1f,
@@ -78,7 +78,11 @@ internal sealed interface SMState {
             transition: SMTransition
         ) {
             val start = state.composition.marker(segment)?.let {
-                state.composition.frameToProgress(it.startFrame)
+                state.composition.frameToProgress(
+                    if (mode.isReverse)
+                        it.startFrame + it.durationFrames
+                    else it.startFrame
+                )
             }
 
             if (start != null) {
@@ -90,16 +94,21 @@ internal sealed interface SMState {
             composition: LottieComposition,
             progress: LottieAnimatable
         ) {
-            progress.animate(
-                composition = composition,
-                iterations = if (loop) Compottie.IterateForever else loopCount,
-                clipSpec = if (segment != null && composition.marker(segment) != null)
-                    LottieClipSpec.Marker(segment)
-                else null,
-                speed = speed,
-            )
+            if (autoplay) {
+                progress.animate(
+                    initialProgress = progress.progress,
+                    composition = composition,
+                    iterations = if (loop) Compottie.IterateForever else loopCount,
+                    clipSpec = if (segment != null && composition.marker(segment) != null)
+                        LottieClipSpec.Marker(segment)
+                    else null,
+                    reverseOnRepeat = mode.isBounce,
+                    speed = speed * if (mode.isReverse) -1f else 1f,
+                )
+            }
         }
     }
+
     @Serializable
     @SerialName("GlobalState")
     public class GlobalState(

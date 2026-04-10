@@ -1,6 +1,9 @@
 package io.github.alexzhirkevich.compottie.statemachine
 
 import androidx.compose.ui.platform.UriHandler
+import io.github.alexzhirkevich.compottie.LottieAnimatable
+import io.github.alexzhirkevich.compottie.LottieStateMachine
+import io.github.alexzhirkevich.compottie.floatOrValue
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -8,23 +11,24 @@ import kotlinx.serialization.Serializable
 @Serializable
 internal sealed interface SMAction {
 
-    public operator fun invoke(
+    public suspend operator fun invoke(
         uriHandler: UriHandler,
-        variables: MutableMap<String, Any>,
+        stateMachine: LottieStateMachine,
         state: AnimationState,
-        stateMachine: LottieStateMachine
-    ){}
+        progress: LottieAnimatable
+    )
 
     @Serializable
     @SerialName("Url")
     public class Url(
         public val url : String,
     ) : SMAction {
-        override fun invoke(
+
+        override suspend fun invoke(
             uriHandler: UriHandler,
-            variables: MutableMap<String, Any>,
+            stateMachine: LottieStateMachine,
             state: AnimationState,
-            stateMachine: LottieStateMachine
+            progress: LottieAnimatable
         ) {
             uriHandler.openUri(url)
         }
@@ -35,11 +39,12 @@ internal sealed interface SMAction {
     public class Theme(
         public val value : String,
     ) : SMAction {
-        override fun invoke(
+
+        override suspend fun invoke(
             uriHandler: UriHandler,
-            variables: MutableMap<String, Any>,
+            stateMachine: LottieStateMachine,
             state: AnimationState,
-            stateMachine: LottieStateMachine
+            progress: LottieAnimatable
         ) {
             state.theme = value
         }
@@ -52,13 +57,13 @@ internal sealed interface SMAction {
         public val value : String
     ) : SMAction{
 
-        override fun invoke(
+        override suspend fun invoke(
             uriHandler: UriHandler,
-            variables: MutableMap<String, Any>,
+            stateMachine: LottieStateMachine,
             state: AnimationState,
-            stateMachine: LottieStateMachine
+            progress: LottieAnimatable
         ) {
-            increment(variables, inputName, value)
+            increment(stateMachine, inputName, value)
         }
     }
 
@@ -68,13 +73,13 @@ internal sealed interface SMAction {
         public val inputName : String,
         public val value : String
     ) : SMAction {
-        override fun invoke(
+        override suspend fun invoke(
             uriHandler: UriHandler,
-            variables: MutableMap<String, Any>,
+            stateMachine: LottieStateMachine,
             state: AnimationState,
-            stateMachine: LottieStateMachine
+            progress: LottieAnimatable
         ) {
-            increment( variables, inputName, value, -1)
+            increment(stateMachine, inputName, value, -1)
         }
     }
 
@@ -84,14 +89,14 @@ internal sealed interface SMAction {
         public val inputName : String,
     ) : SMAction {
 
-        override fun invoke(
+        override suspend fun invoke(
             uriHandler: UriHandler,
-            variables: MutableMap<String, Any>,
+            stateMachine: LottieStateMachine,
             state: AnimationState,
-            stateMachine: LottieStateMachine
+            progress: LottieAnimatable
         ) {
-            val v = variables[inputName] as? Boolean ?: return
-            variables[inputName] = !v
+            val b = stateMachine.getBoolean(inputName) ?: return
+            stateMachine.setBoolean(inputName, b.not())
         }
     }
 
@@ -102,13 +107,13 @@ internal sealed interface SMAction {
         public val value : Boolean
     ) : SMAction {
 
-        override fun invoke(
+        override suspend fun invoke(
             uriHandler: UriHandler,
-            variables: MutableMap<String, Any>,
+            stateMachine: LottieStateMachine,
             state: AnimationState,
-            stateMachine: LottieStateMachine
+            progress: LottieAnimatable
         ) {
-            variables[inputName] = value
+            stateMachine.setBoolean(inputName, value)
         }
     }
 
@@ -118,13 +123,14 @@ internal sealed interface SMAction {
         public val inputName : String,
         public val value : String
     ) : SMAction {
-        override fun invoke(
+
+        override suspend fun invoke(
             uriHandler: UriHandler,
-            variables: MutableMap<String, Any>,
+            stateMachine: LottieStateMachine,
             state: AnimationState,
-            stateMachine: LottieStateMachine
+            progress: LottieAnimatable
         ) {
-            variables[inputName] = value
+            stateMachine.setString(inputName, value)
         }
     }
 
@@ -134,13 +140,13 @@ internal sealed interface SMAction {
         public val inputName : String,
         public val value : Float
     ) : SMAction {
-        override fun invoke(
+        override suspend fun invoke(
             uriHandler: UriHandler,
-            variables: MutableMap<String, Any>,
+            stateMachine: LottieStateMachine,
             state: AnimationState,
-            stateMachine: LottieStateMachine
+            progress: LottieAnimatable
         ) {
-            variables[inputName] = value
+            stateMachine.setFloat(inputName, value)
         }
     }
 
@@ -149,14 +155,13 @@ internal sealed interface SMAction {
     public class Fire(
         public val inputName : String,
     ) : SMAction {
-        override fun invoke(
+        override suspend fun invoke(
             uriHandler: UriHandler,
-            variables: MutableMap<String, Any>,
+            stateMachine: LottieStateMachine,
             state: AnimationState,
-            stateMachine: LottieStateMachine
+            progress: LottieAnimatable
         ) {
-            val e = variables[inputName] as? SMInput.Event
-            e?.trigger()
+            stateMachine.fire(inputName)
         }
     }
 
@@ -166,52 +171,83 @@ internal sealed interface SMAction {
         public val inputName : String,
     ) : SMAction {
 
-        override fun invoke(
+        override suspend fun invoke(
             uriHandler: UriHandler,
-            variables: MutableMap<String, Any>,
-            state: AnimationState,
             stateMachine: LottieStateMachine,
+            state: AnimationState,
+            progress: LottieAnimatable,
         ) {
-            variables.clear()
-            stateMachine.assignVariables(variables)
+            stateMachine.resetInput(inputName)
         }
     }
 
     @Serializable
     @SerialName("SetFrame")
     public class SetFrame(
-        public val inputName : String,
         public val value : String
-    ) : SMAction
+    ) : SMAction {
+        
+        override suspend fun invoke(
+            uriHandler: UriHandler,
+            stateMachine: LottieStateMachine,
+            state: AnimationState,
+            progress: LottieAnimatable
+        ) {
+
+            val frame = stateMachine.floatOrValue(value) ?: return
+
+            progress.snapTo(
+                composition = state.composition,
+                progress = state.composition.frameToProgress(frame)
+            )
+        }
+    }
 
     @Serializable
     @SerialName("SetProgress")
     public class SetProgress(
         public val inputName : String,
         public val value : String
-    ) : SMAction
+    ) : SMAction {
+        override suspend fun invoke(
+            uriHandler: UriHandler,
+            stateMachine: LottieStateMachine,
+            state: AnimationState,
+            progress: LottieAnimatable
+        ) {
+            progress.snapTo(
+                composition = state.composition,
+                progress = stateMachine.floatOrValue(value) ?: return
+            )
+        }
+    }
 
     @Serializable
     @SerialName("FireCustomEvent")
     public class FireCustomEvent(
-        public val inputName : String,
         public val value : String
-    ) : SMAction
+    ) : SMAction {
+
+        override suspend fun invoke(
+            uriHandler: UriHandler,
+            stateMachine: LottieStateMachine,
+            state: AnimationState,
+            progress: LottieAnimatable
+        ) {
+            stateMachine.fire(value)
+        }
+    }
 }
 
 private fun increment(
-    stateVariables: MutableMap<String, Any>,
+    stateMachine: LottieStateMachine,
     inputName: String,
     value : String,
     sign : Int = 1
 ){
 
-    val v = stateVariables[inputName] as? Float ?: return
-    val diff = if (value.startsWith("#")){
-        stateVariables[value.drop(1)] as? Float ?: return
-    } else {
-        value.toFloatOrNull() ?: return
-    }
+    val v = stateMachine.getFloat(inputName) ?: return
+    val diff = stateMachine.floatOrValue(value) ?: return
 
-    stateVariables[inputName] = v + diff * sign
+    stateMachine.setFloat(inputName, v + diff * sign)
 }

@@ -9,12 +9,16 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -26,7 +30,7 @@ import kotlin.js.JsName
  * @see LottieAnimatable
  */
 @Composable
-public fun rememberLottieAnimatable(): LottieAnimatable = remember { LottieAnimatableImpl() }
+public fun rememberLottieAnimatable(): LottieAnimatable = retain { LottieAnimatableImpl() }
 
 /**
  * Use this to create a [LottieAnimatable] outside of a composable such as a hoisted state class.
@@ -104,6 +108,15 @@ public interface LottieAnimatable : LottieAnimationState {
         iteration: Int = this.iteration,
         resetLastFrameNanos: Boolean = progress != this.progress,
     )
+
+    /**
+     * Direct snap to progress without cancelling [animate] jobs
+     * */
+    @OptIn(DelicateCoroutinesApi::class)
+    public fun updateProgress(composition: LottieComposition?, progress : Float) {
+        // default implementation for compatibility reasons
+        GlobalScope.launch { snapTo(composition, progress) }
+    }
 
     /**
      * Animate a [LottieComposition].
@@ -345,7 +358,14 @@ private class LottieAnimatableImpl : LottieAnimatable {
 
     private fun updateProgress(progress: Float) {
         this.progressRaw = progress
-        this.progress = if (useCompositionFrameRate) progress.roundToCompositionFrameRate(composition) else progress
+        this.progress = if (useCompositionFrameRate)
+            progress.roundToCompositionFrameRate(composition)
+        else progress
+    }
+
+    override fun updateProgress(composition: LottieComposition?, progress: Float) {
+        this.composition = composition
+        updateProgress(progress)
     }
 }
 

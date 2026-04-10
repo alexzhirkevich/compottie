@@ -3,6 +3,7 @@ package io.github.alexzhirkevich.compottie.statemachine
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import io.github.alexzhirkevich.compottie.LottieStateMachine
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -11,7 +12,7 @@ internal sealed interface SMInput {
 
     public val name : String
 
-    public fun assign(variables : MutableMap<String, Any>)
+    public fun assign(stateMachine: LottieStateMachine)
 
     @Serializable
     @SerialName("Numeric")
@@ -20,8 +21,8 @@ internal sealed interface SMInput {
         public val value : Float
     ) : SMInput {
 
-        override fun assign(variables: MutableMap<String, Any>) {
-            variables[name] = value
+        override fun assign(stateMachine: LottieStateMachine) {
+            stateMachine.setFloat(name, value)
         }
     }
 
@@ -32,8 +33,8 @@ internal sealed interface SMInput {
         public val value : String
     ) : SMInput {
 
-        override fun assign(variables: MutableMap<String, Any>) {
-            variables[name] = value
+        override fun assign(stateMachine: LottieStateMachine) {
+            stateMachine.setString(name, value)
         }
     }
 
@@ -44,8 +45,8 @@ internal sealed interface SMInput {
         public val value : Boolean
     ) : SMInput {
 
-        override fun assign(variables: MutableMap<String, Any>) {
-            variables[name] = value
+        override fun assign(stateMachine: LottieStateMachine) {
+            stateMachine.setBoolean(name, value)
         }
     }
 
@@ -62,8 +63,10 @@ internal sealed interface SMInput {
             isTriggered = true
         }
 
-        override fun assign(variables: MutableMap<String, Any>) {
-            variables[name] = Event(name)
+        override fun assign(stateMachine: LottieStateMachine) {
+            if (stateMachine.isFired(name)){
+                stateMachine.clearFiredEvents()
+            }
         }
     }
 }

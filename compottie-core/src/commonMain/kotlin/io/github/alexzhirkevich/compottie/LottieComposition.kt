@@ -23,7 +23,7 @@ import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.helpers.Marker
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
-import io.github.alexzhirkevich.compottie.statemachine.LottieStateMachine
+import io.github.alexzhirkevich.compottie.statemachine.SMConfig
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -181,7 +181,7 @@ public class LottieComposition internal constructor(
         @InternalCompottieApi
         set
 
-    public var stateMachines: Map<String, LottieStateMachine>? by mutableStateOf(null)
+    public var stateMachines: Map<String, SMConfig>? by mutableStateOf(null)
         @InternalCompottieApi
         set
 
