@@ -20,7 +20,7 @@ import io.github.alexzhirkevich.compottie.internal.content.DrawingContent
 import io.github.alexzhirkevich.compottie.internal.content.GreedyContent
 import io.github.alexzhirkevich.compottie.internal.content.PathContent
 import io.github.alexzhirkevich.compottie.internal.content.nameOrDefault
-import io.github.alexzhirkevich.compottie.internal.platform.addPath
+import io.github.alexzhirkevich.compottie.internal.platform.PathBuilder
 import io.github.alexzhirkevich.compottie.internal.utils.fastSetFrom
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import kotlinx.serialization.SerialName
@@ -100,9 +100,12 @@ internal class RepeaterShape(
         val copies = copies.interpolatedFloat(state)
         val offset = offset.interpolatedFloat(state)
 
-        for (i in copies.toInt() - 1 downTo 0) {
-            matrix.fastSetFrom(transform.repeaterMatrix(state, i + offset))
-            path.addPath(contentPath, matrix)
+        PathBuilder().use { builder ->
+            for (i in copies.toInt() - 1 downTo 0) {
+                matrix.fastSetFrom(transform.repeaterMatrix(state, i + offset))
+                builder.addPath(contentPath, matrix)
+            }
+            builder.setTo(path)
         }
         return path
     }

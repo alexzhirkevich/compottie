@@ -10,12 +10,13 @@ internal interface ExtendedPathMeasure : PathMeasure {
     fun nextContour() : Boolean
 }
 
-internal fun Path.set(other : Path){
+internal fun Path.set(other: Path) {
     reset()
     addPath(other)
 }
-//internal expect fun Path.set(other : Path)
 
-
-internal expect fun Path.addPath(path: Path, matrix: Matrix) : Path
-
+internal expect class PathBuilder() : AutoCloseable {
+    fun addPath(path: Path, matrix: Matrix)
+    fun setTo(path: Path)
+    override fun close()
+}
