@@ -165,10 +165,13 @@ public sealed class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder {
     ) : AnimatedShape() {
 
         @Transient
-        private val tmpPath = Path()
+        private val path = Path().apply {
+            bezier.mapPath(this)
+        }
 
         override fun setClosed(closed: Boolean) {
             bezier.setIsClosed(closed)
+            bezier.mapPath(path)
         }
 
         override fun rawBezier(state: AnimationState): Bezier {
@@ -176,8 +179,7 @@ public sealed class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder {
         }
 
         override fun raw(state: AnimationState): Path {
-            bezier.mapPath(tmpPath)
-            return tmpPath
+            return path
         }
 
         override fun copy(): AnimatedShape {

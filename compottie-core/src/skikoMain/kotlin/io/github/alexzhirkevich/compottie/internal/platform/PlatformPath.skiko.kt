@@ -32,6 +32,7 @@ internal actual class PathBuilder actual constructor() : AutoCloseable {
         val snapshot = skikoPathBuilder.snapshot()
         path.asSkiaPath().swap(snapshot)
         snapshot.close()
+        skikoPathBuilder.reset()
     }
 
     actual override fun close() {

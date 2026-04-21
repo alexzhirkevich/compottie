@@ -109,12 +109,10 @@ internal class ContentGroupImpl(
         if (transform != null) {
             matrix.fastSetFrom(transform.matrix(state))
         }
-        PathBuilder().use { builder ->
-            pathContents.fastForEachReversed {
-                builder.addPath(it.getPath(state), matrix)
-            }
-            builder.setTo(path)
+        pathContents.fastForEachReversed {
+            state.pathBuilder.addPath(it.getPath(state), matrix)
         }
+        state.pathBuilder.setTo(path)
 
         return path
     }

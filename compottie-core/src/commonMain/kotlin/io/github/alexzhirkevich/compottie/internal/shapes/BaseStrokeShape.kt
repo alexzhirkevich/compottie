@@ -243,14 +243,12 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         outBounds: MutableRect,
     ) {
         path.rewind()
-        PathBuilder().use { builder ->
-            pathGroups.fastForEach { pathGroup ->
-                pathGroup.paths.fastForEach {
-                    builder.addPath(it.getPath(state), parentMatrix)
-                }
+        pathGroups.fastForEach { pathGroup ->
+            pathGroup.paths.fastForEach {
+                state.pathBuilder.addPath(it.getPath(state), parentMatrix)
             }
-            builder.setTo(path)
         }
+        state.pathBuilder.setTo(path)
 
         outBounds.set(path.getBounds())
         outBounds.extendBy(strokeWidth.interpolatedFloat(state) + 1)

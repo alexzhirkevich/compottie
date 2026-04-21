@@ -129,12 +129,10 @@ internal class FillShape(
         path.rewind()
         path.fillType = fillType
 
-        PathBuilder().use { builder ->
-            paths.fastForEach {
-                builder.addPath(it.getPath(state), parentMatrix)
-            }
-            builder.setTo(path)
+        paths.fastForEach {
+            state.pathBuilder.addPath(it.getPath(state), parentMatrix)
         }
+        state.pathBuilder.setTo(path)
 
         drawScope.drawContext.canvas.drawPath(path, paint)
     }
@@ -147,12 +145,10 @@ internal class FillShape(
     ) {
 
         path.rewind()
-        PathBuilder().use { builder ->
-            paths.fastForEach {
-                builder.addPath(it.getPath(state), parentMatrix)
-            }
-            builder.setTo(path)
+        paths.fastForEach {
+            state.pathBuilder.addPath(it.getPath(state), parentMatrix)
         }
+        state.pathBuilder.setTo(path)
 
         outBounds.set(path.getBounds())
         outBounds.extendBy(1f)

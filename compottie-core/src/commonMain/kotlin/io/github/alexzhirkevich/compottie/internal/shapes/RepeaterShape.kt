@@ -100,13 +100,11 @@ internal class RepeaterShape(
         val copies = copies.interpolatedFloat(state)
         val offset = offset.interpolatedFloat(state)
 
-        PathBuilder().use { builder ->
-            for (i in copies.toInt() - 1 downTo 0) {
-                matrix.fastSetFrom(transform.repeaterMatrix(state, i + offset))
-                builder.addPath(contentPath, matrix)
-            }
-            builder.setTo(path)
+        for (i in copies.toInt() - 1 downTo 0) {
+            matrix.fastSetFrom(transform.repeaterMatrix(state, i + offset))
+            state.pathBuilder.addPath(contentPath, matrix)
         }
+        state.pathBuilder.setTo(path)
         return path
     }
 

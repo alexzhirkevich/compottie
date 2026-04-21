@@ -143,12 +143,10 @@ internal class GradientFillShape(
         path.rewind()
         path.fillType = fillType
 
-        PathBuilder().use { builder ->
-            pathContents.fastForEach {
-                builder.addPath(it.getPath(state), parentMatrix)
-            }
-            builder.setTo(path)
+        pathContents.fastForEach {
+            state.pathBuilder.addPath(it.getPath(state), parentMatrix)
         }
+        state.pathBuilder.setTo(path)
 
         roundShape?.applyTo(paint, state)
 
@@ -163,12 +161,10 @@ internal class GradientFillShape(
         outBounds: MutableRect
     ) {
         path.rewind()
-        PathBuilder().use { builder ->
-            pathContents.fastForEach {
-                builder.addPath(it.getPath(state), parentMatrix)
-            }
-            builder.setTo(path)
+        pathContents.fastForEach {
+            state.pathBuilder.addPath(it.getPath(state), parentMatrix)
         }
+        state.pathBuilder.setTo(path)
         outBounds.set(path.getBounds())
         outBounds.extendBy(1f)
     }

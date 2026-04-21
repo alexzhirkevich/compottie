@@ -28,10 +28,11 @@ internal actual class PathBuilder actual constructor() : AutoCloseable {
 
     actual fun setTo(path: Path) {
         path.asAndroidPath().set(androidPath)
+        androidPath.rewind()
     }
 
     actual override fun close() {
-        androidPath.close()
+
     }
 }
 

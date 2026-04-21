@@ -14,6 +14,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.expressions.Express
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
+import io.github.alexzhirkevich.compottie.internal.platform.PathBuilder
 import io.github.alexzhirkevich.keight.ScriptEngine
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -55,6 +56,8 @@ public class AnimationState @PublishedApi internal constructor(
 
     internal var absoluteFrame = frame
         private set
+
+    internal val pathBuilder = PathBuilder()
 
     /**
      * Current animation progress from 0.0 to 1.0
