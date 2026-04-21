@@ -1,16 +1,13 @@
 package io.github.alexzhirkevich.compottie.internal.platform
 
-import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.graphics.ColorMatrixColorFilter
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.graphics.TileMode.Companion.Clamp
-import androidx.compose.ui.graphics.asComposeColorFilter
+import androidx.compose.ui.graphics.asComposeShader
+import androidx.compose.ui.graphics.skiaPaint
 import androidx.compose.ui.graphics.toArgb
 import org.jetbrains.skia.FilterBlurMode
 import org.jetbrains.skia.FilterTileMode
@@ -18,10 +15,8 @@ import org.jetbrains.skia.GradientStyle
 import org.jetbrains.skia.ImageFilter
 import org.jetbrains.skia.MaskFilter
 import org.jetbrains.skia.Matrix33
-import org.jetbrains.skia.Shader
-import kotlin.math.PI
 import kotlin.math.abs
-import kotlin.math.sqrt
+import org.jetbrains.skia.Shader as SkShader
 
 internal actual fun MakeLinearGradient(
     from : Offset,
@@ -32,7 +27,7 @@ internal actual fun MakeLinearGradient(
     matrix: Matrix
 ) : Shader {
     return try {
-        Shader.makeLinearGradient(
+        SkShader.makeLinearGradient(
             x0 = from.x,
             y0 = from.y,
             x1 = to.x,
@@ -44,7 +39,15 @@ internal actual fun MakeLinearGradient(
                 isPremul = true,
                 localMatrix = matrix.asSkia33(coerceScale = true)
             )
-        )
+            // TODO: Migrate to new Gradient API introduced in skiko 0.146 (Compose 1.12)
+            // gradient = Gradient(
+            //     Gradient.Colors(
+            //         colors = colors.toColor4fArray(),
+            //         positions = colorStops.toFloatArray(),
+            //         tileMode = FilterTileMode.CLAMP
+            //     )
+            // ),
+        ).asComposeShader()
     }catch (t : Throwable){
         throw t
     }
@@ -57,7 +60,7 @@ internal actual fun MakeRadialGradient(
     colorStops: List<Float>,
     tileMode: TileMode,
     matrix: Matrix
-) = Shader.makeRadialGradient(
+) = SkShader.makeRadialGradient(
     x = center.x,
     y = center.y,
     r = radius,
@@ -68,7 +71,20 @@ internal actual fun MakeRadialGradient(
         isPremul = true,
         localMatrix = matrix.asSkia33(coerceScale = true)
     )
-)
+    // TODO: Migrate to new Gradient API introduced in skiko 0.146 (Compose 1.12)
+    // radius = radius,
+    // gradient = Gradient(
+    //     colors = Gradient.Colors(
+    //         colors = colors.toColor4fArray(),
+    //         positions = colorStops.toFloatArray(),
+    //         tileMode = tileMode.toSkiaTileMode()
+    //     ),
+    //     interpolation = Gradient.Interpolation(
+    //         inPremul = Gradient.Interpolation.InPremul.YES
+    //     )
+    // ),
+    // localMatrix = matrix.asSkia33(coerceScale = true),
+).asComposeShader()
 
 
 internal fun Matrix.asSkia33(coerceScale : Boolean = false) : Matrix33 {
@@ -102,8 +118,15 @@ internal fun Matrix.asSkia33(coerceScale : Boolean = false) : Matrix33 {
 private fun List<Color>.toIntArray(): IntArray =
     IntArray(size) { i -> this[i].toArgb() }
 
+// TODO: Migrate to new Gradient API introduced in skiko 0.146 (Compose 1.12)
+//private fun List<Color>.toColor4fArray(): Array<Color4f> =
+//    Array(size) { i ->
+//        val color = this[i]
+//        Color4f(color.red, color.green, color.blue, color.alpha)
+//    }
+
 internal fun TileMode.toSkiaTileMode(): FilterTileMode = when (this) {
-    Clamp -> FilterTileMode.CLAMP
+    TileMode.Clamp -> FilterTileMode.CLAMP
     TileMode.Repeated -> FilterTileMode.REPEAT
     TileMode.Mirror -> FilterTileMode.MIRROR
     TileMode.Decal -> FilterTileMode.DECAL
@@ -115,7 +138,7 @@ internal fun TileMode.toSkiaTileMode(): FilterTileMode = when (this) {
 
 
 internal actual fun Paint.setBlurMaskFilter(radius: Float, isImage : Boolean) {
-    val skPaint = asFrameworkPaint()
+    val skPaint = skiaPaint
 
     val sigma = if (radius > 0) {
         BlurSigmaScale * radius

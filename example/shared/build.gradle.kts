@@ -1,6 +1,7 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -47,7 +48,6 @@ kotlin {
 
     listOf(
         iosArm64(),
-        iosX64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
@@ -55,14 +55,14 @@ kotlin {
         }
     }
     macosArm64()
-    macosX64()
     jvm()
 
     js(IR) {
         browser()
     }
 
-    wasmJs() {
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
         browser()
     }
 
@@ -84,7 +84,7 @@ kotlin {
 
 
             implementation(libs.compose.material3)
-            implementation(compose.components.resources)
+            implementation(libs.compose.resources)
             implementation(libs.serialization)
             implementation(libs.coil.compose)
             implementation(libs.coil.network)
