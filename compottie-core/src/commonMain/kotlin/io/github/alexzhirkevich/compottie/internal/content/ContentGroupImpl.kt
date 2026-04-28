@@ -9,7 +9,7 @@ import androidx.compose.ui.util.fastForEachReversed
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
-import io.github.alexzhirkevich.compottie.internal.platform.addPath
+import io.github.alexzhirkevich.compottie.internal.platform.PathBuilder
 import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
 import io.github.alexzhirkevich.compottie.internal.utils.fastSetFrom
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
@@ -110,8 +110,9 @@ internal class ContentGroupImpl(
             matrix.fastSetFrom(transform.matrix(state))
         }
         pathContents.fastForEachReversed {
-            path.addPath(it.getPath(state), matrix)
+            state.pathBuilder.addPath(it.getPath(state), matrix)
         }
+        state.pathBuilder.setTo(path)
 
         return path
     }

@@ -9,7 +9,7 @@ kotlin {
         commonMain.dependencies {
             api(project(":compottie-core"))
             implementation(libs.compose.ui)
-            implementation(compose.components.resources)
+            implementation(libs.compose.resources)
             implementation(libs.coroutines.core)
         }
     }

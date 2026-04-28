@@ -37,7 +37,7 @@ import io.github.alexzhirkevich.compottie.internal.helpers.StrokeDash
 import io.github.alexzhirkevich.compottie.internal.helpers.applyTrimPath
 import io.github.alexzhirkevich.compottie.internal.platform.ExtendedPathMeasure
 import io.github.alexzhirkevich.compottie.internal.platform.GradientCache
-import io.github.alexzhirkevich.compottie.internal.platform.addPath
+import io.github.alexzhirkevich.compottie.internal.platform.PathBuilder
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import io.github.alexzhirkevich.compottie.internal.utils.IdentityMatrix
 import io.github.alexzhirkevich.compottie.internal.utils.appendPathEffect
@@ -245,9 +245,10 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         path.rewind()
         pathGroups.fastForEach { pathGroup ->
             pathGroup.paths.fastForEach {
-                path.addPath(it.getPath(state), parentMatrix)
+                state.pathBuilder.addPath(it.getPath(state), parentMatrix)
             }
         }
+        state.pathBuilder.setTo(path)
 
         outBounds.set(path.getBounds())
         outBounds.extendBy(strokeWidth.interpolatedFloat(state) + 1)

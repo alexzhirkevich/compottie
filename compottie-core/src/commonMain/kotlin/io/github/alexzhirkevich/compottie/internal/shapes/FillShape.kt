@@ -26,7 +26,7 @@ import io.github.alexzhirkevich.compottie.internal.effects.LayerEffectsState
 import io.github.alexzhirkevich.compottie.internal.helpers.FillRule
 import io.github.alexzhirkevich.compottie.internal.helpers.asPathFillType
 import io.github.alexzhirkevich.compottie.internal.platform.GradientCache
-import io.github.alexzhirkevich.compottie.internal.platform.addPath
+import io.github.alexzhirkevich.compottie.internal.platform.PathBuilder
 import io.github.alexzhirkevich.compottie.internal.utils.extendBy
 import io.github.alexzhirkevich.compottie.internal.utils.set
 import io.github.alexzhirkevich.keight.ScriptRuntime
@@ -130,8 +130,9 @@ internal class FillShape(
         path.fillType = fillType
 
         paths.fastForEach {
-            path.addPath(it.getPath(state), parentMatrix)
+            state.pathBuilder.addPath(it.getPath(state), parentMatrix)
         }
+        state.pathBuilder.setTo(path)
 
         drawScope.drawContext.canvas.drawPath(path, paint)
     }
@@ -145,8 +146,9 @@ internal class FillShape(
 
         path.rewind()
         paths.fastForEach {
-            path.addPath(it.getPath(state), parentMatrix)
+            state.pathBuilder.addPath(it.getPath(state), parentMatrix)
         }
+        state.pathBuilder.setTo(path)
 
         outBounds.set(path.getBounds())
         outBounds.extendBy(1f)

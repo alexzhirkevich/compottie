@@ -1,5 +1,6 @@
 import com.android.build.api.dsl.LibraryExtension
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.FileInputStream
 import java.util.Properties
@@ -131,15 +132,14 @@ fun Project.multiplatformSetup() {
 
         iosArm64()
         iosSimulatorArm64()
-        iosX64()
         macosArm64()
-        macosX64()
 
         js(IR) {
             browser()
         }
 
-        wasmJs() {
+        @OptIn(ExperimentalWasmDsl::class)
+        wasmJs {
             browser()
         }
     }

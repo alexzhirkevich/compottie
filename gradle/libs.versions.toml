@@ -2,10 +2,10 @@
 androidx-activity-compose="1.10.1"
 androidx-core-ktx="1.17.0"
 collection="1.5.0"
-kotlin="2.3.0"
-compose="1.10.1"
-androidx-lifecycle="2.10.0-alpha07"
-material3="1.10.0-alpha05"
+kotlin="2.3.20"
+compose="1.11.0-beta03"
+androidx-lifecycle="2.10.0"
+material3="1.11.0-alpha06"
 agp = "8.12.1"
 okio = "3.16.4"
 serialization="1.9.0"
@@ -20,6 +20,10 @@ kotlinx-browser="0.5.0"
 [libraries]
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
+compose-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "compose" }
+compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose" }
+compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose" }
+compose-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose" }
 compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
 androidx-collection = { module = "androidx.collection:collection", version.ref = "collection" }

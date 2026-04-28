@@ -4,30 +4,37 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.asAndroidPath
-import androidx.compose.ui.graphics.asComposePath
-
 
 internal actual fun ExtendedPathMeasure() : ExtendedPathMeasure = AndroidExtendedPathMeasure(
     android.graphics.PathMeasure()
 )
 
-private val tempAndroidMatrix = android.graphics.Matrix()
-internal actual fun Path.addPath(path: Path, matrix: Matrix) : Path {
-    return asAndroidPath().apply {
-        addPath(
+internal actual class PathBuilder actual constructor() : AutoCloseable {
+    private val androidPath = android.graphics.Path()
+    private val androidMatrix = android.graphics.Matrix()
+
+    actual fun addPath(
+        path: Path,
+        matrix: Matrix
+    ) {
+        androidPath.addPath(
             path.asAndroidPath(),
-            tempAndroidMatrix.apply {
+            androidMatrix.apply {
                 reset()
                 setFromInternal(matrix)
             }
         )
-    }.asComposePath()
-}
-//
-//internal actual fun Path.set(other : Path) {
-//    asAndroidPath().set(other.asAndroidPath())
-//}
+    }
 
+    actual fun setTo(path: Path) {
+        path.asAndroidPath().set(androidPath)
+        androidPath.rewind()
+    }
+
+    actual override fun close() {
+
+    }
+}
 
 private class AndroidExtendedPathMeasure(
     private val internalPathMeasure: android.graphics.PathMeasure
