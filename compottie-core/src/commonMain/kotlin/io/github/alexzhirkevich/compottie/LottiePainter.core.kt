@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.assets.EmptyAssetsManager
 import io.github.alexzhirkevich.compottie.assets.EmptyFontManager
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
@@ -249,7 +248,7 @@ internal class LottiePainterImpl(
     private val compositionLayer: Layer = CompositionLayer(composition)
 
     private val frame: Float by derivedStateOf {
-        lerp(composition.startFrame, composition.endFrame, progress())
+        composition.progressToFrame(progress())
     }
 
     val animationState = AnimationState(

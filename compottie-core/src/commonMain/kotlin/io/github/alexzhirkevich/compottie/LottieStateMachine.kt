@@ -53,6 +53,11 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
+
+/**
+ * State machine controller. Can be used to set/observe inputs, fire and subscribe to events,
+ * change/get the current state
+ * */
 @Stable
 public sealed interface LottieStateMachine {
 
@@ -67,7 +72,7 @@ public sealed interface LottieStateMachine {
     public val currentState : String?
 
     /**
-     * Events fired by interactions and manually fired with [fire]
+     * Events fired by the interactions and fired manually with [fire]
      * */
     public val events : Flow<String>
 
@@ -142,10 +147,14 @@ public sealed interface LottieStateMachine {
 }
 
 /**
+ * Create and remember [LottieStateMachine]
+ *
  * @param progress animation state that controls the [LottiePainter] progress. Usually created with
  * [animateLottieCompositionAsState].
  * If the progress should be controlled by the state machine, just create a [LottieAnimatable] with
  * [rememberLottieAnimatable] and use it for both [rememberLottiePainter] progress and [Lottie] progress
+ *
+ * @see LottieStateMachine
  * */
 @Composable
 public fun rememberLottieStateMachine(
@@ -449,7 +458,7 @@ internal fun Modifier.stateMachine(
     }
 
     val hoverModifier = if (
-        onEnter.isNotEmpty() || onExit.isNotEmpty()
+        (onEnter.isNotEmpty() || onExit.isNotEmpty()) && !p.animationState.isTweenRunning
     ) {
         Modifier.pointerInput(p, sm, progress) {
             awaitEachGesture {
@@ -514,7 +523,7 @@ internal fun Modifier.stateMachine(
             it is SMInteraction.PointerDown ||
                     it is SMInteraction.PointerUp ||
                     it is SMInteraction.Click
-        }
+        } && !p.animationState.isTweenRunning
     ) {
         Modifier.pointerInput(drawScope, size, painter, contentScale, sm, progress) {
 

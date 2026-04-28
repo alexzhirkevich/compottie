@@ -8,17 +8,13 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.job
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -108,15 +104,6 @@ public interface LottieAnimatable : LottieAnimationState {
         iteration: Int = this.iteration,
         resetLastFrameNanos: Boolean = progress != this.progress,
     )
-
-    /**
-     * Direct snap to progress without cancelling [animate] jobs
-     * */
-    @OptIn(DelicateCoroutinesApi::class)
-    public fun updateProgress(composition: LottieComposition?, progress : Float) {
-        // default implementation for compatibility reasons
-        GlobalScope.launch { snapTo(composition, progress) }
-    }
 
     /**
      * Animate a [LottieComposition].
@@ -363,10 +350,6 @@ private class LottieAnimatableImpl : LottieAnimatable {
         else progress
     }
 
-    override fun updateProgress(composition: LottieComposition?, progress: Float) {
-        this.composition = composition
-        updateProgress(progress)
-    }
 }
 
 private fun defaultProgress(composition: LottieComposition?, clipSpec: LottieClipSpec?, speed: Float): Float {

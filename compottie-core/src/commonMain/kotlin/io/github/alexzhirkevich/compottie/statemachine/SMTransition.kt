@@ -1,18 +1,14 @@
 package io.github.alexzhirkevich.compottie.statemachine
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.util.fastAll
+import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.LottieAnimatable
-import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieStateMachine
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
+import io.github.alexzhirkevich.compottie.internal.AnimationState
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -25,12 +21,10 @@ internal sealed interface SMTransition {
     public val guards: List<SMGuard>
 
     public suspend fun move(
-        composition: LottieComposition,
+        state: AnimationState,
         progress: LottieAnimatable,
         toProgress: Float
-    ) {
-        progress.snapTo(composition, toProgress)
-    }
+    )
 
     public fun canMove(machine: LottieStateMachine): Boolean {
         return guards.fastAll { it.check(machine) }
@@ -41,7 +35,16 @@ internal sealed interface SMTransition {
     public class Default(
         public override val toState: String,
         public override val guards: List<SMGuard> = emptyList()
-    ) : SMTransition
+    ) : SMTransition {
+
+        override suspend fun move(
+            state: AnimationState,
+            progress: LottieAnimatable,
+            toProgress: Float
+        ) {
+            progress.snapTo(state.composition, toProgress)
+        }
+    }
 
     @Serializable
     @SerialName("Tweened")
@@ -65,21 +68,23 @@ internal sealed interface SMTransition {
             }.getOrDefault(LinearEasing)
         )
 
-        @Transient
-        private val animatable = Animatable(0f)
-
         override suspend fun move(
-            composition: LottieComposition,
+            state: AnimationState,
             progress: LottieAnimatable,
             toProgress: Float
         ) {
-            progress.snapTo(composition, progress.progress)
-            animatable.snapTo(progress.progress)
-            animatable.animateTo(
-                targetValue = toProgress,
-                animationSpec = animationSpec
+            state.tweenTo(
+                frame = state.composition.progressToFrame(toProgress),
+                spec = animationSpec
             ) {
-                progress.updateProgress(composition, value)
+                progress.snapTo(
+                    composition = state.composition,
+                    progress = lerp(
+                        start = state.progress,
+                        stop = toProgress,
+                        fraction = state.tweenProgress
+                    )
+                )
             }
         }
     }

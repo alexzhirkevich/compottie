@@ -86,7 +86,7 @@ internal sealed interface SMState {
             }
 
             if (start != null) {
-                transition.move(state.composition, progress, start)
+                transition.move(state,  progress, start)
             }
         }
 

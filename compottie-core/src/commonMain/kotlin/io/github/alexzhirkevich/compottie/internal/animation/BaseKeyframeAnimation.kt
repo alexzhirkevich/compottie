@@ -30,11 +30,14 @@ internal open class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
         emptyList()
     }
 
-    private val firstFrame: Float = if (keyframes.isEmpty()) 0f else keyframes.first().time
-    private val lastFrame: Float = if (keyframes.isEmpty()) 0f else  keyframes.last().time
+    protected val firstFrame: Float = if (keyframes.isEmpty()) 0f else keyframes.first().time
+    protected val lastFrame: Float = if (keyframes.isEmpty()) 0f else keyframes.last().time
 
-    protected val keyframesMappingRanges : IntObjectMap<Pair<K?,K?>> =
-        MutableIntObjectMap<Pair<K?,K?>>().apply {
+    protected val firstFrameSlop: Float = firstFrame - 0.1f
+    protected val lastFrameSlop: Float = lastFrame + 0.1f
+
+    protected val keyframesMappingRanges: IntObjectMap<Pair<K?, K?>> =
+        MutableIntObjectMap<Pair<K?, K?>>().apply {
             if (keyframes.isEmpty())
                 return@apply
 
@@ -70,25 +73,68 @@ internal open class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
             }
         }
 
-    protected fun progress(keyframeIndex : Int, state: AnimationState) : Float {
-        return when {
-            keyframeIndex < 0 -> 0f
-            keyframeIndex > timeIntervals.lastIndex -> 1f
-            else -> timeIntervals[keyframeIndex].let {
-                (state.frame - it.start) / (it.endInclusive - it.start)
+    inline fun tween(
+        state: AnimationState,
+        default : (AnimationState) -> T,
+        fromKeyframe : (K) -> T,
+        lerp : (from : T, to : T, progress : Float) -> T,
+    ) : T {
+        return with(state) {
+
+            val from = frame
+            val to = tweenTargetFrame
+            val progress = tweenProgress
+
+            if (!isTweenRunning || to == null)
+                return default(state)
+
+            when {
+                from in firstFrame..lastFrame && to in firstFrame..lastFrame ->
+                    lerp(
+                        default(this),
+                        onFrame(to) { default(it) },
+                        progress
+                    )
+
+                from in firstFrame..lastFrame && keyframes.firstOrNull()?.start != null  ->
+                    lerp(
+                        default(this),
+                        fromKeyframe(keyframes.first().start!!),
+                        progress
+                    )
+
+                to in firstFrame..lastFrame && keyframes.firstOrNull()?.start != null ->
+                    lerp(
+                        fromKeyframe(keyframes.first().start!!),
+                        onFrame(to) { default(it) },
+                        progress
+                    )
+                else -> default(this)
             }
         }
     }
 
-    protected fun keyframeNumber(state: AnimationState) : Int {
+    protected fun progress(keyframeIndex: Int, state: AnimationState): Float {
+        val frame = state.frame
+        return when {
+            keyframeIndex < 0 -> 0f
+            keyframeIndex > timeIntervals.lastIndex -> 1f
+            else -> timeIntervals[keyframeIndex].let {
+                (frame - it.start) / (it.endInclusive - it.start)
+            }
+        }
+    }
+
+    protected fun keyframeNumber(state: AnimationState): Int {
+        val frame = state.frame
         return when {
             keyframes.isEmpty() -> -2
-            state.frame <= firstFrame -> -1
-            state.frame >= lastFrame -> keyframes.lastIndex
+            frame <= firstFrame -> -1
+            frame >= lastFrame -> keyframes.lastIndex
             else -> timeIntervals.binarySearch {
                 when {
-                    state.frame < it.start -> 1
-                    state.frame > it.endInclusive -> -1
+                    frame < it.start -> 1
+                    frame > it.endInclusive -> -1
                     else -> 0
                 }
             }.also {
@@ -99,7 +145,7 @@ internal open class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
 
     override fun raw(state: AnimationState): T {
         val kfId = keyframeNumber(state)
-        val range = keyframesMappingRanges[kfId]?: return emptyValue
+        val range = keyframesMappingRanges[kfId] ?: return emptyValue
 
         if (range.first == null || range.second == null)
             return emptyValue
@@ -129,3 +175,4 @@ private class FloatRange(
     val start: Float,
     val endInclusive: Float
 )
+
