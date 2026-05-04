@@ -1,7 +1,6 @@
 package io.github.alexzhirkevich.compottie.statemachine
 
 import androidx.compose.ui.platform.UriHandler
-import io.github.alexzhirkevich.compottie.LottieAnimatable
 import io.github.alexzhirkevich.compottie.LottieStateMachine
 import io.github.alexzhirkevich.compottie.floatOrValue
 import io.github.alexzhirkevich.compottie.internal.AnimationState
@@ -14,8 +13,7 @@ internal sealed interface SMAction {
     public suspend operator fun invoke(
         uriHandler: UriHandler,
         stateMachine: LottieStateMachine,
-        state: AnimationState,
-        progress: LottieAnimatable
+        state: AnimationState
     )
 
     @Serializable
@@ -27,8 +25,7 @@ internal sealed interface SMAction {
         override suspend fun invoke(
             uriHandler: UriHandler,
             stateMachine: LottieStateMachine,
-            state: AnimationState,
-            progress: LottieAnimatable
+            state: AnimationState
         ) {
             uriHandler.openUri(url)
         }
@@ -43,8 +40,7 @@ internal sealed interface SMAction {
         override suspend fun invoke(
             uriHandler: UriHandler,
             stateMachine: LottieStateMachine,
-            state: AnimationState,
-            progress: LottieAnimatable
+            state: AnimationState
         ) {
             state.theme = value
         }
@@ -60,8 +56,7 @@ internal sealed interface SMAction {
         override suspend fun invoke(
             uriHandler: UriHandler,
             stateMachine: LottieStateMachine,
-            state: AnimationState,
-            progress: LottieAnimatable
+            state: AnimationState
         ) {
             increment(stateMachine, inputName, value)
         }
@@ -76,8 +71,7 @@ internal sealed interface SMAction {
         override suspend fun invoke(
             uriHandler: UriHandler,
             stateMachine: LottieStateMachine,
-            state: AnimationState,
-            progress: LottieAnimatable
+            state: AnimationState
         ) {
             increment(stateMachine, inputName, value, -1)
         }
@@ -92,8 +86,7 @@ internal sealed interface SMAction {
         override suspend fun invoke(
             uriHandler: UriHandler,
             stateMachine: LottieStateMachine,
-            state: AnimationState,
-            progress: LottieAnimatable
+            state: AnimationState
         ) {
             val b = stateMachine.getBoolean(inputName) ?: return
             stateMachine.setBoolean(inputName, b.not())
@@ -110,8 +103,7 @@ internal sealed interface SMAction {
         override suspend fun invoke(
             uriHandler: UriHandler,
             stateMachine: LottieStateMachine,
-            state: AnimationState,
-            progress: LottieAnimatable
+            state: AnimationState
         ) {
             stateMachine.setBoolean(inputName, value)
         }
@@ -127,8 +119,7 @@ internal sealed interface SMAction {
         override suspend fun invoke(
             uriHandler: UriHandler,
             stateMachine: LottieStateMachine,
-            state: AnimationState,
-            progress: LottieAnimatable
+            state: AnimationState
         ) {
             stateMachine.setString(inputName, value)
         }
@@ -143,8 +134,7 @@ internal sealed interface SMAction {
         override suspend fun invoke(
             uriHandler: UriHandler,
             stateMachine: LottieStateMachine,
-            state: AnimationState,
-            progress: LottieAnimatable
+            state: AnimationState
         ) {
             stateMachine.setFloat(inputName, value)
         }
@@ -158,8 +148,7 @@ internal sealed interface SMAction {
         override suspend fun invoke(
             uriHandler: UriHandler,
             stateMachine: LottieStateMachine,
-            state: AnimationState,
-            progress: LottieAnimatable
+            state: AnimationState
         ) {
             stateMachine.fire(inputName)
         }
@@ -175,7 +164,6 @@ internal sealed interface SMAction {
             uriHandler: UriHandler,
             stateMachine: LottieStateMachine,
             state: AnimationState,
-            progress: LottieAnimatable,
         ) {
             stateMachine.resetInput(inputName)
         }
@@ -190,13 +178,12 @@ internal sealed interface SMAction {
         override suspend fun invoke(
             uriHandler: UriHandler,
             stateMachine: LottieStateMachine,
-            state: AnimationState,
-            progress: LottieAnimatable
+            state: AnimationState
         ) {
 
             val frame = stateMachine.floatOrValue(value) ?: return
 
-            progress.snapTo(
+            stateMachine.animatable.snapTo(
                 composition = state.composition,
                 progress = state.composition.frameToProgress(frame)
             )
@@ -209,13 +196,13 @@ internal sealed interface SMAction {
         public val inputName : String,
         public val value : String
     ) : SMAction {
+
         override suspend fun invoke(
             uriHandler: UriHandler,
             stateMachine: LottieStateMachine,
-            state: AnimationState,
-            progress: LottieAnimatable
+            state: AnimationState
         ) {
-            progress.snapTo(
+            stateMachine.animatable.snapTo(
                 composition = state.composition,
                 progress = stateMachine.floatOrValue(value) ?: return
             )
@@ -231,8 +218,7 @@ internal sealed interface SMAction {
         override suspend fun invoke(
             uriHandler: UriHandler,
             stateMachine: LottieStateMachine,
-            state: AnimationState,
-            progress: LottieAnimatable
+            state: AnimationState
         ) {
             stateMachine.fire(value)
         }

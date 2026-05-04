@@ -84,6 +84,7 @@ internal open class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
             val from = frame
             val to = tweenTargetFrame
             val progress = tweenProgress
+            val startKf = keyframes.firstOrNull()?.start
 
             if (!isTweenRunning || to == null)
                 return default(state)
@@ -92,21 +93,21 @@ internal open class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
                 from in firstFrame..lastFrame && to in firstFrame..lastFrame ->
                     lerp(
                         default(this),
-                        onFrame(to) { default(it) },
+                        onFrame(to, default),
                         progress
                     )
 
-                from in firstFrame..lastFrame && keyframes.firstOrNull()?.start != null  ->
+                from in firstFrame..lastFrame && startKf != null  ->
                     lerp(
                         default(this),
-                        fromKeyframe(keyframes.first().start!!),
+                        fromKeyframe(startKf),
                         progress
                     )
 
-                to in firstFrame..lastFrame && keyframes.firstOrNull()?.start != null ->
+                to in firstFrame..lastFrame && startKf != null ->
                     lerp(
-                        fromKeyframe(keyframes.first().start!!),
-                        onFrame(to) { default(it) },
+                        fromKeyframe(startKf),
+                        onFrame(to, default),
                         progress
                     )
                 else -> default(this)

@@ -15,7 +15,7 @@ import androidx.compose.runtime.State
  * @see animateLottieCompositionAsState
  */
 @Stable
-public sealed interface LottieAnimationState : State<Float> {
+public interface LottieAnimationState : State<Float> {
     public val isPlaying: Boolean
 
     public val progress: Float

@@ -23,7 +23,7 @@ internal class ColorKeyframeAnimation(
     override fun rawColor(state: AnimationState): Long {
         return tween(
             state = state,
-            default = { default(it).let(::Color) },
+            default = { Color(default(it)) },
             fromKeyframe = { it },
             lerp = ::lerp
         ).toColorLong()

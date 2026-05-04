@@ -28,16 +28,12 @@ internal sealed interface SMState {
         state : AnimationState,
         progress : LottieAnimatable,
         transition : SMTransition
-    ) {
-
-    }
+    )
 
     public suspend fun play(
         composition: LottieComposition,
         progress : LottieAnimatable,
-    ){
-
-    }
+    )
 
     @Serializable
     @SerialName("PlaybackState")
@@ -69,7 +65,7 @@ internal sealed interface SMState {
 
         @Transient
         override val sortedTransitions: List<SMTransition> = transitions.sortedBy {
-            if (it.guards == null) 1 else 0
+            if (it.guards.isEmpty()) 1 else 0
         }
 
         override suspend fun move(
@@ -99,9 +95,11 @@ internal sealed interface SMState {
                     initialProgress = progress.progress,
                     composition = composition,
                     iterations = if (loop) Compottie.IterateForever else loopCount,
-                    clipSpec = if (segment != null && composition.marker(segment) != null)
-                        LottieClipSpec.Marker(segment)
-                    else null,
+                    clipSpec = when {
+                        segment != null && composition.marker(segment) != null ->
+                            LottieClipSpec.Marker(segment)
+                        else -> null
+                    },
                     reverseOnRepeat = mode.isBounce,
                     speed = speed * if (mode.isReverse) -1f else 1f,
                 )
@@ -120,7 +118,18 @@ internal sealed interface SMState {
 
         @Transient
         override val sortedTransitions: List<SMTransition> = transitions.sortedBy {
-            if (it.guards == null) 1 else 0
+            if (it.guards.isEmpty()) 1 else 0
+        }
+
+        override suspend fun move(
+            state: AnimationState,
+            progress: LottieAnimatable,
+            transition: SMTransition
+        ) {
+        }
+
+        override suspend fun play(composition: LottieComposition, progress: LottieAnimatable) {
+
         }
 
     }

@@ -166,8 +166,7 @@ public fun rememberLottiePainter(
         clipToCompositionBounds,
         applyOpacityToLayers,
         enableMergePaths,
-        enableExpressions,
-        theme
+        enableExpressions
     ) {
         painter?.let {
             it.enableMergePaths = enableMergePaths
@@ -175,8 +174,14 @@ public fun rememberLottiePainter(
             it.applyOpacityToLayers = applyOpacityToLayers
             it.clipToCompositionBounds = clipToCompositionBounds
             it.clipTextToBoundingBoxes = clipTextToBoundingBoxes
-            it.theme = theme
         }
+    }
+
+    LaunchedEffect(
+        painter,
+        theme
+    ) {
+        painter?.theme = theme
     }
 
     LaunchedEffect(painter, dp) {
@@ -251,7 +256,7 @@ internal class LottiePainterImpl(
         composition.progressToFrame(progress())
     }
 
-    val animationState = AnimationState(
+    internal val animationState = AnimationState(
         composition = composition,
         assets = assets.associateBy(LottieAsset::id),
         fonts = fonts,
@@ -269,12 +274,12 @@ internal class LottiePainterImpl(
         expressionEngineFactory = expressionEngineFactory
     )
 
-    var applyOpacityToLayers: Boolean by animationState::applyOpacityToLayers
-    var clipTextToBoundingBoxes: Boolean by animationState::clipTextToBoundingBoxes
-    var clipToCompositionBounds: Boolean by animationState::clipToCompositionBounds
-    var enableMergePaths: Boolean by animationState::enableMergePaths
-    var enableExpressions: Boolean by animationState::enableExpressions
-    var theme : String? by animationState::theme
+    internal var applyOpacityToLayers: Boolean by animationState::applyOpacityToLayers
+    internal var clipTextToBoundingBoxes: Boolean by animationState::clipTextToBoundingBoxes
+    internal var clipToCompositionBounds: Boolean by animationState::clipToCompositionBounds
+    internal var enableMergePaths: Boolean by animationState::enableMergePaths
+    internal var enableExpressions: Boolean by animationState::enableExpressions
+    internal var theme : String? by animationState::theme
 
     init {
         setDynamicProperties(dynamicProperties)

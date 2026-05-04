@@ -100,11 +100,6 @@ public class AnimationState @PublishedApi internal constructor(
     internal var enableTextGrouping by mutableStateOf(enableTextGrouping)
     internal var theme by mutableStateOf(theme)
 
-//    internal var currentState : SMState? by mutableStateOf(
-//    composition.stateMachines?.get(stateMachine)
-//        ?.let { it.statesMap[it.initial] }
-//    )
-
     internal var thisLayer: Layer = layer
         private set
 

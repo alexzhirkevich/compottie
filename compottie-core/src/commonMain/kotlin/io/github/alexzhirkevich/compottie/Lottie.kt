@@ -27,7 +27,8 @@ import androidx.compose.ui.layout.ContentScale
  *   default renders the [painter] completely opaque
  * @param colorFilter Optional colorFilter to apply for the [painter] when it is rendered onscreen
  *
- * @see rememberLottieStateMachine, [LottieStateMachine], [rememberLottiePainter]
+ * @see rememberLottieStateMachine
+ * @see rememberLottiePainter
  */
 @Composable
 public fun Lottie(

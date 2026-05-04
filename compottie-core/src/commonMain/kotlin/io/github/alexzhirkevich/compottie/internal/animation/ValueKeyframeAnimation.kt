@@ -22,7 +22,7 @@ internal class ValueKeyframeAnimation(
     override fun rawFloat(state: AnimationState): Float {
         return tween(
             state = state,
-            default = { default(it) },
+            default = ::default,
             fromKeyframe = { it[0] },
             lerp = ::lerp
         )

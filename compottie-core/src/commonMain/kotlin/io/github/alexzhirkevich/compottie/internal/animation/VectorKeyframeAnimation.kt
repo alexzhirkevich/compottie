@@ -22,7 +22,7 @@ internal class VectorKeyframeAnimation(
 
         return tween(
             state = state,
-            default = { default(it).let(::Vec2) },
+            default = { Vec2(default(it)) },
             fromKeyframe = { Vec2(it[0], it[1]) },
             lerp = ::lerp
         ).packedValue

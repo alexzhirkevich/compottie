@@ -78,11 +78,13 @@ public fun rememberLottiePainter(
  *
  * Shortcut that combines [rememberLottiePainter] and [animateLottieCompositionAsState]
  * */
+@OptIn(InternalCompottieApi::class)
 @Composable
 public fun rememberLottiePainter(
     composition : LottieComposition?,
     assetsManager: LottieAssetsManager? = null,
     fontManager: LottieFontManager? = null,
+    coroutineContext: CoroutineContext = remember { Compottie.ioDispatcher() },
     dynamicProperties : LottieDynamicProperties? = null,
     theme : String? = null,
     isPlaying: Boolean = true,
@@ -96,6 +98,7 @@ public fun rememberLottiePainter(
     useCompositionFrameRate: Boolean = false,
     clipToCompositionBounds: Boolean = true,
     clipTextToBoundingBoxes: Boolean = false,
+    enableTextGrouping : Boolean = false,
     enableMergePaths: Boolean = false,
     enableExpressions: Boolean = true
 ) : LottiePainter {
@@ -117,11 +120,13 @@ public fun rememberLottiePainter(
         progress = progress::value,
         assetsManager = assetsManager,
         fontManager = fontManager,
+        coroutineContext = coroutineContext,
         dynamicProperties = dynamicProperties,
         theme = theme,
         applyOpacityToLayers = applyOpacityToLayers,
         clipToCompositionBounds = clipToCompositionBounds,
         clipTextToBoundingBoxes = clipTextToBoundingBoxes,
+        enableTextGrouping = enableTextGrouping,
         enableMergePaths = enableMergePaths,
         enableExpressions = enableExpressions
     )
