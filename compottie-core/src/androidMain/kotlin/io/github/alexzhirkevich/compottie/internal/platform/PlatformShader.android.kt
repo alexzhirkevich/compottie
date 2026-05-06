@@ -7,6 +7,8 @@ import androidx.compose.ui.graphics.LinearGradientShader
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.RadialGradientShader
+import androidx.compose.ui.graphics.Shader
+import androidx.compose.ui.graphics.SweepGradientShader
 import androidx.compose.ui.graphics.TileMode
 
 
@@ -43,6 +45,21 @@ internal actual fun MakeRadialGradient(
     colorStops = colorStops,
     tileMode = tileMode,
     colors = colors
+).apply {
+    tempMatrix.setFromInternal(matrix)
+    setLocalMatrix(tempMatrix)
+}
+
+internal actual fun MakeSweepGradient(
+    center: Offset,
+    angle: Float,
+    colors: List<Color>,
+    colorStops: List<Float>,
+    matrix: Matrix
+): Shader = SweepGradientShader(
+    center = center,
+    colors = colors,
+    colorStops = colorStops,
 ).apply {
     tempMatrix.setFromInternal(matrix)
     setLocalMatrix(tempMatrix)

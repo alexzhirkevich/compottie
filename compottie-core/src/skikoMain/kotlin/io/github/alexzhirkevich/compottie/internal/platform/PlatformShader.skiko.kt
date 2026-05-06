@@ -86,6 +86,37 @@ internal actual fun MakeRadialGradient(
     // localMatrix = matrix.asSkia33(coerceScale = true),
 ).asComposeShader()
 
+internal actual fun MakeSweepGradient(
+    center: Offset,
+    angle: Float,
+    colors: List<Color>,
+    colorStops: List<Float>,
+    matrix: Matrix
+): Shader = SkShader.makeSweepGradient(
+    x = center.x,
+    y = center.y,
+    colors = colors.toIntArray(),
+    positions = colorStops.toFloatArray(),
+    style = GradientStyle(
+        tileMode = TileMode.Clamp.toSkiaTileMode(),
+        isPremul = true,
+        localMatrix = matrix.asSkia33(coerceScale = true)
+    )
+    // TODO: Migrate to new Gradient API introduced in skiko 0.146 (Compose 1.12)
+    // radius = radius,
+    // gradient = Gradient(
+    //     colors = Gradient.Colors(
+    //         colors = colors.toColor4fArray(),
+    //         positions = colorStops.toFloatArray(),
+    //         tileMode = tileMode.toSkiaTileMode()
+    //     ),
+    //     interpolation = Gradient.Interpolation(
+    //         inPremul = Gradient.Interpolation.InPremul.YES
+    //     )
+    // ),
+    // localMatrix = matrix.asSkia33(coerceScale = true),
+).asComposeShader()
+
 private val _tmpMatrix33 = Matrix33.makeTranslate(0f,0f)
 
 

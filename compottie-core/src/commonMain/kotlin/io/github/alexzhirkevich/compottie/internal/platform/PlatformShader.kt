@@ -79,28 +79,43 @@ internal fun GradientShader(
 
     val c = colors.interpolated(state)
 
-    return if (type == GradientType.Linear) {
-        CachedLinearGradient(
-            from = Offset(start.x, start.y),
-            to = Offset(end.x, end.y),
-            colors = c.colors,
-            colorStops = c.colorStops,
-            tileMode = TileMode.Clamp,
-            matrix = matrix,
-            cache = cache
-        )
-    } else {
-        val r = hypot((end.x - start.x), (end.y - start.y))
+    return when (type) {
+        GradientType.Linear -> {
+            CachedLinearGradient(
+                from = Offset(start.x, start.y),
+                to = Offset(end.x, end.y),
+                colors = c.colors,
+                colorStops = c.colorStops,
+                tileMode = TileMode.Clamp,
+                matrix = matrix,
+                cache = cache
+            )
+        }
+        GradientType.Radial -> {
+            val r = hypot((end.x - start.x), (end.y - start.y))
 
-        CachedRadialGradient(
-            radius = r,
-            center = Offset(start.x, start.y),
-            colors = c.colors,
-            colorStops = c.colorStops,
-            tileMode = TileMode.Clamp,
-            matrix = matrix,
-            cache = cache
-        )
+            CachedRadialGradient(
+                radius = r,
+                center = Offset(start.x, start.y),
+                colors = c.colors,
+                colorStops = c.colorStops,
+                tileMode = TileMode.Clamp,
+                matrix = matrix,
+                cache = cache
+            )
+        }
+
+        GradientType.Conic -> {
+            CachedSweepGradient(
+                angle = 0f,
+                center = Offset(start.x, start.y),
+                colors = c.colors,
+                colorStops = c.colorStops,
+                matrix = matrix,
+                cache = cache
+            )
+        }
+        else -> error("Unknown gradient type: $type")
     }
 }
 
@@ -147,6 +162,25 @@ private fun CachedRadialGradient(
 
 }
 
+private fun CachedSweepGradient(
+    center : Offset,
+    angle : Float,
+    colors : List<Color>,
+    colorStops: List<Float>,
+    matrix: Matrix,
+    cache : GradientCache,
+) : Shader {
+
+    var hash = center.hashCode()
+    hash = (hash * 31) + angle.hashCode()
+    hash = (hash * 31) + colors.hashCode()
+    hash = (hash * 31) + matrix.hashCode()
+
+    return cache.getOrPut(hash, false) {
+        MakeSweepGradient(center, angle, colors, colorStops, matrix)
+    }
+}
+
 
 
 internal expect fun MakeLinearGradient(
@@ -165,6 +199,14 @@ internal expect fun MakeRadialGradient(
     colors : List<Color>,
     colorStops: List<Float>,
     tileMode: TileMode = TileMode.Clamp,
+    matrix: Matrix
+) : Shader
+
+internal expect fun MakeSweepGradient(
+    center: Offset,
+    angle: Float,
+    colors: List<Color>,
+    colorStops: List<Float>,
     matrix: Matrix
 ) : Shader
 
