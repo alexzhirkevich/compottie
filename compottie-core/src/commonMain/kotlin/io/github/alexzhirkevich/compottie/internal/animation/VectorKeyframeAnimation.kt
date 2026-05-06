@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
+import androidx.compose.ui.geometry.lerp
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 
 internal fun interface VectorKeyframeMapper {
@@ -18,6 +19,16 @@ internal class VectorKeyframeAnimation(
     map = { s,e,p -> Vec2(map.run { map(s,e,p) })}
 ) {
     override fun rawVec(state: AnimationState): Long {
+
+        return tween(
+            state = state,
+            default = { Vec2(default(it)) },
+            fromKeyframe = { Vec2(it[0], it[1]) },
+            lerp = ::lerp
+        ).packedValue
+    }
+
+    private fun default(state: AnimationState): Long {
         val kfId = keyframeNumber(state)
         val range = keyframesMappingRanges[kfId]
 

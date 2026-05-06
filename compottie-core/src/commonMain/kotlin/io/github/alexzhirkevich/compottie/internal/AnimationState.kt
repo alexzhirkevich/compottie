@@ -1,5 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -57,17 +59,18 @@ public class AnimationState @PublishedApi internal constructor(
     internal var absoluteFrame = frame
         private set
 
+    private val tweenAnimatable = Animatable(0f)
+    internal var tweenTargetFrame : Float? by mutableStateOf(0f)
+        private set
+    internal val tweenProgress : Float get() = tweenAnimatable.value
+    internal val isTweenRunning : Boolean get() = tweenAnimatable.isRunning
     internal val pathBuilder = PathBuilder()
 
     /**
      * Current animation progress from 0.0 to 1.0
      * */
     public val progress: Float
-        get() {
-            val p = (frame - composition.animation.inPoint) /
-                    (composition.animation.outPoint - composition.animation.inPoint)
-            return p.coerceIn(0f, 1f)
-        }
+        get() = composition.frameToProgress(frame)
 
     internal val absoluteProgress: Float
         get() {
@@ -106,6 +109,22 @@ public class AnimationState @PublishedApi internal constructor(
     internal var thisProperty: RawProperty<*>? = null
         private set
 
+
+    internal suspend fun tweenTo(
+        frame : Float,
+        spec : AnimationSpec<Float>,
+        onFinish : suspend () -> Unit
+    ) {
+        tweenTargetFrame = frame
+        tweenAnimatable.snapTo(0f)
+        try {
+            tweenAnimatable.animateTo(1f, spec)
+        } finally {
+            onFinish()
+            tweenTargetFrame = null
+        }
+    }
+
     /**
      * Remaps current state to requested [frame] and performs [block] on it.
      * State is restored after the [block] call
@@ -128,7 +147,7 @@ public class AnimationState @PublishedApi internal constructor(
     internal fun <R> onTime(time: Float, block: (AnimationState) -> R): R {
         contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
 
-        val start = kotlin.runCatching {
+        val start = runCatching {
             thisComp.startTime
         }.getOrElse { composition.startTime }
 
@@ -210,3 +229,4 @@ public class AnimationState @PublishedApi internal constructor(
 }
 
 internal val AnimationState.timeSeconds get() = time.inWholeMilliseconds / 1_000f
+

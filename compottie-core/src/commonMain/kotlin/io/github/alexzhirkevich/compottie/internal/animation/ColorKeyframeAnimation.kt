@@ -1,6 +1,7 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 
 internal fun interface ColorKeyframeMapper {
@@ -20,6 +21,19 @@ internal class ColorKeyframeAnimation(
 ) {
 
     override fun rawColor(state: AnimationState): Long {
+        return tween(
+            state = state,
+            default = { Color(default(it)) },
+            fromKeyframe = { it },
+            lerp = ::lerp
+        ).toColorLong()
+    }
+
+    override fun raw(state: AnimationState): Color {
+        return Color(rawColor(state))
+    }
+
+    private fun default(state: AnimationState): Long {
         val kfId = keyframeNumber(state)
         val range = keyframesMappingRanges[kfId]
 
@@ -31,10 +45,6 @@ internal class ColorKeyframeAnimation(
                 map(range.first!!, range.second!!, progress(kfId, state))
             }
         }
-    }
-
-    override fun raw(state: AnimationState): Color {
-        return Color(rawColor(state))
     }
 }
 

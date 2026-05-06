@@ -1,6 +1,5 @@
 package io.github.alexzhirkevich.compottie
 
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
@@ -8,11 +7,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
-import kotlin.coroutines.CoroutineContext
 
 /**
  * A [LottieCompositionResult] subclass is returned from [rememberLottieComposition].
@@ -29,7 +25,7 @@ import kotlin.coroutines.CoroutineContext
  * or if you need to call [await] or [awaitOrNull] in a coroutine such as [androidx.compose.runtime.LaunchedEffect].
  *
  * @see rememberLottieComposition
- * @see LottieAnimation
+ * @see Lottie
  */
 @Stable
 public interface LottieCompositionResult : State<LottieComposition?> {

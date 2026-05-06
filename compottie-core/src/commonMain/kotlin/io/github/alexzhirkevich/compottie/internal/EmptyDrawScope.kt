@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.drawscope.DrawContext
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.DrawTransform
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
@@ -177,7 +178,11 @@ private object EmptyCanvas : Canvas {
 }
 
 
-internal object EmptyDrawScope : DrawScope {
+internal class EmptyDrawScope(
+    val d: Density,
+    override val layoutDirection: LayoutDirection,
+) : DrawScope, Density by d {
+
     override val drawContext: DrawContext = object : DrawContext {
 
         override var canvas: Canvas
@@ -235,9 +240,6 @@ internal object EmptyDrawScope : DrawScope {
                 }
             }
     }
-
-    override val layoutDirection: LayoutDirection
-        get() = LayoutDirection.Ltr
 
     override fun drawLine(
         brush: Brush,
@@ -451,7 +453,4 @@ internal object EmptyDrawScope : DrawScope {
         blendMode: BlendMode
     ) {
     }
-
-    override val density: Float = 1f
-    override val fontScale: Float = 1f
 }

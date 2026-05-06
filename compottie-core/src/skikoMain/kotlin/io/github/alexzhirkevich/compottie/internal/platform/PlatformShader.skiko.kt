@@ -86,6 +86,8 @@ internal actual fun MakeRadialGradient(
     // localMatrix = matrix.asSkia33(coerceScale = true),
 ).asComposeShader()
 
+private val _tmpMatrix33 = Matrix33.makeTranslate(0f,0f)
+
 
 internal fun Matrix.asSkia33(coerceScale : Boolean = false) : Matrix33 {
 
@@ -101,18 +103,17 @@ internal fun Matrix.asSkia33(coerceScale : Boolean = false) : Matrix33 {
         else -> values[Matrix.ScaleY]
     }
 
-
-    return Matrix33(
-        scaleX,
-        values[Matrix.SkewX],
-        values[Matrix.TranslateX],
-        values[Matrix.SkewY],
-        scaleY,
-        values[Matrix.TranslateY],
-        values[Matrix.Perspective0],
-        values[Matrix.Perspective1],
-        values[Matrix.Perspective2],
-    )
+    return _tmpMatrix33.apply {
+        mat[0] = scaleX
+        mat[1] = values[Matrix.SkewX]
+        mat[2] = values[Matrix.TranslateX]
+        mat[3] = values[Matrix.SkewY]
+        mat[4] = scaleY
+        mat[5] = values[Matrix.TranslateY]
+        mat[6] = values[Matrix.Perspective0]
+        mat[7] = values[Matrix.Perspective1]
+        mat[8] = values[Matrix.Perspective2]
+    }
 }
 
 private fun List<Color>.toIntArray(): IntArray =

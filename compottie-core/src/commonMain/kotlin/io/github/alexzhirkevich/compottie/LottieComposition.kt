@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.util.fastMap
+import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
 import io.github.alexzhirkevich.compottie.assets.LottieFontManager
 import io.github.alexzhirkevich.compottie.internal.Animation
@@ -23,6 +24,7 @@ import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.helpers.Marker
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
+import io.github.alexzhirkevich.compottie.statemachine.SMConfig
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -180,6 +182,11 @@ public class LottieComposition internal constructor(
         @InternalCompottieApi
         set
 
+    public var stateMachines: Map<String, SMConfig>? by mutableStateOf(null)
+        @InternalCompottieApi
+        set
+
+
     @Transient
     public var themes : Map<String, AnimationTheme>? = null
         @InternalCompottieApi
@@ -233,6 +240,16 @@ public class LottieComposition internal constructor(
     internal val hasFonts : Boolean
         get() = animation.fonts?.list?.isNotEmpty() == true
 
+
+    internal fun frameToProgress(frame : Float) : Float {
+        val p = (frame - animation.inPoint) /
+                (animation.outPoint - animation.inPoint)
+        return p.coerceIn(0f, 1f)
+    }
+
+    internal fun progressToFrame(progress : Float) : Float {
+        return lerp(startFrame, endFrame, progress.coerceIn(0f, 1f))
+    }
 
     internal fun findGlyphs(family : String?) : Map<String, CharacterData>? {
         return charGlyphs[family] ?: run {

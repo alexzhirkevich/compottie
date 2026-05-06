@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.animation
 
+import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 
 internal fun interface ValueKeyframeMapper {
@@ -17,7 +18,20 @@ internal class ValueKeyframeAnimation(
     emptyValue = emptyValue,
     map = { s,e,p ->  map.run { map(s,e,p) } }
 ) {
+
     override fun rawFloat(state: AnimationState): Float {
+        return tween(
+            state = state,
+            default = ::default,
+            fromKeyframe = { it[0] },
+            lerp = ::lerp
+        )
+    }
+
+    @Deprecated("prefer rawFloat without boxing", ReplaceWith("rawFloat(state)"))
+    override fun raw(state: AnimationState): Float = rawFloat(state)
+
+    private fun default(state: AnimationState): Float {
         val kfId = keyframeNumber(state)
         val range = keyframesMappingRanges[kfId]
 
@@ -31,6 +45,4 @@ internal class ValueKeyframeAnimation(
         }
     }
 
-    @Deprecated("prefer rawFloat without boxing", ReplaceWith("rawFloat(state)"))
-    override fun raw(state: AnimationState): Float = rawFloat(state)
 }

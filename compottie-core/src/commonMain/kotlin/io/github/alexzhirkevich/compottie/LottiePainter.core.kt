@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.assets.EmptyAssetsManager
 import io.github.alexzhirkevich.compottie.assets.EmptyFontManager
 import io.github.alexzhirkevich.compottie.assets.LottieAssetsManager
@@ -27,7 +26,6 @@ import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.dynamic.LottieDynamicProperties
 import io.github.alexzhirkevich.compottie.dynamic.rememberLottieDynamicProperties
 import io.github.alexzhirkevich.compottie.internal.AnimationState
-import io.github.alexzhirkevich.compottie.internal.EmptyDrawScope
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionsEngineFactory
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.hasTextLayers
@@ -37,7 +35,6 @@ import io.github.alexzhirkevich.compottie.internal.utils.fastReset
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
@@ -86,7 +83,7 @@ public fun rememberLottiePainter(
     enableMergePaths: Boolean = false,
     enableExpressions: Boolean,
     expressionEngineFactory : ExpressionsEngineFactory
-) : Painter {
+) : LottiePainter {
 
     val textMeasurer = rememberTextMeasurer(20)
 
@@ -101,7 +98,7 @@ public fun rememberLottiePainter(
 
     val coroutineScope = rememberCoroutineScope()
 
-    val painter by produceState<LottiePainter?>(
+    val painter by produceState<LottiePainterImpl?>(
         null, composition, copy, coroutineScope
     ) {
 
@@ -133,7 +130,7 @@ public fun rememberLottiePainter(
                 }
             }
 
-            val painter = LottiePainter(
+            val painter = LottiePainterImpl(
                 composition = comp,
                 progress = updatedProgress::invoke,
                 dynamicProperties = dp,
@@ -154,7 +151,7 @@ public fun rememberLottiePainter(
             if (enableExpressions) {
                 withContext(coroutineContext) {
                     runCatching {
-                        comp.animation.prepareExpressions(painter.animationState)
+                        painter.withState(comp.animation::prepareExpressions)
                     }
                 }
             }
@@ -169,8 +166,7 @@ public fun rememberLottiePainter(
         clipToCompositionBounds,
         applyOpacityToLayers,
         enableMergePaths,
-        enableExpressions,
-        theme
+        enableExpressions
     ) {
         painter?.let {
             it.enableMergePaths = enableMergePaths
@@ -178,8 +174,14 @@ public fun rememberLottiePainter(
             it.applyOpacityToLayers = applyOpacityToLayers
             it.clipToCompositionBounds = clipToCompositionBounds
             it.clipTextToBoundingBoxes = clipTextToBoundingBoxes
-            it.theme = theme
         }
+    }
+
+    LaunchedEffect(
+        painter,
+        theme
+    ) {
+        painter?.theme = theme
     }
 
     LaunchedEffect(painter, dp) {
@@ -187,14 +189,14 @@ public fun rememberLottiePainter(
     }
 
     return remember {
-        LateInitPainter { painter }
+        LottiePainter { painter }
     }
 }
 
 internal expect fun mockFontFamilyResolver() : FontFamily.Resolver
 
-private class LateInitPainter(
-    val painter : () -> LottiePainter?
+public class LottiePainter internal constructor(
+    internal val painter : () -> LottiePainterImpl?
 ) : Painter() {
 
     private var alpha by mutableStateOf(1f)
@@ -221,8 +223,8 @@ private class LateInitPainter(
     }
 }
 
-private class LottiePainter(
-    private val composition: LottieComposition,
+internal class LottiePainterImpl(
+    val composition: LottieComposition,
     progress : () -> Float,
     assets : List<LottieAsset>,
     fonts : Map<String, FontFamily>,
@@ -250,11 +252,11 @@ private class LottiePainter(
 
     private val compositionLayer: Layer = CompositionLayer(composition)
 
-    private val frame: Float by derivedStateOf {
-        lerp(composition.startFrame, composition.endFrame, progress())
+    internal val frame: Float by derivedStateOf {
+        composition.progressToFrame(progress())
     }
 
-    val animationState = AnimationState(
+    private val animationState = AnimationState(
         composition = composition,
         assets = assets.associateBy(LottieAsset::id),
         fonts = fonts,
@@ -272,12 +274,12 @@ private class LottiePainter(
         expressionEngineFactory = expressionEngineFactory
     )
 
-    var applyOpacityToLayers: Boolean by animationState::applyOpacityToLayers
-    var clipTextToBoundingBoxes: Boolean by animationState::clipTextToBoundingBoxes
-    var clipToCompositionBounds: Boolean by animationState::clipToCompositionBounds
-    var enableMergePaths: Boolean by animationState::enableMergePaths
-    var enableExpressions: Boolean by animationState::enableExpressions
-    var theme : String? by animationState::theme
+    internal var applyOpacityToLayers: Boolean by animationState::applyOpacityToLayers
+    internal var clipTextToBoundingBoxes: Boolean by animationState::clipTextToBoundingBoxes
+    internal var clipToCompositionBounds: Boolean by animationState::clipToCompositionBounds
+    internal var enableMergePaths: Boolean by animationState::enableMergePaths
+    internal var enableExpressions: Boolean by animationState::enableExpressions
+    internal var theme: String? by animationState::theme
 
     init {
         setDynamicProperties(dynamicProperties)
@@ -309,5 +311,9 @@ private class LottiePainter(
         } catch (t: Throwable) {
             Compottie.logger?.error("Lottie crashed in draw :C", t)
         }
+    }
+
+    internal inline fun <T> withState(block: (AnimationState) -> T): T {
+        return animationState.onFrame(frame, block)
     }
 }

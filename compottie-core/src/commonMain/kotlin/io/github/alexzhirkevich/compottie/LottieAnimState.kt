@@ -8,7 +8,7 @@ import androidx.compose.runtime.State
  * [LottieAnimationState] is a value holder that contains information about the current Lottie animation.
  *
  * The primary values are [LottieAnimationState.progress] and [LottieAnimationState.composition]. These
- * value should be passed into the main [LottieAnimation] composable.
+ * value should be passed into the main [Lottie] composable.
  *
  * @see progress
  * @see composition

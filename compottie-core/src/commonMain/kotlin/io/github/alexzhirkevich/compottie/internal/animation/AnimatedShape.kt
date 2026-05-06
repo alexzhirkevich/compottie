@@ -30,7 +30,7 @@ public sealed class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder {
     override val jsCache: MutableMap<String, JsAny?> = HashMap()
 
     override var group: PropertyGroup? = null
-    
+
     internal abstract fun rawBezier(state: AnimationState): Bezier
 
     internal abstract fun copy(): AnimatedShape
@@ -220,18 +220,6 @@ public sealed class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder {
             },
         )
 
-        @Transient
-        private var delegate = BaseKeyframeAnimation(
-            index = index,
-            sourceKeyframes = keyframes,
-            emptyValue = tmpPath,
-            map = { s, e, p ->
-                tmpBezier.interpolateBetween(s, e, easingX.transform(p))
-                tmpBezier.mapPath(tmpPath)
-                tmpPath
-            }
-        )
-
         override fun setClosed(closed: Boolean) {
             keyframes.fastForEach {
                 it.start?.setIsClosed(closed)
@@ -240,7 +228,15 @@ public sealed class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder {
         }
 
         override fun rawBezier(state: AnimationState): Bezier {
-            return bezierDelegate.raw(state)
+            return bezierDelegate.tween(
+                state = state,
+                default = bezierDelegate::raw,
+                fromKeyframe = {it},
+                lerp = { s,e, p ->
+                    tmpBezier.interpolateBetween(s, e, p)
+                    tmpBezier
+                }
+            )
         }
 
         override fun copy(): AnimatedShape {
@@ -252,7 +248,8 @@ public sealed class AnimatedShape : AnimatedProperty<Path>, ExpressionHolder {
         }
 
         override fun raw(state: AnimationState): Path {
-            return delegate.raw(state)
+            rawBezier(state).mapPath(tmpPath)
+            return tmpPath
         }
 
         override suspend fun get(property: JsAny?, runtime: ScriptRuntime): JsAny? {
