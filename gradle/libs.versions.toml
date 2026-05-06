@@ -13,7 +13,7 @@ ktor="3.4.0"
 atomicfu="0.23.2"
 coroutines="1.10.2"
 coil="3.3.0"
-keight="0.0.04"
+keight="0.0.05"
 maven-publish="0.34.0"
 kotlinx-browser="0.5.0"
 
