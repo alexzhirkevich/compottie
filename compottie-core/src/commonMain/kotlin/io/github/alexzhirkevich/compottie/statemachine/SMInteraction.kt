@@ -8,49 +8,51 @@ internal sealed interface SMInteraction {
 
     public val actions : List<SMAction>
 
-    val layerName : String? get() = null
+    interface Pointer  : SMInteraction {
+        public val layerName : String?
+    }
 
     @Serializable
     @SerialName("PointerUp")
     public class PointerUp(
         override val actions: List<SMAction>,
         override val layerName : String? = null,
-    ) : SMInteraction
+    ) : Pointer
 
     @Serializable
     @SerialName("PointerDown")
     public class PointerDown(
         override val actions: List<SMAction>,
         override val layerName : String? = null,
-    ) : SMInteraction
+    ) : Pointer
 
     @Serializable
     @SerialName("PointerEnter")
     public class PointerEnter(
         override val actions: List<SMAction>,
         override val layerName : String? = null,
-    ) : SMInteraction
+    ) : Pointer
 
     @Serializable
     @SerialName("PointerMove")
     public class PointerMove(
         override val actions: List<SMAction>,
         override val layerName : String? = null,
-    ) : SMInteraction
+    ) : Pointer
 
     @Serializable
     @SerialName("PointerExit")
     public class PointerExit(
         override val actions: List<SMAction>,
         override val layerName : String? = null,
-    ) : SMInteraction
+    ) : Pointer
 
     @Serializable
     @SerialName("Click")
     public class Click(
         override val actions: List<SMAction>,
         override val layerName : String? = null,
-    ) : SMInteraction
+    ) : Pointer
 
     @Serializable
     @SerialName("OnComplete")

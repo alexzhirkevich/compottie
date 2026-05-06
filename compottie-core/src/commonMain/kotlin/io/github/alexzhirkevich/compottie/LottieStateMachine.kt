@@ -1,11 +1,10 @@
 package io.github.alexzhirkevich.compottie
 
 import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -45,14 +44,26 @@ import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
 import io.github.alexzhirkevich.compottie.statemachine.SMAction
 import io.github.alexzhirkevich.compottie.statemachine.SMConfig
+import io.github.alexzhirkevich.compottie.statemachine.SMInteraction
 import io.github.alexzhirkevich.compottie.statemachine.SMState
+import kotlinx.atomicfu.locks.reentrantLock
+import kotlinx.atomicfu.locks.withLock
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 /**
@@ -70,12 +81,17 @@ public sealed interface LottieStateMachine {
     /**
      * Current machine state. Is null before initialization
      * */
-    public val currentState : String?
+    public val currentState : StateFlow<String>
 
     /**
      * Events fired by the interactions and fired manually with [fire]
      * */
     public val events : Flow<String>
+
+    /**
+     * Calls [block] on every variable change or event fired
+     * */
+    public suspend fun collectInputsChanges(block : suspend () -> Unit) : Nothing
 
     /**
      * Immediately move to the requested [state]
@@ -174,12 +190,15 @@ public fun rememberLottieStateMachine(
     }
 }
 
+private class InputsChanged(public val isEventFired: Boolean)
+
 internal class LottieStateMachineImpl(
     internal val config : SMConfig,
     override val animatable: LottieAnimatable
 ) : LottieStateMachine {
 
     private val inputs = mutableStateMapOf<String, Any>()
+    private val inputsChangeFlow = MutableStateFlow(InputsChanged(false))
 
     private val _events = MutableSharedFlow<String>(
         extraBufferCapacity = 10,
@@ -187,68 +206,94 @@ internal class LottieStateMachineImpl(
     )
     override val events: Flow<String> = _events.asSharedFlow()
 
-    override var currentState: String? by mutableStateOf(config.initial)
-        private set
+    private var _currentState = MutableStateFlow(config.initial)
+    override var currentState: StateFlow<String> = _currentState.asStateFlow()
 
     private var triggeredEvent by mutableStateOf<String?>(null)
+
+    private val inputsLock = reentrantLock()
 
     init {
         reset()
     }
 
-    override fun snapToState(state: String): Boolean {
+    @OptIn(FlowPreview::class)
+    override suspend fun collectInputsChanges(block: suspend () -> Unit) : Nothing {
+        // debounce inputs to imitate batch update
+        inputsChangeFlow.debounce(4).collect { block() }
+        error("should never happen")
+    }
+
+    override fun snapToState(state: String): Boolean = inputsLock.withLock {
         return if (config.statesMap.contains(state)) {
-            currentState = state
+            _currentState.value = state
             true
         } else {
             false
         }
     }
 
-    override fun setBoolean(key: String, value: Boolean) {
+    override fun setBoolean(key: String, value: Boolean) = inputsLock.withLock {
         inputs[key] = value
+        inputsChanged()
     }
 
-    override fun setString(key: String, value: String) {
+    override fun setString(key: String, value: String) = inputsLock.withLock {
         inputs[key] = value
+        inputsChanged()
     }
 
-    override fun setFloat(key: String, value: Float) {
+    override fun setFloat(key: String, value: Float) = inputsLock.withLock {
         inputs[key] = value
+        inputsChanged()
     }
 
-    override fun getBoolean(key: String): Boolean? {
+    override fun getBoolean(key: String): Boolean? = inputsLock.withLock {
         return inputs[key] as? Boolean
     }
 
-    override fun getString(key: String): String? {
+    override fun getString(key: String): String? = inputsLock.withLock {
         return inputs[key] as? String
     }
 
-    override fun getFloat(key: String): Float? {
+    override fun getFloat(key: String): Float? = inputsLock.withLock {
         return inputs[key] as? Float
     }
 
-    override fun fire(event: String) {
+    override fun fire(event: String) = inputsLock.withLock {
         triggeredEvent = event
+        inputsChanged(isEventFired = true)
     }
 
-    override fun isFired(event: String): Boolean {
+    override fun isFired(event: String): Boolean = inputsLock.withLock {
         return triggeredEvent == event
     }
 
-    override fun clearFiredEvents() {
+    override fun clearFiredEvents() = inputsLock.withLock {
         triggeredEvent = null
     }
 
-    override fun resetInput(name: String) {
+    override fun resetInput(name: String) = inputsLock.withLock {
+        val value = inputs[name]
         config.inputsMap[name]?.assign(this)
+        if (value != inputs[value]) {
+            inputsChanged()
+        }
     }
 
-    override fun reset() {
-        clearFiredEvents()
+    override fun reset() = inputsLock.withLock {
+        triggeredEvent = null
         inputs.clear()
         config.assignVariables(this)
+        inputsChanged()
+    }
+
+    private fun inputsChanged(isEventFired: Boolean = false){
+        inputsChangeFlow.update {
+            InputsChanged(
+                isEventFired = isEventFired
+            )
+        }
     }
 }
 
@@ -292,7 +337,7 @@ internal fun Modifier.stateMachine(
         }
     }
 
-    val p = painter ?: return this
+    val p by rememberUpdatedState(painter ?: return this)
 
     val smConfig by remember(stateMachine) {
         derivedStateOf {
@@ -302,65 +347,14 @@ internal fun Modifier.stateMachine(
         }
     }
 
-    val density = LocalDensity.current
-    val layoutDirection = LocalLayoutDirection.current
-    val uriHandler = LocalUriHandler.current
+    val density by rememberUpdatedState(LocalDensity.current)
+    val layoutDirection by rememberUpdatedState(LocalLayoutDirection.current)
+    val uriHandler by rememberUpdatedState(LocalUriHandler.current)
     val stateMachine by rememberUpdatedState(stateMachine)
 
-    LaunchedEffect(smConfig, p, stateMachine, stateMachine.animatable) {
-        launch {
-            snapshotFlow {
-                stateMachine.currentState?.let(smConfig.statesMap::get)
-            }.filterNotNull().collectLatest {
-                it.play(p.composition, stateMachine.animatable)
-            }
-        }
-
-        snapshotFlow {
-            stateMachine.currentState
-                ?.let(smConfig.statesMap::get)
-                ?.transitions
-                ?.fastFirstOrNull { it.canMove(stateMachine) }
-                ?: smConfig.globalStates.firstNotNullOfOrNull {
-                    it.sortedTransitions.fastFirstOrNull {
-                        it.canMove(stateMachine)
-                    }
-                }
-        }.filterNotNull().collectLatest { transition ->
-
-            val state = smConfig.statesMap[transition.toState]
-                ?.takeIf { it.name !== stateMachine.currentState }
-                ?: return@collectLatest
-
-            val currentState = smConfig.statesMap[stateMachine.currentState]
-                ?: return@collectLatest
-
-            if (currentState is SMState.PlaybackState && currentState.final)
-                return@collectLatest
-
-            try {
-                currentState.exitActions.fastForEach {
-                    it.invoke(uriHandler, stateMachine, p.animationState)
-                }
-
-                state.entryActions.fastForEach {
-                    it.invoke(uriHandler, stateMachine, p.animationState)
-                }
-
-                stateMachine.clearFiredEvents()
-
-                state.move(p.animationState, stateMachine.animatable, transition)
-            } finally {
-                stateMachine.snapToState(state.name)
-            }
-        }
-    }
-
     val state by remember(stateMachine, smConfig) {
-        derivedStateOf {
-            smConfig.statesMap[stateMachine.currentState]
-        }
-    }
+        stateMachine.currentState.map(smConfig.statesMap::get)
+    }.collectAsState(null)
 
     if (smConfig.interactions.isEmpty())
         return then (state?.modifier ?: Modifier)
@@ -388,21 +382,112 @@ internal fun Modifier.stateMachine(
     val matrix = remember { Matrix() }
     val bounds = remember { MutableRect(0f, 0f, 0f, 0f) }
 
+    val listenedLayers = remember(smConfig, p.composition) {
+        smConfig.interactions
+            .filterIsInstance<SMInteraction.Pointer>()
+            .fastMapNotNull { it.layerName }
+            .mapNotNull { p.composition.animation.layersMap[it] }
+    }
+
     val coroutineScope = rememberCoroutineScope()
 
-    val invokeActions by rememberUpdatedState { actions: List<SMAction> ->
-        coroutineScope.launch {
-            actions.fastForEach {
-                it.invoke(uriHandler, stateMachine, p.animationState)
+    suspend fun invokeActionsSuspend(actions: List<SMAction>) {
+        withContext(NonCancellable) {
+            p.withState { state ->
+                actions.fastForEach {
+                    it.invoke(uriHandler, stateMachine, state)
+                }
             }
         }
     }
 
-    val listenedLayers = remember(smConfig, p.composition) {
-        val layers = smConfig.interactions
-            .fastMapNotNull { it.layerName }
+    fun invokeActions(actions: List<SMAction>) {
+        coroutineScope.launch {
+            invokeActionsSuspend(actions)
+        }
+    }
 
-        p.composition.animation.layers.filter { it.name in layers }
+    LaunchedEffect(smConfig, p, stateMachine, stateMachine.animatable) {
+        launch {
+            stateMachine.currentState
+                .mapNotNull { smConfig.statesMap[it] }
+                .collectLatest {
+                    invokeActionsSuspend(it.entryActions)
+                    try {
+                        it.play(
+                            composition = p.composition,
+                            progress = stateMachine.animatable,
+                            onLoopComplete = {
+                                smConfig.iterCompleteInteractions[it.name]?.let {
+                                    invokeActions(it.actions)
+                                }
+                            }
+                        )
+                    } finally {
+                        smConfig.completeInteractions[it.name]?.let {
+                            invokeActionsSuspend(it.actions)
+                        }
+                    }
+                }
+        }
+
+        stateMachine.collectInputsChanges {
+            try {
+                val stateId = stateMachine.currentState.value
+
+                val currentState = smConfig.statesMap[stateId]
+                    ?: return@collectInputsChanges
+
+                if (currentState is SMState.PlaybackState && currentState.final)
+                    return@collectInputsChanges
+
+                val transition = smConfig.globalState?.sortedTransitions
+                    ?.fastFirstOrNull { it.canMove(stateMachine) }
+                    ?: currentState.transitions
+                        .fastFirstOrNull { it.canMove(stateMachine) }
+                    ?: return@collectInputsChanges
+
+                val newState = smConfig.statesMap[transition.toState]
+                    ?: return@collectInputsChanges
+
+                try {
+                    invokeActionsSuspend(currentState.exitActions)
+
+                    p.withState { animationState ->
+                        newState.move(
+                            state = animationState,
+                            progress = stateMachine.animatable,
+                            transition = transition
+                        )
+                    }
+                } finally {
+                    stateMachine.snapToState(newState.name)
+                }
+            } finally {
+                stateMachine.clearFiredEvents()
+            }
+        }
+    }
+
+
+    fun getLayersAtPosition(position: Offset): List<Layer> {
+        return p.withState { state ->
+            listenedLayers.fastFilter {
+                if (!it.isActive(state))
+                    return@fastFilter false
+
+                bounds.set(0f, 0f, 0f, 0f)
+                it.getBounds(
+                    drawScope = drawScope,
+                    parentMatrix = matrix,
+                    applyParents = true,
+                    state = state,
+                    outBounds = bounds
+                )
+
+                bounds.contains(position)
+            }
+        }
     }
 
     LaunchedEffect(matrix, scale,translate){
@@ -411,20 +496,50 @@ internal fun Modifier.stateMachine(
         matrix.preScale(scale.scaleX, scale.scaleY)
     }
 
-    fun getLayersAtPosition(position: Offset): List<Layer> {
-        return listenedLayers.fastFilter {
-            bounds.set(0f, 0f, 0f, 0f)
-            it.getBounds(
-                drawScope = drawScope,
-                parentMatrix = matrix,
-                applyParents = true,
-                state = p.animationState,
-                outBounds = bounds
-            )
+    val pointerModifier = Modifier.stateMachinePointerInput(
+        smConfig = smConfig,
+        getLayersAtPosition = ::getLayersAtPosition,
+        invokeActions = ::invokeActions
+    )
 
-            bounds.contains(position)
-        }
-    }
+    return onSizeChanged { size = it.toSize() }
+        .then(
+            if (smConfig.hasPointerInteractions() && p.withState { !it.isTweenRunning })
+                pointerModifier else Modifier
+        )
+        .then(state?.modifier ?: Modifier)
+//        .drawWithContent {
+//            drawContent()
+//
+//            p.withState { animationState ->
+//                listenedLayers.fastForEach {
+//                    if (it.isActive(animationState)) {
+//                        bounds.set(0f, 0f, 0f, 0f)
+//                        it.getBounds(
+//                            drawScope = drawScope,
+//                            parentMatrix = matrix,
+//                            applyParents = true,
+//                            state = animationState,
+//                            outBounds = bounds
+//                        )
+//                        drawRect(
+//                            color = Color.Red,
+//                            topLeft = bounds.topLeft,
+//                            size = bounds.size,
+//                            style = Stroke(1.dp.toPx())
+//                        )
+//                    }
+//                }
+//            }
+//        }
+}
+
+@Composable
+private fun Modifier.stateMachinePointerInput(
+    smConfig: SMConfig,
+    getLayersAtPosition : (Offset) -> List<Layer>,
+    invokeActions : (List<SMAction>) -> Unit
+) : Modifier {
 
     var lastHoveredLayers by remember {
         mutableStateOf(emptyList<Layer>())
@@ -443,131 +558,109 @@ internal fun Modifier.stateMachine(
                 onExitAnim.size != smConfig.exitInteractions.size
     }
 
-    val hoverModifier = if (
-        smConfig.hasHoverInteractions() && !p.animationState.isTweenRunning
-    ) {
-        Modifier.pointerInput(p, smConfig, invokeActions) {
-            awaitEachGesture {
-                val p = awaitPointerEvent()
+    return pointerInput(smConfig) {
+        awaitEachGesture {
 
-                when (p.type) {
+            val p = awaitPointerEvent()
 
-                    PointerEventType.Enter -> onEnterAnim.fastForEach {
-                        invokeActions(it.actions)
-                    }
+            when (p.type) {
+                PointerEventType.Press -> {
 
-                    PointerEventType.Exit -> onExitAnim.fastForEach {
-                        invokeActions(it.actions)
-                    }
+                    if (!smConfig.hasTapInteractions())
+                        return@awaitEachGesture
 
-                    PointerEventType.Move -> {
+                    val down = p.changes.first()
+                    val downLayer = getLayersAtPosition(down.position)
 
-                        if (!hasLayerHoverInteractions)
-                            return@awaitEachGesture
+                    smConfig.downInteractions.invokeAny(downLayer, invokeActions)
 
-                        val hoveredLayers = getLayersAtPosition(
-                            p.changes.firstOrNull()?.position ?: return@awaitEachGesture
-                        )
+                    var movedTooMuch = false
 
-                        val enterLayers = hoveredLayers - lastHoveredLayers
-                        val exitLayers = lastHoveredLayers - hoveredLayers
+                    do {
+                        val change = awaitPointerEvent().changes.first()
 
-                        lastHoveredLayers = hoveredLayers
+                        if (!change.pressed) {
+                            val upPosition = change.position
+                            val upLayer = getLayersAtPosition(upPosition)
 
-                        smConfig.enterInteractions.fastForEach {
-                            if (
-                                it.layerName != null
-                                && enterLayers.fastAny { l -> l.name == it.layerName }
-                            ) {
-                                invokeActions(it.actions)
+                            smConfig.upInteractions.invokeAny(upLayer, invokeActions)
+
+                            val distance = (upPosition-down.position).getDistance()
+
+                            if (distance < viewConfiguration.touchSlop && !movedTooMuch) {
+                                smConfig.clickInteractions.invokeAny(upLayer, invokeActions)
                             }
-                        }
+                            break
+                        } else {
+                            val movePosition = change.position
 
-                        smConfig.exitInteractions.fastForEach {
-                            if (
-                                it.layerName != null
-                                && exitLayers.fastAny { l -> l.name == it.layerName }
-                            ) {
-                                invokeActions(it.actions)
+                            val moveDistance = (movePosition - down.position).getDistance()
+                            if (moveDistance > viewConfiguration.touchSlop) {
+                                movedTooMuch = true
                             }
+
+                            val moveLayer = getLayersAtPosition(movePosition)
+                            smConfig.moveInteractions.invokeAny(moveLayer, invokeActions)
                         }
-                    }
+                    } while (change.pressed)
+                }
+
+                PointerEventType.Enter -> onEnterAnim.fastForEach {
+                    invokeActions(it.actions)
+                }
+
+                PointerEventType.Exit -> onExitAnim.fastForEach {
+                    invokeActions(it.actions)
+                }
+
+                PointerEventType.Move -> {
+
+                    if (!hasLayerHoverInteractions)
+                        return@awaitEachGesture
+
+                    val hoveredLayers = getLayersAtPosition(
+                        p.changes.firstOrNull()?.position ?: return@awaitEachGesture
+                    )
+
+                    val enterLayers = hoveredLayers - lastHoveredLayers
+                    val exitLayers = lastHoveredLayers - hoveredLayers
+
+                    lastHoveredLayers = hoveredLayers
+
+                    smConfig.enterInteractions.invokeNamed(enterLayers, invokeActions)
+                    smConfig.exitInteractions.invokeNamed(exitLayers, invokeActions)
                 }
             }
         }
-    } else {
-        Modifier
     }
+}
 
-    val tapModifier = if (
-        smConfig.hasPointerInteractions() && !p.animationState.isTweenRunning
-    ) {
-        Modifier.pointerInput(drawScope, size, painter, contentScale, smConfig, invokeActions) {
-
-            awaitEachGesture {
-
-                val down = awaitFirstDown()
-                val downLayers = getLayersAtPosition(down.position)
-
-                smConfig.downInteractions.fastForEach {
-                    if (
-                        it.layerName == null ||
-                        downLayers.fastAny { l -> l.name == it.layerName }
-                    ) {
-                        invokeActions(it.actions)
-                    }
-                }
-
-                val up = waitForUpOrCancellation() ?: return@awaitEachGesture
-                val upLayers = getLayersAtPosition(up.position)
-
-                smConfig.upInteractions.fastForEach {
-                    if (
-                        it.layerName == null ||
-                        upLayers.fastAny { l -> l.name == it.layerName }
-                    ){
-                        invokeActions(it.actions)
-                    }
-                }
-
-                smConfig.clickInteractions.fastForEach {
-                    if (
-                        it.layerName == null ||
-                        downLayers.fastAny { l -> l.name == it.layerName } &&
-                        upLayers.fastAny { l -> l.name == it.layerName }
-                    ) {
-                        invokeActions(it.actions)
-                    }
-                }
-            }
+private fun List<SMInteraction.Pointer>.invokeAny(
+    layers: List<Layer>,
+    invokeActions: (List<SMAction>) -> Unit
+){
+    fastForEach {
+        if (
+            it.layerName == null ||
+            layers.fastAny { l ->  l.name == it.layerName }
+        ) {
+            invokeActions(it.actions)
         }
-    } else {
-        Modifier
     }
+}
 
 
-    return onSizeChanged { size = it.toSize() }
-        .then(hoverModifier)
-        .then(tapModifier)
-        .then(state?.modifier ?: Modifier)
-//        .drawWithContent {
-//            listenedLayers.fastForEach {
-//                bounds.set(0f, 0f, 0f, 0f)
-//                it.getBounds(
-//                    drawScope = drawScope,
-//                    parentMatrix = matrix,
-//                    applyParents = true,
-//                    state = p.animationState,
-//                    outBounds = bounds
-//                )
-//                drawRect(
-//                    color = Color.Red,
-//                    topLeft = bounds.topLeft,
-//                    size = bounds.size,
-//                    style = Stroke(1.dp.toPx())
-//                )
-//            }
-//            drawContent()
-//        }
+private fun List<SMInteraction.Pointer>.invokeNamed(
+    layers: List<Layer>,
+    invokeActions: (List<SMAction>) -> Unit
+){
+    fastForEach {
+        if (
+            it.layerName != null
+            && layers.fastAny { l -> l.name == it.layerName }
+        ) {
+            invokeActions(it.actions)
+        }
+    }
 }
 

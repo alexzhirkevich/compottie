@@ -20,6 +20,7 @@ import io.github.alexzhirkevich.compottie.dynamic.DynamicCompositionProvider
 import io.github.alexzhirkevich.compottie.dynamic.DynamicLayerProvider
 import io.github.alexzhirkevich.compottie.dynamic.derive
 import io.github.alexzhirkevich.compottie.internal.AnimationState
+import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import io.github.alexzhirkevich.compottie.internal.animation.expressions.ExpressionComposition
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.content.Content
@@ -130,7 +131,11 @@ internal abstract class BaseLayer : Layer {
     )
 
     override fun isHidden(state: AnimationState): Boolean {
-       return dynamicLayer?.hidden.derive(hidden, state)
+       return dynamicLayer?.hidden.derive(hidden, state) ||
+               transform.opacity.interpolatedNorm(state) <= Float.MIN_VALUE ||
+               Vec2(transform.scale.interpolatedNorm(state)).let {
+                   it.x <= Float.MIN_VALUE || it.y <= Float.MIN_VALUE
+               }
     }
 
     override fun isActive(state: AnimationState): Boolean {

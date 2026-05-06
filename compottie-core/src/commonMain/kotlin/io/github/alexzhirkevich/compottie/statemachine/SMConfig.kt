@@ -16,7 +16,7 @@ public class SMConfig internal constructor(
     internal val inputs : List<SMInput> = emptyList()
 ) {
 
-    internal val globalStates = states.filterIsInstance<SMState.GlobalState>()
+    internal val globalState = states.filterIsInstance<SMState.GlobalState>().firstOrNull()
     internal val statesMap = states.associateBy { it.name }
     internal val inputsMap = inputs.associateBy { it.name }
     internal val clickInteractions = interactions.filterIsInstance<SMInteraction.Click>()
@@ -24,8 +24,17 @@ public class SMConfig internal constructor(
     internal val upInteractions = interactions.filterIsInstance<SMInteraction.PointerUp>()
     internal val enterInteractions = interactions.filterIsInstance<SMInteraction.PointerEnter>()
     internal val exitInteractions = interactions.filterIsInstance<SMInteraction.PointerExit>()
+    internal val moveInteractions = interactions.filterIsInstance<SMInteraction.PointerMove>()
+    internal val completeInteractions = interactions.filterIsInstance<SMInteraction.OnComplete>()
+        .associateBy { it.stateName }
+    internal val iterCompleteInteractions = interactions.filterIsInstance<SMInteraction.OnLoopComplete>()
+        .associateBy { it.stateName }
 
     internal fun hasPointerInteractions(): Boolean {
+        return hasTapInteractions() || hasHoverInteractions()
+    }
+
+    internal fun hasTapInteractions(): Boolean {
         return clickInteractions.isNotEmpty() ||
                 downInteractions.isNotEmpty() ||
                 upInteractions.isNotEmpty()
@@ -35,8 +44,6 @@ public class SMConfig internal constructor(
         return enterInteractions.isNotEmpty() ||
                 exitInteractions.isNotEmpty()
     }
-
-
 
     internal fun assignVariables(machine: LottieStateMachine){
         inputs.fastForEach {

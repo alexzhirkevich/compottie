@@ -5,7 +5,6 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.util.fastAll
-import androidx.compose.ui.util.lerp
 import io.github.alexzhirkevich.compottie.LottieAnimatable
 import io.github.alexzhirkevich.compottie.LottieStateMachine
 import io.github.alexzhirkevich.compottie.internal.AnimationState
@@ -27,7 +26,8 @@ internal sealed interface SMTransition {
     )
 
     public fun canMove(machine: LottieStateMachine): Boolean {
-        return guards.fastAll { it.check(machine) }
+        return machine.currentState.value != toState &&
+                guards.fastAll { it.check(machine) }
     }
 
     @Serializable
@@ -79,11 +79,7 @@ internal sealed interface SMTransition {
             ) {
                 progress.snapTo(
                     composition = state.composition,
-                    progress = lerp(
-                        start = state.progress,
-                        stop = toProgress,
-                        fraction = state.tweenProgress
-                    )
+                    progress = toProgress
                 )
             }
         }

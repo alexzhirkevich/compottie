@@ -151,7 +151,7 @@ public fun rememberLottiePainter(
             if (enableExpressions) {
                 withContext(coroutineContext) {
                     runCatching {
-                        comp.animation.prepareExpressions(painter.animationState)
+                        painter.withState(comp.animation::prepareExpressions)
                     }
                 }
             }
@@ -252,11 +252,11 @@ internal class LottiePainterImpl(
 
     private val compositionLayer: Layer = CompositionLayer(composition)
 
-    private val frame: Float by derivedStateOf {
+    internal val frame: Float by derivedStateOf {
         composition.progressToFrame(progress())
     }
 
-    internal val animationState = AnimationState(
+    private val animationState = AnimationState(
         composition = composition,
         assets = assets.associateBy(LottieAsset::id),
         fonts = fonts,
@@ -279,7 +279,7 @@ internal class LottiePainterImpl(
     internal var clipToCompositionBounds: Boolean by animationState::clipToCompositionBounds
     internal var enableMergePaths: Boolean by animationState::enableMergePaths
     internal var enableExpressions: Boolean by animationState::enableExpressions
-    internal var theme : String? by animationState::theme
+    internal var theme: String? by animationState::theme
 
     init {
         setDynamicProperties(dynamicProperties)
@@ -311,5 +311,9 @@ internal class LottiePainterImpl(
         } catch (t: Throwable) {
             Compottie.logger?.error("Lottie crashed in draw :C", t)
         }
+    }
+
+    internal inline fun <T> withState(block: (AnimationState) -> T): T {
+        return animationState.onFrame(frame, block)
     }
 }

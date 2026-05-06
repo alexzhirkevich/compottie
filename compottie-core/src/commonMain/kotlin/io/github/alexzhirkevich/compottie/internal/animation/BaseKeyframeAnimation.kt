@@ -87,7 +87,7 @@ internal open class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
             val startKf = keyframes.firstOrNull()?.start
 
             if (!isTweenRunning || to == null)
-                return default(state)
+                return default(this)
 
             when {
                 from in firstFrame..lastFrame && to in firstFrame..lastFrame ->

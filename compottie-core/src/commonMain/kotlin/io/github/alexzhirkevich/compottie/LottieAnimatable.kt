@@ -150,6 +150,7 @@ public interface LottieAnimatable : LottieAnimationState {
         cancellationBehavior: LottieCancellationBehavior = LottieCancellationBehavior.Immediately,
         ignoreSystemAnimationsDisabled: Boolean = false,
         useCompositionFrameRate: Boolean = false,
+        onIterationFinish : () -> Unit = {}
     )
 }
 
@@ -239,6 +240,7 @@ private class LottieAnimatableImpl : LottieAnimatable {
         cancellationBehavior: LottieCancellationBehavior,
         ignoreSystemAnimationsDisabled: Boolean,
         useCompositionFrameRate: Boolean,
+        onIterationFinish : () -> Unit
     ) {
         mutex.mutate {
             this.iteration = iteration
@@ -275,7 +277,8 @@ private class LottieAnimatableImpl : LottieAnimatable {
                             }
                             else -> iterations
                         }
-                        if (!doFrame(actualIterations)) break
+                        if (!doFrame(actualIterations, onIterationFinish = onIterationFinish))
+                            break
                     }
                 }
                 coroutineContext.ensureActive()
@@ -285,21 +288,21 @@ private class LottieAnimatableImpl : LottieAnimatable {
         }
     }
 
-    private suspend fun doFrame(iterations: Int): Boolean {
+    private suspend fun doFrame(iterations: Int, onIterationFinish: () -> Unit = {}): Boolean {
         return if (iterations == Compottie.IterateForever) {
             // We use withInfiniteAnimationFrameNanos because it allows tests to add a CoroutineContext
             // element that will cancel infinite transitions instead of preventing composition from ever going idle.
             withInfiniteAnimationFrameNanos { frameNanos ->
-                onFrame(iterations, frameNanos)
+                onFrame(iterations, frameNanos, onIterationFinish)
             }
         } else {
             withFrameNanos { frameNanos ->
-                onFrame(iterations, frameNanos)
+                onFrame(iterations, frameNanos, onIterationFinish)
             }
         }
     }
 
-    private fun onFrame(iterations: Int, frameNanos: Long): Boolean {
+    private fun onFrame(iterations: Int, frameNanos: Long, onIterationFinish: () -> Unit): Boolean {
         val composition = composition ?: return true
         val dNanos = if (lastFrameNanos == AnimationConstants.UnspecifiedTime) 0L else (frameNanos - lastFrameNanos)
         lastFrameNanos = frameNanos
@@ -315,6 +318,7 @@ private class LottieAnimatableImpl : LottieAnimatable {
         if (progressPastEndOfIteration < 0f) {
             updateProgress(progressRaw.coerceIn(minProgress, maxProgress) + dProgress)
         } else {
+            onIterationFinish()
             val durationProgress = maxProgress - minProgress
             val dIterations = (progressPastEndOfIteration / durationProgress).toInt() + 1
 

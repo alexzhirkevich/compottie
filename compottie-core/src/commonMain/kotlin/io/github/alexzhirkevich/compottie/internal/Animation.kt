@@ -51,6 +51,9 @@ internal class Animation(
 ) : ExpressionHolder {
 
     @Transient
+    val layersMap = layers.associateBy { it.name }
+
+    @Transient
     val slots = AnimationSlots(
         slots = slotsMap?.mapValues {
             checkNotNull(it.value.jsonObject["p"]) {

@@ -33,6 +33,7 @@ internal sealed interface SMState {
     public suspend fun play(
         composition: LottieComposition,
         progress : LottieAnimatable,
+        onLoopComplete : () -> Unit
     )
 
     @Serializable
@@ -88,7 +89,8 @@ internal sealed interface SMState {
 
         override suspend fun play(
             composition: LottieComposition,
-            progress: LottieAnimatable
+            progress: LottieAnimatable,
+            onLoopComplete : () -> Unit
         ) {
             if (autoplay) {
                 progress.animate(
@@ -102,6 +104,7 @@ internal sealed interface SMState {
                     },
                     reverseOnRepeat = mode.isBounce,
                     speed = speed * if (mode.isReverse) -1f else 1f,
+                    onIterationFinish = onLoopComplete
                 )
             }
         }
@@ -128,7 +131,11 @@ internal sealed interface SMState {
         ) {
         }
 
-        override suspend fun play(composition: LottieComposition, progress: LottieAnimatable) {
+        override suspend fun play(
+            composition: LottieComposition,
+            progress: LottieAnimatable,
+            onLoopComplete : () -> Unit
+        ) {
 
         }
 

@@ -1,8 +1,5 @@
 package io.github.alexzhirkevich.compottie.statemachine
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import io.github.alexzhirkevich.compottie.LottieStateMachine
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -55,14 +52,6 @@ internal sealed interface SMInput {
     public class Event(
         override val name : String,
     ) : SMInput {
-
-        internal var isTriggered by mutableStateOf(false)
-            private set
-
-        internal fun trigger(){
-            isTriggered = true
-        }
-
         override fun assign(stateMachine: LottieStateMachine) {
             if (stateMachine.isFired(name)){
                 stateMachine.clearFiredEvents()
