@@ -356,7 +356,7 @@ private class LottieAnimatableImpl : LottieAnimatable {
 
 }
 
-private fun defaultProgress(composition: LottieComposition?, clipSpec: LottieClipSpec?, speed: Float): Float {
+internal fun defaultProgress(composition: LottieComposition?, clipSpec: LottieClipSpec?, speed: Float): Float {
     return when {
         speed < 0 && composition == null -> 1f
         composition == null -> 0f

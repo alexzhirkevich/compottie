@@ -69,12 +69,14 @@ public fun animateLottieCompositionAsState(
         if (!isPlaying) return@LaunchedEffect
 
         animatable.animate(
-            composition,
+            composition = composition,
             iterations = iterations,
             reverseOnRepeat = reverseOnRepeat,
             speed = speed,
             clipSpec = clipSpec,
-            initialProgress = animatable.progress,
+            initialProgress = if (animatable.composition === composition)
+                animatable.progress
+            else defaultProgress(composition, clipSpec, speed),
             continueFromPreviousAnimate = false,
             cancellationBehavior = cancellationBehavior,
             useCompositionFrameRate = useCompositionFrameRate,

@@ -19,7 +19,7 @@ import kotlin.jvm.JvmName
 public fun LottieCompositionSpec.Companion.Url(
     url : String,
     request: suspend (url: String) -> ByteArray,
-    format: LottieAnimationFormat = LottieAnimationFormat.Undefined,
+    format: LottieAnimationFormat = LottieAnimationFormat.Unknown,
     cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
 ) : LottieCompositionSpec = NetworkCompositionSpec(
     url = url,
@@ -35,8 +35,7 @@ private class NetworkCompositionSpec(
     private val cacheStrategy: LottieCacheStrategy,
 ) : LottieCompositionSpec {
 
-    override val key: String
-        get() = "url_$url"
+    override val key: String = "url_$url"
 
     private val assetsManager = NetworkAssetsManager(
         request = request,

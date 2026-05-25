@@ -17,6 +17,7 @@ kotlin {
             implementation(libs.atomicfu)
             api(libs.keight.core)
             implementation(libs.androidx.collection)
+            implementation(libs.skiko)
         }
         webMain.dependencies {
             implementation(libs.kotlinx.browser)

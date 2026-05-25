@@ -30,12 +30,15 @@ public interface LottieCompositionCache {
         create : suspend () -> LottieComposition
     ) : LottieComposition
 
+    public fun get(key : Any?) : LottieComposition? = null
+
     /**
      * Clear all in-memory cached compositions.
      * This will not clear the file system cache
      * */
     public suspend fun clear()
 
+    @Deprecated("Use null cache instead")
     public object Empty : LottieCompositionCache {
 
         override suspend fun getOrPut(
@@ -65,6 +68,11 @@ public suspend fun LottieCompositionCache.prepare(spec: LottieCompositionSpec) :
 public fun LottieCompositionCache(size : Int) : LottieCompositionCache = object : LottieCompositionCache {
 
     private val cache = LruMap<LottieComposition>(limit = size)
+
+
+    override fun get(key: Any?): LottieComposition? {
+        return if (key == null) null else cache[key]
+    }
 
     override suspend fun getOrPut(
         key: Any?,

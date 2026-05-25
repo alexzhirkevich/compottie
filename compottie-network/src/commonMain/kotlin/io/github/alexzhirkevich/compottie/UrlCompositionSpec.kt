@@ -11,7 +11,7 @@ package io.github.alexzhirkevich.compottie
 @OptIn(InternalCompottieApi::class)
 public fun LottieCompositionSpec.Companion.Url(
     url : String,
-    format: LottieAnimationFormat = LottieAnimationFormat.Undefined,
+    format: LottieAnimationFormat = LottieAnimationFormat.Unknown,
     cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
 ) : LottieCompositionSpec = Url(
     url = url,

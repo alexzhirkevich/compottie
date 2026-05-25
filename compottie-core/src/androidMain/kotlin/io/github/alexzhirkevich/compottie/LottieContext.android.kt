@@ -4,9 +4,10 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
-public  actual typealias LottieContext = Context
+public actual typealias LottieContext = Context
 
 @Composable
-public  actual fun currentLottieContext() : LottieContext {
+@InternalCompottieApi
+public actual fun currentLottieContext() : LottieContext {
     return LocalContext.current
 }

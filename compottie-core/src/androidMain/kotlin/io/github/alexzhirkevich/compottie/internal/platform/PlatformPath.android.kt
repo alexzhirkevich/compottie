@@ -9,11 +9,14 @@ internal actual fun ExtendedPathMeasure() : ExtendedPathMeasure = AndroidExtende
     android.graphics.PathMeasure()
 )
 
-internal actual class PathBuilder actual constructor() : AutoCloseable {
+
+internal actual fun PathBuilder(): PathBuilder = AndroidPathBuilder()
+
+private class AndroidPathBuilder() : PathBuilder {
     private val androidPath = android.graphics.Path()
     private val androidMatrix = android.graphics.Matrix()
 
-    actual fun addPath(
+    override fun addPath(
         path: Path,
         matrix: Matrix
     ) {
@@ -26,13 +29,14 @@ internal actual class PathBuilder actual constructor() : AutoCloseable {
         )
     }
 
-    actual fun setTo(path: Path) {
+    override fun setTo(path: Path) {
         path.asAndroidPath().set(androidPath)
         androidPath.rewind()
     }
 
-    actual override fun close() {
-
+    override fun close() {
+        androidPath.reset()
+        androidMatrix.reset()
     }
 }
 
@@ -92,4 +96,3 @@ private class AndroidExtendedPathMeasure(
         }
     }
 }
-

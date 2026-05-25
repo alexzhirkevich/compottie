@@ -5,22 +5,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.text.font.Font
-import io.github.alexzhirkevich.compottie.assets.LottieFontSpec
 import io.github.alexzhirkevich.compottie.assets.LottieFontManager
-import org.jetbrains.compose.resources.ExperimentalResourceApi
+import io.github.alexzhirkevich.compottie.assets.LottieFontSpec
 import org.jetbrains.compose.resources.FontResource
 import org.jetbrains.compose.resources.ResourceEnvironment
-import org.jetbrains.compose.resources.getSystemResourceEnvironment
 import org.jetbrains.compose.resources.rememberResourceEnvironment
 
 /**
- * Create and remember Compose resources [LottieFontManager]
- *
- * Warning: this manager uses internal Compose API on Android and should be considered unstable
+ * Create and remember [LottieFontManager] backed by CMP resources
  * */
-@OptIn(ExperimentalResourceApi::class)
+@OptIn(InternalCompottieApi::class)
 @Composable
-@ExperimentalCompottieApi
 public fun rememberResourcesFontManager(
     font : (LottieFontSpec) -> FontResource?
 ) : LottieFontManager {
@@ -40,9 +35,9 @@ public fun rememberResourcesFontManager(
 }
 
 
-@OptIn(ExperimentalResourceApi::class)
+@OptIn(InternalCompottieApi::class)
 private class ResourcesFontManagerImpl(
-    private val context: LottieContext?,
+    private val context: LottieContext,
     private val environment: ResourceEnvironment,
     private val resource : (LottieFontSpec) -> FontResource?
 ) : LottieFontManager {
@@ -54,9 +49,9 @@ private class ResourcesFontManagerImpl(
 }
 
 
-@OptIn(ExperimentalResourceApi::class)
+@OptIn(InternalCompottieApi::class)
 internal expect suspend fun loadFont(
-    context : LottieContext?,
+    context: LottieContext,
     environment: ResourceEnvironment,
     font: LottieFontSpec,
     resource: FontResource

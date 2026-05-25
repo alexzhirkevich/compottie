@@ -98,8 +98,36 @@ public fun rememberLottiePainter(
 
     val coroutineScope = rememberCoroutineScope()
 
-    val painter by produceState<LottiePainterImpl?>(
-        null, composition, copy, coroutineScope
+    val painter by produceState(
+        remember {
+            if (
+                composition != null &&
+                (!composition.hasFonts || fontManager == null) &&
+                (!composition.hasAssets || assetsManager == null) &&
+                !copy
+            ){
+                LottiePainterImpl(
+                    composition = composition,
+                    progress = updatedProgress::invoke,
+                    dynamicProperties = dp,
+                    theme = theme,
+                    clipTextToBoundingBoxes = clipTextToBoundingBoxes,
+                    textMeasurer = textMeasurer,
+                    clipToCompositionBounds = clipToCompositionBounds,
+                    enableTextGrouping = enableTextGrouping,
+                    enableMergePaths = enableMergePaths,
+                    enableExpressions = enableExpressions,
+                    applyOpacityToLayers = applyOpacityToLayers,
+                    coroutineContext = coroutineScope.coroutineContext,
+                    assets = emptyList(),
+                    fonts = emptyMap(),
+                    expressionEngineFactory = expressionEngineFactory
+                )
+            } else null
+        },
+        composition,
+        copy,
+        coroutineScope
     ) {
 
         if (composition != null) {
@@ -306,7 +334,12 @@ internal class LottiePainterImpl(
             )
 
             animationState.onFrame(frame) {
-                compositionLayer.draw(this, matrix, alpha, it)
+                compositionLayer.draw(
+                    drawScope = this,
+                    parentMatrix = matrix,
+                    parentAlpha = alpha,
+                    state = it
+                )
             }
         } catch (t: Throwable) {
             Compottie.logger?.error("Lottie crashed in draw :C", t)

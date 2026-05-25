@@ -26,7 +26,6 @@ import org.jetbrains.compose.resources.MissingResourceException
  *
  * */
 @Composable
-@ExperimentalCompottieApi
 public fun rememberResourcesAssetsManager(
     directory : String = "files",
     readBytes : suspend (path : String) -> ByteArray,
@@ -51,7 +50,6 @@ public fun rememberResourcesAssetsManager(
  * Use [rememberResourcesAssetsManager] to create it from the composition
  *
  * */
-@ExperimentalCompottieApi
 @Stable
 public fun ResourcesAssetsManager(
     directory : String = "files",

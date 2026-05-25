@@ -2,7 +2,9 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Composable
 
+@InternalCompottieApi
 public expect abstract class LottieContext
 
 @Composable
-public  expect fun currentLottieContext() : LottieContext
+@InternalCompottieApi
+public expect fun currentLottieContext() : LottieContext

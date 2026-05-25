@@ -4,24 +4,20 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.ui.text.font.Font
 import io.github.alexzhirkevich.compottie.assets.LottieFontSpec
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.FontResource
 import org.jetbrains.compose.resources.InternalResourceApi
 import org.jetbrains.compose.resources.ResourceEnvironment
 import org.jetbrains.compose.resources.getResourceItemByEnvironment
 
-@OptIn(ExperimentalResourceApi::class, InternalResourceApi::class)
+@OptIn(InternalResourceApi::class)
 internal actual suspend fun loadFont(
-    context : LottieContext?,
+    context: LottieContext,
     environment: ResourceEnvironment,
     font: LottieFontSpec,
     resource: FontResource
-) : Font {
-    val path =  resource.getResourceItemByEnvironment(environment).path
-
-    checkNotNull(context){
-        "Compottie failed to initializer"
-    }
-
-    return Font(path, context.assets, font.weight, font.style)
-}
+) : Font = Font(
+    path =  resource.getResourceItemByEnvironment(environment).path,
+    assetManager = context.assets,
+    weight = font.weight,
+    style = font.style
+)

@@ -6,9 +6,9 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import kotlinx.atomicfu.locks.reentrantLock
+import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 
 /**
  * A [LottieCompositionResult] subclass is returned from [rememberLottieComposition].
@@ -79,11 +79,11 @@ public interface LottieCompositionResult : State<LottieComposition?> {
 
 
 @Stable
-internal class LottieCompositionResultImpl() : LottieCompositionResult {
+internal class LottieCompositionResultImpl(
+    composition : LottieComposition? = null
+) : LottieCompositionResult {
 
-    private var compositionDeferred = CompletableDeferred<LottieComposition>()
-
-    override var value: LottieComposition? by mutableStateOf(null)
+    override var value: LottieComposition? by mutableStateOf(composition)
         private set
 
     override var error by mutableStateOf<Throwable?>(null)
@@ -97,15 +97,18 @@ internal class LottieCompositionResultImpl() : LottieCompositionResult {
 
     override val isSuccess by derivedStateOf { value != null }
 
+    private var compositionDeferred = CompletableDeferred<LottieComposition>().also {
+        if (composition != null) it.complete(composition)
+    }
+
     override suspend fun await(): LottieComposition {
         return compositionDeferred.await()
     }
 
-    private val mutex = Mutex()
+    private val lock = reentrantLock()
 
-    // MAIN THREAD!!!
-    internal suspend fun complete(composition: LottieComposition) {
-        mutex.withLock {
+    internal fun complete(composition: LottieComposition) {
+        lock.withLock {
             if (isComplete) return@withLock
 
             value = composition
@@ -113,9 +116,8 @@ internal class LottieCompositionResultImpl() : LottieCompositionResult {
         }
     }
 
-    // MAIN THREAD!!!
-    internal suspend fun completeExceptionally(error: Throwable) {
-        mutex.withLock {
+    internal fun completeExceptionally(error: Throwable) {
+        lock.withLock {
             if (isComplete) return@withLock
 
             this.error = error

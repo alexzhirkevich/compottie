@@ -17,12 +17,12 @@ internal val DefaultHttpClient by lazy {
         }
         install(HttpRequestRetry) {
             maxRetries = 2
-            constantDelay(1000, 500)
+            exponentialDelay()
         }
     }
 }
 
 @OptIn(InternalAPI::class)
-internal val DefaultHttpRequest : suspend  (String) -> ByteArray = {
+internal val DefaultHttpRequest : suspend (String) -> ByteArray = {
     DefaultHttpClient.get(it).bodyAsBytes()
 }

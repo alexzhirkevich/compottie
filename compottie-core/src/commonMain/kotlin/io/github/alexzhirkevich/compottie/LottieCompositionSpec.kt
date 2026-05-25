@@ -2,20 +2,20 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import kotlin.jvm.JvmInline
+import okio.ByteString.Companion.encodeUtf8
 
 @Stable
 public interface LottieCompositionSpec {
 
     /**
-     * Key that uniquely identifies composition instance. Equal specs must return equal key
+     * Key that uniquely identifies composition instance.
+     * Equal specs should produce the same key
      * */
     public val key : String?
 
     public suspend fun load() : LottieComposition
 
     public companion object {
-
 
         /**
         *  [LottieComposition] from a [jsonString]
@@ -29,13 +29,11 @@ public interface LottieCompositionSpec {
 
 
 @Immutable
-@JvmInline
-private value class JsonStringImpl(
+private class JsonStringImpl(
     private val jsonString: String
 ) : LottieCompositionSpec {
 
-    override val key: String
-        get() = "string_${jsonString.hashCode()}"
+    override val key: String = "string_${jsonString.encodeUtf8().md5()}"
 
     override suspend fun load(): LottieComposition {
         return LottieComposition.parse(jsonString)

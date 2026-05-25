@@ -43,7 +43,7 @@ import kotlin.time.Duration.Companion.microseconds
 /**
  * Load and prepare [LottieComposition] for displaying.
  *
- * Remembers the composition produced by [spec] if all values of [keys] are equal (`==`) to the
+ * Remembers the composition produced by the [spec] if all [keys] are equal to the
  * values they had in the previous composition, otherwise produce and remember a new [LottieCompositionResult] by
  * calling [spec] again.
  * */
@@ -60,7 +60,7 @@ public fun rememberLottieComposition(
         LottieCompositionResultImpl()
     }
 
-    LaunchedEffect(result, cache) {
+    LaunchedEffect(result) {
         try {
             val composition = withContext(coroutineContext) {
                 val specInstance = spec()
@@ -81,34 +81,38 @@ public fun rememberLottieComposition(
 }
 
 /**
- * Load [LottieComposition].
+ * Load and prepare [LottieComposition] for displaying.
+ *
+ * Immediately returns the composition instance if it is already stored in the [cache].
+ * Otherwise asynchronously loads, parses, caches and returns a new composition instance.
  * */
 @OptIn(InternalCompottieApi::class)
-@Deprecated(
-    "Use overload with lambda instead",
-    ReplaceWith("rememberLottieComposition { spec }")
-)
 @Composable
 public fun rememberLottieComposition(
     spec : LottieCompositionSpec,
+    cache: LottieCompositionCache? = LocalLottieCache.current,
+    coroutineContext: CoroutineContext = remember { Compottie.ioDispatcher() },
 ) : LottieCompositionResult {
 
-    val result = remember(spec) {
-        LottieCompositionResultImpl()
+    val result = remember(spec, cache) {
+        LottieCompositionResultImpl(cache?.get(spec.key))
     }
 
-    LaunchedEffect(result) {
-
-        try {
-            val composition = withContext(Compottie.ioDispatcher()) { spec.load() }
-            result.complete(composition)
-        } catch (c: CancellationException) {
-            result.completeExceptionally(c)
-            throw c
-        } catch (t: Throwable) {
-            result.completeExceptionally(
-                CompottieException("Composition failed to load", t)
-            )
+    if (!result.isComplete) {
+        LaunchedEffect(result) {
+            try {
+                val composition = withContext(coroutineContext) {
+                    cache?.getOrPut(spec.key, spec::load) ?: spec.load()
+                }
+                result.complete(composition)
+            } catch (c: CancellationException) {
+                result.completeExceptionally(c)
+                throw c
+            } catch (t: Throwable) {
+                result.completeExceptionally(
+                    CompottieException("Composition failed to load", t)
+                )
+            }
         }
     }
 
