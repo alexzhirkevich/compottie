@@ -3,9 +3,9 @@ androidx-activity-compose="1.10.1"
 androidx-core-ktx="1.17.0"
 collection="1.5.0"
 kotlin="2.3.20"
-compose="1.11.0-rc01"
+compose="1.11.0"
 androidx-lifecycle="2.10.0"
-material3="1.11.0-alpha06"
+material3="1.11.0-alpha07"
 agp = "8.12.1"
 okio = "3.16.4"
 serialization="1.9.0"
@@ -16,8 +16,11 @@ coil="3.3.0"
 keight="0.0.05"
 maven-publish="0.34.0"
 kotlinx-browser="0.5.0"
+navigation="1.1.1"
+skiko = "0.144.6"
 
 [libraries]
+skiko = { module = "org.jetbrains.skiko:skiko", version.ref = "skiko" }
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
 compose-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "compose" }
@@ -25,6 +28,7 @@ compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.r
 compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose" }
 compose-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose" }
 compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
+compose-navigation = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
 androidx-collection = { module = "androidx.collection:collection", version.ref = "collection" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core-ktx" }
@@ -35,6 +39,7 @@ ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
 ktor-client-ios = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
 coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "coroutines" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
