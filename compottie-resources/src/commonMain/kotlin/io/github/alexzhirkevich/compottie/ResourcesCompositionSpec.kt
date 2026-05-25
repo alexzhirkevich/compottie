@@ -48,7 +48,7 @@ public fun LottieCompositionSpec.Companion.Resource(
     reader: ResourceReader = LocalResourceReader.current,
 ) : LottieCompositionSpec = remember(uri, reader, directory) {
     Resource(
-        path = uri.substring(uri.indexOf(directory)),
+        path = uri.substring(uri.indexOf(directory).takeIf { it >= 0 } ?: 0),
         reader = reader::read
     )
 }
