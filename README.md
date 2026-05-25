@@ -18,14 +18,14 @@ Compose Multiplatform library for rendering Lottie animations
 > Starting from v2.0 Compottie has its own multiplatform rendering engine without any platform delegates.
 > <br>List of supported AE Lottie features can be found [here](/supported_features.md)
 
-|          Module          | Description                                                                                                                                                                                                                                                                                          | 
-|:------------------------:|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
-|       `compottie`        | Main module with rendering engine and `JsonString` animation spec.                                                     |
-|     `compottie-lite`     | The same as `compottie`, but without expressions support. Has about 2 times smaller binary size.                                                                                                                                                                                                        |                                                                                                                                                                                                       |                                                                                                                                                                                                                                                                                |
-|     `compottie-dot`      | Contains [dotLottie](https://dotlottie.io/) and ZIP animation spec.                                                                                                                                                                                                        |
-|   `compottie-network`    | Contains `Url` animation spec and asset/font managers (with [Ktor3](https://ktor.io/) and local cache with [Okio](https://square.github.io/okio/)). Allows loading animations and assets from web.                                                                        |
-| `compottie-network-core` | Contains base HttpClient-free implementations for `network` module. Allows to specify custom HTTP client (Ktor3 or any other).                                                                                                                                                                       |
-|  `compottie-resources`   | Contains asset and font managers powered by official Compose resources. | 
+|          Module          | Description                                                                                                                                                                                        | 
+|:------------------------:|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
+|       `compottie`        | Main module with rendering engine and `JsonString` animation spec.                                                                                                                                 |
+|     `compottie-lite`     | The same as `compottie`, but without expressions support. Has about 2 times smaller binary size.                                                                                                   |                                                                                                                                                                                                       |                                                                                                                                                                                                                                                                                |
+|     `compottie-dot`      | Contains [dotLottie](https://dotlottie.io/) and ZIP animation spec.                                                                                                                                |
+|   `compottie-network`    | Contains `Url` animation spec and asset/font managers (with [Ktor3](https://ktor.io/) and local cache with [Okio](https://square.github.io/okio/)). Allows loading animations and assets from web. |
+| `compottie-network-core` | Contains base HttpClient-free implementations for `network` module. Allows to specify custom HTTP client (Ktor3 or any other).                                                                     |
+|  `compottie-resources`   | Contains `Resource` animation spec, asset and font managers backed by CMP resources.                                                                                                               | 
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.alexzhirkevich/compottie)](https://central.sonatype.com/artifact/io.github.alexzhirkevich/compottie)
 
@@ -75,13 +75,12 @@ Image(
     contentDescription = "Lottie animation"
 )
 ```
-Or with the `rememberLottiePainter` overload that merges `rememberLottiePainter` and `animateLottieCompositionsState()`
+Or with the `rememberLottiePainter` overload that merges `rememberLottiePainter` and `animateLottieCompositionsState()`.
+`Resource` spec requires the `compottie-resources` dependency
 ```kotlin
-val composition by rememberLottieComposition {
-    LottieCompositionSpec.JsonString(
-        Res.readBytes("files/anim.json").decodeToString()
-    )
-}
+val composition by rememberLottieComposition(
+    LottieCompositionSpec.Resource(Res.getUri("files/anim.json"))
+)
 
 Image(
     painter = rememberLottiePainter(
@@ -99,21 +98,30 @@ cached/reused freely. Call `rememberLottieComposition(spec)` to create new compo
 
 For example:
 ```kotlin
-val animFromJsonRes by rememberLottieComposition {
+val jsonAnim by rememberLottieComposition {
     LottieCompositionSpec.JsonString(
         Res.readBytes("files/anim.json").decodeToString()
     )
 }
 
-val animFromUrl by rememberLottieComposition {
-    LottieCompositionSpec.Url("https://example.com/anim.lotie")
-}
-
-val animFromArchiveRes by rememberLottieComposition {
+val dotLottieAnim by rememberLottieComposition {
     LottieCompositionSpec.DotLottie(
         Res.readBytes("files/anim.lottie")
     )
 }
+
+// jsonAnim and dotLottieAnim can both be replaced with
+
+val resAnim by rememberLottieComposition(
+    LottieCompositionSpec.Resource(Res.getUri("files/anim.json"))
+//    LottieCompositionSpec.Resource(Res.getUri("files/anim.lottie"))
+)
+
+val urlAnim by rememberLottieComposition(
+    LottieCompositionSpec.Url("https://example.com/anim.lottie")
+)
+
+
 ```
 
 The type returned from `rememberLottieComposition` is
@@ -220,6 +228,34 @@ val painter = rememberLottiePainter(
     progress = progress,
     theme = "night"
 )
+```
+
+### State Machines
+
+dotLottie files support [state machines](https://dotlottie.io/spec/2.0/#state-machines).
+Designers can include a set of states, transitions between those states, the conditions and actions
+that should occur during state transitions.
+It makes the animation interactive out of the box.
+To display a state machine you should use the `LottieAnimatable` with the `Lottie` composable.
+
+```kotlin
+
+val animatable = rememberLottieAnimatable()
+
+Lottie(
+    painter = rememberLottiePainter(
+        composition = dotLottieComposition,
+        progress = animatable::value
+    ),
+    stateMachine = rememberLottieStateMachine(
+        id = "state_machine_id",
+        composition = dotLottieComposition,
+        animatable = animatable
+    ),
+    contentDescription = "Interactive animation"
+)
+
+
 ```
 
 ## Images
