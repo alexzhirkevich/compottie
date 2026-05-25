@@ -27,9 +27,16 @@ Compose Multiplatform library for rendering Lottie animations
 | `compottie-network-core` | Contains base HttpClient-free implementations for `network` module. Allows to specify custom HTTP client (Ktor3 or any other).                                                                     |
 |  `compottie-resources`   | Contains `Resource` animation spec, asset and font managers backed by CMP resources.                                                                                                               | 
 
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.alexzhirkevich/compottie)](https://central.sonatype.com/artifact/io.github.alexzhirkevich/compottie)
+Compatibility table
+
+| Compose | Compottie |
+|:-------:|-----------|
+| 1.12    | TBD       |
+| 1.11    | [![Maven Central](https://img.shields.io/maven-central/v/io.github.alexzhirkevich/compottie)](https://central.sonatype.com/artifact/io.github.alexzhirkevich/compottie) |
+| 1.10    | [![Maven Central](https://img.shields.io/maven-central/v/io.github.alexzhirkevich/compottie/2.1.0)](https://central.sonatype.com/artifact/io.github.alexzhirkevich/compottie/2.1.0) |
 
 Add as a Gradle dependency
+
 ```toml
 [versions]
 compottie="<version>"
