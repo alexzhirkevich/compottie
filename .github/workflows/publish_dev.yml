@@ -1,12 +1,9 @@
 name: Publish (dev)
 on:
-  workflow_dispatch:
-    branches:
-      - dev
+  workflow_call:
 
 jobs:
   publish:
-    if: github.ref == 'refs/heads/dev'
     name: Release build and publish
     runs-on: macOS-latest
     steps:
