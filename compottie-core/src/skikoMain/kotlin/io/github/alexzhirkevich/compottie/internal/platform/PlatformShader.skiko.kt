@@ -9,9 +9,10 @@ import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.asComposeShader
 import androidx.compose.ui.graphics.skiaPaint
 import androidx.compose.ui.graphics.toArgb
+import org.jetbrains.skia.Color4f
 import org.jetbrains.skia.FilterBlurMode
 import org.jetbrains.skia.FilterTileMode
-import org.jetbrains.skia.GradientStyle
+import org.jetbrains.skia.Gradient
 import org.jetbrains.skia.ImageFilter
 import org.jetbrains.skia.MaskFilter
 import org.jetbrains.skia.Matrix33
@@ -25,33 +26,23 @@ internal actual fun MakeLinearGradient(
     colorStops: List<Float>,
     tileMode: TileMode,
     matrix: Matrix
-) : Shader {
-    return try {
-        SkShader.makeLinearGradient(
-            x0 = from.x,
-            y0 = from.y,
-            x1 = to.x,
-            y1 = to.y,
-            colors = colors.toIntArray(),
+) : Shader = SkShader.makeLinearGradient(
+    x0 = from.x,
+    y0 = from.y,
+    x1 = to.x,
+    y1 = to.y,
+    gradient = Gradient(
+        colors = Gradient.Colors(
+            colors = colors.toColor4fArray(),
             positions = colorStops.toFloatArray(),
-            style = GradientStyle(
-                tileMode = tileMode.toSkiaTileMode(),
-                isPremul = true,
-                localMatrix = matrix.asSkia33(coerceScale = true)
-            )
-            // TODO: Migrate to new Gradient API introduced in skiko 0.146 (Compose 1.12)
-            // gradient = Gradient(
-            //     Gradient.Colors(
-            //         colors = colors.toColor4fArray(),
-            //         positions = colorStops.toFloatArray(),
-            //         tileMode = FilterTileMode.CLAMP
-            //     )
-            // ),
-        ).asComposeShader()
-    }catch (t : Throwable){
-        throw t
-    }
-}
+            tileMode = FilterTileMode.CLAMP
+        ),
+        interpolation = Gradient.Interpolation(
+            inPremul = Gradient.Interpolation.InPremul.YES
+        )
+    ),
+    localMatrix = matrix.asSkia33(coerceScale = true)
+).asComposeShader()
 
 internal actual fun MakeRadialGradient(
     center : Offset,
@@ -60,30 +51,21 @@ internal actual fun MakeRadialGradient(
     colorStops: List<Float>,
     tileMode: TileMode,
     matrix: Matrix
-) = SkShader.makeRadialGradient(
+) : Shader = SkShader.makeRadialGradient(
     x = center.x,
     y = center.y,
-    r = radius,
-    colors = colors.toIntArray(),
-    positions = colorStops.toFloatArray(),
-    style = GradientStyle(
-        tileMode = tileMode.toSkiaTileMode(),
-        isPremul = true,
-        localMatrix = matrix.asSkia33(coerceScale = true)
-    )
-    // TODO: Migrate to new Gradient API introduced in skiko 0.146 (Compose 1.12)
-    // radius = radius,
-    // gradient = Gradient(
-    //     colors = Gradient.Colors(
-    //         colors = colors.toColor4fArray(),
-    //         positions = colorStops.toFloatArray(),
-    //         tileMode = tileMode.toSkiaTileMode()
-    //     ),
-    //     interpolation = Gradient.Interpolation(
-    //         inPremul = Gradient.Interpolation.InPremul.YES
-    //     )
-    // ),
-    // localMatrix = matrix.asSkia33(coerceScale = true),
+    radius = radius,
+    gradient = Gradient(
+        colors = Gradient.Colors(
+            colors = colors.toColor4fArray(),
+            positions = colorStops.toFloatArray(),
+            tileMode = FilterTileMode.CLAMP
+        ),
+        interpolation = Gradient.Interpolation(
+            inPremul = Gradient.Interpolation.InPremul.YES
+        )
+    ),
+    localMatrix = matrix.asSkia33(coerceScale = true)
 ).asComposeShader()
 
 internal actual fun MakeSweepGradient(
@@ -95,26 +77,16 @@ internal actual fun MakeSweepGradient(
 ): Shader = SkShader.makeSweepGradient(
     x = center.x,
     y = center.y,
-    colors = colors.toIntArray(),
-    positions = colorStops.toFloatArray(),
-    style = GradientStyle(
-        tileMode = TileMode.Clamp.toSkiaTileMode(),
-        isPremul = true,
-        localMatrix = matrix.asSkia33(coerceScale = true)
-    )
-    // TODO: Migrate to new Gradient API introduced in skiko 0.146 (Compose 1.12)
-    // radius = radius,
-    // gradient = Gradient(
-    //     colors = Gradient.Colors(
-    //         colors = colors.toColor4fArray(),
-    //         positions = colorStops.toFloatArray(),
-    //         tileMode = tileMode.toSkiaTileMode()
-    //     ),
-    //     interpolation = Gradient.Interpolation(
-    //         inPremul = Gradient.Interpolation.InPremul.YES
-    //     )
-    // ),
-    // localMatrix = matrix.asSkia33(coerceScale = true),
+    gradient = Gradient(
+        colors = Gradient.Colors(
+            colors = colors.toColor4fArray(),
+            positions = colorStops.toFloatArray(),
+            tileMode = FilterTileMode.CLAMP
+        ),
+        interpolation = Gradient.Interpolation(
+            inPremul = Gradient.Interpolation.InPremul.YES
+        )
+    ),
 ).asComposeShader()
 
 private val _tmpMatrix33 = Matrix33.makeTranslate(0f,0f)
@@ -150,12 +122,11 @@ internal fun Matrix.asSkia33(coerceScale : Boolean = false) : Matrix33 {
 private fun List<Color>.toIntArray(): IntArray =
     IntArray(size) { i -> this[i].toArgb() }
 
-// TODO: Migrate to new Gradient API introduced in skiko 0.146 (Compose 1.12)
-//private fun List<Color>.toColor4fArray(): Array<Color4f> =
-//    Array(size) { i ->
-//        val color = this[i]
-//        Color4f(color.red, color.green, color.blue, color.alpha)
-//    }
+private fun List<Color>.toColor4fArray(): Array<Color4f> =
+    Array(size) { i ->
+        val color = this[i]
+        Color4f(color.red, color.green, color.blue, color.alpha)
+    }
 
 internal fun TileMode.toSkiaTileMode(): FilterTileMode = when (this) {
     TileMode.Clamp -> FilterTileMode.CLAMP
