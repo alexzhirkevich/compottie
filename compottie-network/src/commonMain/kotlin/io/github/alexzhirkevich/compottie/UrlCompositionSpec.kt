@@ -1,4 +1,5 @@
 package io.github.alexzhirkevich.compottie
+import androidx.compose.runtime.Stable
 
 /**
  * [LottieComposition] from network [url]
