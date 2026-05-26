@@ -29,11 +29,11 @@ Compose Multiplatform library for rendering Lottie animations
 
 Compatibility table
 
-| Compose | Compottie |
-|:-------:|-----------|
-| 1.12    | TBD       |
-| 1.11    | [![Maven Central](https://img.shields.io/maven-central/v/io.github.alexzhirkevich/compottie)](https://central.sonatype.com/artifact/io.github.alexzhirkevich/compottie) |
-| 1.10    | [![Maven Central](https://img.shields.io/maven-central/v/io.github.alexzhirkevich/compottie/2.1.0)](https://central.sonatype.com/artifact/io.github.alexzhirkevich/compottie/2.1.0) |
+| Compose Multiplatform | Compottie |
+|:---------------------:|-----------|
+| 1.12                  | TBD       |
+| 1.11                  | [![Maven Central](https://img.shields.io/maven-central/v/io.github.alexzhirkevich/compottie)](https://central.sonatype.com/artifact/io.github.alexzhirkevich/compottie) |
+| 1.10                  | [![Maven Central](https://img.shields.io/maven-central/v/io.github.alexzhirkevich/compottie/2.1.0)](https://central.sonatype.com/artifact/io.github.alexzhirkevich/compottie/2.1.0) |
 
 Add as a Gradle dependency
 
