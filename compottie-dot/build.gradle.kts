@@ -15,6 +15,7 @@ kotlin {
             implementation(libs.serialization)
             implementation(libs.okio)
             implementation(libs.coroutines.core)
+            implementation(libs.compose.runtime)
         }
         webMain.dependencies {
             implementation(libs.kotlinx.browser)
