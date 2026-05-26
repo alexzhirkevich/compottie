@@ -2,6 +2,8 @@
 
 package io.github.alexzhirkevich.compottie
 
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.jvm.JvmName
@@ -16,6 +18,7 @@ import kotlin.jvm.JvmName
  * URL assets will be automatically prepared with [NetworkAssetsManager]
  * */
 @OptIn(InternalCompottieApi::class)
+@Stable
 public fun LottieCompositionSpec.Companion.Url(
     url : String,
     request: suspend (url: String) -> ByteArray,
@@ -28,6 +31,7 @@ public fun LottieCompositionSpec.Companion.Url(
     cacheStrategy = cacheStrategy,
 )
 
+@Immutable
 private class NetworkCompositionSpec(
     private val url : String,
     private val format: LottieAnimationFormat,

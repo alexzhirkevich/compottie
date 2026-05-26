@@ -25,6 +25,7 @@ import okio.Path.Companion.toPath
  * @param archive dotLottie or zip archive file
  * @param animationId animation id (if dotLottie contains multiple animations)
  * */
+@Stable
 public fun LottieCompositionSpec.Companion.DotLottie(
     archive: ByteArray,
     animationId: String? = null
@@ -51,6 +52,7 @@ private val DotLottieJson = Json {
     }
 }
 
+@Stable
 private class DotLottieCompositionSpec(
     private val archive : ByteArray,
     private val animationId : String?,
