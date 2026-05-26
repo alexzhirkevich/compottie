@@ -83,13 +83,14 @@ Image(
 )
 ```
 Or with the `rememberLottiePainter` overload that merges `rememberLottiePainter` and `animateLottieCompositionsState()`.
-`Resource` spec requires the `compottie-resources` dependency
+`Resource` spec requires the `compottie-resources` dependency. Unlike `Image` the `Lottie` composable additionally supports [state machines](https://github.com/alexzhirkevich/compottie#images).
+
 ```kotlin
 val composition by rememberLottieComposition(
     LottieCompositionSpec.Resource(Res.getUri("files/anim.json"))
 )
 
-Image(
+Lottie(
     painter = rememberLottiePainter(
         composition = composition,
         iterations = Compottie.IterateForever
