@@ -15,8 +15,10 @@ import org.jetbrains.compose.resources.ResourceReader
  *
  * ```kotlin
  * val composition by rememberLottieComposition(
- *      path = "files/anim.lottie",
- *      reader = Res::readBytes
+ *      LottieCompositionSpec.Resource(
+ *          path = "files/anim.lottie",
+ *          reader = Res::readBytes
+ *      )
  * )
  * ```
  * */
@@ -34,7 +36,9 @@ public fun LottieCompositionSpec.Companion.Resource(
  *
  * ```kotlin
  * val composition by rememberLottieComposition(
- *      Res.getUri("files/anim.lottie"),
+ *      LottieCompositionSpec.Resource(
+ *          Res.getUri("files/anim.lottie")
+ *      )
  * )
  * ```
  * */
