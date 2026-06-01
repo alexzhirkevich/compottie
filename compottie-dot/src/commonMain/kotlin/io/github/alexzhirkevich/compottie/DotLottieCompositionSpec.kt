@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie
 
+import androidx.compose.runtime.Stable
 import io.github.alexzhirkevich.compottie.dot.ColorRule
 import io.github.alexzhirkevich.compottie.dot.DotLottieManifest
 import io.github.alexzhirkevich.compottie.dot.GradientRule
@@ -18,7 +19,6 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 import okio.Path.Companion.toPath
-import androidx.compose.runtime.Stable
 
 /**
  * [LottieComposition] from a dotLottie zip archive.
@@ -166,6 +166,7 @@ private class DotLottieCompositionSpec(
 
 private val ZIP_MAGIC = byteArrayOf(0x50, 0x4b, 0x03, 0x04).toList()
 
+@Suppress("DEPRECATION")
 @InternalCompottieApi
 public tailrec suspend fun ByteArray.decodeToLottieComposition(
     format: LottieAnimationFormat = LottieAnimationFormat.Unknown
