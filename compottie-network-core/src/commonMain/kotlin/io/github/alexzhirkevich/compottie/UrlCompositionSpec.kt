@@ -17,6 +17,16 @@ import kotlin.jvm.JvmName
  *
  * URL assets will be automatically prepared with [NetworkAssetsManager]
  * */
+@Deprecated(
+    message = "Format argument is no longer required",
+    replaceWith = ReplaceWith(
+        "Url(url=url, request=request, cacheStrategy=cacheStrategy)",
+        "io.github.alexzhirkevich.compottie.Url",
+        "io.github.alexzhirkevich.compottie.LottieCompositionSpec",
+        "io.github.alexzhirkevich.compottie.DiskCacheStrategy",
+    )
+)
+@Suppress("DEPRECATION")
 @OptIn(InternalCompottieApi::class)
 @Stable
 public fun LottieCompositionSpec.Companion.Url(
@@ -24,9 +34,28 @@ public fun LottieCompositionSpec.Companion.Url(
     request: suspend (url: String) -> ByteArray,
     format: LottieAnimationFormat = LottieAnimationFormat.Unknown,
     cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
+) : LottieCompositionSpec = Url(
+    url = url,
+    request = request,
+    cacheStrategy = cacheStrategy,
+)
+
+/**
+ * [LottieComposition] from network [url]
+ *
+ * @param request network request used for loading animations
+ * @param cacheStrategy caching strategy. Caching to system temp dir by default
+ *
+ * URL assets will be automatically prepared with [NetworkAssetsManager]
+ * */
+@OptIn(InternalCompottieApi::class)
+@Stable
+public fun LottieCompositionSpec.Companion.Url(
+    url : String,
+    request: suspend (url: String) -> ByteArray,
+    cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
 ) : LottieCompositionSpec = NetworkCompositionSpec(
     url = url,
-    format = format,
     request = request,
     cacheStrategy = cacheStrategy,
 )
@@ -34,7 +63,6 @@ public fun LottieCompositionSpec.Companion.Url(
 @Immutable
 private class NetworkCompositionSpec(
     private val url : String,
-    private val format: LottieAnimationFormat,
     private val request : suspend (url: String) -> ByteArray,
     private val cacheStrategy: LottieCacheStrategy,
 ) : LottieCompositionSpec {
@@ -56,7 +84,7 @@ private class NetworkCompositionSpec(
         val (_, bytes) = networkLoad(request, cacheStrategy, url)
 
         return coroutineScope {
-            checkNotNull(bytes?.decodeToLottieComposition(format)) {
+            checkNotNull(bytes?.decodeToLottieComposition()) {
                 "Failed to load animation $url"
             }.apply {
                 launch {
@@ -76,7 +104,6 @@ private class NetworkCompositionSpec(
         other as NetworkCompositionSpec
 
         if (url != other.url) return false
-        if (format != other.format) return false
         if (request != other.request) return false
         if (cacheStrategy != other.cacheStrategy) return false
 
@@ -85,7 +112,6 @@ private class NetworkCompositionSpec(
 
     override fun hashCode(): Int {
         var result = url.hashCode()
-        result = 31 * result + format.hashCode()
         result = 31 * result + request.hashCode()
         result = 31 * result + cacheStrategy.hashCode()
         return result

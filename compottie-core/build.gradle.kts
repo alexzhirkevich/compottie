@@ -17,6 +17,8 @@ kotlin {
             implementation(libs.atomicfu)
             api(libs.keight.core)
             implementation(libs.androidx.collection)
+        }
+        skikoMain.dependencies {
             implementation(libs.skiko)
         }
         webMain.dependencies {

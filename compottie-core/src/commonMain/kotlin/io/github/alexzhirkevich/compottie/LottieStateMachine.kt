@@ -331,11 +331,7 @@ internal fun Modifier.stateMachine(
     if (stateMachine == null)
         return this
 
-    val painter by remember(painter) {
-        derivedStateOf {
-            painter.painter()
-        }
-    }
+    val painter by painter.painter
 
     val p by rememberUpdatedState(painter ?: return this)
 

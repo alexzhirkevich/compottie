@@ -368,6 +368,7 @@ public class LottieComposition internal constructor(
             it.themes = themes
             it.iterations = iterations
             it.speed = speed
+            it.stateMachines = stateMachines
         }
     }
 

@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -98,7 +99,7 @@ public fun rememberLottiePainter(
 
     val coroutineScope = rememberCoroutineScope()
 
-    val painter by produceState(
+    val painterState = produceState(
         remember {
             if (
                 composition != null &&
@@ -119,7 +120,7 @@ public fun rememberLottiePainter(
                     enableExpressions = enableExpressions,
                     applyOpacityToLayers = applyOpacityToLayers,
                     coroutineContext = coroutineScope.coroutineContext,
-                    assets = emptyList(),
+                    assets = composition.animation.assets,
                     fonts = emptyMap(),
                     expressionEngineFactory = expressionEngineFactory
                 )
@@ -127,7 +128,7 @@ public fun rememberLottiePainter(
         },
         composition,
         copy,
-        coroutineScope
+         enableExpressions
     ) {
 
         if (composition != null) {
@@ -188,6 +189,8 @@ public fun rememberLottiePainter(
         }
     }
 
+    val painter by painterState
+
     LaunchedEffect(
         painter,
         clipTextToBoundingBoxes,
@@ -216,22 +219,22 @@ public fun rememberLottiePainter(
         painter?.setDynamicProperties(dp)
     }
 
-    return remember {
-        LottiePainter { painter }
+    return remember(painterState) {
+        LottiePainter(painterState)
     }
 }
 
 internal expect fun mockFontFamilyResolver() : FontFamily.Resolver
 
 public class LottiePainter internal constructor(
-    internal val painter : () -> LottiePainterImpl?
+    internal val painter : State<LottiePainterImpl?>
 ) : Painter() {
 
     private var alpha by mutableStateOf(1f)
     private var colorFilter by mutableStateOf<ColorFilter?>(null)
 
     override val intrinsicSize: Size by derivedStateOf {
-        painter()?.intrinsicSize ?: Size(1f,1f)
+        painter.value?.intrinsicSize ?: Size(1f,1f)
     }
 
     override fun applyAlpha(alpha: Float): Boolean {
@@ -245,7 +248,8 @@ public class LottiePainter internal constructor(
     }
 
     override fun DrawScope.onDraw() {
-        painter()?.run {
+
+        painter.value?.run {
             draw(size, alpha, colorFilter)
         }
     }

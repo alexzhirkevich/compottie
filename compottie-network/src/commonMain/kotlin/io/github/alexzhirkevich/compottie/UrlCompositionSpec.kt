@@ -9,6 +9,16 @@ import androidx.compose.runtime.Stable
  *
  * URL assets will be automatically prepared with [NetworkAssetsManager]
  * */
+@Deprecated(
+    message = "Format argument is no longer required",
+    replaceWith = ReplaceWith(
+        "Url(url=url, cacheStrategy=cacheStrategy)",
+        "io.github.alexzhirkevich.compottie.Url",
+        "io.github.alexzhirkevich.compottie.LottieCompositionSpec",
+        "io.github.alexzhirkevich.compottie.DiskCacheStrategy",
+    )
+)
+@Suppress("DEPRECATION")
 @OptIn(InternalCompottieApi::class)
 @Stable
 public fun LottieCompositionSpec.Companion.Url(
@@ -17,9 +27,25 @@ public fun LottieCompositionSpec.Companion.Url(
     cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
 ) : LottieCompositionSpec = Url(
     url = url,
-    request = DefaultHttpRequest,
-    format = format,
     cacheStrategy = cacheStrategy,
+)
+
+/**
+ * [LottieComposition] from network [url]
+ *
+ * @param cacheStrategy caching strategy. Caching to system temp dir by default
+ *
+ * URL assets will be automatically prepared with [NetworkAssetsManager]
+ * */
+@OptIn(InternalCompottieApi::class)
+@Stable
+public fun LottieCompositionSpec.Companion.Url(
+    url : String,
+    cacheStrategy: LottieCacheStrategy = DiskCacheStrategy.Instance,
+) : LottieCompositionSpec = Url(
+    url = url,
+    request = DefaultHttpRequest,
+    cacheStrategy = cacheStrategy
 )
 
 
