@@ -31,7 +31,7 @@ Compatibility table
 
 | Compose Multiplatform | Compottie |
 |:---------------------:|-----------|
-| 1.12                  | TBD       |
+| 1.12                  | [![Maven Central](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fio%2Fgithub%2Falexzhirkevich%2Fcompottie%2Fmaven-metadata.xml&label=maven-snapshots&strategy=latestProperty)](https://central.sonatype.com/artifact/io.github.alexzhirkevich/compottie)  |
 | 1.11                  | [![Maven Central](https://img.shields.io/maven-central/v/io.github.alexzhirkevich/compottie)](https://central.sonatype.com/artifact/io.github.alexzhirkevich/compottie) |
 | 1.10                  | [![Maven Central](https://img.shields.io/maven-central/v/io.github.alexzhirkevich/compottie/2.1.0)](https://central.sonatype.com/artifact/io.github.alexzhirkevich/compottie/2.1.0) |
 

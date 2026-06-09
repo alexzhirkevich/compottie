@@ -13,6 +13,7 @@ dependencyResolutionManagement {
         mavenCentral()
         maven("https://redirector.kotlinlang.org/maven/compose-dev")
         maven("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental")
+        maven( "https://central.sonatype.com/repository/maven-snapshots")
 //        mavenLocal()
     }
 }
