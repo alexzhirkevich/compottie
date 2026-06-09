@@ -40,6 +40,7 @@ import io.github.alexzhirkevich.compottie.internal.utils.intersectOrReset
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.union
 import io.github.alexzhirkevich.keight.js.JsAny
+import kotlin.math.absoluteValue
 
 internal abstract class BaseLayer : Layer {
 
@@ -134,7 +135,7 @@ internal abstract class BaseLayer : Layer {
        return dynamicLayer?.hidden.derive(hidden, state) ||
                transform.opacity.interpolatedNorm(state) <= Float.MIN_VALUE ||
                Vec2(transform.scale.interpolatedNorm(state)).let {
-                   it.x <= Float.MIN_VALUE || it.y <= Float.MIN_VALUE
+                   it.x.absoluteValue <= Float.MIN_VALUE || it.y.absoluteValue <= Float.MIN_VALUE
                }
     }
 
