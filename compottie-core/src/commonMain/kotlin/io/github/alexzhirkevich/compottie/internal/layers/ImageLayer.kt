@@ -116,25 +116,21 @@ internal class ImageLayer(
 
         drawScope.drawIntoCanvas { canvas ->
             canvas.save()
-            try {
-                canvas.concat(parentMatrix)
+            canvas.concat(parentMatrix)
+            val dstSize = (state.assets[refId] as? ImageAsset)?.let {
+                IntSize(it.width, it.height)
+            } ?: IntSize(bitmap.width, bitmap.height)
 
-                val dstSize = (state.assets[refId] as? ImageAsset)?.let {
-                    IntSize(it.width, it.height)
-                } ?: IntSize(bitmap.width, bitmap.height)
-
-                if (bitmap.width == dstSize.width && bitmap.height == dstSize.height){
-                    canvas.drawImage(bitmap, Offset.Zero, paint)
-                } else {
-                    canvas.drawImageRect(
-                        image = bitmap,
-                        dstSize = dstSize,
-                        paint = paint
-                    )
-                }
-            } finally {
-                canvas.restore()
+            if (bitmap.width == dstSize.width && bitmap.height == dstSize.height) {
+                canvas.drawImage(bitmap, Offset.Zero, paint)
+            } else {
+                canvas.drawImageRect(
+                    image = bitmap,
+                    dstSize = dstSize,
+                    paint = paint
+                )
             }
+            canvas.restore()
         }
     }
 

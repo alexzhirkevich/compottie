@@ -80,23 +80,19 @@ internal class ContentGroupImpl(
 
         val canvas = drawScope.drawContext.canvas
         if (isRenderingWithOffScreen) {
-            offscreenRect.set(0f,0f,0f,0f)
+            offscreenRect.set(0f, 0f, 0f, 0f)
             getBounds(drawScope, matrix, true, state, offscreenRect)
             offscreenPaint.alpha = layerAlpha
             canvas.saveLayer(offscreenRect, offscreenPaint)
         }
-        try {
+        val childAlpha = if (isRenderingWithOffScreen) 1f else layerAlpha
 
-            val childAlpha = if (isRenderingWithOffScreen) 1f else layerAlpha
+        drawingContents.fastForEachReversed { content ->
+            content.draw(drawScope, matrix, childAlpha, state)
+        }
 
-            drawingContents.fastForEachReversed { content ->
-                content.draw(drawScope, matrix, childAlpha, state)
-            }
-
-        } finally {
-            if (isRenderingWithOffScreen) {
-                canvas.restore()
-            }
+        if (isRenderingWithOffScreen) {
+            canvas.restore()
         }
     }
 

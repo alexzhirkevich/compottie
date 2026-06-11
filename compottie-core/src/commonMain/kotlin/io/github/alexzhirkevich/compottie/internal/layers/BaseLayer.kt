@@ -200,12 +200,9 @@ internal abstract class BaseLayer : Layer {
 
                         matteLayer?.let {
                             canvas.saveLayer(rect, mattePaint, SAVE_FLAGS)
-                            try {
-                                clearCanvas(canvas)
-                                it.draw(drawScope, parentMatrix, parentAlpha, state)
-                            } finally {
-                                canvas.restore()
-                            }
+                            clearCanvas(canvas)
+                            it.draw(drawScope, parentMatrix, parentAlpha, state)
+                            canvas.restore()
                         }
                     }
                 }
@@ -340,51 +337,48 @@ internal abstract class BaseLayer : Layer {
 
     private fun applyMasks(canvas: Canvas, matrix: Matrix, state: AnimationState) {
         canvas.saveLayer(rect, dstInPaint, SAVE_FLAGS)
-        try {
-            clearCanvas(canvas)
-            masks?.fastForEachIndexed { i, mask ->
+        clearCanvas(canvas)
+        masks?.fastForEachIndexed { i, mask ->
 
-                when (mask.mode) {
-                    MaskMode.None ->
-                        // None mask should have no effect. If all masks are NONE, fill the
-                        // mask canvas with a rectangle so it fully covers the original layer content.
-                        // However, if there are other masks, they should be the only ones that have an effect so
-                        // this should noop.
-                        if (allMasksAreNone) {
-                            contentPaint.alpha = 1f
-                            canvas.drawRect(rect, contentPaint)
-                        }
-
-                    MaskMode.Subtract -> {
-                        if (i == 0) {
-                            contentPaint.color = Color.Black
-                            contentPaint.alpha = 1f
-                            canvas.drawRect(rect, contentPaint)
-                        }
-                        if (mask.isInverted) {
-                            applyInvertedSubtractMask(canvas, matrix, mask, state)
-                        } else {
-                            applySubtractMask(canvas, matrix, mask, state)
-                        }
+            when (mask.mode) {
+                MaskMode.None ->
+                    // None mask should have no effect. If all masks are NONE, fill the
+                    // mask canvas with a rectangle so it fully covers the original layer content.
+                    // However, if there are other masks, they should be the only ones that have an effect so
+                    // this should noop.
+                    if (allMasksAreNone) {
+                        contentPaint.alpha = 1f
+                        canvas.drawRect(rect, contentPaint)
                     }
 
-                    MaskMode.Intersect -> if (mask.isInverted) {
-                        applyInvertedIntersectMask(canvas, matrix, mask, state)
-                    } else {
-                        applyIntersectMask(canvas, matrix, mask, state)
+                MaskMode.Subtract -> {
+                    if (i == 0) {
+                        contentPaint.color = Color.Black
+                        contentPaint.alpha = 1f
+                        canvas.drawRect(rect, contentPaint)
                     }
-
-                    // MaskMode.Add
-                    else -> if (mask.isInverted) {
-                        applyInvertedAddMask(canvas, matrix, mask, state)
+                    if (mask.isInverted) {
+                        applyInvertedSubtractMask(canvas, matrix, mask, state)
                     } else {
-                        applyAddMask(canvas, matrix, mask, state)
+                        applySubtractMask(canvas, matrix, mask, state)
                     }
                 }
+
+                MaskMode.Intersect -> if (mask.isInverted) {
+                    applyInvertedIntersectMask(canvas, matrix, mask, state)
+                } else {
+                    applyIntersectMask(canvas, matrix, mask, state)
+                }
+
+                // MaskMode.Add
+                else -> if (mask.isInverted) {
+                    applyInvertedAddMask(canvas, matrix, mask, state)
+                } else {
+                    applyAddMask(canvas, matrix, mask, state)
+                }
             }
-        } finally {
-            canvas.restore()
         }
+        canvas.restore()
     }
 
     private fun applyInvertedAddMask(
