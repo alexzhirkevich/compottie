@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.unit.IntSize
 import io.github.alexzhirkevich.compottie.dynamic.DynamicImageLayerProvider
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
@@ -99,10 +100,9 @@ internal class ImageLayer(
 
         val image = dynamic?.image?.invoke(state, asset.spec) ?: return assetBitmap
 
-
-        require(image.width == asset.spec.width && image.height == asset.spec.height) {
-            "Dynamic image must be exactly same size as requested in spec!"
-        }
+//        require(image.width == asset.spec.width && image.height == asset.spec.height) {
+//            "Dynamic image must be exactly same size as requested in spec!"
+//        }
 
         return image
     }
@@ -118,7 +118,20 @@ internal class ImageLayer(
             canvas.save()
             try {
                 canvas.concat(parentMatrix)
-                canvas.drawImage(bitmap, Offset.Zero, paint)
+
+                val dstSize = (state.assets[refId] as? ImageAsset)?.let {
+                    IntSize(it.width, it.height)
+                } ?: IntSize(bitmap.width, bitmap.height)
+
+                if (bitmap.width == dstSize.width && bitmap.height == dstSize.height){
+                    canvas.drawImage(bitmap, Offset.Zero, paint)
+                } else {
+                    canvas.drawImageRect(
+                        image = bitmap,
+                        dstSize = dstSize,
+                        paint = paint
+                    )
+                }
             } finally {
                 canvas.restore()
             }
@@ -134,15 +147,20 @@ internal class ImageLayer(
     ) {
         super.getBounds(drawScope, parentMatrix, applyParents, state, outBounds)
 
-        bitmap(state)?.let {
-            outBounds.set(
-                left = 0f,
-                top = 0f,
-                right = it.width.toFloat(),
-                bottom = it.height.toFloat()
-            )
-            boundsMatrix.map(outBounds)
-        }
+        val bitmap = bitmap(state)
+            ?: return outBounds.set(0f,0f,0f,0f)
+
+        val size = (state.assets[refId] as? ImageAsset)?.let {
+            IntSize(it.width,it.height)
+        } ?: IntSize(bitmap.width,bitmap.height)
+
+        outBounds.set(
+            left = 0f,
+            top = 0f,
+            right = size.width.toFloat(),
+            bottom = size.height.toFloat()
+        )
+        boundsMatrix.map(outBounds)
     }
 
     override fun deepCopy(): Layer {
