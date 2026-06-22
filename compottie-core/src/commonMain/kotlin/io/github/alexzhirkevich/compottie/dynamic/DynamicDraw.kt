@@ -2,10 +2,10 @@ package io.github.alexzhirkevich.compottie.dynamic
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.internal.AnimationState
 
 public sealed interface DynamicDraw : DynamicShape {
@@ -46,11 +46,26 @@ public sealed interface LottieGradient {
         val colorStops : List<Pair<Float, Color>>,
         val start : Offset = Offset.Unspecified,
         val end: Offset = Offset.Unspecified,
-    ) : LottieGradient
+    ) : LottieGradient {
+        internal val colors = colorStops.fastMap { it.second }
+        internal val stops = colorStops.fastMap { it.first }
+    }
 
     public data class Radial(
         val colorStops : List<Pair<Float, Color>>,
         val center : Offset = Offset.Unspecified,
         val radius : Float = Float.NaN,
-    ) : LottieGradient
+    ) : LottieGradient {
+        internal val colors = colorStops.fastMap { it.second }
+        internal val stops = colorStops.fastMap { it.first }
+    }
+
+    public data class Conic(
+        val colorStops : List<Pair<Float, Color>>,
+        val center : Offset = Offset.Unspecified,
+        val angle : Float = 0f,
+    ) : LottieGradient {
+        internal val colors = colorStops.fastMap { it.second }
+        internal val stops = colorStops.fastMap { it.first }
+    }
 }

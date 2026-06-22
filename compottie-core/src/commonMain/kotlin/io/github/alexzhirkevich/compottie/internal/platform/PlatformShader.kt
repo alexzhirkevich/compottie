@@ -8,7 +8,6 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.LruMap
 import io.github.alexzhirkevich.compottie.dynamic.LottieGradient
 import io.github.alexzhirkevich.compottie.internal.AnimationState
@@ -45,8 +44,8 @@ internal fun GradientShader(
             CachedLinearGradient(
                 from = gradient.start,
                 to = gradient.end,
-                colors = gradient.colorStops.fastMap { it.second },
-                colorStops = gradient.colorStops.fastMap { it.first },
+                colors = gradient.colors,
+                colorStops = gradient.stops,
                 matrix = matrix,
                 cache = cache
             )
@@ -55,12 +54,21 @@ internal fun GradientShader(
             CachedRadialGradient(
                 center = gradient.center,
                 radius = gradient.radius,
-                colors = gradient.colorStops.fastMap { it.second },
-                colorStops = gradient.colorStops.fastMap { it.first },
+                colors = gradient.colors,
+                colorStops = gradient.stops,
                 matrix = matrix,
                 cache = cache
             )
         }
+
+        is LottieGradient.Conic -> CachedSweepGradient(
+            center = gradient.center,
+            angle = gradient.angle,
+            colors = gradient.colors,
+            colorStops = gradient.stops,
+            matrix = matrix,
+            cache = cache
+        )
     }
 }
 
