@@ -1,6 +1,3 @@
-@file:Suppress("DSL_SCOPE_VIOLATION")
-
-
 plugins {
     alias(libs.plugins.compose)
     alias(libs.plugins.composeCompiler)

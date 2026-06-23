@@ -43,15 +43,16 @@ private fun <T: Any> smooth(
     repeat (samples) { i ->
         val sampleValue = state.onTime(initTime + i * sampleFrequency, prop::raw)
 
-        when {
-            value is Number? && sampleValue is Number -> {
+        when (value) {
+            is Number? if sampleValue is Number -> {
                 value = if (value == null){
                     sampleValue
                 } else {
-                    (value as Number).toFloat() + sampleValue.toFloat()
+                    value.toFloat() + sampleValue.toFloat()
                 }
             }
-            value is List<*>? && sampleValue is List<*> -> {
+
+            is List<*>? if sampleValue is List<*> -> {
                 val v = value
 
                 if (v == null){

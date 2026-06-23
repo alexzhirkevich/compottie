@@ -37,7 +37,6 @@ import io.github.alexzhirkevich.compottie.internal.helpers.StrokeDash
 import io.github.alexzhirkevich.compottie.internal.helpers.applyTrimPath
 import io.github.alexzhirkevich.compottie.internal.platform.ExtendedPathMeasure
 import io.github.alexzhirkevich.compottie.internal.platform.GradientCache
-import io.github.alexzhirkevich.compottie.internal.platform.PathBuilder
 import io.github.alexzhirkevich.compottie.internal.platform.set
 import io.github.alexzhirkevich.compottie.internal.utils.IdentityMatrix
 import io.github.alexzhirkevich.compottie.internal.utils.appendPathEffect
@@ -86,7 +85,7 @@ internal value class LineJoin(val type : Byte) {
 }
 
 
-internal abstract class BaseStrokeShape() : Shape, DrawingContent {
+internal abstract class BaseStrokeShape : Shape, DrawingContent {
 
     abstract val opacity: AnimatedNumber
     abstract val strokeWidth: AnimatedNumber
@@ -226,7 +225,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
                 if (currentPathGroup == null) {
                     currentPathGroup = PathGroup(trimPathContentBefore)
                 }
-                currentPathGroup!!.paths.add(content)
+                currentPathGroup.paths.add(content)
             } else if (content is RoundShape){
                 roundShape = content
             }

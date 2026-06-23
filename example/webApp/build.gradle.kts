@@ -1,5 +1,3 @@
-@file:Suppress("DSL_SCOPE_VIOLATION")
-
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 
@@ -16,7 +14,6 @@ kotlin {
 
     js {
         browser()
-
         binaries.executable()
     }
 

@@ -1,7 +1,5 @@
-
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose)
     alias(libs.plugins.composeCompiler)
 }
@@ -31,11 +29,12 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
-    buildFeatures { compose = true }
+    buildFeatures {
+        compose = true
+    }
 }
 
 dependencies {
-
     implementation(project(":example:shared"))
     implementation(project(":compottie"))
     implementation(libs.androidx.core.ktx)

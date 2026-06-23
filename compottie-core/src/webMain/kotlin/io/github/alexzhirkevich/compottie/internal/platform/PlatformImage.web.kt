@@ -119,6 +119,7 @@ private suspend fun decodeImage(
     DecodeImageRequest(id, data, width, height)
 }
 
+@OptIn(ExperimentalWasmJsInterop::class)
 private fun DecodeImageRequest(
     id: String,
     buffer: ArrayBuffer,

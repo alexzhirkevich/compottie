@@ -6,9 +6,11 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.nativePaint
+import android.graphics.Matrix as AndroidMatrix
 
 // the same as  androidx.compose.ui.graphics.setFrom but without arbitraty check
-internal fun android.graphics.Matrix.setFromInternal(matrix: Matrix) {
+internal fun AndroidMatrix.setFromInternal(matrix: Matrix) {
 
     // We'll reuse the array used in Matrix to avoid allocation by temporarily
     // setting it to the 3x3 matrix used by android.graphics.Matrix
@@ -30,15 +32,15 @@ internal fun android.graphics.Matrix.setFromInternal(matrix: Matrix) {
 
     val v = matrix.values
 
-    v[android.graphics.Matrix.MSCALE_X] = scaleX
-    v[android.graphics.Matrix.MSKEW_X] = skewX
-    v[android.graphics.Matrix.MTRANS_X] = translateX
-    v[android.graphics.Matrix.MSKEW_Y] = skewY
-    v[android.graphics.Matrix.MSCALE_Y] = scaleY
-    v[android.graphics.Matrix.MTRANS_Y] = translateY
-    v[android.graphics.Matrix.MPERSP_0] = persp0
-    v[android.graphics.Matrix.MPERSP_1] = persp1
-    v[android.graphics.Matrix.MPERSP_2] = persp2
+    v[AndroidMatrix.MSCALE_X] = scaleX
+    v[AndroidMatrix.MSKEW_X] = skewX
+    v[AndroidMatrix.MTRANS_X] = translateX
+    v[AndroidMatrix.MSKEW_Y] = skewY
+    v[AndroidMatrix.MSCALE_Y] = scaleY
+    v[AndroidMatrix.MTRANS_Y] = translateY
+    v[AndroidMatrix.MPERSP_0] = persp0
+    v[AndroidMatrix.MPERSP_1] = persp1
+    v[AndroidMatrix.MPERSP_2] = persp2
 
     setValues(v)
 
@@ -57,12 +59,13 @@ internal fun android.graphics.Matrix.setFromInternal(matrix: Matrix) {
 internal actual fun Canvas.saveLayer(rect : MutableRect, paint : Paint, flag : Int)  {
     try {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            @Suppress("DEPRECATION")
             nativeCanvas.saveLayer(
                 /* left = */ rect.left,
                 /* top = */ rect.top,
                 /* right = */ rect.right,
                 /* bottom = */ rect.bottom,
-                /* paint = */ paint.asFrameworkPaint(),
+                /* paint = */ paint.nativePaint,
                 /* saveFlags = */ flag
             )
         } else {
@@ -71,10 +74,9 @@ internal actual fun Canvas.saveLayer(rect : MutableRect, paint : Paint, flag : I
                 /* top = */rect.top,
                 /* right = */rect.right,
                 /* bottom = */rect.bottom,
-                /* paint = */paint.asFrameworkPaint()
+                /* paint = */paint.nativePaint
             )
         }
-    } catch (t : ClassCastException){
-
+    } catch (_ : ClassCastException){
     }
 }

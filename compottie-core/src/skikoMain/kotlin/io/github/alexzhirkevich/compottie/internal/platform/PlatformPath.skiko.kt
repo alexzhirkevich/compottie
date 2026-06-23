@@ -21,7 +21,7 @@ private class SkikoExtendedPathMeasure(
     }
 }
 
-private class SkikoPathBuilder() : PathBuilder {
+private class SkikoPathBuilder : PathBuilder {
 
     private val skikoPathBuilder = SkPathBuilder()
 

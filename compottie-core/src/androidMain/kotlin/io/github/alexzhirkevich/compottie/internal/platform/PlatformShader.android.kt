@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.RadialGradientShader
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.SweepGradientShader
 import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.nativePaint
 
 
 private val tempMatrix = android.graphics.Matrix()
@@ -66,7 +67,7 @@ internal actual fun MakeSweepGradient(
 }
 
 internal actual fun Paint.setBlurMaskFilter(radius: Float, isImage : Boolean) {
-    val fPaint = asFrameworkPaint()
+    val fPaint = nativePaint
 
     if (radius > 0f) {
         fPaint.setMaskFilter(BlurMaskFilter(radius * BlurSigmaScale, BlurMaskFilter.Blur.NORMAL))

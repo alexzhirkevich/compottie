@@ -2,6 +2,7 @@ package io.github.alexzhirkevich.compottie.internal.platform.effects
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.nativePaint
 import androidx.compose.ui.graphics.toArgb
 import io.github.alexzhirkevich.compottie.internal.platform.BlurSigmaScale
 
@@ -24,5 +25,5 @@ internal actual fun makeNativeDropShadowEffect(
 internal actual fun Paint.applyNativeDropShadowEffect(
     effect: PlatformDropShadowEffect,
 ) {
-    asFrameworkPaint().setShadowLayer(effect.radius, effect.x, effect.y, effect.color.toArgb())
+    nativePaint.setShadowLayer(effect.radius, effect.x, effect.y, effect.color.toArgb())
 }

@@ -3,7 +3,6 @@ package io.github.alexzhirkevich.compottie.internal
 import io.github.alexzhirkevich.compottie.InternalCompottieApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.khronos.webgl.ArrayBuffer
-import org.khronos.webgl.Int8Array
 import org.khronos.webgl.toInt8Array
 import org.w3c.dom.MessageEvent
 import org.w3c.dom.Worker
@@ -74,6 +73,7 @@ private fun blob(code: String): Blob =
     js("new Blob([code], { type: 'application/javascript' })")
 
 
+@OptIn(ExperimentalWasmJsInterop::class)
 @InternalCompottieApi
 public external interface WebWorkerResponse : JsAny {
     public val id: String
@@ -81,6 +81,7 @@ public external interface WebWorkerResponse : JsAny {
     public val buffer: ArrayBuffer
 }
 
+@OptIn(ExperimentalWasmJsInterop::class)
 private external interface WebWorkerError : JsAny {
     val id: String
     val message: String

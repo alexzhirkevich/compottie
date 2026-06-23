@@ -41,9 +41,8 @@ internal suspend fun deflate(bytes: ByteArray): ArrayBuffer =
         DecompressionRequest(id, data)
     }
 
+@OptIn(ExperimentalWasmJsInterop::class)
 private fun DecompressionRequest(
     id: String,
     bytes: ArrayBuffer,
 ): JsAny = js("({ id: id, bytes: bytes })")
-
-

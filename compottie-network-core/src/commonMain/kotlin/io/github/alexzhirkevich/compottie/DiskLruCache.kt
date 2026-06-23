@@ -18,6 +18,7 @@ import okio.Path
 import okio.Sink
 import okio.blackholeSink
 import okio.buffer
+import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -127,7 +128,7 @@ internal class DiskLruCache(
     private val cleanupScope = CoroutineScope(
         cleanupContext +
                 SupervisorJob() +
-                (cleanupContext[CoroutineDispatcher] ?: Compottie.ioDispatcher())
+                (cleanupContext[ContinuationInterceptor] as? CoroutineDispatcher ?: Compottie.ioDispatcher())
                     .limitedParallelism(1)
     )
     private val lock = SynchronizedObject()
@@ -207,8 +208,10 @@ internal class DiskLruCache(
                 valueCount.toString() != valueCountString ||
                 blank.isNotEmpty()
             ) {
-                throw IOException("unexpected journal header: " +
-                        "[$magic, $version, $appVersionString, $valueCountString, $blank]")
+                throw IOException(
+                    "unexpected journal header: " +
+                            "[$magic, $version, $appVersionString, $valueCountString, $blank]"
+                )
             }
 
             var lineCount = 0
@@ -265,12 +268,15 @@ internal class DiskLruCache(
                 entry.currentEditor = null
                 entry.setLengths(parts)
             }
+
             secondSpace == -1 && firstSpace == DIRTY.length && line.startsWith(DIRTY) -> {
                 entry.currentEditor = Editor(entry)
             }
+
             secondSpace == -1 && firstSpace == READ.length && line.startsWith(READ) -> {
                 // This work was already done by calling lruEntries.get().
             }
+
             else -> throw IOException("unexpected journal line: $line")
         }
     }
@@ -428,7 +434,7 @@ internal class DiskLruCache(
     }
 
     @OptIn(InternalCompottieApi::class)
-    private fun completeEdit(editor: Editor, success: Boolean) = synchronized(lock) {
+    private fun completeEdit(editor: Editor, success: Boolean): Unit = synchronized(lock) {
         val entry = editor.entry
         check(entry.currentEditor == editor)
 
@@ -563,7 +569,7 @@ internal class DiskLruCache(
     }
 
     /** Closes this cache. Stored values will remain on the filesystem. */
-    override fun close() = synchronized(lock) {
+    override fun close(): Unit = synchronized(lock) {
         if (!initialized || closed) {
             closed = true
             return
@@ -582,7 +588,7 @@ internal class DiskLruCache(
         closed = true
     }
 
-    fun flush() = synchronized(lock) {
+    fun flush(): Unit = synchronized(lock) {
         if (!initialized) return
 
         checkNotClosed()

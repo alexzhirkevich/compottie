@@ -7,13 +7,10 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.serialization)
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.android.library)
+    alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.compose)
     alias(libs.plugins.composeCompiler)
 }
-
-val _jvmTarget = findProperty("jvmTarget") as String
-
 
 kotlin {
 
@@ -39,11 +36,15 @@ kotlin {
         }
     }
 
-    androidTarget {
+    android {
+        //noinspection WrongGradleMethod
+        namespace = "$group.${name.filter { it.isLetter() }}"
+        compileSdk = (findProperty("android.compileSdk") as String).toInt()
+        minSdk = (findProperty("android.minSdk") as String).toInt()
+        androidResources.enable = true
         compilerOptions {
-            jvmTarget.set(JvmTarget.fromTarget(_jvmTarget))
+            jvmTarget = JvmTarget.fromTarget(findProperty("jvmTarget") as String)
         }
-        publishLibraryVariants("release")
     }
 
     listOf(
@@ -57,9 +58,7 @@ kotlin {
     macosArm64()
     jvm()
 
-    js(IR) {
-        browser()
-    }
+    js { browser() }
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
@@ -106,7 +105,6 @@ kotlin {
         jvmMain.dependencies {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.coroutines.swing)
-
         }
         jsMain.dependencies {
             implementation(libs.ktor.client.js)
@@ -114,26 +112,5 @@ kotlin {
         wasmJsMain.dependencies {
             implementation(libs.ktor.client.js)
         }
-    }
-}
-
-android {
-    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-    sourceSets["main"].res.srcDirs("src/androidMain/res")
-    sourceSets["main"].resources.srcDirs("src/commonMain/resources")
-}
-
-val jvmTarget = findProperty("jvmTarget") as String
-
-android {
-    namespace = "$group.${name.filter { it.isLetter() }}"
-    compileSdk = (findProperty("android.compileSdk") as String).toInt()
-
-    defaultConfig {
-        minSdk = (findProperty("android.minSdk") as String).toInt()
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.toVersion(jvmTarget)
-        targetCompatibility = JavaVersion.toVersion(jvmTarget)
     }
 }

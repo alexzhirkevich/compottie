@@ -12,7 +12,7 @@ import kotlin.random.nextULong
 public  class UnsupportedFileSystemException : CompottieException("File system is not unsupported")
 
 @InternalCompottieApi
-public  expect fun defaultFileSystem() : FileSystem
+public expect fun defaultFileSystem() : FileSystem
 
 @InternalCompottieApi
 public fun Closeable.closeQuietly() {

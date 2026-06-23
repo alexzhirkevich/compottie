@@ -299,6 +299,15 @@ internal class EmptyDrawScope(
     ) {
     }
 
+    @Deprecated(
+        "Prefer usage of drawImage that consumes an optional FilterQuality parameter",
+        replaceWith = ReplaceWith(
+            "drawImage(image, srcOffset, srcSize, dstOffset, dstSize, alpha, style, colorFilter, blendMode, FilterQuality.Low)",
+            "androidx.compose.ui.graphics.drawscope",
+            "androidx.compose.ui.graphics.FilterQuality"
+        ),
+        level = DeprecationLevel.HIDDEN
+    )
     override fun drawImage(
         image: ImageBitmap,
         srcOffset: IntOffset,

@@ -50,17 +50,17 @@ internal fun JSRgbToHsl() = JSFunction(FunctionParam("rgb")) {
     val b = color[2].toFloat()
     val a = color[3].toFloat()
 
-    val max = maxOf(r, g, b);
-    val min = minOf(r, g, b);
+    val max = maxOf(r, g, b)
+    val min = minOf(r, g, b)
     var h: Float
     val s: Float
-    val l = (max + min) / 2;
+    val l = (max + min) / 2
 
     if (max == min) {
-        h = 0f; // achromatic
-        s = 0f; // achromatic
+        h = 0f // achromatic
+        s = 0f // achromatic
     } else {
-        val d = max - min;
+        val d = max - min
         s = if (l > 0.5) d / (2 - max - min) else d / (max + min)
         h = when (max) {
             r -> (g - b) / d + (if (g < b) 6 else 0)

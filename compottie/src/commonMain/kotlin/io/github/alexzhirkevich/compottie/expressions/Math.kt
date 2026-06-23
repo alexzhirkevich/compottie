@@ -46,12 +46,13 @@ internal fun JsLength() = Callable {
     val a = it[0]
     val b = it.getOrNull(1)
 
-    return@Callable when {
-        a is List<*> && b == null -> {
+    return@Callable when (a) {
+        is List<*> if b == null -> {
             a as List<JsAny>
             hypot((toNumber(a[0])).toFloat(), toNumber(a[1]).toFloat()).js
         }
-        a is List<*> && b is List<*> -> {
+
+        is List<*> if b is List<*> -> {
             a as List<JsAny>
             b as List<JsAny>
             hypot(
@@ -59,6 +60,7 @@ internal fun JsLength() = Callable {
                 toNumber(b[1]).toFloat() - toNumber(a[1]).toFloat()
             ).js
         }
+
         else -> error("Invalid arguments for length()")
     }
 }
