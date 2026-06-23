@@ -28,7 +28,6 @@ import io.github.alexzhirkevich.compottie.internal.helpers.GradientType
 import io.github.alexzhirkevich.compottie.internal.helpers.asPathFillType
 import io.github.alexzhirkevich.compottie.internal.platform.GradientCache
 import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
-import io.github.alexzhirkevich.compottie.internal.platform.PathBuilder
 import io.github.alexzhirkevich.compottie.internal.utils.IdentityMatrix
 import io.github.alexzhirkevich.compottie.internal.utils.extendBy
 import io.github.alexzhirkevich.compottie.internal.utils.firstInstanceOf
@@ -62,11 +61,11 @@ internal class GradientFillShape(
     @SerialName("t")
     val gradientType : GradientType,
 
-//    @SerialName("h")
-//    val highlightLength : AnimatedNumber? = null,
-//
-//    @SerialName("a")
-//    val highlightAngle : AnimatedNumber? = null,
+    @SerialName("h")
+    val highlightLength : AnimatedNumber? = null,
+
+    @SerialName("a")
+    val highlightAngle : AnimatedNumber? = null,
 
     @SerialName("g")
     val colors : GradientColors,
@@ -87,7 +86,7 @@ internal class GradientFillShape(
     @Transient
     private var pathContents: List<PathContent> = emptyList()
 
-    private val paint= Paint().apply {
+    private val paint = Paint().apply {
         isAntiAlias = true
     }
 
@@ -121,6 +120,8 @@ internal class GradientFillShape(
                 startPoint = startPoint,
                 endPoint = endPoint,
                 colors = colors,
+                highlightingAngle = highlightAngle,
+                highlightingLength = highlightLength,
                 state = state,
                 matrix = parentMatrix,
                 cache = gradientCache

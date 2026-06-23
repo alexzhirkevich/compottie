@@ -9,6 +9,9 @@ import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.asComposeShader
 import androidx.compose.ui.graphics.skiaPaint
 import androidx.compose.ui.graphics.toArgb
+import io.github.alexzhirkevich.compottie.internal.utils.degreeToRadians
+import io.github.alexzhirkevich.compottie.internal.utils.preConcat
+import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import org.jetbrains.skia.FilterBlurMode
 import org.jetbrains.skia.FilterTileMode
 import org.jetbrains.skia.GradientStyle
@@ -16,6 +19,9 @@ import org.jetbrains.skia.ImageFilter
 import org.jetbrains.skia.MaskFilter
 import org.jetbrains.skia.Matrix33
 import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 import org.jetbrains.skia.Shader as SkShader
 
 internal actual fun MakeLinearGradient(
@@ -53,9 +59,13 @@ internal actual fun MakeLinearGradient(
     }
 }
 
+private val tmpMatrix = Matrix()
+
 internal actual fun MakeRadialGradient(
     center : Offset,
     radius : Float,
+    highlightingAngle : Float,
+    highlightingLength : Float,
     colors : List<Color>,
     colorStops: List<Float>,
     tileMode: TileMode,
@@ -69,7 +79,22 @@ internal actual fun MakeRadialGradient(
     style = GradientStyle(
         tileMode = tileMode.toSkiaTileMode(),
         isPremul = true,
-        localMatrix = matrix.asSkia33(coerceScale = true)
+        localMatrix = if (highlightingLength == 0f) {
+            matrix.asSkia33(coerceScale = true)
+        } else {
+            val angle = degreeToRadians(highlightingAngle)
+            val focalOffsetX = highlightingLength * sin(angle)
+            val focalOffsetY = highlightingLength * cos(angle)
+
+            tmpMatrix.resetToPivotedTransform(
+                pivotX = center.x,
+                pivotY = center.y,
+                translationX = focalOffsetX,
+                translationY = focalOffsetY,
+            )
+            tmpMatrix.timesAssign(matrix)
+            tmpMatrix.asSkia33(coerceScale = true)
+        }
     )
     // TODO: Migrate to new Gradient API introduced in skiko 0.146 (Compose 1.12)
     // radius = radius,
@@ -100,7 +125,15 @@ internal actual fun MakeSweepGradient(
     style = GradientStyle(
         tileMode = TileMode.Clamp.toSkiaTileMode(),
         isPremul = true,
-        localMatrix = matrix.asSkia33(coerceScale = true)
+        localMatrix = matrix
+            .asSkia33(coerceScale = true)
+            .let {
+                if (angle == 0f) {
+                    it
+                } else {
+                    Matrix33.makeRotate(angle, center.x, center.y)
+                }
+            }
     )
     // TODO: Migrate to new Gradient API introduced in skiko 0.146 (Compose 1.12)
     // radius = radius,
