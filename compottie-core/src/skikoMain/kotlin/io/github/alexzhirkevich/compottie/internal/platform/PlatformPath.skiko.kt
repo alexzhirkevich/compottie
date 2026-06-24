@@ -36,7 +36,6 @@ private class SkikoPathBuilder() : PathBuilder {
     @OptIn(InternalComposeUiApi::class)
     override fun setTo(path: Path) {
         val snapshot = skikoPathBuilder.snapshot()
-        path.reset()
         path.materializeSkiaPath().swap(snapshot)
         snapshot.close()
         skikoPathBuilder.reset()

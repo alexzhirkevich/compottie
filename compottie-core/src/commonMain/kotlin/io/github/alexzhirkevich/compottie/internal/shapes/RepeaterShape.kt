@@ -57,6 +57,9 @@ internal class RepeaterShape(
     private val path = Path()
 
     @Transient
+    private val pathBuilder = PathBuilder()
+
+    @Transient
     private val matrix = Matrix()
 
     @Transient
@@ -102,9 +105,9 @@ internal class RepeaterShape(
 
         for (i in copies.toInt() - 1 downTo 0) {
             matrix.fastSetFrom(transform.repeaterMatrix(state, i + offset))
-            state.pathBuilder.addPath(contentPath, matrix)
+            pathBuilder.addPath(contentPath, matrix)
         }
-        state.pathBuilder.setTo(path)
+        pathBuilder.setTo(path)
         return path
     }
 

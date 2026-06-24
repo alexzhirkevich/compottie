@@ -67,7 +67,7 @@ public class ImageAsset(
                 ?.trim()
                 ?.let {
                     runCatching {
-                        setBitmap(ImageBitmap.fromBytes(Base64.decode(it), width, height))
+                        setBitmap(ImageBitmap.fromBytes(Base64.decode(it)))
                     }
                 }
         }

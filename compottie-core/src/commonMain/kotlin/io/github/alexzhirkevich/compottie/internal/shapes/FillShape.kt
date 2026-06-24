@@ -65,6 +65,9 @@ internal class FillShape(
     private val path = Path()
 
     @Transient
+    private val pathBuilder = PathBuilder()
+
+    @Transient
     private val fillType = fillRule?.asPathFillType() ?: path.fillType
 
     @Transient
@@ -130,9 +133,9 @@ internal class FillShape(
         path.fillType = fillType
 
         paths.fastForEach {
-            state.pathBuilder.addPath(it.getPath(state), parentMatrix)
+            pathBuilder.addPath(it.getPath(state), parentMatrix)
         }
-        state.pathBuilder.setTo(path)
+        pathBuilder.setTo(path)
 
         drawScope.drawContext.canvas.drawPath(path, paint)
     }
@@ -146,9 +149,9 @@ internal class FillShape(
 
         path.rewind()
         paths.fastForEach {
-            state.pathBuilder.addPath(it.getPath(state), parentMatrix)
+            pathBuilder.addPath(it.getPath(state), parentMatrix)
         }
-        state.pathBuilder.setTo(path)
+        pathBuilder.setTo(path)
 
         outBounds.set(path.getBounds())
         outBounds.extendBy(1f)

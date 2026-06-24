@@ -10,6 +10,9 @@ import androidx.compose.ui.graphics.asComposeShader
 import androidx.compose.ui.graphics.skiaPaint
 import androidx.compose.ui.graphics.toArgb
 import org.jetbrains.skia.Color4f
+import io.github.alexzhirkevich.compottie.internal.utils.degreeToRadians
+import io.github.alexzhirkevich.compottie.internal.utils.preConcat
+import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import org.jetbrains.skia.FilterBlurMode
 import org.jetbrains.skia.FilterTileMode
 import org.jetbrains.skia.Gradient
@@ -17,6 +20,9 @@ import org.jetbrains.skia.ImageFilter
 import org.jetbrains.skia.MaskFilter
 import org.jetbrains.skia.Matrix33
 import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 import org.jetbrains.skia.Shader as SkShader
 
 internal actual fun MakeLinearGradient(
@@ -44,9 +50,13 @@ internal actual fun MakeLinearGradient(
     localMatrix = matrix.asSkia33(coerceScale = true)
 ).asComposeShader()
 
+private val tmpMatrix = Matrix()
+
 internal actual fun MakeRadialGradient(
     center : Offset,
     radius : Float,
+    highlightingAngle : Float,
+    highlightingLength : Float,
     colors : List<Color>,
     colorStops: List<Float>,
     tileMode: TileMode,
@@ -65,7 +75,22 @@ internal actual fun MakeRadialGradient(
             inPremul = Gradient.Interpolation.InPremul.YES
         )
     ),
-    localMatrix = matrix.asSkia33(coerceScale = true)
+    localMatrix = if (highlightingLength == 0f) {
+        matrix.asSkia33(coerceScale = true)
+    } else {
+        val angle = degreeToRadians(highlightingAngle)
+        val focalOffsetX = highlightingLength * sin(angle)
+        val focalOffsetY = highlightingLength * cos(angle)
+
+        tmpMatrix.resetToPivotedTransform(
+            pivotX = center.x,
+            pivotY = center.y,
+            translationX = focalOffsetX,
+            translationY = focalOffsetY,
+        )
+        tmpMatrix.timesAssign(matrix)
+        tmpMatrix.asSkia33(coerceScale = true)
+    }
 ).asComposeShader()
 
 internal actual fun MakeSweepGradient(
@@ -87,6 +112,15 @@ internal actual fun MakeSweepGradient(
             inPremul = Gradient.Interpolation.InPremul.YES
         )
     ),
+    localMatrix = matrix
+        .asSkia33(coerceScale = true)
+        .let {
+            if (angle == 0f) {
+                it
+            } else {
+                Matrix33.makeRotate(angle, center.x, center.y)
+            }
+        }
 ).asComposeShader()
 
 private val _tmpMatrix33 = Matrix33.makeTranslate(0f,0f)

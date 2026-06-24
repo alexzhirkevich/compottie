@@ -6,34 +6,39 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
-import io.github.alexzhirkevich.compottie.internal.assets.resize
 import io.github.alexzhirkevich.compottie.internal.platform.fromBytes
 import kotlin.jvm.JvmInline
 import androidx.compose.ui.graphics.painter.Painter as ComposePainter
 
 public interface ImageRepresentable {
 
+    /**
+    * Create a bitmap with the preferred (but not required) [width] and [height]
+    * */
     public suspend fun toBitmap(width: Int, height: Int): ImageBitmap
 
     @JvmInline
     public value class Bytes(private val bytes: ByteArray) : ImageRepresentable {
 
         override suspend fun toBitmap(width: Int, height: Int): ImageBitmap {
-            return ImageBitmap.fromBytes(bytes, width, height)
+            return ImageBitmap.fromBytes(bytes)
         }
     }
 
-    @JvmInline
-    public value class Painter(private val painter: ComposePainter) : ImageRepresentable {
+    public class Painter(
+        private val painter: ComposePainter,
+        private val width : Int? = null,
+        private val height : Int? = null,
+    ) : ImageRepresentable {
         override suspend fun toBitmap(width: Int, height: Int): ImageBitmap {
-            return painter.toBitmap(width, height)
+            return painter.toBitmap(this.width ?: width, this.height ?: height)
         }
     }
 
     @JvmInline
     public value class Bitmap(private val bitmap: ImageBitmap) : ImageRepresentable {
         override suspend fun toBitmap(width: Int, height: Int): ImageBitmap {
-            return bitmap.resize(width, height)
+            return bitmap
         }
     }
 }

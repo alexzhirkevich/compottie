@@ -62,11 +62,11 @@ internal class GradientFillShape(
     @SerialName("t")
     val gradientType : GradientType,
 
-//    @SerialName("h")
-//    val highlightLength : AnimatedNumber? = null,
-//
-//    @SerialName("a")
-//    val highlightAngle : AnimatedNumber? = null,
+    @SerialName("h")
+    val highlightLength : AnimatedNumber? = null,
+
+    @SerialName("a")
+    val highlightAngle : AnimatedNumber? = null,
 
     @SerialName("g")
     val colors : GradientColors,
@@ -79,6 +79,9 @@ internal class GradientFillShape(
     private val path = Path()
 
     @Transient
+    private val pathBuilder = PathBuilder()
+
+    @Transient
     private val fillType =  fillRule?.asPathFillType() ?: path.fillType
 
     @Transient
@@ -87,7 +90,7 @@ internal class GradientFillShape(
     @Transient
     private var pathContents: List<PathContent> = emptyList()
 
-    private val paint= Paint().apply {
+    private val paint = Paint().apply {
         isAntiAlias = true
     }
 
@@ -121,6 +124,8 @@ internal class GradientFillShape(
                 startPoint = startPoint,
                 endPoint = endPoint,
                 colors = colors,
+                highlightingAngle = highlightAngle,
+                highlightingLength = highlightLength,
                 state = state,
                 matrix = parentMatrix,
                 cache = gradientCache
@@ -144,9 +149,9 @@ internal class GradientFillShape(
         path.fillType = fillType
 
         pathContents.fastForEach {
-            state.pathBuilder.addPath(it.getPath(state), parentMatrix)
+            pathBuilder.addPath(it.getPath(state), parentMatrix)
         }
-        state.pathBuilder.setTo(path)
+        pathBuilder.setTo(path)
 
         roundShape?.applyTo(paint, state)
 
@@ -162,9 +167,9 @@ internal class GradientFillShape(
     ) {
         path.rewind()
         pathContents.fastForEach {
-            state.pathBuilder.addPath(it.getPath(state), parentMatrix)
+            pathBuilder.addPath(it.getPath(state), parentMatrix)
         }
-        state.pathBuilder.setTo(path)
+        pathBuilder.setTo(path)
         outBounds.set(path.getBounds())
         outBounds.extendBy(1f)
     }

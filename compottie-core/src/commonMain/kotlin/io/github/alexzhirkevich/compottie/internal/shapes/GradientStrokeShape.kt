@@ -1,5 +1,6 @@
 package io.github.alexzhirkevich.compottie.internal.shapes
 
+import androidx.compose.ui.geometry.MutableRect
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import io.github.alexzhirkevich.compottie.internal.AnimationState
@@ -13,6 +14,7 @@ import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
 import io.github.alexzhirkevich.compottie.internal.utils.IdentityMatrix
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 @SerialName("gs")
@@ -72,6 +74,8 @@ internal class GradientStrokeShape(
                 startPoint = startPoint,
                 endPoint = endPoint,
                 colors = colors,
+                highlightingAngle = highlightAngle,
+                highlightingLength = highlightLength,
                 state = state,
                 matrix = IdentityMatrix,
                 cache = gradientCache
