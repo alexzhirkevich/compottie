@@ -28,6 +28,7 @@ import io.github.alexzhirkevich.compottie.internal.helpers.GradientType
 import io.github.alexzhirkevich.compottie.internal.helpers.asPathFillType
 import io.github.alexzhirkevich.compottie.internal.platform.GradientCache
 import io.github.alexzhirkevich.compottie.internal.platform.GradientShader
+import io.github.alexzhirkevich.compottie.internal.platform.PathBuilder
 import io.github.alexzhirkevich.compottie.internal.utils.IdentityMatrix
 import io.github.alexzhirkevich.compottie.internal.utils.extendBy
 import io.github.alexzhirkevich.compottie.internal.utils.firstInstanceOf
@@ -76,6 +77,9 @@ internal class GradientFillShape(
 
     @Transient
     private val path = Path()
+
+    @Transient
+    private val pathBuilder = PathBuilder()
 
     @Transient
     private val fillType =  fillRule?.asPathFillType() ?: path.fillType
@@ -145,9 +149,9 @@ internal class GradientFillShape(
         path.fillType = fillType
 
         pathContents.fastForEach {
-            state.pathBuilder.addPath(it.getPath(state), parentMatrix)
+            pathBuilder.addPath(it.getPath(state), parentMatrix)
         }
-        state.pathBuilder.setTo(path)
+        pathBuilder.setTo(path)
 
         roundShape?.applyTo(paint, state)
 
@@ -163,9 +167,9 @@ internal class GradientFillShape(
     ) {
         path.rewind()
         pathContents.fastForEach {
-            state.pathBuilder.addPath(it.getPath(state), parentMatrix)
+            pathBuilder.addPath(it.getPath(state), parentMatrix)
         }
-        state.pathBuilder.setTo(path)
+        pathBuilder.setTo(path)
         outBounds.set(path.getBounds())
         outBounds.extendBy(1f)
     }
