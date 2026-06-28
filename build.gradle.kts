@@ -117,6 +117,7 @@ fun Project.multiplatformSetup() {
             (this as ExtensionAware).extensions.configure<KotlinMultiplatformAndroidLibraryTarget>("android") {
                 namespace = group.toString() + path.replace("-", "").split(":").joinToString(".")
                 compileSdk = (findProperty("android.compileSdk") as String).toInt()
+                buildToolsVersion = findProperty("android.buildToolsVersion") as String
                 minSdk = (findProperty("android.minSdk") as String).toInt()
                 compilerOptions {
                     jvmTarget = JvmTarget.fromTarget(_jvmTarget)

@@ -40,6 +40,7 @@ kotlin {
         //noinspection WrongGradleMethod
         namespace = "$group.${name.filter { it.isLetter() }}"
         compileSdk = (findProperty("android.compileSdk") as String).toInt()
+        buildToolsVersion = findProperty("android.buildToolsVersion") as String
         minSdk = (findProperty("android.minSdk") as String).toInt()
         androidResources.enable = true
         compilerOptions {

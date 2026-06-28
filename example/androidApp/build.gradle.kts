@@ -12,6 +12,7 @@ kotlin {
 android {
     namespace = "io.github.alexzhirkevich.compottie.example.android"
     compileSdk = (findProperty("android.compileSdk") as String).toInt()
+    buildToolsVersion = findProperty("android.buildToolsVersion") as String
 
     defaultConfig {
         applicationId = namespace
