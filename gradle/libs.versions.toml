@@ -1,21 +1,21 @@
 [versions]
-androidx-activity ="1.13.0"
-androidx-core ="1.19.0"
-androidx-collection ="1.6.0"
+androidx-activity = "1.13.0"
+androidx-core = "1.19.0"
+androidx-collection = "1.6.0"
 agp = "9.2.1"
-kotlin="2.4.0"
-compose="1.12.0-alpha02"
-material3="1.12.0-alpha02"
-lifecycle ="2.10.0"
+kotlin = "2.4.0"
+compose = "1.12.0-alpha02"
+material3 = "1.12.0-alpha02"
+lifecycle = "2.10.0"
 okio = "3.17.0"
-serialization="1.11.0"
-ktor="3.5.0"
-atomicfu="0.33.0"
-coroutines="1.11.0"
-coil="3.5.0"
-keight="0.0.06"
-maven-publish="0.36.0"
-kotlinx-browser="0.5.0"
+serialization = "1.11.0"
+ktor = "3.5.1"
+atomicfu = "0.33.0"
+coroutines = "1.11.0"
+coil = "3.5.0"
+keight = "0.0.06"
+maven-publish = "0.36.0"
+kotlinx-browser = "0.5.0"
 skiko = "0.148.2"
 
 [libraries]
@@ -51,7 +51,7 @@ kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version.re
 
 [plugins]
 compose = { id = "org.jetbrains.compose", version.ref = "compose" }
-kotlin-multiplatform = { id ="org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
