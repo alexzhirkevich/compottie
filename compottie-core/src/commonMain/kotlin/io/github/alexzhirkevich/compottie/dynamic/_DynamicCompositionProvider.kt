@@ -8,7 +8,7 @@ import io.github.alexzhirkevich.compottie.internal.layers.ResolvingPath
 internal class DynamicCompositionProvider : LottieDynamicProperties {
 
     private val layers = mutableMapOf<String, DynamicLayerProvider>()
-    private val layersByPattern = mutableListOf<Pair<List<String>,DynamicLayerProvider>>()
+    private val layersByPattern = mutableListOf<Pair<List<String>, DynamicLayerProvider>>()
 
     override fun shapeLayer(vararg path: String, builder: DynamicShapeLayer.() -> Unit) {
         appendLayer(path, DynamicShapeLayerProvider().apply(builder))
@@ -44,7 +44,7 @@ internal class DynamicCompositionProvider : LottieDynamicProperties {
             .split(LayerPathSeparator)
             .filter(String::isNotEmpty)
 
-        return layersByPattern.fastFirstOrNull {  (pattern, layer)  ->
+        return layersByPattern.fastFirstOrNull { (pattern, _) ->
             pathMatches(path = pathParts, pattern = pattern)
         }?.second
     }

@@ -21,16 +21,16 @@ import kotlinx.serialization.Serializable
 @SerialName("0")
 @Serializable
 internal data class PrecompositionLayer(
-    val refId : String,
+    val refId: String,
 
     @SerialName("w")
-    override var width : Float,
+    override var width: Float,
 
     @SerialName("h")
-    override var height : Float,
+    override var height: Float,
 
     @SerialName("tm")
-    override val timeRemapping : AnimatedNumber? = null,
+    override val timeRemapping: AnimatedNumber? = null,
 
     @SerialName("ind")
     override val index: Int? = null,
@@ -78,14 +78,14 @@ internal data class PrecompositionLayer(
     @SerialName("tp")
     override val matteParent: Int? = null,
 
-    @SerialName("td") @Serializable(with=BooleanIntSerializer::class)
+    @SerialName("td") @Serializable(with = BooleanIntSerializer::class)
     override val matteTarget: Boolean? = null,
 
     @SerialName("bm")
     override val blendMode: LottieBlendMode = LottieBlendMode.Normal,
 ) : BaseCompositionLayer() {
 
-    private val composition : ExpressionComposition = object : ExpressionComposition {
+    private val composition: ExpressionComposition = object : ExpressionComposition {
         override val name: String?
             get() = this@PrecompositionLayer.name
         override val width: Float
@@ -106,7 +106,7 @@ internal data class PrecompositionLayer(
                 val ip = inPoint ?: return 0f
                 val op = outPoint ?: return 0f
 
-                return (op - ip).takeIf { it != 0f } ?: return 0f
+                return op - ip
             }
 
         override val layersByName: Map<String, Layer> by lazy {

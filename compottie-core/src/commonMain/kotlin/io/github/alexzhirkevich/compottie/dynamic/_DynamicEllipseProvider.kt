@@ -5,10 +5,10 @@ import androidx.compose.ui.geometry.Size
 
 internal class DynamicEllipseProvider : DynamicShapeProvider(), DynamicEllipse {
 
-    var size : PropertyProvider<Size>? = null
+    var size: PropertyProvider<Size>? = null
         private set
 
-    var position : PropertyProvider<Offset>? = null
+    var position: PropertyProvider<Offset>? = null
         private set
 
     override fun size(provider: PropertyProvider<Size>) {
@@ -16,6 +16,6 @@ internal class DynamicEllipseProvider : DynamicShapeProvider(), DynamicEllipse {
     }
 
     override fun position(provider: PropertyProvider<Offset>) {
-        position = position
+        position = provider
     }
 }
