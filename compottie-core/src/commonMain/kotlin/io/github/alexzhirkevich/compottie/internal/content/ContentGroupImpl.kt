@@ -11,6 +11,7 @@ import io.github.alexzhirkevich.compottie.internal.animation.AnimatedTransform
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.platform.PathBuilder
 import io.github.alexzhirkevich.compottie.internal.platform.saveLayer
+import io.github.alexzhirkevich.compottie.internal.utils.IdentityMatrix
 import io.github.alexzhirkevich.compottie.internal.utils.fastSetFrom
 import io.github.alexzhirkevich.compottie.internal.utils.preConcat
 import io.github.alexzhirkevich.compottie.internal.utils.union
@@ -28,6 +29,7 @@ internal class ContentGroupImpl(
     private val boundsMatrix = Matrix()
     private val matrix = Matrix()
     private val path = Path()
+    private val pathBuilder = PathBuilder()
 
     override fun hidden(state: AnimationState): Boolean {
         return hidden?.invoke(state) == true
@@ -80,23 +82,19 @@ internal class ContentGroupImpl(
 
         val canvas = drawScope.drawContext.canvas
         if (isRenderingWithOffScreen) {
-            offscreenRect.set(0f,0f,0f,0f)
+            offscreenRect.set(0f, 0f, 0f, 0f)
             getBounds(drawScope, matrix, true, state, offscreenRect)
             offscreenPaint.alpha = layerAlpha
             canvas.saveLayer(offscreenRect, offscreenPaint)
         }
-        try {
+        val childAlpha = if (isRenderingWithOffScreen) 1f else layerAlpha
 
-            val childAlpha = if (isRenderingWithOffScreen) 1f else layerAlpha
+        drawingContents.fastForEachReversed { content ->
+            content.draw(drawScope, matrix, childAlpha, state)
+        }
 
-            drawingContents.fastForEachReversed { content ->
-                content.draw(drawScope, matrix, childAlpha, state)
-            }
-
-        } finally {
-            if (isRenderingWithOffScreen) {
-                canvas.restore()
-            }
+        if (isRenderingWithOffScreen) {
+            canvas.restore()
         }
     }
 
@@ -106,13 +104,11 @@ internal class ContentGroupImpl(
         if (hidden(state)) {
             return path
         }
-        if (transform != null) {
-            matrix.fastSetFrom(transform.matrix(state))
-        }
+        val transformMatrix = transform?.matrix(state) ?: IdentityMatrix
         pathContents.fastForEachReversed {
-            state.pathBuilder.addPath(it.getPath(state), matrix)
+            pathBuilder.addPath(it.getPath(state), transformMatrix)
         }
-        state.pathBuilder.setTo(path)
+        pathBuilder.setTo(path)
 
         return path
     }

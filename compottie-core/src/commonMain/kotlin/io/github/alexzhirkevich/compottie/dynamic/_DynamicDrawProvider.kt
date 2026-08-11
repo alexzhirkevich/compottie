@@ -1,7 +1,6 @@
 package io.github.alexzhirkevich.compottie.dynamic
 
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -76,8 +75,10 @@ internal fun DynamicDrawProvider?.applyToPaint(
     val g = this?.gradient
 
     if (g != null) {
+        val bounds = size()
         paint.shader = GradientShader(
-            gradient = g.invoke(state, size()),
+            gradient = g.invoke(state, bounds),
+            bounds = bounds,
             matrix = parentMatrix,
             cache = gradientCache
         )

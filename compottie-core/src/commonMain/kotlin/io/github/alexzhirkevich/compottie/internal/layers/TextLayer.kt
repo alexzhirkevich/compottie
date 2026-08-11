@@ -298,7 +298,7 @@ internal class TextLayer(
         fillProperties.alpha = (parentAlpha * transformOpacity * fillOpacity).coerceIn(0f, 1f)
 
         fillPaint.color = fillProperties.color
-        fillPaint.alpha = fillProperties.alpha
+        fillPaint.alpha = fillProperties.alpha * fillProperties.color.alpha
 
         val strokeH = textAnimation?.style?.strokeHue?.interpolatedFloat(state) ?: -1f
         val strokeS = textAnimation?.style?.strokeSaturation?.interpolatedFloat(state) ?: -1f
@@ -322,7 +322,7 @@ internal class TextLayer(
         }
 
         strokePaint.color = strokeProperties.color
-        strokePaint.alpha = strokeProperties.alpha
+        strokePaint.alpha = strokeProperties.alpha * strokeProperties.color.alpha
         strokePaint.strokeWidth = strokeWidth
     }
 
