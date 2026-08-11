@@ -4,7 +4,6 @@ import kotlinx.coroutines.await
 import org.jetbrains.skiko.InternalSkikoApi
 
 @OptIn(ExperimentalWasmJsInterop::class, InternalSkikoApi::class)
-@Suppress("INVISIBLE_REFERENCE")
 internal actual suspend fun awaitSkiko(): JsAny {
     return org.jetbrains.skiko.wasm.awaitSkiko.await()
 }
