@@ -6,6 +6,9 @@ pluginManagement {
         maven("https://redirector.kotlinlang.org/maven/compose-dev")
     }
 }
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
 
 dependencyResolutionManagement {
     repositories {
