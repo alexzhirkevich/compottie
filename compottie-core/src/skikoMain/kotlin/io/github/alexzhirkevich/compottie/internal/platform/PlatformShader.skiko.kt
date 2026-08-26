@@ -11,8 +11,6 @@ import androidx.compose.ui.graphics.skiaPaint
 import androidx.compose.ui.graphics.toArgb
 import org.jetbrains.skia.Color4f
 import io.github.alexzhirkevich.compottie.internal.utils.degreeToRadians
-import io.github.alexzhirkevich.compottie.internal.utils.preConcat
-import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import org.jetbrains.skia.FilterBlurMode
 import org.jetbrains.skia.FilterTileMode
 import org.jetbrains.skia.Gradient
@@ -22,7 +20,6 @@ import org.jetbrains.skia.Matrix33
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
-import kotlin.math.sqrt
 import org.jetbrains.skia.Shader as SkShader
 
 internal actual fun MakeLinearGradient(
