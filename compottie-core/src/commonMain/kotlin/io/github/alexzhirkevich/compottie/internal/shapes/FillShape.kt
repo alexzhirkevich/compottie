@@ -130,12 +130,13 @@ internal class FillShape(
         state.thisLayer.effectsApplier.applyTo(paint, state, effectsState)
 
         path.rewind()
-        path.fillType = fillType
 
         paths.fastForEach {
             pathBuilder.addPath(it.getPath(state), parentMatrix)
         }
         pathBuilder.setTo(path)
+
+        path.fillType = fillType
 
         drawScope.drawContext.canvas.drawPath(path, paint)
     }

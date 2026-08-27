@@ -146,12 +146,12 @@ internal class GradientFillShape(
         state.thisLayer.effectsApplier.applyTo(paint, state, effectsState)
 
         path.rewind()
-        path.fillType = fillType
 
         pathContents.fastForEach {
             pathBuilder.addPath(it.getPath(state), parentMatrix)
         }
         pathBuilder.setTo(path)
+        path.fillType = fillType
 
         roundShape?.applyTo(paint, state)
 
