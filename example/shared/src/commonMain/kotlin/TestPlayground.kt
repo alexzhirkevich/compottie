@@ -1,15 +1,19 @@
+@file: Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -19,12 +23,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,15 +43,25 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.fastForEach
+import androidx.compose.ui.util.fastMap
 import io.github.alexzhirkevich.compottie.Compottie
 import io.github.alexzhirkevich.compottie.CompottieException
-import io.github.alexzhirkevich.compottie.DotLottie
 import io.github.alexzhirkevich.compottie.ExperimentalCompottieApi
-import io.github.alexzhirkevich.compottie.LottieComposition
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
+import io.github.alexzhirkevich.compottie.Resource
 import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
+import io.github.alexzhirkevich.compottie.rememberLottieAnimatable
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import io.github.alexzhirkevich.compottie.rememberResourcesAssetsManager
@@ -84,6 +100,7 @@ private val TEXT_GLYPHS = "text_glyphs.json"
 private val TEXT_OFFSET = "text_offset.json"
 private val IMAGE_ASSET = "image_asset.json"
 private val IMAGE_ASSET_EMBEDDED = "image_asset_embedded.json"
+private val EVEN_ODD = "even_odd.json"
 
 private val DOT = "dotlottie/dot.lottie"
 private val DOT_WITH_IMAGE = "dotlottie/dot_with_image.lottie"
@@ -98,6 +115,15 @@ private val ALL = listOf(
     ROUND_RECT,
     ROBOT,
     ROBOT_404,
+    DASH,
+    ROUNDING_CORENERS,
+    EVEN_ODD,
+    REPEATER,
+    AUTOORIENT,
+    TEXT_WITH_PATH,
+    TEXT,
+    TEXT_GLYPHS,
+    TEXT_OFFSET,
     ASTRONAUT,
     ANGEL,
     CONFETTI,
@@ -107,52 +133,40 @@ private val ALL = listOf(
     MASK_ADD,
     MATTE_LUMA,
     BLENDING,
-    DASH,
-    ROUNDING_CORENERS,
-    REPEATER,
-    AUTOORIENT,
-    TEXT_WITH_PATH,
-    TEXT,
-    TEXT_GLYPHS,
-    TEXT_OFFSET,
     IMAGE_ASSET,
     IMAGE_ASSET_EMBEDDED,
+    TEST
 )
 
-
-/**
- * [LottieComposition] spec from composeResources/[dir]/[path] json asset
- * */
-@OptIn(ExperimentalResourceApi::class)
-@Stable
-public suspend fun LottieCompositionSpec.Companion.ResourceString(
-    path : String,
-    dir : String = "files",
-    readBytes: suspend (path: String) -> ByteArray = { Res.readBytes(it) }
-) : LottieCompositionSpec = JsonString(readBytes("$dir/$path").decodeToString())
 
 @OptIn(ExperimentalResourceApi::class, ExperimentalCompottieApi::class)
 @Composable
 public fun TestPlayground() {
 
-//    return InteractiveControlsScreen()
-
 
 //    return LottieFontExample()
-//    return AllExamples()
+    return AllExamples()
 //    return LottieList()
+//    return LottieEmoji()
+//    return StateMachines()
+//    return Test()
 
     val composition = rememberLottieComposition() {
 
 //        LottieCompositionSpec.DotLottie(
 //            Res.readBytes("files/$DOT_WITH_IMAGE")
 //        )
+//        LottieCompositionSpec.DotLottie(
+//            Res.readBytes("files/dotlottie/sm_smiley_slider.lottie")
+//            Res.readBytes("files/dotlottie/sm_day_night_toggle.lottie")
+//            Res.readBytes("files/dotlottie/sm_halloween.lottie")
+//        )
 
-        LottieCompositionSpec.ResourceString("expr/move_horizontal.json")
+//        LottieCompositionSpec.ResourceString("expr/move_horizontal.json")
 //        LottieCompositionSpec.ResourceString("expr/wiggle.json")
 //        LottieCompositionSpec.ResourceString("expr/noise.json")
-//        LottieCompositionSpec.ResourceString(ANGEL)
-//
+        LottieCompositionSpec.Resource("files/test.json", Res::readBytes)
+
 //        LottieCompositionSpec.Url(
 //            "https://assets-v2.lottiefiles.com/a/9286b092-117a-11ee-b857-2712bc869389/WSepKUr5be.lottie"
 //            "https://assets-v2.lottiefiles.com/a/d5654818-1168-11ee-a43f-870f05952f24/m5LUOQBrz9.lottie" // radial gr with angle
@@ -173,10 +187,11 @@ public fun TestPlayground() {
     LaunchedEffect(composition) {
         try {
             composition.await()
-        } catch (t : CompottieException){
+        } catch (t: CompottieException) {
             t.printStackTrace()
         }
     }
+
 
 
     Box(
@@ -188,38 +203,46 @@ public fun TestPlayground() {
             mutableStateOf(true)
         }
 
-        val progress = animateLottieCompositionAsState(
-            iterations = Compottie.IterateForever,
+        val animatable = rememberLottieAnimatable()
+        val progress by animateLottieCompositionAsState(
             composition = composition.value,
-            isPlaying = isPlaying,
-            restartOnPlay = false
+            iterations = Compottie.IterateForever
         )
 
         val painter = rememberLottiePainter(
             composition = composition.value,
-            progress = progress::value,
-            enableExpressions = true,
-
-//            clipToCompositionBounds = false,
-//            fontManager = rememberResourcesFontManager { fontSpec ->
-//                when (fontSpec.family) {
-//                    "Comic Neue" -> Res.font.ComicNeue
-//                    else -> null
-//                }
-//            },
+            progress = { progress },
+            fontManager = rememberResourcesFontManager { fontSpec ->
+                when (fontSpec.family) {
+                    "Comic Neue" -> Res.font.ComicNeue
+                    else -> null
+                }
+            },
             assetsManager = rememberResourcesAssetsManager(
                 readBytes = Res::readBytes
             ),
         )
 
-        Image(
-            modifier = Modifier
-                .fillMaxSize()
-                .opacityGrid()
-                .clickable { isPlaying = !isPlaying }
-            ,painter = painter,
-            contentDescription = null
-        )
+//        LaunchedEffect(stateMachine){
+//            while (true){
+//                delay(3000)
+//                stateMachine?.setBoolean("OnOffSwitch", stateMachine.getBoolean("OnOffSwitch") == false)
+//            }
+//        }
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(bottom = 24.dp)
+        ) {
+
+            Image(
+                modifier = Modifier
+                    .weight(1f)
+                    .opacityGrid(),
+                painter = painter,
+                contentDescription = null
+            )
+        }
 
         if (composition.value == null) {
             CircularProgressIndicator()
@@ -227,48 +250,263 @@ public fun TestPlayground() {
     }
 }
 
-@OptIn(ExperimentalResourceApi::class, ExperimentalCompottieApi::class)
+private val testFiles= listOf(
+    "files/test.json",
+    "files/test2.json",
+)
 @Composable
-public fun AllExamples(){
-    LazyVerticalGrid(
-        modifier = Modifier
-            .fillMaxSize()
-            .opacityGrid(),
-        columns = GridCells.FixedSize(150.dp),
-    ){
-        items(ALL) {
-            val composition by rememberLottieComposition() {
-                LottieCompositionSpec.ResourceString(it)
+private fun Test(){
+
+    val files = testFiles.fastMap {
+        rememberLottieComposition(it) {
+            LottieCompositionSpec.JsonString(Res.readBytes(it).decodeToString())
+        }
+    }
+
+    Row(Modifier.fillMaxSize()) {
+
+        files.fastForEach {
+
+            LaunchedEffect(it){
+                it.await()
             }
 
             Image(
                 painter = rememberLottiePainter(
-                    composition = composition,
-                    iterations = Compottie.IterateForever,
-                    assetsManager = rememberResourcesAssetsManager(
-                        readBytes = Res::readBytes
-                    ),
-                    fontManager = rememberResourcesFontManager { fontSpec ->
-                        when (fontSpec.family) {
-                            "Comic Neue" -> Res.font.ComicNeue
-                            else -> null
-                        }
-                    },
+                    composition = it.value,
+                    iterations = Compottie.IterateForever
                 ),
                 contentDescription = null,
-                modifier = Modifier
-                    .size(150.dp)
-                    .border(1.dp, Color.Black )
+                modifier = Modifier.weight(1f)
             )
         }
     }
 }
 
-private val ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ':, \n"
+private val stateMachines = listOf(
+    "sm_bot.lottie" to "StateMachine1",
+    "sm_mic.lottie" to "State Machine + MQdlCZKwEVLSUrdy4A7an",
+    "sm_coffee.lottie" to "StateMachine1",
+    "sm_delivery_boy.lottie" to "StateMachine1",
+    "sm_halloween.lottie" to "StateMachine1",
+    "sm_smartphone.lottie" to "StateMachine1",
+)
 
-@OptIn(ExperimentalLayoutApi::class)
+//@Composable
+//private fun StateMachines(){
+//
+//    LazyVerticalGrid(
+//        columns = GridCells.FixedSize(300.dp)
+//    ){
+//        items(stateMachines){
+//
+//            val composition by rememberLottieComposition(it){
+//                LottieCompositionSpec.DotLottie(Res.readBytes("files/dotlottie/${it.first}"))
+//            }
+//
+//            val animatable = rememberLottieAnimatable()
+//
+//            Lottie(
+//                modifier = Modifier.fillMaxSize()
+//                    .padding(10.dp)
+//                    .border(1.dp, Color.Black)
+//                    .padding(10.dp),
+//                painter = rememberLottiePainter(
+//                    composition = composition,
+//                    progress = animatable::progress
+//                ),
+//                stateMachine = rememberLottieStateMachine(
+//                    id = it.second,
+//                    composition = composition,
+//                    animatable = animatable
+//                ),
+//                contentDescription = null
+//            )
+//        }
+//    }
+//}
+
+//@Composable
+//private fun ThemedAnimation(modifier : Modifier, theme : String, progress: () -> Float, composition: LottieComposition?){
+//    val painter = rememberLottiePainter(
+//        composition = composition,
+//        progress = progress,
+//        theme = theme,
+//        fontManager = rememberResourcesFontManager { fontSpec ->
+//            when (fontSpec.family) {
+//                "Comic Neue" -> Res.font.ComicNeue
+//                else -> null
+//            }
+//        },
+//        assetsManager = rememberResourcesAssetsManager(
+//            readBytes = Res::readBytes
+//        ),
+//    )
+//
+//    Image(
+//        modifier = modifier,
+//        painter = painter,
+//        contentDescription = null
+//    )
+//}
+
+@OptIn(ExperimentalResourceApi::class, ExperimentalCompottieApi::class)
+@Composable
+public fun AllExamples() {
+
+    Box(
+        contentAlignment = Alignment.Center
+    ) {
+        LazyVerticalGrid(
+            modifier = Modifier
+                .fillMaxSize()
+                .opacityGrid(),
+            columns = GridCells.FixedSize(150.dp),
+        ) {
+            items(ALL) {
+                val composition by rememberLottieComposition(
+                    LottieCompositionSpec.Resource(Res.getUri("files/$it"))
+                )
+
+                AnimatedVisibility(
+                    visible = composition != null,
+                    modifier = Modifier
+                        .size(150.dp)
+                        .border(1.dp, Color.Black),
+                    exit = scaleOut(),
+                    enter = scaleIn(tween(500))
+                ) {
+                    Image(
+                        painter = rememberLottiePainter(
+                            composition = composition,
+                            iterations = Compottie.IterateForever,
+                            assetsManager = rememberResourcesAssetsManager(
+                                readBytes = Res::readBytes
+                            ),
+                            fontManager = rememberResourcesFontManager { fontSpec ->
+                                when (fontSpec.family) {
+                                    "Comic Neue" -> Res.font.ComicNeue
+                                    else -> null
+                                }
+                            },
+                        ),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
+        }
+    }
+}
+
+private val ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ':,"
+
+@OptIn(ExperimentalLayoutApi::class, ExperimentalResourceApi::class)
 @Composable
 public fun LottieFontExample() {
+
+    var text by remember {
+        mutableStateOf("")
+    }
+
+    val fontSize = 90.dp
+
+    val focus = remember {
+        FocusRequester()
+    }
+    LaunchedEffect(focus) {
+        focus.requestFocus()
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize()
+            .focusRequester(focus),
+        contentAlignment = Alignment.Center
+    ) {
+
+        val measurer = rememberTextMeasurer()
+        val textStyle = TextStyle(fontSize = 50.sp, letterSpacing = 0.sp)
+
+        BasicTextField(
+            modifier = Modifier.fillMaxSize(),
+            value = text,
+            textStyle = textStyle.copy(color = Color.Transparent),
+            onValueChange = {
+                text = it.map { if (it.uppercase() in ALPHABET) it.uppercase() else it }
+                    .joinToString("")
+            },
+            decorationBox = {
+                Box {
+                    BasicText(
+                        text = remember(text, textStyle) {
+                            buildAnnotatedString {
+                                text.forEach {
+                                    val u = it.uppercase()
+                                    if (u in ALPHABET) {
+                                        appendInlineContent(u, u)
+                                    } else {
+                                        append(it.toString())
+                                    }
+                                }
+                            }
+                        },
+                        style = textStyle,
+                        inlineContent = LocalDensity.current.run {
+                            remember(this, textStyle) {
+                                ALPHABET.associate { c ->
+                                    val measureRes = measurer.measure(
+                                        text = c.toString(),
+                                        style = textStyle.copy(lineHeight = textStyle.fontSize)
+                                    )
+                                    val size = measureRes.getBoundingBox(0).size
+
+                                    c.toString() to InlineTextContent(
+                                        Placeholder(
+                                            width = size.width.toSp(),
+                                            height = size.height.toSp(),
+                                            placeholderVerticalAlign = PlaceholderVerticalAlign.AboveBaseline
+                                        )
+                                    ) {
+                                        if (c.isWhitespace()) {
+                                            Spacer(Modifier.fillMaxSize())
+                                        } else {
+
+                                            val anim = when (c) {
+                                                ':' -> "Colon"
+                                                ',' -> "Comma"
+                                                '\'' -> "Apostrophe"
+                                                else -> c.uppercase()
+                                            }
+                                            Image(
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .border(1.dp, Color.Red),
+                                                contentScale = ContentScale.Crop,
+                                                painter = rememberLottiePainter(
+                                                    rememberLottieComposition(
+                                                        // sometimes cmp resources freeze on simultaneous resources access
+                                                        LottieCompositionSpec.Resource(Res.getUri("files/mobilo/$anim.json"))
+                                                    ).value
+                                                ),
+                                                contentDescription = anim
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    )
+                    it()
+                }
+            }
+        )
+    }
+}
+
+
+@OptIn(ExperimentalLayoutApi::class, ExperimentalResourceApi::class)
+@Composable
+public fun LottieFontExample2() {
     var text by remember {
         mutableStateOf("")
     }
@@ -327,10 +565,10 @@ public fun LottieFontExample() {
                                             .height(fontSize)
                                             .width(fontSize * 3 / 4f),
                                         painter = rememberLottiePainter(
-                                            rememberLottieComposition {
+                                            rememberLottieComposition(
                                                 // sometimes cmp resources freeze on simultaneous resources access
-                                                LottieCompositionSpec.ResourceString("mobilo/$anim.json")
-                                            }.value
+                                                LottieCompositionSpec.Resource(Res.getUri("files/mobilo/$anim.json"))
+                                            ).value
                                         ),
                                         contentDescription = anim
                                     )
@@ -344,9 +582,11 @@ public fun LottieFontExample() {
                                 .padding(fontSize / 4)
                                 .offset(x = -fontSize / 3),
                             painter = rememberLottiePainter(
-                                composition = rememberLottieComposition {
-                                    LottieCompositionSpec.ResourceString("mobilo/BlinkingCursor.json")
-                                }.value,
+                                composition = rememberLottieComposition(
+                                    LottieCompositionSpec.Resource(
+                                        Res.getUri("files/mobilo/BlinkingCursor.json")
+                                    )
+                                ).value,
                                 iterations = Compottie.IterateForever
                             ),
                             contentDescription = it.toString()
@@ -358,21 +598,33 @@ public fun LottieFontExample() {
     }
 }
 
+
+@OptIn(ExperimentalResourceApi::class, ExperimentalCompottieApi::class)
 @Composable
 public fun LottieList() {
-    LazyVerticalGrid(columns = GridCells.FixedSize(100.dp)) {
-        items(1000){
-            val composition = rememberLottieComposition() {
-                LottieCompositionSpec.ResourceString(ROBOT)
-            }
 
-            val painter = rememberLottiePainter(
-                composition.value,
+    val state = rememberLazyGridState()
+    LazyVerticalGrid(
+        state = state,
+        columns = GridCells.FixedSize(100.dp)
+    ) {
+        items(1000){
+            val composition = rememberLottieComposition(
+                spec = LottieCompositionSpec.Resource(Res.getUri("files/$WONDERS")),
+            )
+
+            val progress = animateLottieCompositionAsState(
+                composition = composition.value,
                 iterations = Compottie.IterateForever
             )
 
+            val painter = rememberLottiePainter(
+                composition.value,
+                progress = progress::value,
+            )
+
             Image(
-                modifier = Modifier.height(100.dp),
+                modifier = Modifier.size(100.dp),
                 painter = painter,
                 contentDescription = ""
             )
