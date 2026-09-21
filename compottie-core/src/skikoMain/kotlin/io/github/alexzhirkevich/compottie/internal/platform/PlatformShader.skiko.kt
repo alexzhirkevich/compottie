@@ -9,8 +9,8 @@ import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.asComposeShader
 import androidx.compose.ui.graphics.skiaPaint
 import androidx.compose.ui.graphics.toArgb
-import org.jetbrains.skia.Color4f
 import io.github.alexzhirkevich.compottie.internal.utils.degreeToRadians
+import org.jetbrains.skia.Color4f
 import org.jetbrains.skia.FilterBlurMode
 import org.jetbrains.skia.FilterTileMode
 import org.jetbrains.skia.Gradient
@@ -115,13 +115,36 @@ internal actual fun MakeSweepGradient(
             if (angle == 0f) {
                 it
             } else {
-                Matrix33.makeRotate(angle, center.x, center.y)
+                it.makeConcat(
+                    makeRotate(angle, center.x, center.y)
+                )
             }
         }
 ).asComposeShader()
 
 private val _tmpMatrix33 = Matrix33.makeTranslate(0f,0f)
 
+private const val tolerance = (1.0f / (1 shl 12)).toDouble()
+
+private fun makeRotate(deg: Float, pivotx: Float, pivoty: Float): Matrix33 {
+    val rad = degreeToRadians(deg)
+    var sin = sin(rad)
+    var cos = cos(rad)
+    val tolerance = tolerance
+    if (abs(sin) <= tolerance) sin = 0.0f
+    if (abs(cos) <= tolerance) cos = 0.0f
+    return Matrix33(
+        cos,
+        (-sin),
+        (pivotx - pivotx * cos + pivoty * sin),
+        sin,
+        cos,
+        (pivoty - pivoty * cos - pivotx * sin),
+        0f,
+        0f,
+        1f
+    )
+}
 
 internal fun Matrix.asSkia33(coerceScale : Boolean = false) : Matrix33 {
 
