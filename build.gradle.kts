@@ -1,4 +1,5 @@
-import com.android.build.api.dsl.LibraryExtension
+import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
+import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -7,11 +8,10 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.kotlin.android).apply(false)
     alias(libs.plugins.compose).apply(false)
     alias(libs.plugins.composeCompiler).apply(false)
     alias(libs.plugins.android.application).apply(false)
-    alias(libs.plugins.android.library).apply(false)
+    alias(libs.plugins.android.kotlin.multiplatform.library).apply(false)
     alias(libs.plugins.mavenPublish)
 }
 
@@ -43,7 +43,7 @@ subprojects {
 
     plugins.apply("org.jetbrains.kotlin.multiplatform")
     plugins.apply("com.vanniktech.maven.publish")
-    plugins.apply("android-library")
+    plugins.apply("com.android.kotlin.multiplatform.library")
 
     androidLibrarySetup()
     multiplatformSetup()
@@ -89,17 +89,21 @@ fun Project.publicationSetup() {
 fun Project.multiplatformSetup() {
     project.kotlin {
 
+        // NOTE: withAndroidTarget() only matches the legacy KotlinAndroidTarget and silently
+        // drops the target created by com.android.kotlin.multiplatform.library (KT-80409),
+        // which would leave androidMain disconnected from jvmNativeMain / javaMain.
+        // Match the new Android compilations explicitly instead.
         applyDefaultHierarchyTemplate {
             common {
                 group("jvmNative") {
-                    withAndroidTarget()
+                    withCompilations { it is KotlinMultiplatformAndroidCompilation }
                     withJvm()
                     withIos()
                     withMacos()
                 }
                 group("java"){
                     withJvm()
-                    withAndroidTarget()
+                    withCompilations { it is KotlinMultiplatformAndroidCompilation }
                 }
                 group("skiko") {
                     withJvm()
@@ -123,13 +127,6 @@ fun Project.multiplatformSetup() {
         }
 
 
-        androidTarget {
-            compilerOptions {
-                jvmTarget.set(JvmTarget.fromTarget(_jvmTarget))
-            }
-            publishLibraryVariants("release")
-        }
-
         iosArm64()
         iosSimulatorArm64()
         macosArm64()
@@ -147,16 +144,22 @@ fun Project.multiplatformSetup() {
 
 
 fun Project.androidLibrarySetup() {
-    extensions.configure<LibraryExtension> {
-        namespace = group.toString() + path.replace("-", "").split(":").joinToString(".")
-        compileSdk = (findProperty("android.compileSdk") as String).toInt()
+    val androidNamespace = group.toString() + path.replace("-", "").split(":").joinToString(".")
+    val androidCompileSdk = (findProperty("android.compileSdk") as String).toInt()
+    val androidMinSdk = (findProperty("android.minSdk") as String).toInt()
 
-        defaultConfig {
-            minSdk = (findProperty("android.minSdk") as String).toInt()
-        }
-        compileOptions {
-            sourceCompatibility = JavaVersion.VERSION_1_8
-            targetCompatibility = JavaVersion.VERSION_1_8
+    // The android target is provided by com.android.kotlin.multiplatform.library
+    // (replaces the top-level `android {}` / LibraryExtension and `androidTarget {}`).
+    // Java compilation is disabled by default (no withJava()) - the libraries have no Java sources.
+    // Only one variant is published by this plugin, so publishLibraryVariants() is gone.
+    kotlin {
+        targets.withType(KotlinMultiplatformAndroidLibraryTarget::class.java).configureEach {
+            namespace = androidNamespace
+            compileSdk = androidCompileSdk
+            minSdk = androidMinSdk
+            compilerOptions {
+                jvmTarget.set(JvmTarget.fromTarget(_jvmTarget))
+            }
         }
     }
 }

@@ -1,15 +1,10 @@
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose)
     alias(libs.plugins.composeCompiler)
 }
 
-
-kotlin {
-    jvmToolchain((findProperty("jvmTarget") as String).toInt())
-}
 
 android {
     namespace = "io.github.alexzhirkevich.compottie.example.android"
@@ -25,6 +20,13 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+
+    // AGP 9 built-in Kotlin derives the Kotlin jvmTarget from these
+    compileOptions {
+        val javaVersion = JavaVersion.toVersion(findProperty("jvmTarget") as String)
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
+    }
 
     buildTypes {
         getByName("release") {

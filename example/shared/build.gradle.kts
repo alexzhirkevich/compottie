@@ -1,5 +1,6 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
+import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -7,27 +8,31 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.serialization)
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.android.library)
+    alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.compose)
     alias(libs.plugins.composeCompiler)
 }
 
 val _jvmTarget = findProperty("jvmTarget") as String
 
+// Computed outside of the `android {}` block: inside it `name` would refer to the Kotlin target name.
+val androidNamespace = "$group.${name.filter { it.isLetter() }}"
+
 
 kotlin {
 
+    // withAndroidTarget() doesn't match the target of com.android.kotlin.multiplatform.library (KT-80409)
     applyDefaultHierarchyTemplate {
         common {
             group("jvmNative") {
-                withAndroidTarget()
+                withCompilations { it is KotlinMultiplatformAndroidCompilation }
                 withJvm()
                 withIos()
                 withMacos()
             }
             group("java"){
                 withJvm()
-                withAndroidTarget()
+                withCompilations { it is KotlinMultiplatformAndroidCompilation }
             }
             group("skiko") {
                 withJvm()
@@ -39,11 +44,19 @@ kotlin {
         }
     }
 
-    androidTarget {
+    android {
+        namespace = androidNamespace
+        compileSdk = (findProperty("android.compileSdk") as String).toInt()
+        minSdk = (findProperty("android.minSdk") as String).toInt()
+
         compilerOptions {
             jvmTarget.set(JvmTarget.fromTarget(_jvmTarget))
         }
-        publishLibraryVariants("release")
+
+        // Required for Compose Multiplatform resources (composeResources) on Android
+        androidResources {
+            enable = true
+        }
     }
 
     listOf(
@@ -114,26 +127,5 @@ kotlin {
         wasmJsMain.dependencies {
             implementation(libs.ktor.client.js)
         }
-    }
-}
-
-android {
-    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-    sourceSets["main"].res.srcDirs("src/androidMain/res")
-    sourceSets["main"].resources.srcDirs("src/commonMain/resources")
-}
-
-val jvmTarget = findProperty("jvmTarget") as String
-
-android {
-    namespace = "$group.${name.filter { it.isLetter() }}"
-    compileSdk = (findProperty("android.compileSdk") as String).toInt()
-
-    defaultConfig {
-        minSdk = (findProperty("android.minSdk") as String).toInt()
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.toVersion(jvmTarget)
-        targetCompatibility = JavaVersion.toVersion(jvmTarget)
     }
 }
