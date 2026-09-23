@@ -21,7 +21,11 @@ import io.github.alexzhirkevich.compottie.internal.animation.Vec2
 import io.github.alexzhirkevich.compottie.internal.animation.interpolatedNorm
 import io.github.alexzhirkevich.compottie.internal.helpers.GradientColors
 import io.github.alexzhirkevich.compottie.internal.helpers.GradientType
+import io.github.alexzhirkevich.compottie.internal.utils.degreeToRadians
+import kotlin.math.abs
+import kotlin.math.cos
 import kotlin.math.hypot
+import kotlin.math.sin
 
 internal class GradientCache {
 
@@ -209,6 +213,25 @@ private fun CachedLinearGradient(
     }
 }
 
+internal fun radialFocalPoint(
+    center: Offset,
+    radius: Float,
+    angleDeg: Float,
+    lengthPx: Float
+): Offset {
+    val maxLength = radius * 0.99f
+    val length = if (abs(lengthPx) > maxLength) {
+        maxLength * (if (lengthPx < 0f) -1f else 1f)
+    } else {
+        lengthPx
+    }
+    val rad = degreeToRadians(angleDeg)
+    return Offset(
+        x = center.x + length * cos(rad),
+        y = center.y + length * sin(rad)
+    )
+}
+
 private fun CachedRadialGradient(
     center : Offset,
     radius : Float,
@@ -232,7 +255,7 @@ private fun CachedRadialGradient(
     return cache.getOrPut(hash, false) {
         MakeRadialGradient(
             center = center,
-            radius = radius,
+            radius = radius.coerceAtLeast(0.01f),
             highlightingAngle = highlightingAngle,
             highlightingLength = highlightingLength * radius,
             colors = colors,
