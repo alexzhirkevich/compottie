@@ -11,30 +11,26 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.RadialGradientShader
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.SweepGradientShader
-import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.nativePaint
-import androidx.compose.ui.graphics.toAndroidTileMode
 import androidx.compose.ui.graphics.toColorLong
 
-
-private val tempMatrix = android.graphics.Matrix()
+private val _tmpMatrix = ThreadLocal<android.graphics.Matrix>()
 
 internal actual fun MakeLinearGradient(
-    from : Offset,
-    to : Offset,
-    colors : List<Color>,
+    from: Offset,
+    to: Offset,
+    colors: List<Color>,
     colorStops: List<Float>,
-    tileMode: TileMode,
     matrix: Matrix
 ) = LinearGradientShader(
     from = from,
     to = to,
     colorStops = colorStops,
-    tileMode = tileMode,
     colors = colors
 ).apply {
-    tempMatrix.setFromInternal(matrix)
-    setLocalMatrix(tempMatrix)
+    val m = _tmpMatrix.getOrSet { android.graphics.Matrix() }
+    m.setFromInternal(matrix)
+    setLocalMatrix(m)
 }
 
 internal actual fun MakeRadialGradient(
@@ -44,11 +40,13 @@ internal actual fun MakeRadialGradient(
     highlightingLength : Float,
     colors : List<Color>,
     colorStops: List<Float>,
-    tileMode: TileMode,
     matrix: Matrix
 ) : Shader {
-
-    val shader = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && highlightingLength != 0f) {
+    val shader = if (
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        && highlightingLength != 0f
+        && radius > 0.01f
+    ) {
 
         val focal = radialFocalPoint(center, radius, highlightingAngle, highlightingLength)
         val argbColors = LongArray(colors.size) { colors[it].toColorLong() }
@@ -74,8 +72,9 @@ internal actual fun MakeRadialGradient(
         )
     }
 
-    tempMatrix.setFromInternal(matrix)
-    shader.setLocalMatrix(tempMatrix)
+    val m = _tmpMatrix.getOrSet { android.graphics.Matrix() }
+    m.setFromInternal(matrix)
+    shader.setLocalMatrix(m)
     return shader
 }
 
@@ -90,11 +89,12 @@ internal actual fun MakeSweepGradient(
     colors = colors,
     colorStops = colorStops,
 ).apply {
-    tempMatrix.setFromInternal(matrix)
+    val m = _tmpMatrix.getOrSet { android.graphics.Matrix() }
+    m.setFromInternal(matrix)
     if (angle != 0f) {
-        tempMatrix.postRotate(angle, center.x, center.y)
+        m.postRotate(angle, center.x, center.y)
     }
-    setLocalMatrix(tempMatrix)
+    setLocalMatrix(m)
 }
 
 internal actual fun Paint.setBlurMaskFilter(radius: Float, isImage : Boolean) {

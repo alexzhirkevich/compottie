@@ -224,8 +224,6 @@ public fun rememberLottiePainter(
     }
 }
 
-internal expect fun mockFontFamilyResolver() : FontFamily.Resolver
-
 public class LottiePainter internal constructor(
     internal val painter : State<LottiePainterImpl?>
 ) : Painter() {

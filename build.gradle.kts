@@ -98,8 +98,7 @@ fun Project.multiplatformSetup() {
                 group("jvmNative") {
                     withCompilations { it is KotlinMultiplatformAndroidCompilation }
                     withJvm()
-                    withIos()
-                    withMacos()
+                    withNative()
                 }
                 group("java"){
                     withJvm()
@@ -107,15 +106,18 @@ fun Project.multiplatformSetup() {
                 }
                 group("skiko") {
                     withJvm()
-                    withIos()
-                    withMacos()
+                    withNative()
                     withJs()
                     withWasmJs()
                 }
                 group("desktopNative") {
                     withJvm()
-                    withIos()
-                    withMacos()
+                    withNative()
+                }
+                group("nonJvm"){
+                    withNative()
+                    withWasmJs()
+                    withJs()
                 }
             }
         }
