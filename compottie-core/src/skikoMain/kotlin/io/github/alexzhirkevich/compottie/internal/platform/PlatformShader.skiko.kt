@@ -47,8 +47,6 @@ internal actual fun MakeLinearGradient(
     localMatrix = matrix.asSkia33(coerceScale = true)
 ).asComposeShader()
 
-private val tmpMatrix = Matrix()
-
 internal actual fun MakeRadialGradient(
     center : Offset,
     radius : Float,
@@ -58,37 +56,49 @@ internal actual fun MakeRadialGradient(
     colorStops: List<Float>,
     tileMode: TileMode,
     matrix: Matrix
-) : Shader = SkShader.makeRadialGradient(
-    x = center.x,
-    y = center.y,
-    radius = radius,
-    gradient = Gradient(
-        colors = Gradient.Colors(
-            colors = colors.toColor4fArray(),
-            positions = colorStops.toFloatArray(),
-            tileMode = FilterTileMode.CLAMP
-        ),
-        interpolation = Gradient.Interpolation(
-            inPremul = Gradient.Interpolation.InPremul.YES
-        )
-    ),
-    localMatrix = if (highlightingLength == 0f) {
-        matrix.asSkia33(coerceScale = true)
+) : Shader {
+    return if (highlightingLength == 0f){
+        SkShader.makeRadialGradient(
+            x = center.x,
+            y = center.y,
+            radius = radius,
+            gradient = Gradient(
+                colors = Gradient.Colors(
+                    colors = colors.toColor4fArray(),
+                    positions = colorStops.toFloatArray(),
+                    tileMode = FilterTileMode.CLAMP
+                ),
+                interpolation = Gradient.Interpolation(
+                    inPremul = Gradient.Interpolation.InPremul.YES
+                )
+            ),
+            localMatrix = matrix.asSkia33(coerceScale = true)
+        ).asComposeShader()
     } else {
-        val angle = degreeToRadians(highlightingAngle)
-        val focalOffsetX = highlightingLength * sin(angle)
-        val focalOffsetY = highlightingLength * cos(angle)
 
-        tmpMatrix.resetToPivotedTransform(
-            pivotX = center.x,
-            pivotY = center.y,
-            translationX = focalOffsetX,
-            translationY = focalOffsetY,
-        )
-        tmpMatrix.timesAssign(matrix)
-        tmpMatrix.asSkia33(coerceScale = true)
+        val focal = radialFocalPoint(center, radius, highlightingAngle, highlightingLength)
+
+        SkShader.makeTwoPointConicalGradient(
+            x0 = focal.x,
+            y0 = focal.y,
+            x1 = center.x,
+            y1 = center.y,
+            startRadius = 0f,
+            endRadius = radius,
+            gradient = Gradient(
+                colors = Gradient.Colors(
+                    colors = colors.toColor4fArray(),
+                    positions = colorStops.toFloatArray(),
+                    tileMode = FilterTileMode.CLAMP
+                ),
+                interpolation = Gradient.Interpolation(
+                    inPremul = Gradient.Interpolation.InPremul.YES
+                )
+            ),
+            localMatrix = matrix.asSkia33(coerceScale = true)
+        ).asComposeShader()
     }
-).asComposeShader()
+}
 
 internal actual fun MakeSweepGradient(
     center: Offset,

@@ -1,6 +1,8 @@
 package io.github.alexzhirkevich.compottie.internal.platform
 
 import android.graphics.BlurMaskFilter
+import android.graphics.RadialGradient
+import android.os.Build
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.LinearGradientShader
@@ -11,9 +13,8 @@ import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.SweepGradientShader
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.nativePaint
-import io.github.alexzhirkevich.compottie.internal.utils.degreeToRadians
-import kotlin.math.cos
-import kotlin.math.sin
+import androidx.compose.ui.graphics.toAndroidTileMode
+import androidx.compose.ui.graphics.toColorLong
 
 
 private val tempMatrix = android.graphics.Matrix()
@@ -45,21 +46,37 @@ internal actual fun MakeRadialGradient(
     colorStops: List<Float>,
     tileMode: TileMode,
     matrix: Matrix
-)  = RadialGradientShader(
-    center = center,
-    radius = radius,
-    colorStops = colorStops,
-    tileMode = tileMode,
-    colors = colors
-).apply {
-    tempMatrix.setFromInternal(matrix)
-    if (highlightingLength != 0f) {
-        val angle = degreeToRadians(highlightingAngle.toDouble())
-        val focalOffsetX = (highlightingLength * sin(angle)).toFloat()
-        val focalOffsetY = (highlightingLength  * cos(angle)).toFloat()
-        tempMatrix.postTranslate(focalOffsetX, focalOffsetY)
+) : Shader {
+
+    val shader = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && highlightingLength != 0f) {
+
+        val focal = radialFocalPoint(center, radius, highlightingAngle, highlightingLength)
+        val argbColors = LongArray(colors.size) { colors[it].toColorLong() }
+        val positions = colorStops.toFloatArray()
+
+        RadialGradient(
+            focal.x,
+            focal.y,
+            0f,
+            center.x,
+            center.y,
+            radius,
+            argbColors,
+            positions,
+            android.graphics.Shader.TileMode.CLAMP
+        )
+    } else {
+        RadialGradientShader(
+            center = center,
+            radius = radius,
+            colorStops = colorStops,
+            colors = colors
+        )
     }
-    setLocalMatrix(tempMatrix)
+
+    tempMatrix.setFromInternal(matrix)
+    shader.setLocalMatrix(tempMatrix)
+    return shader
 }
 
 internal actual fun MakeSweepGradient(
