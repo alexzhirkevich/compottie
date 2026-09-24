@@ -48,11 +48,12 @@ internal actual fun MakeRadialGradient(
     matrix: Matrix
 ) : Shader {
 
-    val focal = radialFocalPoint(center, radius, highlightingAngle, highlightingLength)
+    val shader = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && highlightingLength != 0f) {
 
-    val argbColors = LongArray(colors.size) { colors[it].toColorLong() }
-    val positions = colorStops.toFloatArray()
-    val shader =  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        val focal = radialFocalPoint(center, radius, highlightingAngle, highlightingLength)
+        val argbColors = LongArray(colors.size) { colors[it].toColorLong() }
+        val positions = colorStops.toFloatArray()
+
         RadialGradient(
             focal.x,
             focal.y,
@@ -62,14 +63,13 @@ internal actual fun MakeRadialGradient(
             radius,
             argbColors,
             positions,
-            tileMode.toAndroidTileMode()
+            android.graphics.Shader.TileMode.CLAMP
         )
     } else {
         RadialGradientShader(
             center = center,
             radius = radius,
             colorStops = colorStops,
-            tileMode = tileMode,
             colors = colors
         )
     }
