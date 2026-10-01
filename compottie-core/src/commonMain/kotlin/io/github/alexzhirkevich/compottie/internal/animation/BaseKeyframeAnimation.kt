@@ -46,7 +46,9 @@ internal open class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
                 -1,
                 Pair(
                     first.start,
-                    first.endHold ?: keyframes.getOrNull(1)?.start
+                    first.endHold
+                        ?: keyframes.getOrNull(1)?.start
+                        ?: first.start
                 )
             )
 
@@ -57,7 +59,7 @@ internal open class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
                 keyframes.lastIndex,
                 Pair(
                     preLast?.start ?: last.start,
-                    last.start ?: preLast?.end ?: preLast?.start,
+                    last.start ?: preLast?.endHold ?: preLast?.start,
                 )
             )
 
