@@ -2,6 +2,8 @@ package io.github.alexzhirkevich.compottie.internal
 
 import io.github.alexzhirkevich.compottie.InternalCompottieApi
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.jetbrains.skiko.InternalSkikoApi
+import org.jetbrains.skiko.wasm.awaitSkiko
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
 import org.khronos.webgl.toInt8Array
@@ -15,6 +17,7 @@ import kotlin.coroutines.resumeWithException
 import kotlin.js.ExperimentalWasmJsInterop
 import kotlin.js.JsAny
 import kotlin.js.JsArray
+import kotlin.js.asJsException
 import kotlin.js.js
 import kotlin.js.set
 import kotlin.js.unsafeCast
@@ -68,6 +71,7 @@ public suspend fun Worker.doWork(
         cleanup()
     }
 }
+
 
 @OptIn(ExperimentalWasmJsInterop::class)
 private fun blob(code: String): Blob =

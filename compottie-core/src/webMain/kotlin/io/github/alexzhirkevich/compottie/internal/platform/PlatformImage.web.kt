@@ -6,6 +6,7 @@ import androidx.compose.ui.unit.IntSize
 import io.github.alexzhirkevich.compottie.InternalCompottieApi
 import io.github.alexzhirkevich.compottie.internal.WorkerScript
 import io.github.alexzhirkevich.compottie.internal.doWork
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.ColorAlphaType
 import org.jetbrains.skia.ColorInfo
@@ -15,25 +16,34 @@ import org.jetbrains.skia.Data
 import org.jetbrains.skia.Image
 import org.jetbrains.skia.ImageInfo
 import org.jetbrains.skia.impl.NativePointer
+import org.jetbrains.skia.webext.installPixelsFromArrayBuffer
+import org.jetbrains.skiko.ExperimentalSkikoApi
+import org.jetbrains.skiko.InternalSkikoApi
+import org.jetbrains.skiko.wasm.awaitSkiko
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
 import org.khronos.webgl.toByteArray
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.js.ExperimentalWasmJsInterop
 import kotlin.js.JsAny
+import kotlin.js.asJsException
 import kotlin.js.js
 
+@OptIn(ExperimentalSkikoApi::class, InternalSkikoApi::class, ExperimentalWasmJsInterop::class)
 internal actual suspend fun ImageBitmap.Companion.fromBytes(
     bytes: ByteArray
 ) : ImageBitmap {
 
-
+    val skiko = awaitSkiko
     val size = getOriginalSize(bytes)
     val webBitmap = decodeImage(bytes, size.width, size.height)
 
-    val skikoData = runCatching {
-        webBitmap.passToSkiko()
-    }.getOrElse {
-        Data.makeFromBytes(Int8Array(webBitmap).toByteArray())
+    suspendCancellableCoroutine { cont ->
+        skiko.then(
+            onFulfilled = { cont.resume(it); null },
+            onRejected = { cont.resumeWithException(it.asJsException()); null },
+        )
     }
 
     val colorInfo = ColorInfo(
@@ -41,9 +51,15 @@ internal actual suspend fun ImageBitmap.Companion.fromBytes(
         ColorAlphaType.UNPREMUL,
         ColorSpace.sRGB,
     )
+
     val imageInfo = ImageInfo(colorInfo, size.width, size.height)
-    val image = Image.makeRaster(imageInfo, skikoData, imageInfo.minRowBytes)
-    return Bitmap.makeFromImage(image).asComposeImageBitmap()
+
+    return Bitmap().apply {
+        if (!installPixelsFromArrayBuffer(imageInfo, webBitmap, imageInfo.minRowBytes)){
+            error("Failed to decode image")
+        }
+        setImmutable()
+    }.asComposeImageBitmap()
 }
 
 
@@ -51,6 +67,8 @@ private const val DecodeImageWorkerCode = """
 let canvas = null;
 let context = null;
 let cw = 0, ch = 0;
+const active = new Set();
+const cancelled = new Set();
 
 function ensureCanvas(w, h) {
   if (!canvas || w > cw || h > ch) {
@@ -63,53 +81,54 @@ function ensureCanvas(w, h) {
 }
 
 self.onmessage = async (e) => {
-    const { id, data, w, h } = e.data;
+    const { kind, id } = e.data;
+    if (kind === "cancel") {
+        if (active.has(id)) cancelled.add(id);
+        return;
+    }
+
+    const { data, w, h } = e.data;
+    active.add(id);
     try {
         var blob = new Blob([data]);
-        const bmp = await createImageBitmap(blob, {
-            resizeWidth: w,
-            resizeHeight: h,
-            resizeQuality: 'high'
-        });
-        const ctx = ensureCanvas(w, h);
-        ctx.clearRect(0, 0, w, h);
-        ctx.drawImage(bmp, 0, 0);
-        bmp.close();
+        var bmp = null;
+        try {
+            bmp = await createImageBitmap(blob, {
+                resizeWidth: w,
+                resizeHeight: h,
+                resizeQuality: 'high'
+            });
+            if (cancelled.has(id)) return;
 
-        const imgData = ctx.getImageData(0, 0, w, h);
-        const rawBuffer = imgData.data.buffer;
-        self.postMessage(
-            { kind: "result", id: id, buffer: rawBuffer },
-            [rawBuffer]
-        );
+            const ctx = ensureCanvas(w, h);
+            ctx.clearRect(0, 0, w, h);
+            ctx.drawImage(bmp, 0, 0);
+            if (cancelled.has(id)) return;
+
+            const imgData = ctx.getImageData(0, 0, w, h);
+            const rawBuffer = imgData.data.buffer;
+            self.postMessage(
+                { kind: "result", id: id, buffer: rawBuffer },
+                [rawBuffer]
+            );
+        } finally {
+            bmp?.close();
+        }
     } catch (err) {
-        self.postMessage(
-            { kind: "error", id: id, message: err?.message ?? String(err), }
-        );
+        if (!cancelled.has(id)) {
+            self.postMessage(
+                { kind: "error", id: id, message: err?.message ?? String(err), }
+            );
+        }
+    } finally {
+        active.delete(id);
+        cancelled.delete(id);
     }
 };
 """
 
 @OptIn(InternalCompottieApi::class)
 private val DecodeImageWorker by lazy { WorkerScript(DecodeImageWorkerCode) }
-
-@OptIn(ExperimentalWasmJsInterop::class)
-private suspend fun ArrayBuffer.passToSkiko(): Data {
-    val data = Data.makeUninitialized(byteLength)
-    getSkikoMemory(awaitSkiko()).set(this, data.writableData())
-    return data
-}
-
-@OptIn(ExperimentalWasmJsInterop::class)
-internal expect suspend fun awaitSkiko(): JsAny
-
-@OptIn(ExperimentalWasmJsInterop::class)
-private fun getSkikoMemory(skikoWasm: JsAny): ArrayBuffer =
-    js("skikoWasm.wasmExports.memory.buffer")
-
-private fun ArrayBuffer.set(data: ArrayBuffer, offset: NativePointer) {
-    Int8Array(this).set(Int8Array(data), offset)
-}
 
 internal fun getOriginalSize(bytes: ByteArray): IntSize {
     val pngSize = getPngSizeOrNull(bytes)
