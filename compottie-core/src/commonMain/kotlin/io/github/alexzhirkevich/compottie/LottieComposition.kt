@@ -24,6 +24,7 @@ import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.helpers.Marker
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
+import io.github.alexzhirkevich.compottie.internal.utils.applyLottieFlags
 import io.github.alexzhirkevich.compottie.statemachine.SMConfig
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
@@ -35,6 +36,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Transient
+import kotlinx.serialization.json.decodeFromJsonElement
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.microseconds
@@ -126,7 +128,12 @@ public class LottieComposition internal constructor(
 
     public companion object {
         public fun parse(json: String): LottieComposition {
-            return LottieComposition(LottieJson.decodeFromString(json))
+
+            val animation : Animation = applyLottieFlags(json)?.let {
+                LottieJson.decodeFromJsonElement(it)
+            } ?: LottieJson.decodeFromString(json)
+
+            return LottieComposition(animation)
         }
     }
 
