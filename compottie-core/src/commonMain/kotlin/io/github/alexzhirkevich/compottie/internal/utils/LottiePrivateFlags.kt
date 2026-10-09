@@ -28,7 +28,7 @@ import kotlinx.serialization.json.doubleOrNull
  *
  * Data without flags is returned untouched.
  */
-internal fun applyLottieFlags(json: String): JsonElement? {
+internal fun normalizeLottiePrivateFlags(json: String): JsonElement? {
     if ("\"__complete\":" !in json && "\"completed\":" !in json)
         return null
 

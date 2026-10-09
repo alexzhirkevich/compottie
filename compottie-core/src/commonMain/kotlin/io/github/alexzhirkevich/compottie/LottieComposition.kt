@@ -24,7 +24,7 @@ import io.github.alexzhirkevich.compottie.internal.assets.ImageAsset
 import io.github.alexzhirkevich.compottie.internal.assets.LottieAsset
 import io.github.alexzhirkevich.compottie.internal.helpers.Marker
 import io.github.alexzhirkevich.compottie.internal.layers.Layer
-import io.github.alexzhirkevich.compottie.internal.utils.applyLottieFlags
+import io.github.alexzhirkevich.compottie.internal.utils.normalizeLottiePrivateFlags
 import io.github.alexzhirkevich.compottie.statemachine.SMConfig
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
@@ -127,10 +127,24 @@ public class LottieComposition internal constructor(
 ) {
 
     public companion object {
+
+        /**
+         * Normalize JSON file to remove private Lottie flags and improve decoding performance.
+         * The asset should be normalized if you see a warning when parsing the animation.
+         * */
+        public fun normalize(json: String) : String {
+            return normalizeLottiePrivateFlags(json)?.toString() ?: json
+        }
+
         public fun parse(json: String): LottieComposition {
 
-            val animation : Animation = applyLottieFlags(json)?.let {
-                LottieJson.decodeFromJsonElement(it)
+            val animation : Animation = normalizeLottiePrivateFlags(json)?.let {
+                LottieJson.decodeFromJsonElement<Animation?>(it).also {
+                    Compottie.logger?.warn(
+                        "The animation (${it?.name ?: (json.drop(1).take(50) + "...")}) is using private Lottie flags making some absolute coordinates to be relative.\n" +
+                        "While the animation still can run well please convert your JSON asset to the normalized format using LottieComposition.Companion.normalize to improve decoding speed"
+                    )
+                }
             } ?: LottieJson.decodeFromString(json)
 
             return LottieComposition(animation)
