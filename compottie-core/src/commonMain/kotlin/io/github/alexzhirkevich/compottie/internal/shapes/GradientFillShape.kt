@@ -131,7 +131,7 @@ internal class GradientFillShape(
                 cache = gradientCache
             )
         }
-        getBounds(drawScope, IdentityMatrix, false, state, boundsRect)
+
 
         dynamicFill.applyToPaint(
             paint = paint,
@@ -139,7 +139,10 @@ internal class GradientFillShape(
             parentAlpha = parentAlpha,
             opacity = opacity,
             parentMatrix = parentMatrix,
-            size = boundsRect::toRect,
+            size = {
+                getBounds(drawScope, IdentityMatrix, false, state, boundsRect)
+                boundsRect.toRect()
+            },
             gradientCache = gradientCache
         )
 

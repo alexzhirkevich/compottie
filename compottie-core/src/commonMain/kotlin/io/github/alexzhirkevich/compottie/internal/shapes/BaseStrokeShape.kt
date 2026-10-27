@@ -159,7 +159,7 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
         paint.pathEffect = null
         paint.style = PaintingStyle.Stroke
 
-        getBounds(drawScope, IdentityMatrix, false, state, rawBoundsRect)
+
 
         dynamicStroke.applyToPaint(
             paint = paint,
@@ -168,7 +168,10 @@ internal abstract class BaseStrokeShape() : Shape, DrawingContent {
             parentMatrix = IdentityMatrix,
             opacity = opacity,
             strokeWidth = strokeWidth,
-            size = rawBoundsRect::toRect,
+            size = {
+                getBounds(drawScope, IdentityMatrix, false, state, rawBoundsRect)
+                rawBoundsRect.toRect()
+            },
             gradientCache = gradientCache
         )
 

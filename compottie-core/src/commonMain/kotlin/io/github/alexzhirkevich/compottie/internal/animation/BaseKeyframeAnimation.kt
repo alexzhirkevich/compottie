@@ -36,6 +36,8 @@ internal open class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
     protected val firstFrameSlop: Float = firstFrame - 0.1f
     protected val lastFrameSlop: Float = lastFrame + 0.1f
 
+    private var lastKf : Int? = null
+
     protected val keyframesMappingRanges: IntObjectMap<Pair<K?, K?>> =
         MutableIntObjectMap<Pair<K?, K?>>().apply {
             if (keyframes.isEmpty())
@@ -134,6 +136,10 @@ internal open class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
             keyframes.isEmpty() -> -2
             frame <= firstFrame -> -1
             frame >= lastFrame -> keyframes.lastIndex
+            lastKf?.let {
+                val i = timeIntervals.getOrNull(it) ?: return@let false
+                frame >= i.start && frame <= i.endInclusive
+            } == true -> lastKf!!
             else -> timeIntervals.binarySearch {
                 when {
                     frame < it.start -> 1
@@ -143,6 +149,8 @@ internal open class BaseKeyframeAnimation<T : Any, K, KF : Keyframe<K>>(
             }.also {
                 require(it >= 0, InvalidKeyframeError)
             }
+        }.also {
+            lastKf = it
         }
     }
 
