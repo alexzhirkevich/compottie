@@ -394,16 +394,26 @@ internal class TextLayer(
         allLines.fastForEachIndexed { alLinesIdx, textLine ->
             val boxWidth = document.wrapSize?.firstOrNull() ?: 0f
 
-            val lines = splitGlyphTextIntoLines(
-                textMeasurer = state.textMeasurer,
-                density = drawScope,
-                layoutDirection = drawScope.layoutDirection,
-                textLine = textLine,
-                fontScale = document.fontScale,
-                boxWidth = boxWidth,
-                tracking = tracking,
-                glyphs = null
-            )
+            val lines = if (state.enableTextGrouping) {
+                splitShapedTextIntoLines(
+                    textMeasurer = state.textMeasurer,
+                    density = drawScope,
+                    layoutDirection = drawScope.layoutDirection,
+                    textLine = textLine,
+                    boxWidth = boxWidth,
+                )
+            } else {
+                splitGlyphTextIntoLines(
+                    textMeasurer = state.textMeasurer,
+                    density = drawScope,
+                    layoutDirection = drawScope.layoutDirection,
+                    textLine = textLine,
+                    fontScale = document.fontScale,
+                    boxWidth = boxWidth,
+                    tracking = tracking,
+                    glyphs = null
+                )
+            }
 
             lines.fastForEachIndexed { idx, line ->
 
@@ -579,6 +589,60 @@ internal class TextLayer(
         if (currentLineWidth > 0f) {
             val line = ensureEnoughSubLines(++lineCount)
             line.set(textLine.substring(currentLineStartIndex), currentLineWidth)
+        }
+        return textSubLines.subList(0, lineCount)
+    }
+
+    /**
+     * Splits [textLine] for text drawn as whole lines ([AnimationState.enableTextGrouping]).
+     *
+     * A whole line is drawn as one shaped run, so it is measured that way too. Measured one
+     * character at a time, scripts whose characters combine (Tamil, Devanagari, Arabic, ...) come
+     * out much wider than drawn - a vowel sign alone measures as wide as a letter - so lines broke
+     * early and centred or right-justified lines landed to the left.
+     *
+     * Lines break between words, each word measured once; a finished line is measured whole, which
+     * is the width it is justified by. Tracking is not applied: a whole line is drawn without it.
+     */
+    private fun splitShapedTextIntoLines(
+        textMeasurer: TextMeasurer,
+        density: Density,
+        layoutDirection: LayoutDirection,
+        textLine: String,
+        boxWidth: Float,
+    ): List<TextSubLine> {
+        fun width(text: String): Float = textMeasurer.measure(
+            text = text,
+            style = textStyle,
+            density = density,
+            layoutDirection = layoutDirection,
+        ).size.width.toFloat()
+
+        var lineCount = 0
+        // A space alone measures as nothing at the end of a run, so it is measured between letters.
+        val spaceWidth = if (boxWidth > 0f) width("a a") - width("aa") else 0f
+        var line: String? = null
+        var lineWidth = 0f
+        for (word in textLine.split(' ')) {
+            val wordWidth = if (boxWidth > 0f) width(word) else 0f
+            when {
+                line == null -> {
+                    line = word
+                    lineWidth = wordWidth
+                }
+                boxWidth > 0f && line.isNotBlank() && lineWidth + spaceWidth + wordWidth > boxWidth -> {
+                    ensureEnoughSubLines(++lineCount).set(line, width(line))
+                    line = word
+                    lineWidth = wordWidth
+                }
+                else -> {
+                    line = "$line $word"
+                    lineWidth += spaceWidth + wordWidth
+                }
+            }
+        }
+        if (!line.isNullOrEmpty()) {
+            ensureEnoughSubLines(++lineCount).set(line, width(line))
         }
         return textSubLines.subList(0, lineCount)
     }
