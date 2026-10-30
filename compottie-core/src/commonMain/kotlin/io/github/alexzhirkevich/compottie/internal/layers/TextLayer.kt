@@ -224,7 +224,7 @@ internal class TextLayer(
                 state.composition.animation.fonts?.find(it)
             }?.ascent ?: 0f
 
-            if (hasFontFamily || state.enableTextGrouping) {
+            if (hasFontFamily) {
                 drawTextWithFonts(
                     state = state,
                     ascent = ascent,
@@ -501,24 +501,11 @@ internal class TextLayer(
 
                 canvas.save()
 
-                // Alignment must use the width that is really drawn. When the line is drawn
-                // piece by piece, it is the sum of the piece widths (+ tracking), which differs
-                // from the width of the whole line measured at once (kerning, joining, RTL, tracking).
-                val lineWidth = if (state.enableTextGrouping) {
-                    state.textMeasurer.measure(
-                        text = line.text,
-                        style = textStyle,
-                        density = drawScope,
-                        layoutDirection = drawScope.layoutDirection,
-                    ).size.width.toFloat()
-                } else {
-                    layoutFontTextLine(
-                        text = line.text,
-                        textMeasurer = state.textMeasurer,
-                        tracking = tracking
-                    )
-                }
-
+                val lineWidth =  layoutFontTextLine(
+                    text = line.text,
+                    textMeasurer = state.textMeasurer,
+                    tracking = tracking
+                )
                 if (offsetCanvas(
                         state = state,
                         canvas = canvas,
@@ -537,7 +524,6 @@ internal class TextLayer(
                         drawScope = drawScope,
                         canvas = canvas,
                         tracking = tracking,
-                        drawFullLine = state.enableTextGrouping,
                         characterIndexAtStartOfLine = characterIndexAtStartOfLine,
                         parentAlpha = parentAlpha,
                     )
@@ -831,25 +817,9 @@ internal class TextLayer(
         drawScope: DrawScope,
         canvas: Canvas,
         tracking: Float,
-        drawFullLine: Boolean,
         characterIndexAtStartOfLine: Int,
         parentAlpha: Float,
     ) {
-        if (drawFullLine) {
-            // The whole line is shaped (and bidi-reordered) by the text measurer
-            configurePaint(documentData, parentAlpha, state, characterIndexAtStartOfLine)
-
-            val character = textMeasurer.measure(
-                text,
-                textStyle,
-                density = drawScope,
-                layoutDirection = drawScope.layoutDirection,
-            )
-
-            drawCharacterFromFont(character, documentData, drawScope)
-            return
-        }
-
         // Pieces were prepared (and measured) by layoutFontTextLine
         for (idx in lineGroupLayouts.indices) {
             configurePaint(
