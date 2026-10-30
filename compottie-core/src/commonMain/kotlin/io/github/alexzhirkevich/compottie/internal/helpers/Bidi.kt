@@ -96,3 +96,24 @@ private fun isRightToLeftCodePoint(cp: Int): Boolean =
             cp in 0xFE70..0xFEFF || // Arabic presentation forms B
             cp in 0x10800..0x10FFF || // RTL historic scripts
             cp in 0x1E800..0x1EFFF // Mende Kikakui, Adlam, Arabic mathematical, ...
+
+/** A single separator between two numbers is a part of the number: 1,000  3.14  12:30 */
+internal fun isNumberSeparator(cp: Int): Boolean =
+    cp == ','.code || cp == '.'.code || cp == ':'.code || cp == '/'.code ||
+            cp == 0xA0 || cp == 0x060C || cp == 0x066B || cp == 0x066C
+
+/** Currency and percent signs next to a number are a part of the number: 50%  $5 */
+internal fun isNumberTerminator(cp: Int): Boolean =
+    cp == '#'.code || cp == '$'.code || cp == '%'.code || cp in 0xA2..0xA5 ||
+            cp == 0xB0 || cp == 0xB1 || cp == 0x066A || cp == 0x2030 || cp == 0x2031 ||
+            cp in 0x20A0..0x20CF
+
+internal fun mirroredBracket(c: Char): Char = when (c) {
+    '(' -> ')'; ')' -> '('
+    '[' -> ']'; ']' -> '['
+    '{' -> '}'; '}' -> '{'
+    '<' -> '>'; '>' -> '<'
+    '«' -> '»'; '»' -> '«'
+    '‹' -> '›'; '›' -> '‹'
+    else -> c
+}

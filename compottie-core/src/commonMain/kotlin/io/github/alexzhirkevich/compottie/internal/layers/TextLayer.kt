@@ -42,6 +42,9 @@ import io.github.alexzhirkevich.compottie.internal.helpers.MatteMode
 import io.github.alexzhirkevich.compottie.internal.helpers.Transform
 import io.github.alexzhirkevich.compottie.internal.helpers.bidiClassOf
 import io.github.alexzhirkevich.compottie.internal.helpers.isJoiningRightToLeft
+import io.github.alexzhirkevich.compottie.internal.helpers.isNumberSeparator
+import io.github.alexzhirkevich.compottie.internal.helpers.isNumberTerminator
+import io.github.alexzhirkevich.compottie.internal.helpers.mirroredBracket
 import io.github.alexzhirkevich.compottie.internal.helpers.requiresBidi
 import io.github.alexzhirkevich.compottie.internal.helpers.text.TextData
 import io.github.alexzhirkevich.compottie.internal.helpers.text.TextDocument
@@ -51,7 +54,10 @@ import io.github.alexzhirkevich.compottie.internal.helpers.text.fontScale
 import io.github.alexzhirkevich.compottie.internal.platform.addCodePoint
 import io.github.alexzhirkevich.compottie.internal.platform.charCount
 import io.github.alexzhirkevich.compottie.internal.platform.codePointAt
+import io.github.alexzhirkevich.compottie.internal.platform.isIndicVirama
+import io.github.alexzhirkevich.compottie.internal.platform.isLetterCodePoint
 import io.github.alexzhirkevich.compottie.internal.platform.isModifier
+import io.github.alexzhirkevich.compottie.internal.platform.isRegionalIndicator
 import io.github.alexzhirkevich.compottie.internal.utils.fastReset
 import io.github.alexzhirkevich.compottie.internal.utils.preScale
 import io.github.alexzhirkevich.compottie.internal.utils.preTranslate
@@ -501,11 +507,15 @@ internal class TextLayer(
 
                 canvas.save()
 
+                // Alignment must use the width that is really drawn. When the line is drawn
+                // piece by piece, it is the sum of the piece widths (+ tracking), which differs
+                // from the width of the whole line measured at once (kerning, joining, RTL, tracking).
                 val lineWidth =  layoutFontTextLine(
                     text = line.text,
                     textMeasurer = state.textMeasurer,
                     tracking = tracking
                 )
+
                 if (offsetCanvas(
                         state = state,
                         canvas = canvas,
@@ -820,6 +830,7 @@ internal class TextLayer(
         characterIndexAtStartOfLine: Int,
         parentAlpha: Float,
     ) {
+
         // Pieces were prepared (and measured) by layoutFontTextLine
         for (idx in lineGroupLayouts.indices) {
             configurePaint(
@@ -917,6 +928,9 @@ internal class TextLayer(
      * so a line that starts with Arabic/Hebrew is an RTL paragraph and its embedded LTR words
      * ("One", "Two") end up in reversed order relative to the LTR case.
      *
+     * Numbers keep their reading order (including separators and signs that are a part of them:
+     * 1,000 50%) and brackets inside RTL runs are mirrored.
+     *
      * See [bidiClassOf] for the limitations of this approximation of the Unicode bidi algorithm.
      *
      * @param text the original string
@@ -932,7 +946,37 @@ internal class TextLayer(
         }
 
         val n = clusters.size
-        val classes = Array(n) { bidiClassOf(clusters[it].codePointAt(0)) }
+        val firstCodePoints = IntArray(n) { clusters[it].codePointAt(0) }
+        val classes = Array(n) { bidiClassOf(firstCodePoints[it]) }
+
+        // A single separator between two numbers is a part of the number: 1,000  3.14  12:30
+        for (idx in 1 until n - 1) {
+            if (classes[idx] == BidiClass.NEUTRAL &&
+                isNumberSeparator(firstCodePoints[idx]) &&
+                classes[idx - 1] == BidiClass.DIGIT &&
+                classes[idx + 1] == BidiClass.DIGIT
+            ) {
+                classes[idx] = BidiClass.DIGIT
+            }
+        }
+
+        // Currency and percent signs next to a number are a part of the number: 50%  $5
+        for (idx in 1 until n) {
+            if (classes[idx] == BidiClass.NEUTRAL &&
+                isNumberTerminator(firstCodePoints[idx]) &&
+                classes[idx - 1] == BidiClass.DIGIT
+            ) {
+                classes[idx] = BidiClass.DIGIT
+            }
+        }
+        for (idx in n - 2 downTo 0) {
+            if (classes[idx] == BidiClass.NEUTRAL &&
+                isNumberTerminator(firstCodePoints[idx]) &&
+                classes[idx + 1] == BidiClass.DIGIT
+            ) {
+                classes[idx] = BidiClass.DIGIT
+            }
+        }
 
         // Paragraph direction: the first strong character wins
         var baseRtl = false
@@ -1042,7 +1086,14 @@ internal class TextLayer(
 
         reorderingStringBuilder.setLength(0)
         for (idx in 0 until n) {
-            reorderingStringBuilder.append(clusters[order[idx]])
+            val original = order[idx]
+            val cluster = clusters[original]
+            if (levels[original] % 2 == 1 && cluster.length == 1) {
+                // Paired brackets are mirrored in RTL runs
+                reorderingStringBuilder.append(mirroredBracket(cluster[0]))
+            } else {
+                reorderingStringBuilder.append(cluster)
+            }
         }
 
         return reorderingStringBuilder.toString()
@@ -1091,22 +1142,44 @@ internal class TextLayer(
         character.data?.draw(drawScope, state, matrix, strokePaint, fillPaint)
     }
 
+    /**
+     * Returns the grapheme-like cluster that starts at [startIndex]: the base character with
+     * everything that must be shaped together with it:
+     *  - combining marks, vowel signs, variation selectors, skin tone modifiers (see [isModifier])
+     *  - a consonant after an Indic virama (conjuncts: க்ஷ, क्ष, ශ්‍රී)
+     *  - a character after a zero-width joiner (emoji families, Sinhala)
+     *  - the second regional indicator of a flag
+     */
     private fun codePointToString(text: String, startIndex: Int): String {
         val firstCodePoint: Int = text.codePointAt(startIndex)
-        val firstCodePointLength: Int = charCount(firstCodePoint)
-        var key = firstCodePoint
-        var index = startIndex + firstCodePointLength
+        var key = firstCodePoint.toLong()
+        var index = startIndex + charCount(firstCodePoint)
+        var last = firstCodePoint
+        var regionalIndicators = if (isRegionalIndicator(firstCodePoint)) 1 else 0
+
         while (index < text.length) {
-            val nextCodePoint: Int = text.codePointAt(index)
-            if (!isModifier(nextCodePoint)) {
+            val next: Int = text.codePointAt(index)
+
+            val attaches = isModifier(next) ||
+                    (isIndicVirama(last) && isLetterCodePoint(next)) ||
+                    last == 0x200D ||
+                    (regionalIndicators == 1 && isRegionalIndicator(next))
+
+            if (!attaches) {
                 break
             }
-            val nextCodePointLength: Int = charCount(nextCodePoint)
-            index += nextCodePointLength
-            key = key * 31 + nextCodePoint
+
+            if (isRegionalIndicator(next)) {
+                regionalIndicators++
+            }
+
+            index += charCount(next)
+            // Long hash: an Int one could collide for long clusters and return a wrong cached string
+            key = key * 1099511628211L + next
+            last = next
         }
 
-        codePointCache[key.toLong()]?.let { return it }
+        codePointCache[key]?.let { return it }
 
         stringBuilder.setLength(0)
         var i = startIndex
@@ -1116,7 +1189,7 @@ internal class TextLayer(
             i += charCount(codePoint)
         }
         val str: String = stringBuilder.toString()
-        codePointCache[key.toLong()] = str
+        codePointCache[key] = str
         return str
     }
 
@@ -1170,4 +1243,3 @@ private data class TextSubLine(
         this.width = width
     }
 }
-
