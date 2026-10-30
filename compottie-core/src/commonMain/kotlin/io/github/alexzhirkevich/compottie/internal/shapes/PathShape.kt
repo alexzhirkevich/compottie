@@ -91,7 +91,8 @@ internal class PathShape(
             matchName = matchName,
             name = name,
             hidden = hidden,
-            shape = shape.copy()
+            shape = shape.copy(),
+            isClosedLegacy = isClosedLegacy
         )
     }
 }
